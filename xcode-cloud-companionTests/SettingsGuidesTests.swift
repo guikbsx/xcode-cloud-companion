@@ -15,12 +15,23 @@ struct SettingsGuidesTests {
         #expect(ConfigurationSettingsView.masked("") == "")
     }
 
-    @Test func theUsageLinkOpensXcodeCloudUsageNotTheHomePage() {
-        #expect(AppStoreConnectLinks.xcodeCloudUsage.absoluteString == "https://appstoreconnect.apple.com/access/ci/usage")
-        #expect(AppStoreConnectLinks.xcodeCloudUsage != AppStoreConnectLinks.home)
+    private let team = "69a6de7f-1234-5678-9abc-def012343c1a"
+
+    @Test func pagesLiveUnderTheTeamWhichIsTheIssuerID() {
+        #expect(AppStoreConnectLinks.xcodeCloudUsage(teamID: team).absoluteString == "https://appstoreconnect.apple.com/teams/\(team)/access/ci/usage")
+        #expect(AppStoreConnectLinks.integrations(teamID: team).absoluteString == "https://appstoreconnect.apple.com/teams/\(team)/access/integrations/api")
+        #expect(AppStoreConnectLinks.build(appID: "123", buildRunID: "abc-1", teamID: team).absoluteString == "https://appstoreconnect.apple.com/teams/\(team)/apps/123/ci/builds/abc-1/summary")
     }
 
-    @Test func theIntegrationsLinkPointsToTheTeamKeysPage() {
-        #expect(AppStoreConnectLinks.integrations.absoluteString == "https://appstoreconnect.apple.com/access/integrations/api")
+    @Test func withoutATeamLinksFallBackToThePagesThatOpen() {
+        #expect(AppStoreConnectLinks.xcodeCloudUsage(teamID: nil) == AppStoreConnectLinks.home)
+        #expect(AppStoreConnectLinks.integrations(teamID: "") == AppStoreConnectLinks.home)
+        #expect(AppStoreConnectLinks.build(appID: "123", buildRunID: "abc", teamID: nil).absoluteString == "https://appstoreconnect.apple.com/apps/123/ci/builds/abc/summary")
+        #expect(AppStoreConnectLinks.build(appID: nil, buildRunID: "abc", teamID: team) == AppStoreConnectLinks.home)
+    }
+
+    @Test func anIdentifierCannotRewriteThePath() {
+        #expect(AppStoreConnectLinks.xcodeCloudUsage(teamID: "../evil") == AppStoreConnectLinks.home)
+        #expect(AppStoreConnectLinks.build(appID: "1/2", buildRunID: "abc", teamID: team) == AppStoreConnectLinks.home)
     }
 }

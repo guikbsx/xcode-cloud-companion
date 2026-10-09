@@ -55,7 +55,10 @@ final class SettingsWindowController {
         window.makeKeyAndOrderFront(nil)
         Task {
             await model.load()
-            tabController?.selectedTabViewItemIndex = initialTab().rawValue
+            let tab = initialTab()
+            tabController?.selectedTabViewItemIndex = tab.rawValue
+            // Selecting the tab already shown sends no notification: the title is set here too.
+            tabController?.title = tab.title
         }
     }
 
@@ -116,7 +119,8 @@ private final class TabsController: NSTabViewController {
     override func tabView(_ tabView: NSTabView, didSelect tabViewItem: NSTabViewItem?) {
         super.tabView(tabView, didSelect: tabViewItem)
         if let tabViewItem {
-            view.window?.title = tabViewItem.label
+            // The window takes its title from its content view controller.
+            title = tabViewItem.label
             onSelect(tabView.indexOfTabViewItem(tabViewItem))
         }
     }

@@ -79,7 +79,7 @@ struct ConfigurationSettingsView: View {
         Section {
             GuideStep(number: 1) {
                 Text("In App Store Connect, open **Users and Access › Integrations › App Store Connect API**, **Team Keys** tab.")
-                Link("Open in App Store Connect ↗", destination: AppStoreConnectLinks.integrations)
+                Link("Open in App Store Connect ↗", destination: AppStoreConnectLinks.integrations(teamID: model.issuerID))
                     .buttonStyle(.borderedProminent)
                     .controlSize(.small)
             }
@@ -278,7 +278,7 @@ struct ConfigurationSettingsView: View {
         Section("Where to find them") {
             GuideStep(number: 1) {
                 Text("In App Store Connect, open **Xcode Cloud › Usage**.")
-                Link("Open Usage ↗", destination: AppStoreConnectLinks.xcodeCloudUsage)
+                Link("Open Usage ↗", destination: AppStoreConnectLinks.xcodeCloudUsage(teamID: model.issuerID))
                     .buttonStyle(.borderedProminent)
                     .controlSize(.small)
             }

@@ -20,6 +20,8 @@ struct StatusMenuState {
     var isSyncing: Bool
     var errorMessage: String?
     var now: Date
+    /// The Issuer ID, which App Store Connect uses as the team in its addresses.
+    var teamID: String?
 }
 
 /// Target of a menu item that runs a closure; the item keeps it alive through `representedObject`.
@@ -67,7 +69,7 @@ enum StatusMenuBuilder {
             items.append(.separator())
         }
 
-        let latest = LatestBuildsMenu.items(snapshot: state.snapshot, now: state.now, open: actions.openURL)
+        let latest = LatestBuildsMenu.items(snapshot: state.snapshot, now: state.now, teamID: state.teamID, open: actions.openURL)
         if !latest.isEmpty {
             items += latest
             items.append(.separator())
@@ -79,7 +81,7 @@ enum StatusMenuBuilder {
             items.append(NSMenuItem.action(String(localized: "Set Your Plan’s Reset Date…"), handler: actions.openSettings))
         }
         items.append(.separator())
-        items += AppBuildsMenu.items(snapshot: state.snapshot, summary: state.summary, palette: state.palette, now: state.now, open: actions.openURL)
+        items += AppBuildsMenu.items(snapshot: state.snapshot, summary: state.summary, palette: state.palette, now: state.now, teamID: state.teamID, open: actions.openURL)
 
         let status = NSMenuItem(title: statusLine(for: state), action: nil, keyEquivalent: "")
         status.isEnabled = false

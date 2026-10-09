@@ -9,6 +9,7 @@ enum AppBuildsMenu {
         summary: UsageSummary?,
         palette: AppPalette = AppPalette(),
         now: Date,
+        teamID: String? = nil,
         open: @escaping (URL) -> Void
     ) -> [NSMenuItem] {
         let runsByProduct = Dictionary(grouping: snapshot.runs, by: \.productID)
@@ -39,7 +40,7 @@ enum AppBuildsMenu {
             let submenu = NSMenu()
             submenu.autoenablesItems = false
             for run in runs.prefix(buildsPerApp) {
-                submenu.addItem(buildItem(run, product: product, actions: snapshot.actionsByRunID[run.id] ?? [], now: now, open: open))
+                submenu.addItem(buildItem(run, product: product, actions: snapshot.actionsByRunID[run.id] ?? [], now: now, teamID: teamID, open: open))
             }
             item.submenu = submenu
             items.append(item)
@@ -48,10 +49,12 @@ enum AppBuildsMenu {
         return items
     }
 
-    static func buildItem(_ run: CIBuildRun, product: CIProduct, actions: [CIBuildAction], now: Date, open: @escaping (URL) -> Void) -> NSMenuItem {
+    static func buildItem(
+        _ run: CIBuildRun, product: CIProduct, actions: [CIBuildAction], now: Date, teamID: String? = nil, open: @escaping (URL) -> Void
+    ) -> NSMenuItem {
         let number = run.number.map { "#\($0)" } ?? "#?"
         let title = UsageFormat.dotted([number, run.workflowName].compactMap(\.self))
-        let url = AppStoreConnectLinks.build(appID: product.appID, buildRunID: run.id)
+        let url = AppStoreConnectLinks.build(appID: product.appID, buildRunID: run.id, teamID: teamID)
         let item = NSMenuItem.action(title) { open(url) }
         item.attributedTitle = BuildStatusDot.title(title, status: BuildStatus(run: run))
         item.subtitle = subtitle(for: run, actions: actions, now: now)

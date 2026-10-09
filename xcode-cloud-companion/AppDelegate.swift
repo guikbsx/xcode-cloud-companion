@@ -42,6 +42,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         workspaceCenter.addObserver(self, selector: #selector(systemWillSleep), name: NSWorkspace.willSleepNotification, object: nil)
         workspaceCenter.addObserver(self, selector: #selector(systemDidWake), name: NSWorkspace.didWakeNotification, object: nil)
         buildStore.start()
+        // The Issuer ID is the team in App Store Connect's addresses: the menu's links need it before Settings ever opens.
+        Task { await settingsModel.load() }
         Task { await usageStore.start() }
     }
 
@@ -57,7 +59,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                     await buildStore.refreshNow()
                 }
             },
-            openUsagePage: { NSWorkspace.shared.open(AppStoreConnectLinks.xcodeCloudUsage) },
+            openUsagePage: { [settingsModel] in
+                NSWorkspace.shared.open(AppStoreConnectLinks.xcodeCloudUsage(teamID: settingsModel.issuerID))
+            },
             importUsageExport: { [weak self] in self?.importUsageExport() },
             openSettings: { [weak self] in self?.openSettings() },
             openURL: { NSWorkspace.shared.open($0) }
@@ -93,6 +97,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     @objc private func systemDidWake(_ notification: Notification) {
         buildStore.start()
+        // The Issuer ID is the team in App Store Connect's addresses: the menu's links need it before Settings ever opens.
+        Task { await settingsModel.load() }
         Task { await usageStore.start() }
     }
 }

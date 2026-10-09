@@ -78,7 +78,8 @@ final class StatusItemController: NSObject, NSMenuDelegate {
             syncStartedAt: buildStore.syncStartedAt,
             isSyncing: buildStore.isSyncing,
             errorMessage: buildStore.lastErrorMessage,
-            now: date
+            now: date,
+            teamID: settings.issuerID.isEmpty ? nil : settings.issuerID
         )
     }
 
