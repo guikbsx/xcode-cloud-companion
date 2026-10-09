@@ -31,6 +31,21 @@ nonisolated enum AppStoreConnectEndpoint {
         ])
     }
 
+    /// Only the per-device results: a build has hundreds of test cases, their names are not needed.
+    static func testResults(buildActionID: String) -> URL {
+        url(path: "/v1/ciBuildActions/\(buildActionID)/testResults", query: [
+            "fields[ciTestResults]": "status,destinationTestResults",
+            "limit": String(maximumPageSize),
+        ])
+    }
+
+    static func workflows(productID: String) -> URL {
+        url(path: "/v1/ciProducts/\(productID)/workflows", query: [
+            "fields[ciWorkflows]": "name,actions",
+            "limit": String(maximumPageSize),
+        ])
+    }
+
     static func isTrusted(_ url: URL) -> Bool {
         url.scheme == "https" && url.host() == host
     }

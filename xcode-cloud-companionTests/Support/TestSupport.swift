@@ -9,7 +9,15 @@ enum Fixture {
     }
 
     static func data(_ name: String) throws -> Data {
-        guard let url = Bundle(for: BundleToken.self).url(forResource: name, withExtension: "json") else {
+        try load(name, withExtension: "json")
+    }
+
+    static func csv(_ name: String) throws -> Data {
+        try load(name, withExtension: "csv")
+    }
+
+    private static func load(_ name: String, withExtension fileExtension: String) throws -> Data {
+        guard let url = Bundle(for: BundleToken.self).url(forResource: name, withExtension: fileExtension) else {
             throw Missing(name: name)
         }
         return try Data(contentsOf: url)

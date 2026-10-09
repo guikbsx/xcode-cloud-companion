@@ -40,6 +40,14 @@ struct CIModelsDecodingTests {
         #expect(runs[2].createdDate == Date(timeIntervalSince1970: 1_789_898_400))
     }
 
+    @Test(arguments: ["2026-10-08T12:00:00.000+0000", "2026-10-08T12:00:00+0000", "2026-10-08T14:00:00+02:00", "2026-10-08T12:00:00.000Z"])
+    func everyISO8601OffsetStyleIsAccepted(date: String) throws {
+        let json = #"{"data": [{"type": "ciBuildRuns", "id": "r", "attributes": {"createdDate": "\#(date)"}}]}"#
+        let document = try JSONDecoder.appStoreConnect.decode(JSONAPIDocument<CIBuildRunAttributes>.self, from: Data(json.utf8))
+
+        #expect(document.buildRuns(productID: "p").first?.createdDate == Date(timeIntervalSince1970: 1_791_460_800))
+    }
+
     @Test func unknownStatusesAreKeptRatherThanRejected() throws {
         let document = try JSONDecoder.appStoreConnect.decode(JSONAPIDocument<CIBuildRunAttributes>.self, from: Fixture.data("ciBuildRuns-page2"))
         let runs = document.buildRuns(productID: "product-1")

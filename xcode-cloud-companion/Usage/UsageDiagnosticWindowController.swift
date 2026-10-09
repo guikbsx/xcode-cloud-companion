@@ -1,0 +1,82 @@
+#if DEBUG
+import AppKit
+import SwiftUI
+
+/// Debug-only window used to compare the estimate with App Store Connect (XCO-6).
+final class UsageDiagnosticWindowController {
+    private let buildStore: BuildStore
+    private let settings: SettingsModel
+    private var window: NSWindow?
+
+    init(buildStore: BuildStore, settings: SettingsModel) {
+        self.buildStore = buildStore
+        self.settings = settings
+    }
+
+    func show() {
+        let window = window ?? makeWindow()
+        self.window = window
+        NSApp.activate()
+        window.makeKeyAndOrderFront(nil)
+    }
+
+    private func makeWindow() -> NSWindow {
+        let view = UsageDiagnosticView(buildStore: buildStore, settings: settings)
+        let window = NSWindow(contentViewController: NSHostingController(rootView: view))
+        window.title = "Usage Diagnostic"
+        window.styleMask = [.titled, .closable, .resizable]
+        window.isReleasedWhenClosed = false
+        window.setContentSize(NSSize(width: 860, height: 640))
+        window.center()
+        return window
+    }
+}
+
+private struct UsageDiagnosticView: View {
+    let buildStore: BuildStore
+    let settings: SettingsModel
+
+    private var report: String {
+        UsageDiagnostic.report(
+            snapshot: buildStore.snapshot,
+            plan: settings.plan,
+            syncState: .init(isConfigured: buildStore.isConfigured, isSyncing: buildStore.isSyncing, progress: buildStore.progress, lastError: buildStore.lastError),
+            now: Date()
+        )
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            ScrollView([.vertical, .horizontal]) {
+                Text(report)
+                    .font(.system(.body, design: .monospaced))
+                    .textSelection(.enabled)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding()
+            }
+            .background(.background)
+            HStack {
+                if buildStore.isSyncing {
+                    ProgressView().controlSize(.small)
+                    Text(buildStore.progress ?? "")
+                        .foregroundStyle(.secondary)
+                }
+                if let message = buildStore.lastErrorMessage {
+                    Label(message, systemImage: "exclamationmark.triangle.fill").foregroundStyle(.red)
+                }
+                Spacer()
+                Button("Copy Report") {
+                    NSPasteboard.general.clearContents()
+                    NSPasteboard.general.setString(report, forType: .string)
+                }
+                Button("Sync Now") {
+                    Task { await buildStore.refreshNow() }
+                }
+                .disabled(buildStore.isSyncing)
+            }
+            .padding([.horizontal, .bottom])
+        }
+        .frame(minWidth: 720, minHeight: 480)
+    }
+}
+#endif

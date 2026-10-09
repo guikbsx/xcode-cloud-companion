@@ -1,0 +1,179 @@
+import Foundation
+import Observation
+
+@Observable
+final class SettingsModel {
+    enum ConnectionState: Equatable {
+        case idle
+        case testing
+        case connected(productNames: [String])
+        case failed(String)
+    }
+
+    enum KeyState: Equatable {
+        case none
+        case imported(fileName: String)
+        case stored
+    }
+
+    var issuerID = ""
+    var keyID = ""
+    private(set) var keyState = KeyState.none
+    private(set) var connectionState = ConnectionState.idle
+    private(set) var errorMessage: String?
+    @ObservationIgnored var onCredentialsChange: (() -> Void)?
+
+    var planHours: Int {
+        didSet { defaults.set(planHours, forKey: Keys.planHours) }
+    }
+
+    var resetAnchor: Date? {
+        didSet { defaults.set(resetAnchor, forKey: Keys.resetAnchor) }
+    }
+
+    private var importedPrivateKeyPEM: String?
+    private let store: any CredentialsStore
+    private let defaults: UserDefaults
+    private let makeClient: (AppStoreConnectCredentials) -> AppStoreConnectClient
+    private let now: () -> Date
+
+    init(
+        store: any CredentialsStore = KeychainCredentialsStore(),
+        defaults: UserDefaults = .standard,
+        makeClient: @escaping (AppStoreConnectCredentials) -> AppStoreConnectClient = { AppStoreConnectClient(credentials: $0) },
+        now: @escaping () -> Date = { Date() }
+    ) {
+        self.store = store
+        self.defaults = defaults
+        self.makeClient = makeClient
+        self.now = now
+        let storedHours = defaults.integer(forKey: Keys.planHours)
+        planHours = UsagePlan.availableHours.contains(storedHours) ? storedHours : UsagePlan.defaultHours
+        resetAnchor = defaults.object(forKey: Keys.resetAnchor) as? Date
+    }
+
+    var plan: UsagePlan? {
+        resetAnchor.map { UsagePlan(hours: planHours, resetAnchor: $0) }
+    }
+
+    /// The date picker shows the upcoming reset; editing it moves the anchor.
+    var nextReset: Date {
+        get { plan?.nextReset(after: now()) ?? Self.suggestedReset(after: now()) }
+        set { resetAnchor = newValue }
+    }
+
+    var canSave: Bool {
+        !issuerID.trimmed.isEmpty && !keyID.trimmed.isEmpty && importedPrivateKeyPEM != nil
+    }
+
+    var hasStoredKey: Bool {
+        keyState == .stored
+    }
+
+    func load() async {
+        do {
+            guard let stored = try await store.load() else { return }
+            issuerID = stored.issuerID
+            keyID = stored.keyID
+            keyState = .stored
+        } catch {
+            errorMessage = error.message
+        }
+    }
+
+    func importPrivateKey(from url: URL) {
+        let isScoped = url.startAccessingSecurityScopedResource()
+        defer { if isScoped { url.stopAccessingSecurityScopedResource() } }
+
+        guard let pem = try? String(contentsOf: url, encoding: .utf8),
+              (try? AppStoreConnectCredentials(issuerID: "", keyID: "", privateKeyPEM: pem)) != nil
+        else {
+            errorMessage = AppStoreConnectError.invalidPrivateKey.message
+            return
+        }
+        importedPrivateKeyPEM = pem
+        keyState = .imported(fileName: url.lastPathComponent)
+        errorMessage = nil
+        if keyID.trimmed.isEmpty, let inferred = Self.keyID(fromFileName: url.lastPathComponent) {
+            keyID = inferred
+        }
+    }
+
+    func saveAndTestConnection() async {
+        guard canSave, let pem = importedPrivateKeyPEM else { return }
+        let credentials = StoredCredentials(issuerID: issuerID.trimmed, keyID: keyID.trimmed, privateKeyPEM: pem)
+        do {
+            try await store.save(credentials)
+        } catch {
+            errorMessage = error.message
+            return
+        }
+        importedPrivateKeyPEM = nil
+        keyState = .stored
+        errorMessage = nil
+        onCredentialsChange?()
+        await testConnection(with: credentials)
+    }
+
+    func testConnection() async {
+        do {
+            guard let stored = try await store.load() else {
+                keyState = .none
+                return
+            }
+            await testConnection(with: stored)
+        } catch {
+            connectionState = .failed(error.message)
+        }
+    }
+
+    func removeKey() async {
+        do {
+            try await store.delete()
+        } catch {
+            errorMessage = error.message
+            return
+        }
+        issuerID = ""
+        keyID = ""
+        importedPrivateKeyPEM = nil
+        keyState = .none
+        connectionState = .idle
+        errorMessage = nil
+        onCredentialsChange?()
+    }
+
+    private func testConnection(with stored: StoredCredentials) async {
+        connectionState = .testing
+        do {
+            let client = makeClient(try stored.credentials())
+            let products = try await client.products()
+            connectionState = .connected(productNames: products.map { $0.appName ?? $0.name })
+        } catch {
+            connectionState = .failed(error.message)
+        }
+    }
+
+    // MARK: - Helpers
+
+    static func keyID(fromFileName fileName: String) -> String? {
+        let name = (fileName as NSString).deletingPathExtension
+        guard name.hasPrefix("AuthKey_") else { return nil }
+        let keyID = String(name.dropFirst("AuthKey_".count))
+        return keyID.isEmpty ? nil : keyID
+    }
+
+    static func suggestedReset(after date: Date, calendar: Calendar = .current) -> Date {
+        let nextMonth = calendar.date(byAdding: .month, value: 1, to: date) ?? date
+        return calendar.dateInterval(of: .minute, for: nextMonth)?.start ?? nextMonth
+    }
+
+    private enum Keys {
+        static let planHours = "plan.hours"
+        static let resetAnchor = "plan.resetAnchor"
+    }
+}
+
+private extension String {
+    var trimmed: String { trimmingCharacters(in: .whitespacesAndNewlines) }
+}

@@ -1,0 +1,31 @@
+{
+  "data": [
+    {
+      "type": "ciWorkflows",
+      "id": "workflow-release",
+      "attributes": {
+        "name": "Release",
+        "actions": [
+          { "name": "Archive - iOS", "actionType": "ARCHIVE", "platform": "IOS" },
+          {
+            "name": "Test - iOS", "actionType": "TEST", "platform": "IOS",
+            "testConfiguration": {
+              "kind": "SPECIFIC_TEST_PLANS", "testPlanName": "All",
+              "testDestinations": [
+                { "deviceTypeName": "iPhone 17 Pro Max", "runtimeName": "iOS 27.0", "kind": "SIMULATOR" },
+                { "deviceTypeName": "iPhone 17", "runtimeName": "iOS 26.5", "kind": "SIMULATOR" },
+                { "deviceTypeName": "Apple Watch Series 11", "runtimeName": "watchOS 27.0", "kind": "SIMULATOR" }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "ciWorkflows",
+      "id": "workflow-pr",
+      "attributes": { "name": "Pull Requests", "actions": [ { "name": "Build", "actionType": "BUILD" } ] }
+    }
+  ],
+  "links": { "self": "https://api.appstoreconnect.apple.com/v1/ciProducts/product-1/workflows" }
+}

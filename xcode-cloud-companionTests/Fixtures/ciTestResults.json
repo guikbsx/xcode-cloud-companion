@@ -1,0 +1,28 @@
+{
+  "data": [
+    {
+      "type": "ciTestResults",
+      "id": "t1",
+      "attributes": {
+        "status": "SUCCESS",
+        "destinationTestResults": [
+          { "uuid": "a", "deviceName": "iPhone 17 Pro Max", "osVersion": "27.0", "status": "SUCCESS", "duration": 120.5 },
+          { "uuid": "b", "deviceName": "iPhone 17", "osVersion": "26.5", "status": "SUCCESS", "duration": 90 },
+          { "uuid": "c", "deviceName": "Apple Watch Series 11", "osVersion": "27.0", "status": "SUCCESS", "duration": 30 }
+        ]
+      }
+    },
+    {
+      "type": "ciTestResults",
+      "id": "t2",
+      "attributes": {
+        "status": "MIXED",
+        "destinationTestResults": [
+          { "uuid": "d", "deviceName": "iPhone 17 Pro Max", "osVersion": "27.0", "status": "FAILURE", "duration": 300 },
+          { "uuid": "e", "deviceName": "iPhone 17", "osVersion": "26.5", "status": "SUCCESS", "duration": 60 }
+        ]
+      }
+    }
+  ],
+  "links": { "self": "https://api.appstoreconnect.apple.com/v1/ciBuildActions/action-test/testResults" }
+}

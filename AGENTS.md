@@ -28,6 +28,24 @@ Ce document oriente les sessions d'agents (Claude Code, Codex) qui travaillent s
 
 Le modèle est CodexBar : un `NSStatusItem` + `NSMenu`, dont certaines lignes sont des vues SwiftUI hébergées (barres de progression, chiffres, histogramme). Le reste, ce sont des `NSMenuItem` standards (sous-menus, surlignage, navigation clavier). Ne pas remplacer par un popover ni par `MenuBarExtra(.window)`.
 
+### Architecture
+
+**Cycle de vie AppKit**, pas d'`App` SwiftUI : `AppDelegate` porte `@main` et lance `NSApplication`. Depuis macOS 14, la scène `Settings` de SwiftUI ne s'ouvre pas depuis un `NSMenu` ; les Réglages sont une `NSWindow` qui héberge une vue SwiftUI. Un menu principal minimal (`MainMenu`) reste indispensable : invisible dans une app `LSUIElement`, il porte quand même ⌘, ⌘Q, ⌘W et le menu Édition, sans lequel ⌘V ne marche pas dans les champs.
+
+| Dossier / fichier | Rôle | Isolation |
+|---|---|---|
+| `AppDelegate.swift` | Point d'entrée ; crée les modèles, branche veille et réveil sur la synchronisation | `MainActor` |
+| `MainMenu.swift`, `StatusItemController.swift` | Menu principal invisible, élément de la barre des menus | `MainActor` |
+| `AppStoreConnect/` | Jeton JWT, requêtes, décodage JSON:API, modèles `CIProduct` / `CIBuildRun` / `CIBuildAction` | `nonisolated`, sauf `AppStoreConnectClient` (`actor`, protège le jeton) |
+| `Settings/` | Trousseau (`KeychainCredentialsStore`), forfait (`UsagePlan`), ouverture à la connexion, fenêtre et modèles des Réglages | modèles d'interface `MainActor`, le reste `nonisolated` |
+| `Sync/` | `BuildSynchronizer` (calcul `@concurrent` d'un nouvel instantané), `BuildCacheStore` (cache JSON dans le conteneur), `SyncSchedule`, `BuildStore` (source de vérité des builds, `@Observable`) | `BuildStore` `MainActor`, le reste `nonisolated` |
+| `Usage/` | Minutes facturées : lecture de l'export CSV d'App Store Connect, registre `UsageLedger`, `UsageStore` + `DirectoryWatcher` (import automatique depuis Téléchargements). `UsageCalculator` combine minutes exactes et estimation calibrée par workflow. Diagnostic Debug | `UsageStore` `MainActor`, le reste `nonisolated` |
+| `Menu/` | Construction du menu de la barre (`StatusMenuBuilder`, `AppBuildsMenu`), blocs SwiftUI hébergés (`UsageMenuViews`), formats (`UsageFormat`) | `MainActor`, `UsageFormat` `nonisolated` |
+
+**Source des minutes** (XCO-6, mesuré sur 55 builds réels le 09/10/2026) : Apple facture **par machine**. Chaque destination de test paie son temps d'exécution (`destinationTestResults[].duration`, sommé par appareil) plus ~4,5 min de préparation, et deux fois ses tests quand l'un d'eux échoue (rejoué) ; une archive réussie paie son calcul seul, pas l'envoi à TestFlight : on prend son passage réussi le plus court. Le tout dans `MachineModel`. Résultat : +2 % sur 30 jours, 4 min d'écart moyen par build, sauf certains échecs rejoués (jusqu'à −40 min). La durée murale d'un test ne dit **ni** le nombre de simulateurs **ni** leur attente : ne jamais l'additionner. L'export CSV d'Apple (XCO-14) reste la source exacte quand il est importé.
+
+Les tests s'exécutent **dans l'app** (`TEST_HOST`) : `AppDelegate` ne démarre pas la synchronisation quand `XCTestConfigurationFilePath` est défini, pour ne jamais appeler l'API avec la vraie clé pendant les tests.
+
 ---
 
 ## 2. Workflow

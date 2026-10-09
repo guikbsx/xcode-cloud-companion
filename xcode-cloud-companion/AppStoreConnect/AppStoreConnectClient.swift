@@ -68,6 +68,29 @@ actor AppStoreConnectClient {
         return pages.flatMap { $0.buildActions(buildRunID: buildRunID) }
     }
 
+    func workflows(productID: String, maxPages: Int = 2) async throws(AppStoreConnectError) -> [CIWorkflow] {
+        let pages = try await collectPages(
+            from: AppStoreConnectEndpoint.workflows(productID: productID),
+            of: CIWorkflowAttributes.self,
+            maxPages: maxPages
+        )
+        return pages.flatMap(\.workflows)
+    }
+
+    /// One entry per simulated device, sorted by name; `maxPages` × 200 test cases at most.
+    func testDeviceRuns(buildActionID: String, maxPages: Int = 15) async throws(AppStoreConnectError) -> [CITestDeviceRun] {
+        let pages = try await collectPages(
+            from: AppStoreConnectEndpoint.testResults(buildActionID: buildActionID),
+            of: CITestResultAttributes.self,
+            maxPages: maxPages
+        )
+        var runs: [String: CITestDeviceRun] = [:]
+        for page in pages {
+            page.accumulateDeviceRuns(into: &runs)
+        }
+        return runs.keys.sorted().compactMap { runs[$0] }
+    }
+
     // MARK: - Paging
 
     private func collectPages<Attributes: Decodable & Sendable>(

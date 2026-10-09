@@ -1,6 +1,6 @@
 import Foundation
 
-nonisolated struct CIProduct: Sendable, Equatable, Identifiable {
+nonisolated struct CIProduct: Codable, Sendable, Equatable, Identifiable {
     let id: String
     let name: String
     let productType: String?
@@ -9,7 +9,7 @@ nonisolated struct CIProduct: Sendable, Equatable, Identifiable {
     let bundleID: String?
 }
 
-nonisolated struct CIBuildRun: Sendable, Equatable, Identifiable {
+nonisolated struct CIBuildRun: Codable, Sendable, Equatable, Identifiable {
     let id: String
     let productID: String
     let number: Int?
@@ -24,7 +24,7 @@ nonisolated struct CIBuildRun: Sendable, Equatable, Identifiable {
     let sourceBranchOrTag: String?
 }
 
-nonisolated struct CIBuildAction: Sendable, Equatable, Identifiable {
+nonisolated struct CIBuildAction: Codable, Sendable, Equatable, Identifiable {
     let id: String
     let buildRunID: String
     let name: String?
@@ -34,6 +34,22 @@ nonisolated struct CIBuildAction: Sendable, Equatable, Identifiable {
     let executionProgress: CIExecutionProgress
     let completionStatus: CICompletionStatus?
     let isRequiredToPass: Bool?
+}
+
+/// What one simulated device did during a test action: Apple bills each device for its own time.
+nonisolated struct CITestDeviceRun: Codable, Sendable, Equatable {
+    let deviceName: String
+    let osVersion: String
+    var testCount = 0
+    var failedCount = 0
+    var totalSeconds: Double = 0
+}
+
+nonisolated struct CIWorkflow: Codable, Sendable, Equatable, Identifiable {
+    let id: String
+    let name: String
+    /// Destinations configured on each test action, in the workflow's order.
+    let testDestinationCounts: [Int]
 }
 
 nonisolated enum CIExecutionProgress: Sendable, Equatable {
@@ -92,6 +108,73 @@ nonisolated enum CIActionType: Sendable, Equatable {
     }
 }
 
+// MARK: - Codable through Apple's raw values
+
+nonisolated extension CIExecutionProgress: Codable {
+    var rawValue: String {
+        switch self {
+        case .pending: "PENDING"
+        case .running: "RUNNING"
+        case .complete: "COMPLETE"
+        case .unknown(let value): value
+        }
+    }
+
+    init(from decoder: any Decoder) throws {
+        self.init(rawValue: try decoder.singleValueContainer().decode(String.self))
+    }
+
+    func encode(to encoder: any Encoder) throws {
+        var container = encoder.singleValueContainer()
+        try container.encode(rawValue)
+    }
+}
+
+nonisolated extension CICompletionStatus: Codable {
+    var rawValue: String {
+        switch self {
+        case .succeeded: "SUCCEEDED"
+        case .failed: "FAILED"
+        case .errored: "ERRORED"
+        case .canceled: "CANCELED"
+        case .skipped: "SKIPPED"
+        case .unknown(let value): value
+        }
+    }
+
+    init(from decoder: any Decoder) throws {
+        let value = try decoder.singleValueContainer().decode(String.self)
+        self = CICompletionStatus(rawValue: value) ?? .unknown(value)
+    }
+
+    func encode(to encoder: any Encoder) throws {
+        var container = encoder.singleValueContainer()
+        try container.encode(rawValue)
+    }
+}
+
+nonisolated extension CIActionType: Codable {
+    var rawValue: String {
+        switch self {
+        case .build: "BUILD"
+        case .analyze: "ANALYZE"
+        case .test: "TEST"
+        case .archive: "ARCHIVE"
+        case .unknown(let value): value
+        }
+    }
+
+    init(from decoder: any Decoder) throws {
+        let value = try decoder.singleValueContainer().decode(String.self)
+        self = CIActionType(rawValue: value) ?? .unknown(value)
+    }
+
+    func encode(to encoder: any Encoder) throws {
+        var container = encoder.singleValueContainer()
+        try container.encode(rawValue)
+    }
+}
+
 // MARK: - JSON:API attributes
 
 nonisolated struct CIProductAttributes: Decodable, Sendable {
@@ -117,6 +200,37 @@ nonisolated struct CIBuildActionAttributes: Decodable, Sendable {
     let executionProgress: String?
     let completionStatus: String?
     let isRequiredToPass: Bool?
+}
+
+nonisolated struct CITestResultAttributes: Decodable, Sendable {
+    let status: String?
+    let destinationTestResults: [DestinationTestResult]?
+
+    struct DestinationTestResult: Decodable, Sendable {
+        let deviceName: String?
+        let osVersion: String?
+        let status: String?
+        let duration: Double?
+    }
+}
+
+nonisolated struct CIWorkflowAttributes: Decodable, Sendable {
+    let name: String?
+    let actions: [Action]?
+
+    struct Action: Decodable, Sendable {
+        let actionType: String?
+        let testConfiguration: TestConfiguration?
+    }
+
+    struct TestConfiguration: Decodable, Sendable {
+        let testDestinations: [TestDestination]?
+    }
+
+    struct TestDestination: Decodable, Sendable {
+        let deviceTypeName: String?
+        let runtimeName: String?
+    }
 }
 
 // MARK: - Mapping
@@ -175,6 +289,40 @@ nonisolated extension JSONAPIDocument where Attributes == CIBuildActionAttribute
                 executionProgress: CIExecutionProgress(rawValue: attributes?.executionProgress),
                 completionStatus: CICompletionStatus(rawValue: attributes?.completionStatus),
                 isRequiredToPass: attributes?.isRequiredToPass
+            )
+        }
+    }
+}
+
+nonisolated extension JSONAPIDocument where Attributes == CITestResultAttributes {
+    /// Folds the per-test, per-device results into one entry per device.
+    func accumulateDeviceRuns(into runs: inout [String: CITestDeviceRun]) {
+        for result in data {
+            for destination in result.attributes?.destinationTestResults ?? [] {
+                let deviceName = destination.deviceName ?? "?"
+                let osVersion = destination.osVersion ?? "?"
+                let key = "\(deviceName) (\(osVersion))"
+                var run = runs[key] ?? CITestDeviceRun(deviceName: deviceName, osVersion: osVersion)
+                run.testCount += 1
+                if destination.status == "FAILURE" || destination.status == "MIXED" {
+                    run.failedCount += 1
+                }
+                run.totalSeconds += destination.duration ?? 0
+                runs[key] = run
+            }
+        }
+    }
+}
+
+nonisolated extension JSONAPIDocument where Attributes == CIWorkflowAttributes {
+    var workflows: [CIWorkflow] {
+        data.map { resource in
+            CIWorkflow(
+                id: resource.id,
+                name: resource.attributes?.name ?? resource.id,
+                testDestinationCounts: (resource.attributes?.actions ?? [])
+                    .filter { $0.actionType == "TEST" }
+                    .map { $0.testConfiguration?.testDestinations?.count ?? 0 }
             )
         }
     }
