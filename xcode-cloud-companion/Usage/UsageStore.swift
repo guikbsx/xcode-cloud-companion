@@ -77,6 +77,14 @@ final class UsageStore {
         }
     }
 
+    /// Forgets every billed minute, but remembers the exports already seen so the folder watcher does not bring them back.
+    func reset() async {
+        ledger = UsageLedger(importedFiles: ledger.importedFiles)
+        lastImportMessage = nil
+        lastImportFailed = false
+        try? await ledgerStore.save(ledger)
+    }
+
     func stop() {
         watcher = nil
     }

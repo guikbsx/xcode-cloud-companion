@@ -36,14 +36,20 @@ struct StatusMenuTests {
         #expect(items.last?.keyEquivalent == "q")
     }
 
-    @Test func withoutAKeyTheMenuLeadsToSettings() {
+    @Test func withoutAKeyTheMenuOnlyLeadsToConfigurationOrQuits() {
         var opened = false
         let items = StatusMenuBuilder.items(for: state(needsAPIKey: true), actions: StatusMenuActions(openSettings: { opened = true }))
 
-        let first = items.first
-        #expect(first?.title == "Set Up Your App Store Connect API Key…")
-        (first?.target as? MenuActionTarget)?.run(first)
+        #expect(items.map(\.title) == ["Configure Cumulus…", "", "Quit Cumulus"])
+        #expect(items[1].isSeparatorItem)
+        #expect(items.last?.keyEquivalent == "q")
+        (items.first?.target as? MenuActionTarget)?.run(items.first)
         #expect(opened)
+    }
+
+    @Test func withAKeyButNoResetDateTheMenuAsksForIt() {
+        let items = StatusMenuBuilder.items(for: state(), actions: StatusMenuActions())
+
         #expect(titles(items).contains("Set Your Plan’s Reset Date…"))
     }
 
@@ -72,7 +78,7 @@ struct StatusMenuTests {
     }
 
     @Test func theMenuBarShowsThePercentageUsed() {
-        #expect(StatusMenuBuilder.buttonTitle(for: summary) == UsageFormat.percent(0))
+        #expect(StatusMenuBuilder.buttonTitle(for: summary) == UsageFormat.compactPercent(0))
         #expect(StatusMenuBuilder.buttonTitle(for: nil) == "")
     }
 

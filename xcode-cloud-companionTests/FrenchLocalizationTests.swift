@@ -42,7 +42,7 @@ struct FrenchLocalizationTests {
     @Test func frenchTypographyUsesNonBreakingSpacesAndCurlyApostrophes() throws {
         let bundle = try #require(french)
 
-        #expect(bundle.localizedString(forKey: "Remove the API key from the keychain?", value: nil, table: nil) == "Supprimer la clé API du trousseau\u{202f}?")
+        #expect(bundle.localizedString(forKey: "Remove the API key and all its data?", value: nil, table: nil) == "Supprimer la clé API et toutes ses données\u{202f}?")
         #expect(bundle.localizedString(forKey: "Settings…", value: nil, table: nil) == "Réglages…")
         #expect(bundle.localizedString(forKey: "Usage", value: nil, table: nil) == "Utilisation")
         #expect(bundle.localizedString(forKey: "No Xcode Cloud app yet.", value: nil, table: nil).contains("\u{2019}"))

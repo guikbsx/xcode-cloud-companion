@@ -22,6 +22,13 @@ struct StatusMenuState {
     var now: Date
     /// The Issuer ID, which App Store Connect uses as the team in its addresses.
     var teamID: String?
+    /// Measurement of the builds, even without a plan (then over the last 30 days); `summary` carries it otherwise.
+    var measurement: MeasurementProgress?
+    /// What the synchronizer is doing right now (“Listing builds of …”).
+    var activity: String?
+
+    /// The first synchronization of a key: nothing has been read yet.
+    var isFirstSync: Bool { isSyncing && lastSync == nil }
 }
 
 /// Target of a menu item that runs a closure; the item keeps it alive through `representedObject`.
@@ -57,15 +64,20 @@ enum StatusMenuBuilder {
     }
 
     static func items(for state: StatusMenuState, actions: StatusMenuActions) -> [NSMenuItem] {
-        var items: [NSMenuItem] = []
-
+        // Without a key there is nothing to show: one way in, one way out. Settings open on Configuration then.
         if state.needsAPIKey {
-            items.append(NSMenuItem.action(String(localized: "Set Up Your App Store Connect API Key…"), handler: actions.openSettings))
-            items.append(.separator())
+            return [
+                NSMenuItem.action(String(localized: "Configure Cumulus…"), handler: actions.openSettings),
+                .separator(),
+                quitItem(),
+            ]
         }
 
-        if let measurement = state.summary?.measurement, measurement.isMeasuring {
-            items.append(viewItem(MeasuringHeaderView(progress: measurement)))
+        var items: [NSMenuItem] = []
+
+        let measurement = state.summary?.measurement ?? state.measurement ?? MeasurementProgress()
+        if state.isFirstSync || measurement.isMeasuring {
+            items.append(viewItem(MeasuringHeaderView(progress: measurement, isFirstSync: state.isFirstSync, activity: state.activity)))
             items.append(.separator())
         }
 
@@ -100,12 +112,12 @@ enum StatusMenuBuilder {
             items.append(NSMenuItem.action("Usage Diagnostic…", handler: openDiagnostic))
         }
         items.append(NSMenuItem.action(String(localized: "Settings…"), keyEquivalent: ",", handler: actions.openSettings))
-        items.append(NSMenuItem(
-            title: String(localized: "Quit Cumulus"),
-            action: #selector(NSApplication.terminate(_:)),
-            keyEquivalent: "q"
-        ))
+        items.append(quitItem())
         return items
+    }
+
+    private static func quitItem() -> NSMenuItem {
+        NSMenuItem(title: String(localized: "Quit Cumulus"), action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q")
     }
 
     static func statusLine(for state: StatusMenuState) -> String {
@@ -124,9 +136,9 @@ enum StatusMenuBuilder {
         return String(localized: "Updated \(UsageFormat.relative(lastSync, now: state.now))")
     }
 
-    static func buttonTitle(for summary: UsageSummary?) -> String {
-        guard let summary else { return "" }
-        return summary.measurement.isMeasuring ? "…" : UsageFormat.percent(summary.fractionUsed)
+    static func buttonTitle(for summary: UsageSummary?, isFirstSync: Bool = false) -> String {
+        guard let summary else { return isFirstSync ? "…" : "" }
+        return summary.measurement.isMeasuring ? "…" : UsageFormat.compactPercent(summary.fractionUsed)
     }
 
     private static func viewItem(_ view: some View) -> NSMenuItem {

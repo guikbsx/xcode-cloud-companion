@@ -19,7 +19,7 @@ struct MenuBarIconTests {
     }
 
     @Test func everyStateHasItsImage() {
-        for badge in [MenuBarBadge.running, .failed, .succeeded] {
+        for badge in [MenuBarBadge.running, .failed, .succeeded, .stopped] {
             #expect(MenuBarIcon.image(badge: badge, measuring: false) != nil)
             #expect(MenuBarIcon.image(badge: badge, measuring: true) != nil)
         }

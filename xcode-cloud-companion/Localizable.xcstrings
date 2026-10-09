@@ -415,6 +415,7 @@
       }
     },
     "Click **+**, name the key “Cumulus” and give it **Developer** access." : {
+      "comment" : "Do not translate the app name. Keep \"App Store Connect\" untranslated.",
       "localizations" : {
         "fr" : {
           "stringUnit" : {
@@ -422,8 +423,7 @@
             "value" : "Cliquez sur **+**, nommez la clé « Cumulus » et donnez-lui l’accès **Développeur**."
           }
         }
-      },
-      "comment" : "Do not translate the app name. Keep \"App Store Connect\" untranslated."
+      }
     },
     "Click **Download** to get the `AuthKey_ABCDE12345.p8` file. **Apple offers it only once**: keep it somewhere safe, or import it right away below." : {
       "localizations" : {
@@ -474,6 +474,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Configuration"
+          }
+        }
+      }
+    },
+    "Configure Cumulus…" : {
+      "comment" : "Only item of the menu before an API key is set, with Quit. Do not translate the app name.",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Configurer Cumulus…"
           }
         }
       }
@@ -542,6 +553,7 @@
       }
     },
     "Cumulus" : {
+      "comment" : "Do not translate the app name.",
       "localizations" : {
         "fr" : {
           "stringUnit" : {
@@ -549,10 +561,10 @@
             "value" : "Cumulus"
           }
         }
-      },
-      "comment" : "Do not translate the app name."
+      }
     },
     "Cumulus, a build is running" : {
+      "comment" : "Do not translate the app name.",
       "localizations" : {
         "fr" : {
           "stringUnit" : {
@@ -560,10 +572,10 @@
             "value" : "Cumulus, un build est en cours"
           }
         }
-      },
-      "comment" : "Do not translate the app name."
+      }
     },
     "Cumulus, the last build failed" : {
+      "comment" : "Do not translate the app name.",
       "localizations" : {
         "fr" : {
           "stringUnit" : {
@@ -571,10 +583,10 @@
             "value" : "Cumulus, le dernier build a échoué"
           }
         }
-      },
-      "comment" : "Do not translate the app name."
+      }
     },
     "Cumulus, the last build succeeded" : {
+      "comment" : "Do not translate the app name.",
       "localizations" : {
         "fr" : {
           "stringUnit" : {
@@ -582,8 +594,18 @@
             "value" : "Cumulus, le dernier build a réussi"
           }
         }
+      }
+    },
+    "Cumulus, the last build was canceled" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cumulus, le dernier build a été annulé"
+          }
+        }
       },
-      "comment" : "Do not translate the app name."
+      "comment" : "VoiceOver label of the menu bar icon. Do not translate the app name."
     },
     "Cut" : {
       "localizations" : {
@@ -887,12 +909,13 @@
         }
       }
     },
-    "Filled in on its own from the name of the `AuthKey_…p8` file." : {
+    "Filled in from the .p8 file" : {
+      "comment" : "Placeholder of the Key ID field before a key file is added",
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Rempli tout seul depuis le nom du fichier `AuthKey_…p8`."
+            "value" : "Rempli d’après le fichier .p8"
           }
         }
       }
@@ -904,6 +927,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Terminé"
+          }
+        }
+      }
+    },
+    "First sync · measuring your builds" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Première synchro · mesure de vos builds"
           }
         }
       }
@@ -1195,6 +1228,16 @@
         }
       }
     },
+    "Listing your apps and their builds…" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Liste de vos apps et de leurs builds…"
+          }
+        }
+      }
+    },
     "Measured so far" : {
       "comment" : "Column of the usage gauge while the first figures are being measured.",
       "localizations" : {
@@ -1299,6 +1342,16 @@
         }
       }
     },
+    "Normally filled in on its own when you add the `.p8` file: its name, `AuthKey_<Key ID>.p8`, holds the Key ID. Type it only if the file was renamed." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Normalement rempli tout seul quand vous ajoutez le fichier `.p8` : son nom, `AuthKey_<ID de la clé>.p8`, contient l’ID de la clé. Saisissez-le seulement si le fichier a été renommé."
+          }
+        }
+      }
+    },
     "Not updated yet" : {
       "localizations" : {
         "fr" : {
@@ -1391,6 +1444,7 @@
       }
     },
     "Quit Cumulus" : {
+      "comment" : "Do not translate the app name.",
       "localizations" : {
         "fr" : {
           "stringUnit" : {
@@ -1398,8 +1452,7 @@
             "value" : "Quitter Cumulus"
           }
         }
-      },
-      "comment" : "Do not translate the app name."
+      }
     },
     "Redo" : {
       "localizations" : {
@@ -1422,32 +1475,32 @@
         }
       }
     },
-    "Remove Key" : {
+    "Remove Key and Data" : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Supprimer la clé"
+            "value" : "Supprimer la clé et les données"
           }
         }
       }
     },
-    "Remove Key…" : {
+    "Remove Key and Data…" : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Supprimer la clé…"
+            "value" : "Supprimer la clé et les données…"
           }
         }
       }
     },
-    "Remove the API key from the keychain?" : {
+    "Remove the API key and all its data?" : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Supprimer la clé API du trousseau ?"
+            "value" : "Supprimer la clé API et toutes ses données ?"
           }
         }
       }
@@ -1520,17 +1573,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Tout sélectionner"
-          }
-        }
-      }
-    },
-    "Set Up Your App Store Connect API Key…" : {
-      "comment" : "Keep \"Xcode Cloud\", \"App Store Connect\" and \"TestFlight\" untranslated as product names.",
-      "localizations" : {
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Configurer votre clé API App Store Connect…"
           }
         }
       }
@@ -1650,17 +1692,6 @@
         }
       }
     },
-    "The app will stop reading Xcode Cloud data until a key is imported again." : {
-      "comment" : "Keep \"Xcode Cloud\", \"App Store Connect\" and \"TestFlight\" untranslated as product names.",
-      "localizations" : {
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "L’app cessera de lire les données Xcode Cloud jusqu’à ce qu’une clé soit de nouveau importée."
-          }
-        }
-      }
-    },
     "The cycle renews every month on this date. If the gauge does not match App Store Connect, check it again." : {
       "comment" : "Keep \"Xcode Cloud\", \"App Store Connect\" and \"TestFlight\" untranslated as product names.",
       "localizations" : {
@@ -1682,6 +1713,16 @@
         }
       }
     },
+    "The key leaves the keychain, and the cached builds, imported usage exports, plan and reset date are deleted. Exports already in Downloads are not imported again." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La clé quitte le trousseau, et les builds en cache, les exports d’utilisation importés, le forfait et la date de réinitialisation sont effacés. Les exports déjà présents dans Téléchargements ne sont pas réimportés."
+          }
+        }
+      }
+    },
     "The key stored in the keychain is unreadable. Remove it and import it again." : {
       "localizations" : {
         "fr" : {
@@ -1692,12 +1733,19 @@
         }
       }
     },
-    "The keychain refused the operation: %@" : {
+    "The keychain refused the operation: %@ (%@)" : {
+      "comment" : "The last part is the keychain's error code, kept for support.",
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "The keychain refused the operation: %1$@ (%2$@)"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Le trousseau a refusé l’opération : %@"
+            "value" : "Le trousseau a refusé l’opération : %1$@ (%2$@)"
           }
         }
       }
@@ -1740,6 +1788,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ce n’est pas un export d’utilisation Xcode Cloud : il manque %@."
+          }
+        }
+      }
+    },
+    "This key was saved by another build of the app, and macOS only lets that build delete it. In Keychain Access, delete “%@”, then try again." : {
+      "comment" : "The placeholder is the keychain item name, to type in Keychain Access search field.",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cette clé a été enregistrée par une autre version de l’app, et macOS ne laisse que celle-ci la supprimer. Dans Trousseau d’accès, supprimez « %@ », puis réessayez."
           }
         }
       }

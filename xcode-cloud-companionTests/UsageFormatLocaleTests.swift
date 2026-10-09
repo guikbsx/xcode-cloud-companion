@@ -30,6 +30,8 @@ struct UsageFormatLocaleTests {
     @Test func percent() {
         #expect(UsageFormat.percent(0.42, locale: english) == "42%")
         #expect(UsageFormat.percent(0.42, locale: french) == "42\u{a0}%")
+        #expect(UsageFormat.compactPercent(0.02, locale: french) == "2%")
+        #expect(UsageFormat.compactPercent(0.02, locale: english) == "2%")
     }
 
     @Test func dayAndMoment() {

@@ -109,6 +109,30 @@ struct UsageStoreTests {
         #expect(reloaded.ledger == store.ledger)
     }
 
+    @Test func startingOverForgetsTheMinutesButNotTheExportsAlreadySeen() async throws {
+        let downloads = try makeDirectory()
+        let ledgerFile = try makeDirectory().appending(path: "UsageLedger.json")
+        let export = downloads.appending(path: "usage_2026-09-09_2026-10-09.csv")
+        try Fixture.csv("usage_2026-09-09_2026-10-09").write(to: export)
+        let store = UsageStore(ledgerStore: UsageLedgerStore(fileURL: ledgerFile), watchedDirectory: downloads)
+        await store.start()
+        defer { store.stop() }
+        #expect(store.ledger.builds.count == 6)
+
+        await store.reset()
+        await store.scanWatchedDirectory()
+
+        #expect(store.ledger.builds.isEmpty)
+        #expect(store.ledger.lastImport == nil)
+        #expect(store.lastImportMessage == nil)
+        let reloaded = UsageStore(ledgerStore: UsageLedgerStore(fileURL: ledgerFile), watchedDirectory: nil)
+        await reloaded.start()
+        #expect(reloaded.ledger.builds.isEmpty)
+
+        await store.importFile(at: export)
+        #expect(store.ledger.builds.count == 6)
+    }
+
     @Test func aBrokenExportIsReportedAndLeavesTheLedgerUntouched() async throws {
         let folder = try makeDirectory()
         let url = folder.appending(path: "usage_2026-10-01_2026-10-02.csv")

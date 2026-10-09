@@ -28,6 +28,19 @@ final class InMemoryCredentialsStore: CredentialsStore {
     }
 }
 
+/// A keychain that holds a key but refuses to delete it.
+final class RefusingCredentialsStore: CredentialsStore {
+    func load() async throws(CredentialsStoreError) -> StoredCredentials? {
+        StoredCredentials(issuerID: "issuer", keyID: "KEY", privateKeyPEM: "pem")
+    }
+
+    func save(_ credentials: StoredCredentials) async throws(CredentialsStoreError) {}
+
+    func delete() async throws(CredentialsStoreError) {
+        throw .keychain(errSecAuthFailed)
+    }
+}
+
 @MainActor
 struct SettingsModelTests {
     private let defaults: UserDefaults
@@ -130,6 +143,45 @@ struct SettingsModelTests {
         #expect(store.current == nil)
         #expect(model.issuerID.isEmpty && model.keyID.isEmpty)
         #expect(model.keyState == .none)
+    }
+
+    @Test func removingTheKeyStartsOverWithThePlanAndTheImportedUsage() async {
+        let store = InMemoryCredentialsStore(StoredCredentials(issuerID: "issuer", keyID: "KEY", privateKeyPEM: pem))
+        let model = makeModel(store: store)
+        await model.load()
+        model.planHours = 100
+        model.resetAnchor = Date(timeIntervalSince1970: 1_794_059_280)
+        var wiped = false
+        model.onReset = { wiped = true }
+
+        await model.removeKey()
+
+        #expect(wiped)
+        #expect(model.planHours == UsagePlan.defaultHours)
+        #expect(model.resetAnchor == nil)
+        #expect(makeModel().resetAnchor == nil)
+    }
+
+    @Test func aKeychainRefusalLeavesEverythingInPlaceAndSaysWhy() async {
+        let model = SettingsModel(store: RefusingCredentialsStore(), defaults: defaults)
+        await model.load()
+        model.resetAnchor = Date(timeIntervalSince1970: 1_794_059_280)
+        var wiped = false
+        model.onReset = { wiped = true }
+
+        await model.removeKey()
+
+        #expect(!wiped)
+        #expect(model.resetAnchor != nil)
+        #expect(model.keyState == .stored)
+        #expect(model.errorMessage?.contains("-25293") == true)
+    }
+
+    @Test func aKeySavedByAnotherBuildSaysWhereToDeleteIt() {
+        let message = CredentialsStoreError.keychain(errSecInvalidOwnerEdit).message
+
+        #expect(message.contains(KeychainCredentialsStore.defaultService))
+        #expect(message.contains("Keychain Access"))
     }
 
     @Test func planDefaultsToTwentyFiveHoursAndPersists() {

@@ -54,6 +54,11 @@ final class StatusItemController: NSObject, NSMenuDelegate {
         let summary = settings.plan.map {
             UsageCalculator.summary(snapshot: buildStore.snapshot, ledger: usageStore.ledger, plan: $0, now: date)
         }
+        // Without a reset date there is no cycle, but the builds still get measured: over the last 30 days then.
+        let measurement = summary?.measurement ?? UsageCalculator.summary(
+            snapshot: buildStore.snapshot, ledger: usageStore.ledger,
+            plan: UsagePlan(hours: settings.planHours, resetAnchor: date.addingTimeInterval(-30 * 24 * 3600)), now: date
+        ).measurement
         return StatusMenuState(
             needsAPIKey: !buildStore.isConfigured && buildStore.snapshot.lastSuccessfulSync == nil && !buildStore.isSyncing,
             summary: summary,
@@ -64,7 +69,9 @@ final class StatusItemController: NSObject, NSMenuDelegate {
             isSyncing: buildStore.isSyncing,
             errorMessage: buildStore.lastErrorMessage,
             now: date,
-            teamID: settings.issuerID.isEmpty ? nil : settings.issuerID
+            teamID: settings.issuerID.isEmpty ? nil : settings.issuerID,
+            measurement: measurement,
+            activity: buildStore.progress
         )
     }
 
@@ -98,7 +105,7 @@ final class StatusItemController: NSObject, NSMenuDelegate {
         }
     }
 
-    /// A finished build's dot expires after ten minutes without any data changing, so time moves it too.
+    /// The menu bar shows what changes with time alone (measuring, the first sync), so it is redrawn every 30 seconds too.
     private func startClock() {
         clock = Task { [weak self] in
             while !Task.isCancelled {
@@ -110,24 +117,26 @@ final class StatusItemController: NSObject, NSMenuDelegate {
 
     private func refreshButton() {
         guard let button = statusItem.button else { return }
-        let summary = state.summary
-        button.title = StatusMenuBuilder.buttonTitle(for: summary)
+        let current = state
+        button.title = StatusMenuBuilder.buttonTitle(for: current.summary, isFirstSync: current.isFirstSync)
         let badge = currentBadge()
-        button.image = MenuBarIcon.image(badge: badge, measuring: summary?.measurement.isMeasuring == true)
+        let measuring = current.isFirstSync || current.measurement?.isMeasuring == true
+        button.image = MenuBarIcon.image(badge: badge, measuring: measuring)
         button.setAccessibilityLabel(MenuBarBadge.accessibilityLabel(for: badge))
     }
 
     private func currentBadge() -> MenuBarBadge? {
         #if DEBUG
-        // Lets a Debug build show each dot without waiting for a build: XCC_BADGE=running|failed|succeeded|none.
+        // Lets a Debug build show each dot without waiting for a build: XCC_BADGE=running|failed|succeeded|stopped|none.
         switch ProcessInfo.processInfo.environment["XCC_BADGE"] {
         case "running": return .running
         case "failed": return .failed
         case "succeeded": return .succeeded
+        case "stopped": return .stopped
         case "none": return nil
         default: break
         }
         #endif
-        return MenuBarBadge.status(for: buildStore.snapshot, now: now())
+        return MenuBarBadge.status(for: buildStore.snapshot)
     }
 }

@@ -25,9 +25,13 @@ nonisolated extension AppStoreConnectError {
 nonisolated extension CredentialsStoreError {
     var message: String {
         switch self {
+        case .keychain(errSecInvalidOwnerEdit):
+            // The legacy keychain lets only the build that saved an item delete it, by code signature.
+            return String(localized: "This key was saved by another build of the app, and macOS only lets that build delete it. In Keychain Access, delete “\(KeychainCredentialsStore.defaultService)”, then try again.")
         case .keychain(let status):
             let reason = SecCopyErrorMessageString(status, nil) as String? ?? String(status)
-            return String(localized: "The keychain refused the operation: \(reason)")
+            let code = String(status)
+            return String(localized: "The keychain refused the operation: \(reason) (\(code))", comment: "The last part is the keychain's error code, kept for support.")
         case .corruptedItem:
             return String(localized: "The key stored in the keychain is unreadable. Remove it and import it again.")
         }

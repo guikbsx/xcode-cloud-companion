@@ -22,6 +22,8 @@ final class SettingsModel {
     private(set) var connectionState = ConnectionState.idle
     private(set) var errorMessage: String?
     @ObservationIgnored var onCredentialsChange: (() -> Void)?
+    /// Called once the key is gone, to wipe what was read with it (imported usage exports).
+    @ObservationIgnored var onReset: (() async -> Void)?
 
     var planHours: Int {
         didSet { defaults.set(planHours, forKey: Keys.planHours) }
@@ -127,6 +129,8 @@ final class SettingsModel {
         }
     }
 
+    /// Starts over: the key leaves the keychain, then everything read or entered with it goes (builds, imported
+    /// usage, plan). If the keychain refuses, nothing else is touched, so the app never half forgets an account.
     func removeKey() async {
         do {
             try await store.delete()
@@ -140,7 +144,10 @@ final class SettingsModel {
         keyState = .none
         connectionState = .idle
         errorMessage = nil
+        planHours = UsagePlan.defaultHours
+        resetAnchor = nil
         onCredentialsChange?()
+        await onReset?()
     }
 
     private func testConnection(with stored: StoredCredentials) async {

@@ -47,12 +47,12 @@ struct ConfigurationSettingsView: View {
                 model.importPrivateKey(from: url)
             }
         }
-        .confirmationDialog("Remove the API key from the keychain?", isPresented: $isConfirmingRemoval) {
-            Button("Remove Key", role: .destructive) {
+        .confirmationDialog("Remove the API key and all its data?", isPresented: $isConfirmingRemoval) {
+            Button("Remove Key and Data", role: .destructive) {
                 Task { await model.removeKey() }
             }
         } message: {
-            Text("The app will stop reading Xcode Cloud data until a key is imported again.")
+            Text("The key leaves the keychain, and the cached builds, imported usage exports, plan and reset date are deleted. Exports already in Downloads are not imported again.")
         }
     }
 
@@ -127,8 +127,8 @@ struct ConfigurationSettingsView: View {
                 model.importPrivateKey(from: url)
                 return true
             } isTargeted: { isDropTargeted = $0 }
-            TextField("Key ID", text: $model.keyID, prompt: Text(verbatim: "ABCDE12345"))
-            Text("Filled in on its own from the name of the `AuthKey_…p8` file.")
+            TextField("Key ID", text: $model.keyID, prompt: Text("Filled in from the .p8 file", comment: "Placeholder of the Key ID field before a key file is added"))
+            Text("Normally filled in on its own when you add the `.p8` file: its name, `AuthKey_<Key ID>.p8`, holds the Key ID. Type it only if the file was renamed.")
                 .font(.caption)
                 .foregroundStyle(.secondary)
             TextField("Issuer ID", text: $model.issuerID, prompt: Text(verbatim: "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"))
@@ -224,21 +224,21 @@ struct ConfigurationSettingsView: View {
             }
             LabeledContent("Key ID", value: model.keyID)
             LabeledContent("Issuer ID", value: Self.masked(model.issuerID))
-            if let errorMessage = model.errorMessage {
-                Label(errorMessage, systemImage: "exclamationmark.triangle.fill")
-                    .foregroundStyle(.red)
-            }
-        } header: {
-            Text("API Key")
-        } footer: {
+            // In the section rather than its footer, where a grouped form may not pass clicks through.
             HStack {
-                Button("Remove Key…", role: .destructive) { isConfirmingRemoval = true }
+                Button("Remove Key and Data…", role: .destructive) { isConfirmingRemoval = true }
                 Spacer()
                 Button("Test Connection") {
                     Task { await model.testConnection() }
                 }
                 .disabled(model.connectionState == .testing)
             }
+            if let errorMessage = model.errorMessage {
+                Label(errorMessage, systemImage: "exclamationmark.triangle.fill")
+                    .foregroundStyle(.red)
+            }
+        } header: {
+            Text("API Key")
         }
     }
 

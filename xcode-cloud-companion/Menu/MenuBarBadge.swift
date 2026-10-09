@@ -5,33 +5,33 @@ nonisolated enum MenuBarBadge: Sendable, Equatable {
     case running
     case failed
     case succeeded
+    /// Canceled, skipped, or ended without a known outcome.
+    case stopped
 
-    /// A finished build keeps its dot for this long, then the icon goes back to rest.
-    static let quietAfter: TimeInterval = 10 * 60
-
-    /// Blue while any app builds; otherwise the last build's outcome for ten minutes; nothing for a cancelled or old build.
-    static func status(for snapshot: BuildSnapshot, now: Date) -> MenuBarBadge? {
+    /// Blue while any app builds; otherwise the outcome of the last build, however old; nothing before any build.
+    static func status(for snapshot: BuildSnapshot) -> MenuBarBadge? {
         if snapshot.runs.contains(where: { BuildStatus(run: $0) == .running }) {
             return .running
         }
         let last = snapshot.runs
             .filter { $0.createdDate != nil }
             .max { ($0.createdDate ?? .distantPast, $0.number ?? 0) < ($1.createdDate ?? .distantPast, $1.number ?? 0) }
-        guard let last, let reference = last.finishedDate ?? last.createdDate,
-              now.timeIntervalSince(reference) <= quietAfter
-        else { return nil }
+        guard let last else { return nil }
         switch BuildStatus(run: last) {
         case .failed, .errored: return .failed
         case .succeeded: return .succeeded
-        case .running, .canceled, .skipped, .finished: return nil
+        case .canceled, .skipped, .finished: return .stopped
+        case .running: return .running
         }
     }
 
+    /// The same colours as the dots of the menu.
     var color: NSColor {
         switch self {
         case .running: .systemBlue
         case .failed: .systemRed
         case .succeeded: .systemGreen
+        case .stopped: .systemGray
         }
     }
 
@@ -40,6 +40,7 @@ nonisolated enum MenuBarBadge: Sendable, Equatable {
         case .running?: String(localized: "Cumulus, a build is running")
         case .failed?: String(localized: "Cumulus, the last build failed")
         case .succeeded?: String(localized: "Cumulus, the last build succeeded")
+        case .stopped?: String(localized: "Cumulus, the last build was canceled")
         case nil: String(localized: "Cumulus")
         }
     }

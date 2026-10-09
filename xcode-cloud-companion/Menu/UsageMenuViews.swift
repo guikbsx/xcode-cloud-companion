@@ -127,25 +127,39 @@ struct UsageGaugeView: View {
 /// Shown above everything while the first test results are being fetched: what is going on, how far, how long.
 struct MeasuringHeaderView: View {
     let progress: MeasurementProgress
+    var isFirstSync = false
+    /// What the synchronizer is doing, shown until there are test results to count.
+    var activity: String?
+
+    /// Before the builds are listed there is nothing to count yet.
+    private var hasCount: Bool { progress.totalActions > 0 }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
             HStack(spacing: 8) {
                 ProgressView()
                     .controlSize(.small)
-                Text("Measuring your builds")
+                Text(isFirstSync ? String(localized: "First sync · measuring your builds") : String(localized: "Measuring your builds"))
                     .font(.headline)
                     .lineLimit(1)
                 Spacer(minLength: 8)
-                Text("\(progress.measuredActions + progress.unmeasurableActions) / \(progress.totalActions)")
-                    .font(.caption.monospacedDigit())
-                    .foregroundStyle(.secondary)
+                if hasCount {
+                    Text("\(progress.measuredActions + progress.unmeasurableActions) / \(progress.totalActions)")
+                        .font(.caption.monospacedDigit())
+                        .foregroundStyle(.secondary)
+                }
             }
-            ThinProgressBar(fraction: progress.fractionDone)
-            Text("Fetching test results, \(MeasurementProgress.actionsPerPass) builds at a time · about \(progress.minutesLeft) min left. Figures fill in as they arrive; you can close this menu.")
-                .font(.caption)
-                .foregroundStyle(.secondary)
-                .fixedSize(horizontal: false, vertical: true)
+            ThinProgressBar(fraction: hasCount ? progress.fractionDone : 0)
+            Group {
+                if hasCount {
+                    Text("Fetching test results, \(MeasurementProgress.actionsPerPass) builds at a time · about \(progress.minutesLeft) min left. Figures fill in as they arrive; you can close this menu.")
+                } else {
+                    Text(activity ?? String(localized: "Listing your apps and their builds…"))
+                }
+            }
+            .font(.caption)
+            .foregroundStyle(.secondary)
+            .fixedSize(horizontal: false, vertical: true)
         }
         .padding(.horizontal, 14)
         .padding(.vertical, 8)

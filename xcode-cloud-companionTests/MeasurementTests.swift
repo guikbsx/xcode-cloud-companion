@@ -232,6 +232,39 @@ struct MeasuringMenuTests {
         )
     }
 
+    @Test func theFirstSyncOpensOnTheProgressBlockEvenWithoutAPlanOrBuilds() {
+        let state = StatusMenuState(
+            needsAPIKey: false, summary: nil, lastSync: nil, syncStartedAt: now, isSyncing: true, errorMessage: nil, now: now,
+            measurement: MeasurementProgress(), activity: "Listing apps…"
+        )
+
+        let items = StatusMenuBuilder.items(for: state, actions: StatusMenuActions())
+
+        #expect(state.isFirstSync)
+        #expect(items.first?.view != nil)
+        #expect(items.dropFirst().first?.isSeparatorItem == true)
+        #expect(StatusMenuBuilder.buttonTitle(for: nil, isFirstSync: true) == "…")
+    }
+
+    @Test func withoutAPlanTheBuildsAreStillMeasured() {
+        var state = StatusMenuState(needsAPIKey: false, summary: nil, lastSync: now, isSyncing: false, errorMessage: nil, now: now)
+        state.measurement = MeasurementProgress(totalActions: 36, measuredActions: 14)
+
+        let items = StatusMenuBuilder.items(for: state, actions: StatusMenuActions())
+
+        #expect(!state.isFirstSync)
+        #expect(items.first?.view != nil)
+    }
+
+    @Test func onceMeasuredAndSyncedNoProgressBlockRemains() {
+        var state = StatusMenuState(needsAPIKey: false, summary: nil, lastSync: now, isSyncing: false, errorMessage: nil, now: now)
+        state.measurement = MeasurementProgress(totalActions: 36, measuredActions: 36)
+
+        let items = StatusMenuBuilder.items(for: state, actions: StatusMenuActions())
+
+        #expect(items.allSatisfy { $0.view == nil })
+    }
+
     @Test func theMenuOpensOnTheProgressBlockWhileMeasuring() {
         let items = StatusMenuBuilder.items(for: state(measuring: true), actions: StatusMenuActions())
 
@@ -248,7 +281,7 @@ struct MeasuringMenuTests {
 
     @Test func theMenuBarShowsAnEllipsisInsteadOfAFalsePercentage() {
         #expect(StatusMenuBuilder.buttonTitle(for: state(measuring: true).summary) == "…")
-        #expect(StatusMenuBuilder.buttonTitle(for: state(measuring: false).summary) == UsageFormat.percent(0))
+        #expect(StatusMenuBuilder.buttonTitle(for: state(measuring: false).summary) == UsageFormat.compactPercent(0))
     }
 
     @Test func theStatusLineSaysWhenALongSyncStarted() {

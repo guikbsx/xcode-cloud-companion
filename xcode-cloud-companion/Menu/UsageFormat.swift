@@ -30,6 +30,11 @@ nonisolated enum UsageFormat {
         fraction.formatted(.percent.precision(.fractionLength(0)).locale(locale))
     }
 
+    /// For the menu bar, where room is short: the locale's percentage without its spaces (“2%” in French too, not “2 %”).
+    static func compactPercent(_ fraction: Double, locale: Locale = .autoupdatingCurrent) -> String {
+        percent(fraction, locale: locale).filter { !$0.isWhitespace }
+    }
+
     static func day(_ date: Date, locale: Locale = .autoupdatingCurrent) -> String {
         date.formatted(.dateTime.day().month(.abbreviated).locale(locale))
     }

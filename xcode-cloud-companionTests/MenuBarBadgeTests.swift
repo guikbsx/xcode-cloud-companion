@@ -18,7 +18,7 @@ struct MenuBarBadgeTests {
     }
 
     private func badge(_ runs: [CIBuildRun]) -> MenuBarBadge? {
-        MenuBarBadge.status(for: BuildSnapshot(runs: runs), now: now)
+        MenuBarBadge.status(for: BuildSnapshot(runs: runs))
     }
 
     @Test func aRunningBuildAnywhereWins() {
@@ -36,17 +36,15 @@ struct MenuBarBadgeTests {
         #expect(badge([run(2, minutesAgo: 8, status: .errored)]) == .failed)
     }
 
-    @Test func aFinishedBuildKeepsItsDotForTenMinutesFromItsEnd() {
-        // Created 14 minutes ago, ran 5: it ended 9 minutes ago.
-        #expect(badge([run(1, minutesAgo: 14, status: .failed, ranFor: 5)]) == .failed)
-        // Created 16 minutes ago, ran 5: it ended 11 minutes ago.
-        #expect(badge([run(1, minutesAgo: 16, status: .failed, ranFor: 5)]) == nil)
+    @Test func theLastBuildKeepsItsDotHoweverOldItIs() {
+        #expect(badge([run(1, minutesAgo: 16, status: .failed, ranFor: 5)]) == .failed)
+        #expect(badge([run(1, minutesAgo: 3 * 24 * 60, status: .succeeded)]) == .succeeded)
     }
 
-    @Test func aCancelledSkippedOrUnknownBuildLeavesNoDot() {
-        #expect(badge([run(1, minutesAgo: 6, status: .canceled)]) == nil)
-        #expect(badge([run(1, minutesAgo: 6, status: .skipped)]) == nil)
-        #expect(badge([run(1, minutesAgo: 6, status: nil)]) == nil)
+    @Test func aCancelledSkippedOrUnknownBuildGetsAGreyDot() {
+        #expect(badge([run(1, minutesAgo: 6, status: .canceled)]) == .stopped)
+        #expect(badge([run(1, minutesAgo: 6, status: .skipped)]) == .stopped)
+        #expect(badge([run(1, minutesAgo: 6, status: nil)]) == .stopped)
     }
 
     @Test func noBuildMeansNoDot() {
@@ -61,6 +59,7 @@ struct MenuBarBadgeTests {
         #expect(MenuBarBadge.running.color == .systemBlue)
         #expect(MenuBarBadge.failed.color == .systemRed)
         #expect(MenuBarBadge.succeeded.color == .systemGreen)
+        #expect(MenuBarBadge.stopped.color == .systemGray)
     }
 
     @Test func voiceOverHearsTheStateNotJustTheIcon() {

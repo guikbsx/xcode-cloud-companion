@@ -35,6 +35,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         settingsModel.onCredentialsChange = { [buildStore] in
             Task { await buildStore.credentialsDidChange() }
         }
+        settingsModel.onReset = { [usageStore] in
+            await usageStore.reset()
+        }
 
         // Unit tests run inside this app: they must not reach App Store Connect with the user's real key.
         guard ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] == nil else { return }
