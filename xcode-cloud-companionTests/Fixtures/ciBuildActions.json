@@ -1,0 +1,32 @@
+{
+  "data": [
+    {
+      "type": "ciBuildActions",
+      "id": "action-test",
+      "attributes": {
+        "name": "Test - macOS",
+        "actionType": "TEST",
+        "startedDate": "2026-10-07T12:01:00Z",
+        "finishedDate": "2026-10-07T12:11:00Z",
+        "executionProgress": "COMPLETE",
+        "completionStatus": "FAILED",
+        "isRequiredToPass": true,
+        "issueCounts": { "analyzerWarnings": 0, "errors": 0, "testFailures": 2, "warnings": 1 }
+      }
+    },
+    {
+      "type": "ciBuildActions",
+      "id": "action-archive",
+      "attributes": {
+        "name": "Archive - macOS",
+        "actionType": "ARCHIVE",
+        "startedDate": "2026-10-07T12:01:00Z",
+        "finishedDate": "2026-10-07T12:16:30Z",
+        "executionProgress": "COMPLETE",
+        "completionStatus": "SUCCEEDED",
+        "isRequiredToPass": true
+      }
+    }
+  ],
+  "links": { "self": "https://api.appstoreconnect.apple.com/v1/ciBuildRuns/run-41/actions" }
+}

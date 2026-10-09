@@ -1,0 +1,11 @@
+{
+  "errors": [
+    {
+      "id": "error-1",
+      "status": "500",
+      "code": "UNEXPECTED_ERROR",
+      "title": "An unexpected error occurred.",
+      "detail": "An unexpected error occurred on the server side."
+    }
+  ]
+}

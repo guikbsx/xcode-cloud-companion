@@ -1,0 +1,44 @@
+{
+  "data": [
+    {
+      "type": "ciBuildRuns",
+      "id": "run-42",
+      "attributes": {
+        "number": 42,
+        "createdDate": "2026-10-08T12:00:00.123Z",
+        "startedDate": "2026-10-08T12:00:30.000Z",
+        "executionProgress": "RUNNING",
+        "startReason": "MANUAL"
+      },
+      "relationships": {
+        "workflow": { "data": { "type": "ciWorkflows", "id": "workflow-release" } },
+        "sourceBranchOrTag": { "data": { "type": "scmGitReferences", "id": "ref-main" } }
+      }
+    },
+    {
+      "type": "ciBuildRuns",
+      "id": "run-41",
+      "attributes": {
+        "number": 41,
+        "createdDate": "2026-10-07T05:00:00-07:00",
+        "startedDate": "2026-10-07T05:01:00-07:00",
+        "finishedDate": "2026-10-07T05:21:00-07:00",
+        "executionProgress": "COMPLETE",
+        "completionStatus": "FAILED",
+        "startReason": "GIT_REF_CHANGE"
+      },
+      "relationships": {
+        "workflow": { "data": { "type": "ciWorkflows", "id": "workflow-release" } },
+        "sourceBranchOrTag": { "data": { "type": "scmGitReferences", "id": "ref-main" } }
+      }
+    }
+  ],
+  "included": [
+    { "type": "ciWorkflows", "id": "workflow-release", "attributes": { "name": "Release" } },
+    { "type": "scmGitReferences", "id": "ref-main", "attributes": { "name": "main", "kind": "BRANCH" } }
+  ],
+  "links": {
+    "self": "https://api.appstoreconnect.apple.com/v1/ciProducts/product-1/buildRuns",
+    "next": "https://api.appstoreconnect.apple.com/v1/ciProducts/product-1/buildRuns?cursor=Mg&limit=2"
+  }
+}

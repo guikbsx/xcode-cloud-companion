@@ -1,0 +1,21 @@
+{
+  "data": [
+    {
+      "type": "ciProducts",
+      "id": "product-1",
+      "attributes": { "name": "Sample App", "productType": "APP" },
+      "relationships": { "app": { "data": { "type": "apps", "id": "app-1" } } }
+    },
+    {
+      "type": "ciProducts",
+      "id": "product-2",
+      "attributes": { "name": "Sample Framework", "productType": "FRAMEWORK" },
+      "relationships": { "app": { "links": { "self": "https://api.appstoreconnect.apple.com/v1/ciProducts/product-2/relationships/app" } } }
+    }
+  ],
+  "included": [
+    { "type": "apps", "id": "app-1", "attributes": { "name": "Sample App Store Name", "bundleId": "com.example.sample" } }
+  ],
+  "links": { "self": "https://api.appstoreconnect.apple.com/v1/ciProducts" },
+  "meta": { "paging": { "total": 2, "limit": 200 } }
+}

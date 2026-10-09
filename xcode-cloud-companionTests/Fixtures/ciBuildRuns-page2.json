@@ -1,0 +1,34 @@
+{
+  "data": [
+    {
+      "type": "ciBuildRuns",
+      "id": "run-40",
+      "attributes": {
+        "number": 40,
+        "createdDate": "2026-09-20T10:00:00Z",
+        "startedDate": "2026-09-20T10:00:10Z",
+        "finishedDate": "2026-09-20T10:30:10Z",
+        "executionProgress": "COMPLETE",
+        "completionStatus": "SUCCEEDED",
+        "startReason": "PULL_REQUEST_UPDATE"
+      },
+      "relationships": { "workflow": { "data": { "type": "ciWorkflows", "id": "workflow-pr" } } }
+    },
+    {
+      "type": "ciBuildRuns",
+      "id": "run-39",
+      "attributes": {
+        "number": 39,
+        "createdDate": "2026-08-30T10:00:00Z",
+        "executionProgress": "COMPLETE",
+        "completionStatus": "SOMETHING_NEW",
+        "startReason": "SCHEDULE"
+      },
+      "relationships": { "workflow": { "data": { "type": "ciWorkflows", "id": "workflow-pr" } } }
+    }
+  ],
+  "included": [
+    { "type": "ciWorkflows", "id": "workflow-pr", "attributes": { "name": "Pull Requests" } }
+  ],
+  "links": { "self": "https://api.appstoreconnect.apple.com/v1/ciProducts/product-1/buildRuns?cursor=Mg&limit=2" }
+}
