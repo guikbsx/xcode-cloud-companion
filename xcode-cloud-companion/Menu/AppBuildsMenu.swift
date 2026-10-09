@@ -4,23 +4,37 @@ import AppKit
 enum AppBuildsMenu {
     static let buildsPerApp = 10
 
-    static func items(snapshot: BuildSnapshot, summary: UsageSummary?, now: Date, open: @escaping (URL) -> Void) -> [NSMenuItem] {
+    static func items(
+        snapshot: BuildSnapshot,
+        summary: UsageSummary?,
+        palette: AppPalette = AppPalette(),
+        now: Date,
+        open: @escaping (URL) -> Void
+    ) -> [NSMenuItem] {
         let runsByProduct = Dictionary(grouping: snapshot.runs, by: \.productID)
         let products = snapshot.products
             .filter { runsByProduct[$0.id]?.isEmpty == false }
             .sorted { latestCreation(runsByProduct[$0.id]) > latestCreation(runsByProduct[$1.id]) }
         guard !products.isEmpty else { return [] }
 
-        var items: [NSMenuItem] = [.sectionHeader(title: String(localized: "Apps"))]
+        var items: [NSMenuItem] = [.sectionHeader(title: String(localized: "Apps · this cycle"))]
         for product in products {
             let runs = (runsByProduct[product.id] ?? []).sorted { ($0.number ?? 0) > ($1.number ?? 0) }
             let item = NSMenuItem(title: product.name, action: nil, keyEquivalent: "")
-            item.image = runs.first.flatMap { statusImage(for: $0) }
-            if let usage = summary?.byApp.first(where: { $0.product == product.name }), usage.totalMinutes > 0 {
-                item.badge = NSMenuItemBadge(string: UsageFormat.minutes(usage.totalMinutes))
+            if let latest = runs.first {
+                item.attributedTitle = BuildStatusDot.title(product.name, status: BuildStatus(run: latest), appSwatch: palette.swatch(for: product.name))
             }
-            if runs.contains(where: { $0.executionProgress != .complete }) {
-                item.subtitle = String(localized: "Building now")
+            let measuring = summary?.measurement.isMeasuring == true
+            if let usage = summary?.byApp.first(where: { $0.product == product.name }), usage.totalMinutes > 0 {
+                let minutes = UsageFormat.compactMinutes(usage.totalMinutes)
+                item.badge = NSMenuItemBadge(string: measuring
+                    ? String(localized: "\(minutes)…", comment: "An app's minutes while its builds are still being measured")
+                    : minutes)
+            } else if measuring {
+                item.badge = NSMenuItemBadge(string: "…")
+            }
+            if let building = runs.first(where: { BuildStatus(run: $0) == .running }) {
+                item.subtitle = building.number.map { String(localized: "Building now · #\($0)") } ?? String(localized: "Building now")
             }
             let submenu = NSMenu()
             submenu.autoenablesItems = false
@@ -36,17 +50,17 @@ enum AppBuildsMenu {
 
     static func buildItem(_ run: CIBuildRun, product: CIProduct, actions: [CIBuildAction], now: Date, open: @escaping (URL) -> Void) -> NSMenuItem {
         let number = run.number.map { "#\($0)" } ?? "#?"
-        let title = [number, run.workflowName].compactMap(\.self).joined(separator: " · ")
+        let title = UsageFormat.dotted([number, run.workflowName].compactMap(\.self))
         let url = AppStoreConnectLinks.build(appID: product.appID, buildRunID: run.id)
         let item = NSMenuItem.action(title) { open(url) }
-        item.image = statusImage(for: run)
+        item.attributedTitle = BuildStatusDot.title(title, status: BuildStatus(run: run))
         item.subtitle = subtitle(for: run, actions: actions, now: now)
         item.toolTip = url.absoluteString
         return item
     }
 
     static func subtitle(for run: CIBuildRun, actions: [CIBuildAction], now: Date) -> String {
-        var parts = [statusText(for: run)]
+        var parts = [BuildStatus(run: run).label]
         if let started = run.startedDate {
             parts.append(UsageFormat.minutes(UsageEstimator.duration(from: started, to: run.finishedDate, now: now) / 60))
         }
@@ -56,36 +70,7 @@ enum AppBuildsMenu {
         if let branch = run.sourceBranchOrTag {
             parts.append(branch)
         }
-        return parts.joined(separator: " · ")
-    }
-
-    static func statusText(for run: CIBuildRun) -> String {
-        switch (run.executionProgress, run.completionStatus) {
-        case (.pending, _): String(localized: "Waiting")
-        case (.running, _): String(localized: "Running")
-        case (_, .succeeded?): String(localized: "Succeeded")
-        case (_, .failed?): String(localized: "Failed")
-        case (_, .errored?): String(localized: "Error")
-        case (_, .canceled?): String(localized: "Canceled")
-        case (_, .skipped?): String(localized: "Skipped")
-        default: String(localized: "Finished")
-        }
-    }
-
-    static func statusSymbol(for run: CIBuildRun) -> (name: String, color: NSColor) {
-        switch (run.executionProgress, run.completionStatus) {
-        case (.pending, _), (.running, _): ("arrow.triangle.2.circlepath", .systemBlue)
-        case (_, .succeeded?): ("checkmark.circle.fill", .systemGreen)
-        case (_, .failed?): ("xmark.circle.fill", .systemRed)
-        case (_, .errored?): ("exclamationmark.triangle.fill", .systemOrange)
-        default: ("minus.circle.fill", .secondaryLabelColor)
-        }
-    }
-
-    private static func statusImage(for run: CIBuildRun) -> NSImage? {
-        let symbol = statusSymbol(for: run)
-        return NSImage(systemSymbolName: symbol.name, accessibilityDescription: statusText(for: run))?
-            .withSymbolConfiguration(NSImage.SymbolConfiguration(paletteColors: [symbol.color]))
+        return UsageFormat.dotted(parts)
     }
 
     private static func latestCreation(_ runs: [CIBuildRun]?) -> Date {

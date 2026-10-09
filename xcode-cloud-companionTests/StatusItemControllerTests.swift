@@ -26,7 +26,7 @@ struct StatusMenuTests {
     @Test func usageBlocksAndCommandsAreThere() {
         let items = StatusMenuBuilder.items(for: state(summary: summary), actions: StatusMenuActions())
 
-        #expect(items.filter { $0.view != nil }.count == 3)
+        #expect(items.filter { $0.view != nil }.count == 1)
         #expect(titles(items).contains("Refresh"))
         #expect(titles(items).contains("Update from App Store Connect"))
         #expect(titles(items).contains("Import Usage Export…"))
@@ -50,8 +50,10 @@ struct StatusMenuTests {
     @Test func anErrorIsShownWithoutHidingTheFigures() {
         let items = StatusMenuBuilder.items(for: state(summary: summary, error: "No internet connection."), actions: StatusMenuActions())
 
-        #expect(items.filter { $0.view != nil }.count == 3)
-        #expect(titles(items).contains("No internet connection."))
+        #expect(items.filter { $0.view != nil }.count == 1)
+        let warning = items.first { $0.title.hasSuffix("No internet connection.") }?.attributedTitle
+        #expect(warning?.string == "\u{25B2} No internet connection.")
+        #expect(warning?.attribute(.foregroundColor, at: 0, effectiveRange: nil) as? NSColor == .systemOrange)
     }
 
     @Test func whileSyncingRefreshWaits() {

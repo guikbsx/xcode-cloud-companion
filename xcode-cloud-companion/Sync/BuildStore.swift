@@ -7,6 +7,7 @@ final class BuildStore {
     private(set) var snapshot: BuildSnapshot = .empty
     private(set) var isSyncing = false
     private(set) var progress: String?
+    private(set) var syncStartedAt: Date?
     private(set) var lastError: AppStoreConnectError?
     private(set) var isConfigured = false
 
@@ -82,6 +83,7 @@ final class BuildStore {
     func synchronize() async -> SyncOutcome {
         guard !isSyncing else { return .succeeded(hasActiveBuilds: snapshot.hasActiveBuilds) }
         isSyncing = true
+        syncStartedAt = now()
         defer {
             isSyncing = false
             progress = nil

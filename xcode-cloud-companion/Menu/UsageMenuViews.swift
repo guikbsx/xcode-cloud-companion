@@ -1,47 +1,103 @@
-import Charts
 import SwiftUI
 
-/// Width shared by every SwiftUI block hosted in the status menu.
+/// Width a SwiftUI block of the status menu is measured at; the menu then stretches it to its own width.
 let usageMenuContentWidth: CGFloat = 300
 
-struct UsageHeaderView: View {
+extension AppSwatch {
+    var color: Color { Color(nsColor) }
+}
+
+/// The cycle gauge: one bar cut by app, with what is used, what is left and how sure the figures are.
+struct UsageGaugeView: View {
     let summary: UsageSummary
+    let palette: AppPalette
+
+    private var isMeasuring: Bool { summary.measurement.isMeasuring }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 6) {
+        VStack(alignment: .leading, spacing: 8) {
             HStack(alignment: .firstTextBaseline) {
-                Text("\(UsageFormat.percent(summary.fractionUsed)) used")
+                Text(isMeasuring
+                    ? String(localized: "Measuring usage…")
+                    : String(localized: "\(UsageFormat.percent(summary.fractionUsed)) of \(UsageFormat.minutes(summary.quotaMinutes)) used"))
                     .font(.headline)
-                Spacer()
-                Text("Resets in \(UsageFormat.timeLeft(summary.timeUntilReset))")
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-            }
-            UsageBar(fraction: summary.fractionUsed, tint: tint)
-            Text(paceLine)
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
-            Text(sourceLine)
-                .font(.caption)
-                .foregroundStyle(.secondary)
-                .fixedSize(horizontal: false, vertical: true)
-            if summary.isImportStale {
-                Label(staleLine, systemImage: "clock.arrow.circlepath")
+                    .lineLimit(1)
+                Spacer(minLength: 8)
+                Text("Resets \(UsageFormat.moment(summary.resetDate))")
                     .font(.caption)
-                    .foregroundStyle(.orange)
+                    .foregroundStyle(.secondary)
+                    .lineLimit(1)
+            }
+            SegmentedUsageBar(segments: summary.gaugeSegments, quotaMinutes: summary.quotaMinutes, palette: palette, remainingTint: remainingTint)
+                .opacity(isMeasuring ? 0.45 : 1)
+            if isMeasuring {
+                HStack(alignment: .top, spacing: 12) {
+                    stat("Measured so far", UsageFormat.compactMinutes(summary.usedMinutes))
+                    stat("Available", "—")
+                    stillToMeasureStat.fixedSize(horizontal: true, vertical: false)
+                }
+                .opacity(0.45)
+                Text("The gauge and the menu bar percentage appear once every build of the cycle is measured.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            } else {
+                HStack(alignment: .top, spacing: 12) {
+                    stat("Used", UsageFormat.compactMinutes(summary.usedMinutes))
+                    stat("Available", UsageFormat.compactMinutes(summary.availableMinutes))
+                    estimatedStat.fixedSize(horizontal: true, vertical: false)
+                }
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(paceLine)
+                        .foregroundStyle(.secondary)
+                    Text(exportLine)
+                        .foregroundStyle(summary.isImportStale ? Color.orange : Color.secondary)
+                    if summary.measurement.unmeasurableBuilds > 0 {
+                        Text("\(summary.measurement.unmeasurableBuilds) builds not measured, estimated from their duration")
+                            .foregroundStyle(Color.orange)
+                    }
+                }
+                .font(.caption)
+                .fixedSize(horizontal: false, vertical: true)
             }
         }
         .padding(.horizontal, 14)
         .padding(.vertical, 8)
-        .frame(width: usageMenuContentWidth, alignment: .leading)
+        .frame(minWidth: usageMenuContentWidth, idealWidth: usageMenuContentWidth, maxWidth: .infinity, alignment: .leading)
     }
 
-    private var tint: Color {
+    /// The track left over warns early: neutral up to 75 %, orange then red.
+    private var remainingTint: Color {
         switch summary.fractionUsed {
-        case ..<0.75: .accentColor
-        case ..<0.9: .orange
-        default: .red
+        case ..<0.75: Color.primary.opacity(0.1)
+        case ..<0.9: Color.orange.opacity(0.4)
+        default: Color.red.opacity(0.4)
         }
+    }
+
+    private var stillToMeasureStat: some View {
+        stat("Still to measure", String(localized: "\(summary.measurement.pendingBuilds) builds"))
+    }
+
+    private var estimatedStat: some View {
+        let count = summary.estimatedBuildCount
+        return stat(
+            count > 0 ? "Estimated · \(count) builds" : "Estimated",
+            count > 0 ? "~" + UsageFormat.compactMinutes(summary.estimatedMinutes) : "—"
+        )
+    }
+
+    private func stat(_ title: LocalizedStringKey, _ value: String) -> some View {
+        VStack(alignment: .leading, spacing: 1) {
+            Text(value)
+                .font(.body.monospacedDigit().weight(.semibold))
+                .lineLimit(1)
+            Text(title)
+                .font(.caption)
+                .foregroundStyle(.secondary)
+                .lineLimit(1)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 
     private var paceLine: String {
@@ -55,111 +111,104 @@ struct UsageHeaderView: View {
             return String(localized: "Runs out around \(UsageFormat.day(exhaustion)) at this pace")
         }
         if summary.projectedMinutes != nil {
-            return String(localized: "Lasts until the reset at this pace · \(UsageFormat.moment(summary.resetDate))")
+            return String(localized: "Lasts until the reset at this pace")
         }
-        return String(localized: "Resets \(UsageFormat.moment(summary.resetDate))")
+        return String(localized: "Too early in the cycle to project a pace")
     }
 
-    private var sourceLine: String {
-        let billed = UsageFormat.minutes(summary.billedMinutes)
-        guard summary.estimatedBuildCount > 0 else {
-            return String(localized: "\(billed) billed by Apple")
-        }
-        let estimated = UsageFormat.minutes(summary.estimatedMinutes)
-        return String(localized: "\(billed) billed by Apple + ~\(estimated) estimated for \(summary.estimatedBuildCount) recent builds")
-    }
-
-    private var staleLine: String {
+    private var exportLine: String {
         guard let lastImport = summary.lastImport else {
             return String(localized: "No usage export yet: figures are estimates")
         }
-        return String(localized: "Last usage export \(UsageFormat.relative(lastImport, now: summary.now))")
+        return String(localized: "Export \(UsageFormat.relative(lastImport, now: summary.now))")
     }
 }
 
-/// Drawn rather than a `ProgressView`, which turns grey when the menu's window is not key.
-struct UsageBar: View {
+/// Shown above everything while the first test results are being fetched: what is going on, how far, how long.
+struct MeasuringHeaderView: View {
+    let progress: MeasurementProgress
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            HStack(spacing: 8) {
+                ProgressView()
+                    .controlSize(.small)
+                Text("Measuring your builds")
+                    .font(.headline)
+                    .lineLimit(1)
+                Spacer(minLength: 8)
+                Text("\(progress.measuredActions + progress.unmeasurableActions) / \(progress.totalActions)")
+                    .font(.caption.monospacedDigit())
+                    .foregroundStyle(.secondary)
+            }
+            ThinProgressBar(fraction: progress.fractionDone)
+            Text("Fetching test results, \(MeasurementProgress.actionsPerPass) builds at a time · about \(progress.minutesLeft) min left. Figures fill in as they arrive; you can close this menu.")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .padding(.horizontal, 14)
+        .padding(.vertical, 8)
+        .frame(minWidth: usageMenuContentWidth, idealWidth: usageMenuContentWidth, maxWidth: .infinity, alignment: .leading)
+    }
+}
+
+struct ThinProgressBar: View {
     let fraction: Double
-    let tint: Color
 
     var body: some View {
         Capsule()
-            .fill(.quaternary)
+            .fill(Color.primary.opacity(0.1))
             .overlay(alignment: .leading) {
                 GeometryReader { proxy in
                     Capsule()
-                        .fill(tint)
+                        .fill(Color.accentColor)
                         .frame(width: proxy.size.width * min(max(fraction, 0), 1))
                 }
             }
-            .frame(height: 6)
+            .frame(height: 4)
             .accessibilityElement()
+            .accessibilityLabel(Text("Measuring progress"))
             .accessibilityValue(Text(UsageFormat.percent(fraction)))
     }
 }
 
-struct UsageStatsView: View {
-    let summary: UsageSummary
+/// Drawn rather than a `ProgressView`, which turns grey when the menu's window is not key.
+struct SegmentedUsageBar: View {
+    let segments: [GaugeSegment]
+    let quotaMinutes: Double
+    let palette: AppPalette
+    let remainingTint: Color
 
     var body: some View {
-        Grid(alignment: .leading, horizontalSpacing: 24, verticalSpacing: 8) {
-            GridRow {
-                stat("Used", UsageFormat.minutes(summary.usedMinutes))
-                stat("Available", UsageFormat.minutes(summary.availableMinutes))
+        GeometryReader { proxy in
+            let widths = GaugeLayout.widths(minutes: segments.map(\.minutes), quotaMinutes: quotaMinutes, totalWidth: proxy.size.width)
+            HStack(spacing: 0) {
+                ForEach(Array(segments.enumerated()), id: \.offset) { index, segment in
+                    Rectangle()
+                        .fill(color(for: segment))
+                        .frame(width: widths[index])
+                }
+                Rectangle().fill(remainingTint)
             }
-            GridRow {
-                stat("Today", UsageFormat.minutes(summary.todayMinutes))
-                stat("Last 30 days", UsageFormat.minutes(summary.last30DaysMinutes))
-            }
-            GridRow {
-                stat("Builds, 30 days", summary.buildsLast30Days.formatted())
-                stat("Plan", UsageFormat.minutes(summary.quotaMinutes))
-            }
+            .clipShape(Capsule())
         }
-        .padding(.horizontal, 14)
-        .padding(.vertical, 6)
-        .frame(width: usageMenuContentWidth, alignment: .leading)
+        .frame(height: 10)
+        .accessibilityElement()
+        .accessibilityLabel(Text("Usage by app"))
+        .accessibilityValue(Text(accessibilityValue))
     }
 
-    private func stat(_ title: LocalizedStringKey, _ value: String) -> some View {
-        VStack(alignment: .leading, spacing: 1) {
-            Text(title)
-                .font(.caption)
-                .foregroundStyle(.secondary)
-            Text(value)
-                .font(.body.monospacedDigit().weight(.semibold))
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
+    private func color(for segment: GaugeSegment) -> Color {
+        guard let product = segment.product else { return Color.primary.opacity(0.3) }
+        return palette.swatch(for: product).color
     }
-}
 
-struct UsageHistogramView: View {
-    let daily: [DailyUsage]
-
-    var body: some View {
-        Chart {
-            ForEach(daily, id: \.day) { day in
-                BarMark(x: .value("Day", day.day, unit: .day), y: .value("Minutes", day.billedMinutes))
-                    .foregroundStyle(by: .value("Source", String(localized: "Billed")))
-                BarMark(x: .value("Day", day.day, unit: .day), y: .value("Minutes", day.estimatedMinutes))
-                    .foregroundStyle(by: .value("Source", String(localized: "Estimated")))
-            }
+    private var accessibilityValue: String {
+        segments.map { segment in
+            let name = segment.product ?? String(localized: "Estimated")
+            return "\(name) \(UsageFormat.minutes(segment.minutes))"
         }
-        .chartForegroundStyleScale([
-            String(localized: "Billed"): Color.accentColor,
-            String(localized: "Estimated"): Color.accentColor.opacity(0.4),
-        ])
-        .chartLegend(.hidden)
-        .chartYAxis(.hidden)
-        .chartXAxis {
-            AxisMarks(values: .stride(by: .day, count: 7)) { _ in
-                AxisValueLabel(format: .dateTime.day().month(.abbreviated))
-            }
-        }
-        .accessibilityLabel(Text("Usage per day, last 30 days"))
-        .frame(height: 64)
-        .padding(.horizontal, 14)
-        .padding(.vertical, 6)
-        .frame(width: usageMenuContentWidth)
+        .formatted(.list(type: .and))
     }
 }

@@ -1,4 +1,4 @@
-# AGENTS.md — Guide des agents pour Xcode Cloud Companion
+# AGENTS.md — Guide des agents pour Cumulus
 
 Ce document oriente les sessions d'agents (Claude Code, Codex) qui travaillent sur ce dépôt. Il décrit le produit, le workflow et les conventions. **Lis-le en premier.**
 
@@ -6,13 +6,13 @@ Ce document oriente les sessions d'agents (Claude Code, Codex) qui travaillent s
 
 ## 1. Vue d'ensemble
 
-**Xcode Cloud Companion** est une app macOS qui vit dans la barre des menus. Elle surveille la consommation Xcode Cloud d'un compte App Store Connect (heures de calcul utilisées par rapport au forfait) et liste les builds récents de chaque app.
+**Cumulus** (dépôt, target et équipe Linear : « Xcode Cloud Companion ») est une app macOS qui vit dans la barre des menus. Elle surveille la consommation Xcode Cloud d'un compte App Store Connect (heures de calcul utilisées par rapport au forfait) et liste les builds récents de chaque app.
 
 | | |
 |---|---|
 | Plateforme | macOS 27.0+ (`MACOSX_DEPLOYMENT_TARGET = 27.0`) |
 | Langage | Swift, SwiftUI pour les vues, AppKit pour la structure du menu |
-| Target / scheme | `xcode-cloud-companion` |
+| Target / scheme | `xcode-cloud-companion` (produit : `Cumulus.app`, module `XcodeCloudCompanion`, bundle ID `com.guik.xcode-cloud-companion`) |
 | Sandbox | Activé (garder la porte du Mac App Store ouverte) |
 | Dépendances | Aucune |
 
@@ -40,9 +40,19 @@ Le modèle est CodexBar : un `NSStatusItem` + `NSMenu`, dont certaines lignes so
 | `Settings/` | Trousseau (`KeychainCredentialsStore`), forfait (`UsagePlan`), ouverture à la connexion, fenêtre et modèles des Réglages | modèles d'interface `MainActor`, le reste `nonisolated` |
 | `Sync/` | `BuildSynchronizer` (calcul `@concurrent` d'un nouvel instantané), `BuildCacheStore` (cache JSON dans le conteneur), `SyncSchedule`, `BuildStore` (source de vérité des builds, `@Observable`) | `BuildStore` `MainActor`, le reste `nonisolated` |
 | `Usage/` | Minutes facturées : lecture de l'export CSV d'App Store Connect, registre `UsageLedger`, `UsageStore` + `DirectoryWatcher` (import automatique depuis Téléchargements). `UsageCalculator` combine minutes exactes et estimation calibrée par workflow. Diagnostic Debug | `UsageStore` `MainActor`, le reste `nonisolated` |
-| `Menu/` | Construction du menu de la barre (`StatusMenuBuilder`, `AppBuildsMenu`), blocs SwiftUI hébergés (`UsageMenuViews`), formats (`UsageFormat`) | `MainActor`, `UsageFormat` `nonisolated` |
+| `Menu/` | Construction du menu de la barre : `StatusMenuBuilder` (ordre des sections), `LatestBuildsMenu` (5 derniers builds), `AppBuildsMenu` (lignes d'apps et sous-menus), blocs SwiftUI hébergés (`UsageGaugeView`, `MeasuringHeaderView`), `BuildStatus` et `BuildStatusDot` (points d'état), `MenuBarBadge` (pastille de la barre), `UsageFormat` | `MainActor`, sauf `UsageFormat`, `BuildStatus` et `MenuBarBadge` (`nonisolated`) |
 
 **Source des minutes** (XCO-6, mesuré sur 55 builds réels le 09/10/2026) : Apple facture **par machine**. Chaque destination de test paie son temps d'exécution (`destinationTestResults[].duration`, sommé par appareil) plus ~4,5 min de préparation, et deux fois ses tests quand l'un d'eux échoue (rejoué) ; une archive réussie paie son calcul seul, pas l'envoi à TestFlight : on prend son passage réussi le plus court. Le tout dans `MachineModel`. Résultat : +2 % sur 30 jours, 4 min d'écart moyen par build, sauf certains échecs rejoués (jusqu'à −40 min). La durée murale d'un test ne dit **ni** le nombre de simulateurs **ni** leur attente : ne jamais l'additionner. L'export CSV d'Apple (XCO-14) reste la source exacte quand il est importé.
+
+**Pièges de la barre des menus** (vérifiés sur le vrai bouton le 09/10/2026) :
+- Le bouton d'un `NSStatusItem` est **retourné** (`isFlipped`, y descend) et la zone d'image de sa cellule est plus petite que l'image, qu'elle centre : placer une vue sur le nuage se calcule depuis le milieu de cette zone et la boîte réellement dessinée du symbole (`NSImage.drawnBounds`), jamais depuis le rectangle de l'image (`MenuBarBadgePlacement`).
+- Une icône ajoutée alors que la barre est pleine est **masquée** (icône « « » de débordement) : pour voir sa propre instance, libérer de la place ou quitter une autre instance de l'app.
+- En Debug, `XCC_BADGE=running|failed|succeeded|none` force la pastille de la barre.
+- `NSMenuItem.badge` n'accepte ni couleur ni style : l'âge des builds et les minutes des apps y sont des textes courts ; les points d'état et le carré de couleur d'une app sont des caractères teintés (« • », « ◉ », « ■ ») en tête du titre attribué : le menu n'affiche **aucune** `NSMenuItem.image` (ni dessinée, ni symbole SF), vérifié le 09/10/2026.
+
+**Mesure au premier chargement** : les résultats de tests par appareil arrivent par lots de 12 actions, du build le plus récent au plus ancien, un lot par minute (`BuildSynchronizer`). Tant que le cycle en a en attente, `UsageSummary.measurement.isMeasuring` est vrai et le menu n'affiche aucun chiffre qui dépendrait d'eux. Une action refusée trois fois par Apple est abandonnée (`BuildSnapshot.testResultAttempts`) ; un 429 ne coûte aucune tentative.
+
+**Localisation** (XCO-21 à 23) : langue source anglaise, `Localizable.xcstrings` traduit en français. `xcodebuild` ne met pas à jour le catalogue source (seul Xcode le fait) : après l'ajout d'une chaîne, le resynchroniser avec `xcrun xcstringstool sync xcode-cloud-companion/Localizable.xcstrings --stringsdata <DerivedData>/…/Objects-normal/arm64/*.stringsdata`, puis traduire la nouvelle entrée (le test `FrenchLocalizationTests` échoue sinon). Le schéma fixe la langue des tests à l'anglais. Un `NSMenuItem` n'affiche aucune `image` dans ce menu : voir les pièges ci-dessus.
 
 Les tests s'exécutent **dans l'app** (`TEST_HOST`) : `AppDelegate` ne démarre pas la synchronisation quand `XCTestConfigurationFilePath` est défini, pour ne jamais appeler l'API avec la vraie clé pendant les tests.
 

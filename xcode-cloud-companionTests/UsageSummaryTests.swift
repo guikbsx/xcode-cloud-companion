@@ -37,8 +37,17 @@ struct UsageSummaryTests {
     }
 
     /// #10 and #11 are billed (50 min for 20 min of actions: ratio 2.5); #12 finished and #13 still running are not exported yet.
+    /// The test actions here have no per-device results and are given up on, so their wall clock stands in for them.
+    private func givenUp(_ snapshot: BuildSnapshot) -> BuildSnapshot {
+        var snapshot = snapshot
+        for action in snapshot.actionsByRunID.values.joined() {
+            snapshot.testResultAttempts[action.id] = BuildSnapshot.maximumTestResultAttempts
+        }
+        return snapshot
+    }
+
     private var snapshot: BuildSnapshot {
-        BuildSnapshot(
+        givenUp(BuildSnapshot(
             products: [CIProduct(id: "p1", name: "AppOne", productType: "APP", appID: nil, appName: nil, bundleID: nil)],
             runs: [
                 run(13, workflow: "Other", created: date(10, 9, 11, 50), running: true),
@@ -52,7 +61,7 @@ struct UsageSummaryTests {
                 "run-12": actions("run-12", start: date(10, 9, 9), minutes: 4),
                 "run-13": actions("run-13", start: date(10, 9, 11, 50), minutes: nil),
             ]
-        )
+        ))
     }
 
     private var ledger: UsageLedger {
@@ -136,6 +145,7 @@ struct UsageSummaryTests {
         var snapshot = snapshot
         snapshot.runs.append(run(9, created: date(10, 7, 14, 30)))
         snapshot.actionsByRunID["run-9"] = actions("run-9", start: date(10, 7, 14, 30), minutes: 30)
+        snapshot = givenUp(snapshot)
 
         let summary = UsageCalculator.summary(snapshot: snapshot, ledger: ledger, plan: plan, now: now, calendar: calendar)
 

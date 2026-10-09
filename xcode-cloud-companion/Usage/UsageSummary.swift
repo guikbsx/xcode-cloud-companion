@@ -14,6 +14,51 @@ nonisolated struct AppUsage: Sendable, Equatable {
     var totalMinutes: Double { billedMinutes + estimatedMinutes }
 }
 
+/// A slice of the gauge: `product` nil stands for the minutes that are estimated rather than billed.
+nonisolated struct GaugeSegment: Sendable, Equatable {
+    var product: String?
+    var minutes: Double
+}
+
+/// How far the first measurements of the current cycle have got: Apple bills per simulator, so a build only counts
+/// once its test results are in. Builds Apple already billed (usage export) never need measuring.
+nonisolated struct MeasurementProgress: Sendable, Equatable {
+    /// How many test actions one pass of the synchronizer fetches, and about how long a pass takes with the pause between passes.
+    static let actionsPerPass = BuildSynchronizer.maxTestResultFetchesPerSync
+
+    var totalActions = 0
+    var measuredActions = 0
+    /// Actions the synchronizer gave up on after three attempts.
+    var unmeasurableActions = 0
+    var pendingBuilds = 0
+    var unmeasurableBuilds = 0
+
+    var pendingActions: Int { totalActions - measuredActions - unmeasurableActions }
+    var isMeasuring: Bool { pendingActions > 0 }
+    var fractionDone: Double { totalActions > 0 ? Double(measuredActions + unmeasurableActions) / Double(totalActions) : 1 }
+    /// One pass a minute: the whole wait, not counting the pass in flight.
+    var minutesLeft: Int { (pendingActions + Self.actionsPerPass - 1) / Self.actionsPerPass }
+}
+
+/// Widths of the gauge segments, keeping every non-empty slice visible without overflowing the bar.
+nonisolated enum GaugeLayout {
+    static let minimumSegmentWidth: Double = 2
+
+    static func widths(minutes: [Double], quotaMinutes: Double, totalWidth: Double) -> [Double] {
+        guard quotaMinutes > 0, totalWidth > 0 else { return minutes.map { _ in 0 } }
+        var widths = minutes.map { $0 > 0 ? max(minimumSegmentWidth, $0 / quotaMinutes * totalWidth) : 0 }
+        let sum = widths.reduce(0, +)
+        if sum > totalWidth {
+            // Over quota or squeezed by the minimums: shrink the slices that exceed their minimum, never below it.
+            let flexible = zip(widths, minutes).filter { $0 > minimumSegmentWidth && $1 > 0 }.reduce(0) { $0 + $1.0 }
+            let fixed = sum - flexible
+            let scale = flexible > 0 ? max(0, (totalWidth - fixed) / flexible) : 1
+            widths = widths.map { $0 > minimumSegmentWidth ? $0 * scale : $0 }
+        }
+        return widths
+    }
+}
+
 nonisolated struct UsageSummary: Sendable, Equatable {
     static let staleImportAge: TimeInterval = 3 * 24 * 3600
     /// Below this, the pace of a young cycle says nothing yet.
@@ -31,6 +76,21 @@ nonisolated struct UsageSummary: Sendable, Equatable {
     var daily: [DailyUsage]
     var buildsLast30Days: Int
     var byApp: [AppUsage]
+    var measurement = MeasurementProgress()
+
+    /// Gauge segments: one per app that Apple billed, biggest first, then one for everything still estimated.
+    var gaugeSegments: [GaugeSegment] {
+        let billed = byApp
+            .filter { $0.billedMinutes > 0 }
+            .sorted { ($0.billedMinutes, $1.product) > ($1.billedMinutes, $0.product) }
+            .map { GaugeSegment(product: $0.product, minutes: $0.billedMinutes) }
+        return estimatedMinutes > 0 ? billed + [GaugeSegment(product: nil, minutes: estimatedMinutes)] : billed
+    }
+
+    /// Every app of the cycle, biggest consumer first, for colour assignment.
+    var appsByConsumption: [String] {
+        byApp.map(\.product)
+    }
 
     var usedMinutes: Double { billedMinutes + estimatedMinutes }
     var quotaMinutes: Double { Double(plan.hours * 60) }
@@ -88,6 +148,8 @@ nonisolated enum UsageCalculator {
                 builds["\(product)#\(number)"] = created
             }
             guard ledger.billedBuild(product: product, buildNumber: number) == nil else { continue }
+            // A build whose test results are still on their way has no honest estimate yet: it waits for them.
+            guard !(snapshot.actionsByRunID[run.id] ?? []).contains(where: snapshot.needsTestResults) else { continue }
             let actionMinutes = actionMinutes(of: run, in: snapshot, now: now)
             entries.append(UsageEntry(product: product, date: created, estimatedMinutes: actionMinutes * ratios.ratio(product: product, workflow: run.workflowName)))
             estimatedRunIDs.insert(run.id)
@@ -114,6 +176,28 @@ nonisolated enum UsageCalculator {
             byApp[entry.product, default: AppUsage(product: entry.product)].estimatedMinutes += entry.estimatedMinutes
         }
 
+        var measurement = MeasurementProgress()
+        for run in snapshot.runs {
+            let product = productNames[run.productID] ?? run.productID
+            guard let number = run.number, let created = run.createdDate, cycle.contains(created),
+                  ledger.billedBuild(product: product, buildNumber: number) == nil
+            else { continue }
+            var pending = false
+            var unmeasurable = false
+            for action in snapshot.actionsByRunID[run.id] ?? [] where action.actionType == .test && action.executionProgress == .complete {
+                measurement.totalActions += 1
+                if snapshot.testDevicesByActionID[action.id] != nil {
+                    measurement.measuredActions += 1
+                } else if snapshot.needsTestResults(action) {
+                    pending = true
+                } else {
+                    measurement.unmeasurableActions += 1
+                    unmeasurable = true
+                }
+            }
+            if pending { measurement.pendingBuilds += 1 } else if unmeasurable { measurement.unmeasurableBuilds += 1 }
+        }
+
         return UsageSummary(
             plan: plan,
             cycle: cycle,
@@ -124,7 +208,8 @@ nonisolated enum UsageCalculator {
             lastImport: ledger.lastImport,
             daily: daily,
             buildsLast30Days: builds.values.filter { $0 >= windowStart && $0 <= now }.count,
-            byApp: byApp.values.sorted { $0.totalMinutes > $1.totalMinutes }
+            byApp: byApp.values.sorted { $0.totalMinutes > $1.totalMinutes },
+            measurement: measurement
         )
     }
 

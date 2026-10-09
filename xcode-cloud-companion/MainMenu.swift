@@ -10,11 +10,11 @@ enum MainMenu {
     }
 
     private static func appMenu(settingsTarget: AnyObject, settingsAction: Selector) -> NSMenu {
-        let menu = NSMenu(title: "Xcode Cloud Companion")
+        let menu = NSMenu(title: "Cumulus")
         let settings = menu.addItem(withTitle: String(localized: "Settings…"), action: settingsAction, keyEquivalent: ",")
         settings.target = settingsTarget
         menu.addItem(.separator())
-        menu.addItem(withTitle: String(localized: "Quit Xcode Cloud Companion"), action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q")
+        menu.addItem(withTitle: String(localized: "Quit Cumulus"), action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q")
         return menu
     }
 

@@ -66,7 +66,7 @@ nonisolated struct KeychainCredentialsStore: CredentialsStore {
             var item = baseQuery
             item[kSecValueData as String] = data
             item[kSecAttrAccessible as String] = kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly
-            item[kSecAttrLabel as String] = "Xcode Cloud Companion — App Store Connect API key"
+            item[kSecAttrLabel as String] = "Cumulus — App Store Connect API key"
             let addStatus = SecItemAdd(item as CFDictionary, nil)
             guard addStatus == errSecSuccess else { throw .keychain(addStatus) }
         default:

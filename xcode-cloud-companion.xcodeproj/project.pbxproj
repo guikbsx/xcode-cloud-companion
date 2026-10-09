@@ -17,7 +17,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		000000000000000000000120 /* xcode-cloud-companion.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "xcode-cloud-companion.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		000000000000000000000120 /* Cumulus.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Cumulus.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		000000000000000000000121 /* xcode-cloud-companionTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "xcode-cloud-companionTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -60,7 +60,7 @@
 		000000000000000000000020 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				000000000000000000000120 /* xcode-cloud-companion.app */,
+				000000000000000000000120 /* Cumulus.app */,
 				000000000000000000000121 /* xcode-cloud-companionTests.xctest */,
 			);
 			name = Products;
@@ -84,7 +84,7 @@
 			);
 			name = "xcode-cloud-companion";
 			productName = MyApp;
-			productReference = 000000000000000000000120 /* xcode-cloud-companion.app */;
+			productReference = 000000000000000000000120 /* Cumulus.app */;
 			productType = "com.apple.product-type.application";
 		};
 		000000000000000200000000 /* xcode-cloud-companionTests */ = {
@@ -133,6 +133,7 @@
 			knownRegions = (
 				en,
 				Base,
+				fr,
 			);
 			mainGroup = 000000000000000000000001;
 			minimizedProjectReferenceProxies = 1;
@@ -318,13 +319,14 @@
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = Cumulus;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.developer-tools";
 				INFOPLIST_KEY_LSUIElement = YES;
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/../Frameworks";
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.guik.xcode-cloud-companion";
 				PRODUCT_MODULE_NAME = XcodeCloudCompanion;
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_NAME = Cumulus;
 				REGISTER_APP_GROUPS = YES;
 				SDKROOT = macosx;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
@@ -349,13 +351,14 @@
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = Cumulus;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.developer-tools";
 				INFOPLIST_KEY_LSUIElement = YES;
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/../Frameworks";
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.guik.xcode-cloud-companion";
 				PRODUCT_MODULE_NAME = XcodeCloudCompanion;
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_NAME = Cumulus;
 				REGISTER_APP_GROUPS = YES;
 				SDKROOT = macosx;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
@@ -385,7 +388,7 @@
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 6.0;
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/xcode-cloud-companion.app/Contents/MacOS/xcode-cloud-companion";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Cumulus.app/Contents/MacOS/Cumulus";
 			};
 			name = Debug;
 		};
@@ -406,7 +409,7 @@
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 6.0;
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/xcode-cloud-companion.app/Contents/MacOS/xcode-cloud-companion";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Cumulus.app/Contents/MacOS/Cumulus";
 			};
 			name = Release;
 		};

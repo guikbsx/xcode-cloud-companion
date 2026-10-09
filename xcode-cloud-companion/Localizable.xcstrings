@@ -1,0 +1,1948 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "%@ of %@ used" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ of %2$@ used"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ utilisés sur %2$@"
+          }
+        }
+      }
+    },
+    "%@ · %@" : {
+      "comment" : "Joins two parts of a line, such as a build's state and its duration. Keep the middle dot.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ · %2$@"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ · %2$@"
+          }
+        }
+      }
+    },
+    "%@…" : {
+      "comment" : "An app's minutes while its builds are still being measured",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@…"
+          }
+        }
+      }
+    },
+    "%lld / %lld" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld / %2$lld"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld / %2$lld"
+          }
+        }
+      }
+    },
+    "%lld Xcode Cloud apps found" : {
+      "comment" : "Number of Xcode Cloud apps the key gives access to",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld Xcode Cloud app found"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld Xcode Cloud apps found"
+                }
+              }
+            }
+          }
+        },
+        "fr" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld app Xcode Cloud trouvée"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld apps Xcode Cloud trouvées"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld builds" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld build"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld builds"
+                }
+              }
+            }
+          }
+        },
+        "fr" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld build"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld builds"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld builds not measured, estimated from their duration" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld build not measured, estimated from its duration"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld builds not measured, estimated from their duration"
+                }
+              }
+            }
+          }
+        },
+        "fr" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld build non mesuré, estimé d’après sa durée"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld builds non mesurés, estimés d’après leur durée"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "API Key" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Clé API"
+          }
+        }
+      }
+    },
+    "API key saved" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Clé API enregistrée"
+          }
+        }
+      }
+    },
+    "Access" : {
+      "comment" : "Column of the key table in App Store Connect",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Accès"
+          }
+        }
+      }
+    },
+    "An app is missing? It has no Xcode Cloud workflow yet, or the key has no access to this team." : {
+      "comment" : "Keep \"Xcode Cloud\", \"App Store Connect\" and \"TestFlight\" untranslated as product names.",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Une app manque ? Elle n’a pas encore de workflow Xcode Cloud, ou la clé n’a pas accès à cette équipe."
+          }
+        }
+      }
+    },
+    "App Store Connect API Key" : {
+      "comment" : "Keep \"Xcode Cloud\", \"App Store Connect\" and \"TestFlight\" untranslated as product names.",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Clé API App Store Connect"
+          }
+        }
+      }
+    },
+    "App Store Connect can’t be reached." : {
+      "comment" : "Keep \"Xcode Cloud\", \"App Store Connect\" and \"TestFlight\" untranslated as product names.",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App Store Connect est injoignable."
+          }
+        }
+      }
+    },
+    "App Store Connect is limiting requests. Try again in a few minutes." : {
+      "comment" : "Keep \"Xcode Cloud\", \"App Store Connect\" and \"TestFlight\" untranslated as product names.",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App Store Connect limite les requêtes. Réessayez dans quelques minutes."
+          }
+        }
+      }
+    },
+    "App Store Connect refused the key. Check the Issuer ID, the Key ID, and that the key is still active." : {
+      "comment" : "Keep \"Xcode Cloud\", \"App Store Connect\" and \"TestFlight\" untranslated as product names.",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App Store Connect a refusé la clé. Vérifiez l’Issuer ID, l’ID de la clé, et que la clé est toujours active."
+          }
+        }
+      }
+    },
+    "App Store Connect refuses this key." : {
+      "comment" : "Keep \"Xcode Cloud\", \"App Store Connect\" and \"TestFlight\" untranslated as product names.",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App Store Connect refuse cette clé."
+          }
+        }
+      }
+    },
+    "App Store Connect returned an error (%lld)" : {
+      "comment" : "Keep \"Xcode Cloud\", \"App Store Connect\" and \"TestFlight\" untranslated as product names.",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App Store Connect a renvoyé une erreur (%lld)"
+          }
+        }
+      }
+    },
+    "App Store Connect sent an unexpected response." : {
+      "comment" : "Keep \"Xcode Cloud\", \"App Store Connect\" and \"TestFlight\" untranslated as product names.",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App Store Connect a envoyé une réponse inattendue."
+          }
+        }
+      }
+    },
+    "Apple does not expose the plan or its reset date in the API. Without the right date, the gauge counts the hours over the wrong cycle." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apple n’expose ni le forfait ni sa date de réinitialisation dans l’API. Sans la bonne date, la jauge compte les heures sur le mauvais cycle."
+          }
+        }
+      }
+    },
+    "Apps · this cycle" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apps · ce cycle"
+          }
+        }
+      }
+    },
+    "At the top of the page, note the plan's **number of hours** and the **reset date**." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "En haut de la page, relevez le **nombre d’heures** du forfait et la **date de réinitialisation**."
+          }
+        }
+      }
+    },
+    "Available" : {
+      "comment" : "Column of the usage gauge: minutes left in the cycle.",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Disponible"
+          }
+        }
+      }
+    },
+    "Billed Minutes" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Minutes facturées"
+          }
+        }
+      }
+    },
+    "Building now" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Build en cours"
+          }
+        }
+      }
+    },
+    "Building now · #%lld" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Build en cours · #%lld"
+          }
+        }
+      }
+    },
+    "Builds with Billed Minutes" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Builds aux minutes facturées"
+          }
+        }
+      }
+    },
+    "Canceled" : {
+      "comment" : "State of a build that was stopped.",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Annulé"
+          }
+        }
+      }
+    },
+    "Choose a File…" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choisir un fichier…"
+          }
+        }
+      }
+    },
+    "Choose a usage export downloaded from App Store Connect › Xcode Cloud › Usage." : {
+      "comment" : "Keep \"Xcode Cloud\", \"App Store Connect\" and \"TestFlight\" untranslated as product names.",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choisissez un export d’utilisation téléchargé depuis App Store Connect › Xcode Cloud › Utilisation."
+          }
+        }
+      }
+    },
+    "Click **+**, name the key “Cumulus” and give it **Developer** access." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cliquez sur **+**, nommez la clé « Cumulus » et donnez-lui l’accès **Développeur**."
+          }
+        }
+      },
+      "comment" : "Do not translate the app name. Keep \"App Store Connect\" untranslated."
+    },
+    "Click **Download** to get the `AuthKey_ABCDE12345.p8` file. **Apple offers it only once**: keep it somewhere safe, or import it right away below." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cliquez sur **Télécharger** pour récupérer le fichier `AuthKey_ABCDE12345.p8`. **Apple ne le propose qu’une seule fois** : gardez-le en lieu sûr, ou importez-le tout de suite ci-dessous."
+          }
+        }
+      }
+    },
+    "Close" : {
+      "comment" : "Menu item that closes the window.",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fermer"
+          }
+        }
+      }
+    },
+    "Compute hours" : {
+      "comment" : "Label in the diagram of App Store Connect's Xcode Cloud usage page",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Heures de calcul"
+          }
+        }
+      }
+    },
+    "Compute hours per month" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Heures de calcul par mois"
+          }
+        }
+      }
+    },
+    "Configuration" : {
+      "comment" : "Settings tab",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Configuration"
+          }
+        }
+      }
+    },
+    "Connected to App Store Connect" : {
+      "comment" : "Keep \"Xcode Cloud\", \"App Store Connect\" and \"TestFlight\" untranslated as product names.",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Connecté à App Store Connect"
+          }
+        }
+      }
+    },
+    "Contacting App Store Connect…" : {
+      "comment" : "Keep \"Xcode Cloud\", \"App Store Connect\" and \"TestFlight\" untranslated as product names.",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Connexion à App Store Connect…"
+          }
+        }
+      }
+    },
+    "Copy" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Copier"
+          }
+        }
+      }
+    },
+    "Copy the **Issuer ID**, shown above the table of keys, then the **Key ID** on the new key's row." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Copiez l’**Issuer ID**, affiché au-dessus du tableau des clés, puis l’**ID de la clé** sur la ligne de la nouvelle clé."
+          }
+        }
+      }
+    },
+    "Covers" : {
+      "comment" : "Settings, usage tab: the period an imported export covers.",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Période couverte"
+          }
+        }
+      }
+    },
+    "Create the key in 4 steps" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Créer la clé en 4 étapes"
+          }
+        }
+      }
+    },
+    "Cumulus" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cumulus"
+          }
+        }
+      },
+      "comment" : "Do not translate the app name."
+    },
+    "Cumulus, a build is running" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cumulus, un build est en cours"
+          }
+        }
+      },
+      "comment" : "Do not translate the app name."
+    },
+    "Cumulus, the last build failed" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cumulus, le dernier build a échoué"
+          }
+        }
+      },
+      "comment" : "Do not translate the app name."
+    },
+    "Cumulus, the last build succeeded" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cumulus, le dernier build a réussi"
+          }
+        }
+      },
+      "comment" : "Do not translate the app name."
+    },
+    "Cut" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Couper"
+          }
+        }
+      }
+    },
+    "Date not set yet: until then the menu shows no gauge, only the hours of the last 30 days." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Date pas encore saisie : en attendant, le menu ne montre pas de jauge, seulement les heures des 30 derniers jours."
+          }
+        }
+      }
+    },
+    "Developer" : {
+      "comment" : "Access level of an API key, as App Store Connect names it in its own language",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Développeur"
+          }
+        }
+      }
+    },
+    "Diagram of the App Store Connect page: the two values to copy are highlighted." : {
+      "comment" : "Keep \"Xcode Cloud\", \"App Store Connect\" and \"TestFlight\" untranslated as product names.",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Schéma de la page d’App Store Connect : les deux valeurs à copier sont surlignées."
+          }
+        }
+      }
+    },
+    "Drop the `.p8` file here" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Déposez le fichier `.p8` ici"
+          }
+        }
+      }
+    },
+    "Edit" : {
+      "comment" : "Title of the Edit menu.",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Édition"
+          }
+        }
+      }
+    },
+    "English or French. To pick another language for this app only, use System Settings." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Français ou anglais. Pour choisir une autre langue pour cette app seulement, passez par Réglages Système."
+          }
+        }
+      }
+    },
+    "Enter the key" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Saisir la clé"
+          }
+        }
+      }
+    },
+    "Enter the plan" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Saisir le forfait"
+          }
+        }
+      }
+    },
+    "Error" : {
+      "comment" : "State of a build that ended on an Xcode Cloud error, not a test or compile failure.",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Erreur"
+          }
+        }
+      }
+    },
+    "Estimated" : {
+      "comment" : "Column of the usage gauge: minutes counted from build durations rather than from Apple's export.",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Estimé"
+          }
+        }
+      }
+    },
+    "Estimated · %lld builds" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Estimated · %lld build"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Estimated · %lld builds"
+                }
+              }
+            }
+          }
+        },
+        "fr" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Estimé · %lld build"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Estimé · %lld builds"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "Export %@" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Export %@"
+          }
+        }
+      }
+    },
+    "Failed" : {
+      "comment" : "State of a build that ended with a failure.",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Échec"
+          }
+        }
+      }
+    },
+    "Fetching actions of %lld builds…" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Fetching actions of %lld build…"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Fetching actions of %lld builds…"
+                }
+              }
+            }
+          }
+        },
+        "fr" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Récupération des actions de %lld build…"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Récupération des actions de %lld builds…"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "Fetching test results (%lld/%lld)…" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Fetching test results (%1$lld/%2$lld)…"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Récupération des résultats de tests (%1$lld/%2$lld)…"
+          }
+        }
+      }
+    },
+    "Fetching test results (0/%lld)…" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Récupération des résultats de tests (0/%lld)…"
+          }
+        }
+      }
+    },
+    "Fetching test results, %lld builds at a time · about %lld min left. Figures fill in as they arrive; you can close this menu." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fetching test results, %#@builds@ at a time · about %2$lld min left. Figures fill in as they arrive; you can close this menu."
+          },
+          "substitutions" : {
+            "builds" : {
+              "argNum" : 1,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "one" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg build"
+                    }
+                  },
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg builds"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Récupération des résultats de tests, %#@builds@ à la fois · environ %2$lld min restantes. Les chiffres se complètent au fur et à mesure ; vous pouvez fermer ce menu."
+          },
+          "substitutions" : {
+            "builds" : {
+              "argNum" : 1,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "one" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg build"
+                    }
+                  },
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg builds"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "Filled in on its own from the name of the `AuthKey_…p8` file." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rempli tout seul depuis le nom du fichier `AuthKey_…p8`."
+          }
+        }
+      }
+    },
+    "Finished" : {
+      "comment" : "State of a build that ended without a known outcome.",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Terminé"
+          }
+        }
+      }
+    },
+    "Follows the language of macOS" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Suit la langue de macOS"
+          }
+        }
+      }
+    },
+    "For Apple's exact figures: in **Xcode Cloud › Usage**, click **Export as CSV**. The app picks the file up from Downloads on its own." : {
+      "comment" : "Keep \"Xcode Cloud\", \"App Store Connect\" and \"TestFlight\" untranslated as product names.",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pour les chiffres exacts d’Apple : dans **Xcode Cloud › Utilisation**, cliquez sur **Exporter au format CSV**. L’app reprend le fichier dans Téléchargements toute seule."
+          }
+        }
+      }
+    },
+    "General" : {
+      "comment" : "Settings tab",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Général"
+          }
+        }
+      }
+    },
+    "Hide the guides" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Masquer les guides"
+          }
+        }
+      }
+    },
+    "Import Usage Export…" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Importer un export d’utilisation…"
+          }
+        }
+      }
+    },
+    "Import an Export…" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Importer un export…"
+          }
+        }
+      }
+    },
+    "Imported %lld builds from %@." : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Imported %lld build from %@."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Imported %lld builds from %@."
+                }
+              }
+            }
+          }
+        },
+        "fr" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%1$lld build importé depuis %2$@."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%1$lld builds importés depuis %2$@."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "In App Store Connect, open **Users and Access › Integrations › App Store Connect API**, **Team Keys** tab." : {
+      "comment" : "Keep \"Xcode Cloud\", \"App Store Connect\" and \"TestFlight\" untranslated as product names.",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dans App Store Connect, ouvrez **Utilisateurs et accès › Intégrations › API App Store Connect**, onglet **Clés d’équipe**."
+          }
+        }
+      }
+    },
+    "In App Store Connect, open **Xcode Cloud › Usage**." : {
+      "comment" : "Keep \"Xcode Cloud\", \"App Store Connect\" and \"TestFlight\" untranslated as product names.",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dans App Store Connect, ouvrez **Xcode Cloud › Utilisation**."
+          }
+        }
+      }
+    },
+    "In the keychain" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dans le trousseau"
+          }
+        }
+      }
+    },
+    "Issuer ID" : {
+      "comment" : "Label in the diagram of App Store Connect's Integrations page",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Issuer ID"
+          }
+        }
+      }
+    },
+    "Just lasts until the reset at this pace" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tient tout juste jusqu’à la réinitialisation à ce rythme"
+          }
+        }
+      }
+    },
+    "Key ID" : {
+      "comment" : "Column of the key table in App Store Connect",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ID de la clé"
+          }
+        }
+      }
+    },
+    "Language" : {
+      "comment" : "Settings, general tab: section about the app's language.",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Langue"
+          }
+        }
+      }
+    },
+    "Language & Region…" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Langue et région…"
+          }
+        }
+      }
+    },
+    "Last Export Imported" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dernier export importé"
+          }
+        }
+      }
+    },
+    "Lasts until the reset at this pace" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tient jusqu’à la réinitialisation à ce rythme"
+          }
+        }
+      }
+    },
+    "Latest builds" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Derniers builds"
+          }
+        }
+      }
+    },
+    "Latest builds · %lld running" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Latest builds · %lld running"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Latest builds · %lld running"
+                }
+              }
+            }
+          }
+        },
+        "fr" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Derniers builds · %lld en cours"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Derniers builds · %lld en cours"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "Line %lld of the usage export can’t be read." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La ligne %lld de l’export d’utilisation est illisible."
+          }
+        }
+      }
+    },
+    "Listing apps…" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Liste des apps…"
+          }
+        }
+      }
+    },
+    "Listing builds of %@…" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Liste des builds de %@…"
+          }
+        }
+      }
+    },
+    "Measured so far" : {
+      "comment" : "Column of the usage gauge while the first figures are being measured.",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mesuré à ce stade"
+          }
+        }
+      }
+    },
+    "Measuring progress" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Progression de la mesure"
+          }
+        }
+      }
+    },
+    "Measuring usage…" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mesure de l’utilisation…"
+          }
+        }
+      }
+    },
+    "Measuring your builds" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mesure de vos builds"
+          }
+        }
+      }
+    },
+    "Name" : {
+      "comment" : "Column of the key table in App Store Connect",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nom"
+          }
+        }
+      }
+    },
+    "Next reset" : {
+      "comment" : "Settings: date when the plan's monthly cycle starts again.",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Prochaine réinitialisation"
+          }
+        }
+      }
+    },
+    "No Xcode Cloud app yet." : {
+      "comment" : "Keep \"Xcode Cloud\", \"App Store Connect\" and \"TestFlight\" untranslated as product names.",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aucune app Xcode Cloud pour l’instant."
+          }
+        }
+      }
+    },
+    "No internet connection." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pas de connexion à Internet."
+          }
+        }
+      }
+    },
+    "No usage export imported yet." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aucun export d’utilisation importé pour l’instant."
+          }
+        }
+      }
+    },
+    "No usage export yet: figures are estimates" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pas encore d’export d’utilisation : les chiffres sont des estimations"
+          }
+        }
+      }
+    },
+    "Not updated yet" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pas encore mis à jour"
+          }
+        }
+      }
+    },
+    "Only the Account Holder or an Admin of the team can create a team key." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Seuls le titulaire du compte et les admins de l’équipe peuvent créer une clé d’équipe."
+          }
+        }
+      }
+    },
+    "Open Login Items…" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ouvrir Ouverture…"
+          }
+        }
+      }
+    },
+    "Open Usage ↗" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ouvrir Utilisation ↗"
+          }
+        }
+      }
+    },
+    "Open at Login" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ouvrir à la connexion"
+          }
+        }
+      }
+    },
+    "Open in App Store Connect ↗" : {
+      "comment" : "Keep \"Xcode Cloud\", \"App Store Connect\" and \"TestFlight\" untranslated as product names.",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ouvrir dans App Store Connect ↗"
+          }
+        }
+      }
+    },
+    "Paste" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Coller"
+          }
+        }
+      }
+    },
+    "Plan used up · resets %@" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Forfait épuisé · réinitialisation le %@"
+          }
+        }
+      }
+    },
+    "Private Key" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Clé privée"
+          }
+        }
+      }
+    },
+    "Quit Cumulus" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quitter Cumulus"
+          }
+        }
+      },
+      "comment" : "Do not translate the app name."
+    },
+    "Redo" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rétablir"
+          }
+        }
+      }
+    },
+    "Refresh" : {
+      "comment" : "Menu item that reloads the builds. Short verb.",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Actualiser"
+          }
+        }
+      }
+    },
+    "Remove Key" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Supprimer la clé"
+          }
+        }
+      }
+    },
+    "Remove Key…" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Supprimer la clé…"
+          }
+        }
+      }
+    },
+    "Remove the API key from the keychain?" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Supprimer la clé API du trousseau ?"
+          }
+        }
+      }
+    },
+    "Resets %@" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Réinitialisation le %@"
+          }
+        }
+      }
+    },
+    "Resets on" : {
+      "comment" : "Before the reset date in the diagram",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Réinitialisation le"
+          }
+        }
+      }
+    },
+    "Run the connection test to check it." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lancez le test de connexion pour la vérifier."
+          }
+        }
+      }
+    },
+    "Running" : {
+      "comment" : "State of a build in progress.",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "En cours"
+          }
+        }
+      }
+    },
+    "Runs out around %@ at this pace" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Épuisé vers le %@ à ce rythme"
+          }
+        }
+      }
+    },
+    "Save and Test" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enregistrer et tester"
+          }
+        }
+      }
+    },
+    "Select All" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tout sélectionner"
+          }
+        }
+      }
+    },
+    "Set Up Your App Store Connect API Key…" : {
+      "comment" : "Keep \"Xcode Cloud\", \"App Store Connect\" and \"TestFlight\" untranslated as product names.",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Configurer votre clé API App Store Connect…"
+          }
+        }
+      }
+    },
+    "Set Your Plan’s Reset Date…" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Saisir la date de réinitialisation du forfait…"
+          }
+        }
+      }
+    },
+    "Settings…" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Réglages…"
+          }
+        }
+      }
+    },
+    "Skipped" : {
+      "comment" : "State of a build that Xcode Cloud did not run.",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ignoré"
+          }
+        }
+      }
+    },
+    "Startup" : {
+      "comment" : "Settings, general tab: section about opening the app at login.",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Démarrage"
+          }
+        }
+      }
+    },
+    "Still to measure" : {
+      "comment" : "Column of the usage gauge while the first figures are being measured.",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reste à mesurer"
+          }
+        }
+      }
+    },
+    "Succeeded" : {
+      "comment" : "State of a build that ended well.",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Réussi"
+          }
+        }
+      }
+    },
+    "Syncing · started %@" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Synchronisation · commencée %@"
+          }
+        }
+      }
+    },
+    "Test Connection" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tester la connexion"
+          }
+        }
+      }
+    },
+    "The Issuer ID or the Key ID may not match the file, or the key was revoked. Check step 3." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "L’Issuer ID ou l’ID de la clé ne correspond peut-être pas au fichier, ou la clé a été révoquée. Vérifiez l’étape 3."
+          }
+        }
+      }
+    },
+    "The app reads your Xcode Cloud builds with an API key. It changes nothing on your account, and the key stays in your keychain." : {
+      "comment" : "Keep \"Xcode Cloud\", \"App Store Connect\" and \"TestFlight\" untranslated as product names.",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "L’app lit vos builds Xcode Cloud avec une clé API. Elle ne modifie rien sur votre compte, et la clé reste dans votre trousseau."
+          }
+        }
+      }
+    },
+    "The app starts with your session and stays in the menu bar." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "L’app se lance avec votre session et reste dans la barre des menus."
+          }
+        }
+      }
+    },
+    "The app will stop reading Xcode Cloud data until a key is imported again." : {
+      "comment" : "Keep \"Xcode Cloud\", \"App Store Connect\" and \"TestFlight\" untranslated as product names.",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "L’app cessera de lire les données Xcode Cloud jusqu’à ce qu’une clé soit de nouveau importée."
+          }
+        }
+      }
+    },
+    "The cycle renews every month on this date. If the gauge does not match App Store Connect, check it again." : {
+      "comment" : "Keep \"Xcode Cloud\", \"App Store Connect\" and \"TestFlight\" untranslated as product names.",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Le cycle se renouvelle chaque mois à cette date. Si la jauge ne correspond pas à App Store Connect, revérifiez-la."
+          }
+        }
+      }
+    },
+    "The gauge and the menu bar percentage appear once every build of the cycle is measured." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La jauge et le pourcentage de la barre des menus apparaissent une fois tous les builds du cycle mesurés."
+          }
+        }
+      }
+    },
+    "The key stored in the keychain is unreadable. Remove it and import it again." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La clé enregistrée dans le trousseau est illisible. Supprimez-la et importez-la de nouveau."
+          }
+        }
+      }
+    },
+    "The keychain refused the operation: %@" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Le trousseau a refusé l’opération : %@"
+          }
+        }
+      }
+    },
+    "The private key can’t be read. Import the .p8 file downloaded from App Store Connect." : {
+      "comment" : "Keep \"Xcode Cloud\", \"App Store Connect\" and \"TestFlight\" untranslated as product names.",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La clé privée est illisible. Importez le fichier .p8 téléchargé depuis App Store Connect."
+          }
+        }
+      }
+    },
+    "The usage export contains no build." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "L’export d’utilisation ne contient aucun build."
+          }
+        }
+      }
+    },
+    "This file can’t be read as text." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ce fichier ne se lit pas comme du texte."
+          }
+        }
+      }
+    },
+    "This isn’t an Xcode Cloud usage export: missing %@." : {
+      "comment" : "Keep \"Xcode Cloud\", \"App Store Connect\" and \"TestFlight\" untranslated as product names.",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ce n’est pas un export d’utilisation Xcode Cloud : il manque %@."
+          }
+        }
+      }
+    },
+    "Too early in the cycle to project a pace" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Trop tôt dans le cycle pour estimer un rythme"
+          }
+        }
+      }
+    },
+    "Undo" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Annuler"
+          }
+        }
+      }
+    },
+    "Update from App Store Connect" : {
+      "comment" : "Keep \"Xcode Cloud\", \"App Store Connect\" and \"TestFlight\" untranslated as product names.",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mettre à jour depuis App Store Connect"
+          }
+        }
+      }
+    },
+    "Updated %@" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mis à jour %@"
+          }
+        }
+      }
+    },
+    "Updating…" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mise à jour…"
+          }
+        }
+      }
+    },
+    "Usage" : {
+      "comment" : "Settings tab",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Utilisation"
+          }
+        }
+      }
+    },
+    "Usage by app" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Utilisation par app"
+          }
+        }
+      }
+    },
+    "Used" : {
+      "comment" : "Column of the usage gauge: minutes consumed so far in the cycle.",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Utilisé"
+          }
+        }
+      }
+    },
+    "Waiting for your approval in System Settings." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "En attente de votre accord dans Réglages Système."
+          }
+        }
+      }
+    },
+    "Where to find the key and the reset date?" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Où trouver la clé et la date de réinitialisation ?"
+          }
+        }
+      }
+    },
+    "Where to find them" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Où les trouver"
+          }
+        }
+      }
+    },
+    "Window" : {
+      "comment" : "Title of the Window menu.",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fenêtre"
+          }
+        }
+      }
+    },
+    "Without an export, the usage shown is an **estimate** computed from the builds' durations. The plan and its reset date are set in the Configuration tab." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sans export, l’utilisation affichée est une **estimation** calculée à partir de la durée des builds. Le forfait et sa date de réinitialisation se règlent dans l’onglet Configuration."
+          }
+        }
+      }
+    },
+    "Xcode Cloud Apps" : {
+      "comment" : "Keep \"Xcode Cloud\", \"App Store Connect\" and \"TestFlight\" untranslated as product names.",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apps Xcode Cloud"
+          }
+        }
+      }
+    },
+    "Xcode Cloud Plan" : {
+      "comment" : "Keep \"Xcode Cloud\", \"App Store Connect\" and \"TestFlight\" untranslated as product names.",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Forfait Xcode Cloud"
+          }
+        }
+      }
+    },
+    "[DD Month YYYY]" : {
+      "comment" : "Placeholder of a date in the diagram of App Store Connect's usage page",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "[JJ mois AAAA]"
+          }
+        }
+      }
+    },
+    "macOS refused the change: %@" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "macOS a refusé la modification : %@"
+          }
+        }
+      }
+    },
+    "now" : {
+      "comment" : "Age of a build created less than a minute ago. Very short.",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "à l’instant"
+          }
+        }
+      }
+    },
+    "used of" : {
+      "comment" : "Between the hours used and the plan's hours in the diagram",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "utilisées sur"
+          }
+        }
+      }
+    }
+  },
+  "version" : "1.0"
+}

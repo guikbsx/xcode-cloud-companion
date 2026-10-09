@@ -14,7 +14,9 @@ struct StatusMenuState {
     var needsAPIKey: Bool
     var summary: UsageSummary?
     var snapshot: BuildSnapshot = .empty
+    var palette = AppPalette()
     var lastSync: Date?
+    var syncStartedAt: Date?
     var isSyncing: Bool
     var errorMessage: String?
     var now: Date
@@ -44,6 +46,14 @@ extension NSMenuItem {
 }
 
 enum StatusMenuBuilder {
+    /// A tinted triangle ahead of the text: the menu draws no item image.
+    static func warningTitle(_ text: String) -> NSAttributedString {
+        let font = NSFont.menuFont(ofSize: 0)
+        let title = NSMutableAttributedString(string: "\u{25B2} ", attributes: [.font: font, .foregroundColor: NSColor.systemOrange])
+        title.append(NSAttributedString(string: text, attributes: [.font: font, .foregroundColor: NSColor.secondaryLabelColor]))
+        return title
+    }
+
     static func items(for state: StatusMenuState, actions: StatusMenuActions) -> [NSMenuItem] {
         var items: [NSMenuItem] = []
 
@@ -52,20 +62,29 @@ enum StatusMenuBuilder {
             items.append(.separator())
         }
 
+        if let measurement = state.summary?.measurement, measurement.isMeasuring {
+            items.append(viewItem(MeasuringHeaderView(progress: measurement)))
+            items.append(.separator())
+        }
+
+        let latest = LatestBuildsMenu.items(snapshot: state.snapshot, now: state.now, open: actions.openURL)
+        if !latest.isEmpty {
+            items += latest
+            items.append(.separator())
+        }
+
         if let summary = state.summary {
-            items.append(viewItem(UsageHeaderView(summary: summary)))
-            items.append(viewItem(UsageStatsView(summary: summary)))
-            items.append(viewItem(UsageHistogramView(daily: summary.daily)))
+            items.append(viewItem(UsageGaugeView(summary: summary, palette: state.palette)))
         } else {
             items.append(NSMenuItem.action(String(localized: "Set Your Plan’s Reset Date…"), handler: actions.openSettings))
         }
         items.append(.separator())
-        items += AppBuildsMenu.items(snapshot: state.snapshot, summary: state.summary, now: state.now, open: actions.openURL)
+        items += AppBuildsMenu.items(snapshot: state.snapshot, summary: state.summary, palette: state.palette, now: state.now, open: actions.openURL)
 
         let status = NSMenuItem(title: statusLine(for: state), action: nil, keyEquivalent: "")
         status.isEnabled = false
         if state.errorMessage != nil {
-            status.image = NSImage(systemSymbolName: "exclamationmark.triangle.fill", accessibilityDescription: nil)
+            status.attributedTitle = warningTitle(status.title)
         }
         items.append(status)
         let refresh = NSMenuItem.action(String(localized: "Refresh"), keyEquivalent: "r", handler: actions.refresh)
@@ -80,7 +99,7 @@ enum StatusMenuBuilder {
         }
         items.append(NSMenuItem.action(String(localized: "Settings…"), keyEquivalent: ",", handler: actions.openSettings))
         items.append(NSMenuItem(
-            title: String(localized: "Quit Xcode Cloud Companion"),
+            title: String(localized: "Quit Cumulus"),
             action: #selector(NSApplication.terminate(_:)),
             keyEquivalent: "q"
         ))
@@ -89,7 +108,10 @@ enum StatusMenuBuilder {
 
     static func statusLine(for state: StatusMenuState) -> String {
         if state.isSyncing {
-            return String(localized: "Updating…")
+            guard let started = state.syncStartedAt, state.now.timeIntervalSince(started) >= 60 else {
+                return String(localized: "Updating…")
+            }
+            return String(localized: "Syncing · started \(UsageFormat.relative(started, now: state.now))")
         }
         if let errorMessage = state.errorMessage {
             return errorMessage
@@ -101,12 +123,15 @@ enum StatusMenuBuilder {
     }
 
     static func buttonTitle(for summary: UsageSummary?) -> String {
-        summary.map { UsageFormat.percent($0.fractionUsed) } ?? ""
+        guard let summary else { return "" }
+        return summary.measurement.isMeasuring ? "…" : UsageFormat.percent(summary.fractionUsed)
     }
 
     private static func viewItem(_ view: some View) -> NSMenuItem {
         let hostingView = NSHostingView(rootView: view)
         hostingView.frame.size = hostingView.fittingSize
+        // The menu widens its items to its widest row: the block follows instead of leaving a gap on the right.
+        hostingView.autoresizingMask = [.width]
         let item = NSMenuItem()
         item.view = hostingView
         return item

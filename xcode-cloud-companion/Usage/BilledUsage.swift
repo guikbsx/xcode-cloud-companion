@@ -27,7 +27,7 @@ nonisolated enum UsageImportError: Error, Equatable, Sendable {
         case .unreadable:
             String(localized: "This file can’t be read as text.")
         case .missingColumns(let columns):
-            String(localized: "This isn’t an Xcode Cloud usage export: missing \(columns.joined(separator: ", ")).")
+            String(localized: "This isn’t an Xcode Cloud usage export: missing \(columns.formatted(.list(type: .and))).")
         case .invalidRow(let line):
             String(localized: "Line \(line) of the usage export can’t be read.")
         case .empty:

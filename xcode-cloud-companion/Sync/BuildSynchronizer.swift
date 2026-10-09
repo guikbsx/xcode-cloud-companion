@@ -51,28 +51,45 @@ nonisolated struct BuildSynchronizer: Sendable {
         }
 
         // Per-device results are final once a test action completes; they are fetched once and kept.
+        // Newest builds first, so the current cycle is measured before older history.
         var testDevicesByActionID: [String: [CITestDeviceRun]] = [:]
-        var actionsNeedingDevices: [String] = []
+        var attempts = previous.testResultAttempts
+        var candidates: [(id: String, created: Date)] = []
         for run in runs {
             for action in actionsByRunID[run.id] ?? [] where action.actionType == .test && action.executionProgress == .complete {
                 if let cached = previous.testDevicesByActionID[action.id] {
                     testDevicesByActionID[action.id] = cached
-                } else {
-                    actionsNeedingDevices.append(action.id)
+                } else if attempts[action.id, default: 0] < BuildSnapshot.maximumTestResultAttempts {
+                    candidates.append((action.id, run.createdDate ?? .distantPast))
                 }
             }
         }
-        // Hundreds of requests on a first sync: one failure skips that action until the next sync, a rate limit stops the series.
-        let batch = Array(actionsNeedingDevices.prefix(Self.maxTestResultFetchesPerSync))
-        for (actionID, devices) in await fetchTestDevices(for: batch, total: actionsNeedingDevices.count) {
+        var seen = Set<String>()
+        let queue = candidates.sorted { $0.created > $1.created }.map(\.id).filter { seen.insert($0).inserted }
+
+        // Hundreds of requests on a first sync: a batch per pass, one failure skips that action until the next pass,
+        // and a rate limit stops the series without counting against any action.
+        let batch = Array(queue.prefix(Self.maxTestResultFetchesPerSync))
+        let outcome = await fetchTestDevices(for: batch, total: queue.count)
+        for (actionID, devices) in outcome.results {
             testDevicesByActionID[actionID] = devices
+            attempts[actionID] = nil
         }
+        if !outcome.stoppedByRateLimit {
+            let fetched = Set(outcome.results.map(\.0))
+            for id in batch where !fetched.contains(id) {
+                attempts[id, default: 0] += 1
+            }
+        }
+        let knownActions = Set(actionsByRunID.values.joined().map(\.id))
+        attempts = attempts.filter { knownActions.contains($0.key) }
 
         return BuildSnapshot(
             products: products,
             runs: runs,
             actionsByRunID: actionsByRunID,
             testDevicesByActionID: testDevicesByActionID,
+            testResultAttempts: attempts,
             workflows: workflows,
             lastSuccessfulSync: now
         )
@@ -99,13 +116,16 @@ nonisolated struct BuildSynchronizer: Sendable {
 
     /// Complete test actions whose per-device results are still to be fetched.
     static func pendingTestResultCount(in snapshot: BuildSnapshot) -> Int {
-        snapshot.actionsByRunID.values.joined().filter {
-            $0.actionType == .test && $0.executionProgress == .complete && snapshot.testDevicesByActionID[$0.id] == nil
-        }.count
+        snapshot.actionsByRunID.values.joined().filter(snapshot.needsTestResults).count
     }
 
-    private func fetchTestDevices(for actionIDs: [String], total: Int) async -> [(String, [CITestDeviceRun])] {
-        guard !actionIDs.isEmpty else { return [] }
+    struct TestFetchOutcome: Sendable {
+        var results: [(String, [CITestDeviceRun])] = []
+        var stoppedByRateLimit = false
+    }
+
+    private func fetchTestDevices(for actionIDs: [String], total: Int) async -> TestFetchOutcome {
+        guard !actionIDs.isEmpty else { return TestFetchOutcome() }
         let progress = progress
         progress(String(localized: "Fetching test results (0/\(total))…"))
         let fetchOne: @Sendable (String) async throws(AppStoreConnectError) -> [CITestDeviceRun]? = { [client] id throws(AppStoreConnectError) in
@@ -117,10 +137,14 @@ nonisolated struct BuildSynchronizer: Sendable {
                 return nil
             }
         }
-        let results: [(String, [CITestDeviceRun]?)] = (try? await fetchConcurrently(actionIDs, onEach: { done in
-            progress(String(localized: "Fetching test results (\(done)/\(total))…"))
-        }, fetchOne)) ?? []
-        return results.compactMap { (id: String, devices: [CITestDeviceRun]?) in devices.map { (id, $0) } }
+        do {
+            let results: [(String, [CITestDeviceRun]?)] = try await fetchConcurrently(actionIDs, onEach: { done in
+                progress(String(localized: "Fetching test results (\(done)/\(total))…"))
+            }, fetchOne)
+            return TestFetchOutcome(results: results.compactMap { (id: String, devices: [CITestDeviceRun]?) in devices.map { (id, $0) } })
+        } catch {
+            return TestFetchOutcome(stoppedByRateLimit: true)
+        }
     }
 
     private func fetchConcurrently<Value: Sendable>(

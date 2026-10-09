@@ -38,8 +38,8 @@ struct BuildSynchronizerTests {
         #expect(snapshot.workflows.map(\.name) == ["Release", "Pull Requests", "Release", "Pull Requests"])
         #expect(Set(snapshot.testDevicesByActionID.keys) == ["action-test"])
         #expect(snapshot.testDevicesByActionID["action-test"]?.count == 3)
-        // products + 2 workflows + 2 pages of runs + 3 actions + 1 test action's results (same fixture for every run)
-        #expect(await transport.requests.count == 12)
+        // products + 2 workflows + 3 build-run pages + 3 action lists + 1 test-results request (one action id, asked once)
+        #expect(await transport.requests.count == 10)
     }
 
     @Test func laterSyncsOnlyAskForNewAndRunningBuilds() async throws {

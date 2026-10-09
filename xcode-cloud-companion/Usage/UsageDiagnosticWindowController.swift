@@ -65,11 +65,11 @@ private struct UsageDiagnosticView: View {
                     Label(message, systemImage: "exclamationmark.triangle.fill").foregroundStyle(.red)
                 }
                 Spacer()
-                Button("Copy Report") {
+                Button("Copy Report" as String) {
                     NSPasteboard.general.clearContents()
                     NSPasteboard.general.setString(report, forType: .string)
                 }
-                Button("Sync Now") {
+                Button("Sync Now" as String) {
                     Task { await buildStore.refreshNow() }
                 }
                 .disabled(buildStore.isSyncing)
