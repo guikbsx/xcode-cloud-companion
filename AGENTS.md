@@ -119,7 +119,8 @@ xcodebuild test -scheme xcode-cloud-companion -project xcode-cloud-companion.xco
   -destination 'platform=macOS'
 ```
 
-- **Zéro erreur, zéro warning.** Tout code nouveau ou modifié n'en introduit aucun, et un warning rencontré sur du code touché se corrige dans la foulée. Un build incrémental masque les warnings des fichiers non recompilés : faire un `clean build` pour un état des lieux fiable.
+- **Zéro erreur, zéro warning.** Tout code nouveau ou modifié n'en introduit aucun, et un warning rencontré sur du code touché se corrige dans la foulée. Un build incrémental masque les warnings des fichiers non recompilés : faire un `clean build` pour un état des lieux fiable. Seul le message d'outillage `appintentsmetadataprocessor: Metadata extraction skipped` ne compte pas.
+- Le scheme `xcode-cloud-companion` est **partagé** (`xcshareddata/xcschemes/`) et lance la target `xcode-cloud-companionTests` : toute nouvelle target de tests s'y ajoute.
 - **Toolchain de référence : la dernière version publique d'Xcode** (Xcode 27.1 RC au 09/10/2026, `/Applications/Xcode-27.1.0-Release.Candidate.app`). Si le Xcode sélectionné est une bêta, valider avec `DEVELOPER_DIR` pointé sur la version publique. N'utiliser aucune API ni syntaxe propre à une bêta.
 - **Compiler au moins une fois en `Release`** avant de clore un lot : un `#Preview` qui lit un membre DEBUG-only casse uniquement la Release.
 - Si Xcode est ouvert, `xcodebuild` peut échouer sur `database is locked` : passer `-derivedDataPath` vers un dossier de travail.
@@ -129,7 +130,14 @@ xcodebuild test -scheme xcode-cloud-companion -project xcode-cloud-companion.xco
 
 ## 3. Conventions de code
 
-- **Concurrence Swift 6 stricte.** Pas de `nonisolated(unsafe)`, de `@unchecked Sendable` ni de `@preconcurrency import` : chercher la vraie isolation (`@MainActor`, actor dédié, type réellement `Sendable`). Si un contournement semble inévitable, le signaler et le justifier.
+- **Concurrence Swift 6 stricte, isolation par défaut `MainActor`** (`SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor`, `SWIFT_APPROACHABLE_CONCURRENCY = YES`). Chaque type reçoit une isolation choisie, pas subie :
+  - **`MainActor` seulement pour ce qui touche l'interface** : vues SwiftUI, `NSStatusItem` / `NSMenu`, état observé par les vues ;
+  - **`nonisolated` pour tout le reste** : modèles de données (structs `Sendable`), décodage, calcul de l'usage, construction des requêtes, formatage. C'est le cas le plus fréquent ;
+  - **un `actor` seulement s'il protège un état mutable partagé** (cache, jeton JWT en cours de validité) ;
+  - **de l'asynchrone seulement quand c'est indispensable** (réseau, disque, trousseau). Une fonction de calcul reste synchrone ;
+  - **pas de saut d'acteur inutile** : on ne fait pas d'aller-retour vers le `MainActor` pour une donnée qui peut se calculer ailleurs, et on ne passe à l'interface que le résultat final.
+- **Économie de données** : ne demander à l'API que ce qui sert (`fields[…]`, `limit`, `include` ciblés), ne pas redemander ce qui est en cache, ne garder en mémoire que ce que l'interface affiche.
+- **Pas de contournement** : ni `nonisolated(unsafe)`, ni `@unchecked Sendable`, ni `@preconcurrency import`. Chercher la vraie isolation ; si un contournement semble inévitable, le signaler et le justifier.
 - **Ajout de fichiers** : le projet utilise des groupes synchronisés, un fichier créé dans `xcode-cloud-companion/` est pris en compte sans éditer `project.pbxproj`.
 - **Secrets** : la clé `.p8`, l'Issuer ID et le Key ID vivent dans le trousseau. Ne jamais les écrire dans le code, les logs, les tests ni les tickets.
 - **Tests** : Swift Testing. Le calcul de l'usage (cycles, quota, rythme) et le décodage des réponses de l'API se testent avec des fixtures JSON, sans appel réseau.
