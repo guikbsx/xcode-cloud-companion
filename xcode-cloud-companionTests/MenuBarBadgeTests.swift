@@ -70,27 +70,6 @@ struct MenuBarBadgeTests {
         #expect(MenuBarBadge.accessibilityLabel(for: .succeeded).contains("succeeded"))
     }
 
-    /// Measured on the real status button: 63.5 × 22 pt, flipped, image area (10, 7, 17.5, 9), cloud 18 × 13 drawn in (1, 1, 16, 10.75).
-    @Test func theDotSitsOnTheLowerRightCornerOfTheCloudOnTheRealButton() {
-        let origin = MenuBarBadgePlacement.frameOrigin(
-            imageAreaMid: NSPoint(x: 18.75, y: 11.5), imageSize: NSSize(width: 18, height: 13),
-            glyph: NSRect(x: 1, y: 1, width: 16, height: 10.75), badgeSize: 14, isFlipped: true
-        )
-
-        // Image origin (9.75, 5): the dot's centre is 1 pt inside the cloud's right edge (x 25.75) and 1 pt above its bottom edge (y 16).
-        #expect(origin == NSPoint(x: 18.75, y: 9))
-    }
-
-    @Test func theSamePlacementHoldsWhenTheViewIsNotFlipped() {
-        let origin = MenuBarBadgePlacement.frameOrigin(
-            imageAreaMid: NSPoint(x: 18.75, y: 11.5), imageSize: NSSize(width: 18, height: 13),
-            glyph: NSRect(x: 1, y: 1, width: 16, height: 10.75), badgeSize: 14, isFlipped: false
-        )
-
-        // Image origin y 5; the glyph's bottom edge is at 6; the centre sits 1 pt above it.
-        #expect(origin == NSPoint(x: 18.75, y: 0))
-    }
-
     @Test func theCloudSymbolIsDrawnWithinItsImage() throws {
         let cloud = try #require(NSImage(systemSymbolName: "cloud", accessibilityDescription: nil))
         let bounds = cloud.drawnBounds
@@ -98,17 +77,5 @@ struct MenuBarBadgeTests {
         #expect(bounds.width > 10 && bounds.height > 8)
         #expect(bounds.minX >= 0 && bounds.minY >= 0)
         #expect(bounds.maxX <= cloud.size.width + 0.5 && bounds.maxY <= cloud.size.height + 0.5)
-    }
-
-    @Test func theDotViewIsHiddenWithoutABadge() {
-        let view = MenuBarBadgeView(frame: .zero)
-        #expect(view.isHidden)
-
-        view.badge = .running
-        #expect(!view.isHidden)
-
-        view.badge = nil
-        #expect(view.isHidden)
-        #expect(view.frame.size == NSSize(width: MenuBarBadgeView.size, height: MenuBarBadgeView.size))
     }
 }

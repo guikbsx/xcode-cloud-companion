@@ -12,9 +12,6 @@ final class StatusItemController: NSObject, NSMenuDelegate {
     private let paletteStore: AppPaletteStore
     private let defaults: UserDefaults
     private var palette: AppPalette
-    private let badgeView = MenuBarBadgeView(frame: .zero)
-    private let cloudBounds: NSRect
-    private let measuringCloud: NSImage
     private var clock: Task<Void, Never>?
 
     init(
@@ -35,31 +32,19 @@ final class StatusItemController: NSObject, NSMenuDelegate {
         self.defaults = defaults
         palette = paletteStore.load(from: defaults)
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
-        let cloud = CloudLevelGlyph.image(level: nil)
-        cloudBounds = cloud.drawnBounds
-        measuringCloud = Self.dimmed(cloud)
         super.init()
-        statusItem.button?.image = cloud
+        statusItem.button?.image = MenuBarIcon.image(badge: nil, measuring: false)
         statusItem.button?.imagePosition = .imageLeading
         statusItem.button?.font = .monospacedDigitSystemFont(ofSize: NSFont.systemFontSize, weight: .regular)
-        statusItem.button?.addSubview(badgeView)
         let menu = NSMenu()
         menu.autoenablesItems = false
         menu.delegate = self
         statusItem.menu = menu
-        NSWorkspace.shared.notificationCenter.addObserver(
-            self, selector: #selector(displayOptionsDidChange), name: NSWorkspace.accessibilityDisplayOptionsDidChangeNotification, object: nil
-        )
         followUsage()
         startClock()
     }
 
-    @objc private func displayOptionsDidChange() {
-        badgeView.needsDisplay = true
-    }
-
     isolated deinit {
-        NSWorkspace.shared.notificationCenter.removeObserver(self)
         clock?.cancel()
         NSStatusBar.system.removeStatusItem(statusItem)
     }
@@ -127,16 +112,9 @@ final class StatusItemController: NSObject, NSMenuDelegate {
         guard let button = statusItem.button else { return }
         let summary = state.summary
         button.title = StatusMenuBuilder.buttonTitle(for: summary)
-        // While the first figures are being measured the cloud fades, without any animation; then it fills with the usage.
-        if let summary, summary.measurement.isMeasuring {
-            button.image = measuringCloud
-        } else {
-            button.image = CloudLevelGlyph.image(level: summary?.fractionUsed)
-        }
         let badge = currentBadge()
-        badgeView.badge = badge
+        button.image = MenuBarIcon.image(badge: badge, measuring: summary?.measurement.isMeasuring == true)
         button.setAccessibilityLabel(MenuBarBadge.accessibilityLabel(for: badge))
-        placeBadge(on: button)
     }
 
     private func currentBadge() -> MenuBarBadge? {
@@ -151,30 +129,5 @@ final class StatusItemController: NSObject, NSMenuDelegate {
         }
         #endif
         return MenuBarBadge.status(for: buildStore.snapshot, now: now())
-    }
-
-    /// The same symbol at 60 % opacity, still a template so the menu bar tints it.
-    private static func dimmed(_ image: NSImage) -> NSImage {
-        let faded = NSImage(size: image.size, flipped: false) { rect in
-            image.draw(in: rect, from: .zero, operation: .sourceOver, fraction: 0.6)
-            return true
-        }
-        faded.isTemplate = true
-        faded.accessibilityDescription = image.accessibilityDescription
-        return faded
-    }
-
-    /// The cell centres the image in its rectangle, so the placement starts from that rectangle's middle.
-    private func placeBadge(on button: NSStatusBarButton) {
-        guard let image = button.image, let cell = button.cell else { return }
-        let area = cell.imageRect(forBounds: button.bounds)
-        guard area.width > 0, cloudBounds.width > 0 else { return }
-        badgeView.setFrameOrigin(MenuBarBadgePlacement.frameOrigin(
-            imageAreaMid: NSPoint(x: area.midX, y: area.midY),
-            imageSize: image.size,
-            glyph: cloudBounds,
-            badgeSize: MenuBarBadgeView.size,
-            isFlipped: button.isFlipped
-        ))
     }
 }

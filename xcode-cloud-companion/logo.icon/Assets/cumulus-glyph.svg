@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <!-- Cumulus glyph: the reference cloud (100 x 64 box) with the level frozen at mid-height, white on transparent. -->
+  <defs>
+    <clipPath id="cloud">
+      <path d="M26 58 H74 A16 16 0 0 0 74 26 A22 22 0 0 0 32 30 A14 14 0 0 0 26 58 Z"/>
+    </clipPath>
+  </defs>
+  <g transform="translate(512 512) scale(7.2) translate(-52.5 -35)">
+    <path clip-path="url(#cloud)" fill="#FFFFFF" d="M0 35 Q12 29 25 35 T50 35 T75 35 T100 35 V70 H0 Z"/>
+    <path fill="none" stroke="#FFFFFF" stroke-width="7" stroke-linejoin="round" d="M26 58 H74 A16 16 0 0 0 74 26 A22 22 0 0 0 32 30 A14 14 0 0 0 26 58 Z"/>
+  </g>
+</svg>
