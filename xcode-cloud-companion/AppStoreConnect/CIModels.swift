@@ -22,6 +22,13 @@ nonisolated struct CIBuildRun: Codable, Sendable, Equatable, Identifiable {
     let workflowID: String?
     let workflowName: String?
     let sourceBranchOrTag: String?
+    // Added for the window; absent from caches written before, which decode them as nil.
+    var issueCounts: CIIssueCounts? = nil
+    var sourceCommit: CISourceCommit? = nil
+    var cancelReason: String? = nil
+    var isPullRequestBuild: Bool? = nil
+    var pullRequestNumber: Int? = nil
+    var pullRequestTitle: String? = nil
 }
 
 nonisolated struct CIBuildAction: Codable, Sendable, Equatable, Identifiable {
@@ -34,6 +41,7 @@ nonisolated struct CIBuildAction: Codable, Sendable, Equatable, Identifiable {
     let executionProgress: CIExecutionProgress
     let completionStatus: CICompletionStatus?
     let isRequiredToPass: Bool?
+    var issueCounts: CIIssueCounts? = nil
 }
 
 /// What one simulated device did during a test action: Apple bills each device for its own time.
@@ -50,6 +58,19 @@ nonisolated struct CIWorkflow: Codable, Sendable, Equatable, Identifiable {
     let name: String
     /// Destinations configured on each test action, in the workflow's order.
     let testDestinationCounts: [Int]
+    // Added for the window; absent from caches written before.
+    var productID: String? = nil
+    var description: String? = nil
+    var isEnabled: Bool? = nil
+    var isLockedForEditing: Bool? = nil
+    var clean: Bool? = nil
+    var containerFilePath: String? = nil
+    var lastModifiedDate: Date? = nil
+    var actions: [CIWorkflowAction] = []
+    var startConditions: CIStartConditions? = nil
+    var xcodeVersionName: String? = nil
+    var macOSVersionName: String? = nil
+    var repositoryName: String? = nil
 }
 
 nonisolated enum CIExecutionProgress: Sendable, Equatable {
@@ -190,6 +211,10 @@ nonisolated struct CIBuildRunAttributes: Decodable, Sendable {
     let executionProgress: String?
     let completionStatus: String?
     let startReason: String?
+    let cancelReason: String?
+    let isPullRequestBuild: Bool?
+    let issueCounts: CIIssueCounts?
+    let sourceCommit: CISourceCommitAttributes?
 }
 
 nonisolated struct CIBuildActionAttributes: Decodable, Sendable {
@@ -200,6 +225,7 @@ nonisolated struct CIBuildActionAttributes: Decodable, Sendable {
     let executionProgress: String?
     let completionStatus: String?
     let isRequiredToPass: Bool?
+    let issueCounts: CIIssueCounts?
 }
 
 nonisolated struct CITestResultAttributes: Decodable, Sendable {
@@ -216,10 +242,29 @@ nonisolated struct CITestResultAttributes: Decodable, Sendable {
 
 nonisolated struct CIWorkflowAttributes: Decodable, Sendable {
     let name: String?
+    let description: String?
+    let isEnabled: Bool?
+    let isLockedForEditing: Bool?
+    let clean: Bool?
+    let containerFilePath: String?
+    let lastModifiedDate: Date?
+    let branchStartCondition: CIStartConditionAttributes?
+    let tagStartCondition: CIStartConditionAttributes?
+    let pullRequestStartCondition: CIStartConditionAttributes?
+    let scheduledStartCondition: CIStartConditionAttributes?
+    let manualBranchStartCondition: CIStartConditionAttributes?
+    let manualTagStartCondition: CIStartConditionAttributes?
+    let manualPullRequestStartCondition: CIStartConditionAttributes?
     let actions: [Action]?
 
     struct Action: Decodable, Sendable {
+        let name: String?
         let actionType: String?
+        let destination: String?
+        let buildDistributionAudience: String?
+        let scheme: String?
+        let platform: String?
+        let isRequiredToPass: Bool?
         let testConfiguration: TestConfiguration?
     }
 
@@ -253,7 +298,8 @@ nonisolated extension JSONAPIDocument where Attributes == CIProductAttributes {
 }
 
 nonisolated extension JSONAPIDocument where Attributes == CIBuildRunAttributes {
-    func buildRuns(productID: String) -> [CIBuildRun] {
+    /// `workflowID` and `workflowName` fill what a response without includes (a created run) does not carry.
+    func buildRuns(productID: String, workflowID: String? = nil, workflowName: String? = nil) -> [CIBuildRun] {
         data.map { resource in
             let attributes = resource.attributes
             let workflowIdentifier = resource.relationship("workflow")
@@ -267,9 +313,17 @@ nonisolated extension JSONAPIDocument where Attributes == CIBuildRunAttributes {
                 executionProgress: CIExecutionProgress(rawValue: attributes?.executionProgress),
                 completionStatus: CICompletionStatus(rawValue: attributes?.completionStatus),
                 startReason: attributes?.startReason,
-                workflowID: workflowIdentifier?.id,
-                workflowName: includedResource(for: workflowIdentifier)?.attributes?.name,
-                sourceBranchOrTag: includedResource(for: resource.relationship("sourceBranchOrTag"))?.attributes?.name
+                workflowID: workflowIdentifier?.id ?? workflowID,
+                workflowName: includedResource(for: workflowIdentifier)?.attributes?.name ?? workflowName,
+                sourceBranchOrTag: includedResource(for: resource.relationship("sourceBranchOrTag"))?.attributes?.name,
+                issueCounts: attributes?.issueCounts,
+                sourceCommit: attributes?.sourceCommit.map {
+                    CISourceCommit(commitSha: $0.commitSha, message: $0.message, authorName: $0.author?.displayName, webURL: $0.webUrl)
+                },
+                cancelReason: attributes?.cancelReason,
+                isPullRequestBuild: attributes?.isPullRequestBuild,
+                pullRequestNumber: includedResource(for: resource.relationship("pullRequest"))?.attributes?.number,
+                pullRequestTitle: includedResource(for: resource.relationship("pullRequest"))?.attributes?.title
             )
         }
     }
@@ -288,7 +342,8 @@ nonisolated extension JSONAPIDocument where Attributes == CIBuildActionAttribute
                 finishedDate: attributes?.finishedDate,
                 executionProgress: CIExecutionProgress(rawValue: attributes?.executionProgress),
                 completionStatus: CICompletionStatus(rawValue: attributes?.completionStatus),
-                isRequiredToPass: attributes?.isRequiredToPass
+                isRequiredToPass: attributes?.isRequiredToPass,
+                issueCounts: attributes?.issueCounts
             )
         }
     }
@@ -317,13 +372,63 @@ nonisolated extension JSONAPIDocument where Attributes == CITestResultAttributes
 nonisolated extension JSONAPIDocument where Attributes == CIWorkflowAttributes {
     var workflows: [CIWorkflow] {
         data.map { resource in
-            CIWorkflow(
+            let attributes = resource.attributes
+            let repository = includedResource(for: resource.relationship("repository"))?.attributes
+            return CIWorkflow(
                 id: resource.id,
-                name: resource.attributes?.name ?? resource.id,
-                testDestinationCounts: (resource.attributes?.actions ?? [])
+                name: attributes?.name ?? resource.id,
+                testDestinationCounts: (attributes?.actions ?? [])
                     .filter { $0.actionType == "TEST" }
-                    .map { $0.testConfiguration?.testDestinations?.count ?? 0 }
+                    .map { $0.testConfiguration?.testDestinations?.count ?? 0 },
+                description: attributes?.description,
+                isEnabled: attributes?.isEnabled,
+                isLockedForEditing: attributes?.isLockedForEditing,
+                clean: attributes?.clean,
+                containerFilePath: attributes?.containerFilePath,
+                lastModifiedDate: attributes?.lastModifiedDate,
+                actions: (attributes?.actions ?? []).map {
+                    CIWorkflowAction(
+                        name: $0.name, actionType: CIActionType(rawValue: $0.actionType), destination: $0.destination,
+                        buildDistributionAudience: $0.buildDistributionAudience, scheme: $0.scheme,
+                        platform: $0.platform.flatMap(CIPlatform.init(rawValue:)), isRequiredToPass: $0.isRequiredToPass
+                    )
+                },
+                startConditions: attributes.map(CIStartConditions.init(attributes:)),
+                xcodeVersionName: versionName(of: includedResource(for: resource.relationship("xcodeVersion"))),
+                macOSVersionName: versionName(of: includedResource(for: resource.relationship("macOsVersion"))),
+                repositoryName: [repository?.ownerName, repository?.repositoryName].compactMap(\.self).joined(separator: "/").nilIfEmpty
             )
         }
     }
+
+    private func versionName(of resource: JSONAPIIncludedResource?) -> String? {
+        let attributes = resource?.attributes
+        switch (attributes?.name, attributes?.version) {
+        case let (name?, version?): return name.contains(version) ? name : "\(name) (\(version))"
+        case let (name?, nil): return name
+        case let (nil, version?): return version
+        case (nil, nil): return nil
+        }
+    }
+}
+
+nonisolated extension CIStartConditions {
+    init(attributes: CIWorkflowAttributes) {
+        self.init(
+            branches: attributes.branchStartCondition?.source?.model,
+            tags: attributes.tagStartCondition?.source?.model,
+            pullRequests: attributes.pullRequestStartCondition?.source?.model,
+            scheduleFrequency: attributes.scheduledStartCondition?.schedule?.frequency.flatMap(CIScheduleFrequency.init(rawValue:)),
+            filesRule: (attributes.branchStartCondition ?? attributes.pullRequestStartCondition ?? attributes.tagStartCondition)?
+                .filesAndFoldersRule?.mode.flatMap(CIFilesRuleMode.init(rawValue:)),
+            autoCancel: (attributes.branchStartCondition ?? attributes.pullRequestStartCondition ?? attributes.tagStartCondition)?.autoCancel,
+            manualBranches: attributes.manualBranchStartCondition?.source?.model,
+            manualTags: attributes.manualTagStartCondition?.source?.model,
+            manualPullRequests: attributes.manualPullRequestStartCondition?.source?.model
+        )
+    }
+}
+
+private nonisolated extension String {
+    var nilIfEmpty: String? { isEmpty ? nil : self }
 }

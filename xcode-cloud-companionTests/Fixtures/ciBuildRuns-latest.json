@@ -1,0 +1,18 @@
+{
+  "data": [
+    {
+      "type": "ciBuildRuns",
+      "id": "run-found",
+      "attributes": {
+        "number": 391,
+        "createdDate": "2026-10-09T21:30:05.000Z",
+        "executionProgress": "PENDING",
+        "startReason": "MANUAL"
+      },
+      "relationships": { "workflow": { "data": { "type": "ciWorkflows", "id": "wf-1" } } }
+    }
+  ],
+  "included": [
+    { "type": "ciWorkflows", "id": "wf-1", "attributes": { "name": "Public archive" } }
+  ]
+}

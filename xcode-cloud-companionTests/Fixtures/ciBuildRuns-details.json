@@ -1,0 +1,49 @@
+{
+  "data": [
+    {
+      "type": "ciBuildRuns",
+      "id": "run-pr",
+      "attributes": {
+        "number": 52,
+        "createdDate": "2026-10-08T12:00:00Z",
+        "startedDate": "2026-10-08T12:00:32Z",
+        "finishedDate": "2026-10-08T12:06:44Z",
+        "executionProgress": "COMPLETE",
+        "completionStatus": "FAILED",
+        "startReason": "PULL_REQUEST_UPDATE",
+        "cancelReason": null,
+        "isPullRequestBuild": true,
+        "issueCounts": { "analyzerWarnings": 0, "errors": 1, "testFailures": 3, "warnings": 2 },
+        "sourceCommit": {
+          "commitSha": "d4c3b2a1e5f60718293a4b5c6d7e8f9012345678",
+          "message": "Corrige la synchronisation des semaines passées",
+          "author": { "displayName": "Guillaume Bisiaux", "avatarUrl": "https://example.com/a.png" },
+          "webUrl": "https://github.com/example/app/commit/d4c3b2a1"
+        }
+      },
+      "relationships": {
+        "workflow": { "data": { "type": "ciWorkflows", "id": "workflow-release" } },
+        "sourceBranchOrTag": { "data": { "type": "scmGitReferences", "id": "ref-feature" } },
+        "pullRequest": { "data": { "type": "scmPullRequests", "id": "pr-7" } },
+        "actions": { "links": { "related": "https://api.appstoreconnect.apple.com/v1/ciBuildRuns/run-pr/actions" } },
+        "builds": { "data": [ { "type": "builds", "id": "beta-1" }, { "type": "builds", "id": "beta-2" } ] }
+      }
+    },
+    {
+      "type": "ciBuildRuns",
+      "id": "run-old",
+      "attributes": {
+        "number": 51,
+        "executionProgress": "COMPLETE",
+        "completionStatus": "CANCELED",
+        "cancelReason": "AUTOMATICALLY_BY_NEWER_BUILD",
+        "isPullRequestBuild": false
+      }
+    }
+  ],
+  "included": [
+    { "type": "ciWorkflows", "id": "workflow-release", "attributes": { "name": "Release" } },
+    { "type": "scmGitReferences", "id": "ref-feature", "attributes": { "name": "feature/widget", "kind": "BRANCH" } },
+    { "type": "scmPullRequests", "id": "pr-7", "attributes": { "title": "Widget : vue Semaine", "number": 7, "webUrl": "https://github.com/example/app/pull/7" } }
+  ]
+}

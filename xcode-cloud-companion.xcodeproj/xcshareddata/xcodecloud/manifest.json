@@ -1,0 +1,9 @@
+{
+  "id" : "d9bc7ac3-bcc8-4600-8a28-6456f9405b90",
+  "targets" : [
+    {
+      "id" : "09b9860e-32a5-451e-a115-ebae2a9a5ee0",
+      "name" : "xcode-cloud-companion"
+    }
+  ]
+}

@@ -35,7 +35,7 @@ struct AppStoreConnectClientTests {
         let request = try #require(await transport.requests.first)
         #expect(request.url?.path() == "/v1/ciProducts/product-1/buildRuns")
         #expect(request.queryValue("sort") == "-number")
-        #expect(request.queryValue("include") == "workflow,sourceBranchOrTag")
+        #expect(request.queryValue("include") == "workflow,sourceBranchOrTag,pullRequest")
         #expect(request.queryValue("fields[ciWorkflows]") == "name")
     }
 
@@ -100,7 +100,11 @@ struct AppStoreConnectClientTests {
 
     @Test(arguments: [
         (401, AppStoreConnectError.unauthorized(status: 401)),
-        (403, AppStoreConnectError.unauthorized(status: 403)),
+        (403, AppStoreConnectError.forbidden(code: "UNEXPECTED_ERROR", detail: "An unexpected error occurred on the server side.")),
+        (409, AppStoreConnectError.rejected(
+            status: 409, code: "UNEXPECTED_ERROR", title: "An unexpected error occurred.",
+            detail: "An unexpected error occurred on the server side.", pointer: nil
+        )),
         (429, AppStoreConnectError.rateLimited),
         (500, AppStoreConnectError.server(status: 500, detail: "An unexpected error occurred on the server side.")),
     ])

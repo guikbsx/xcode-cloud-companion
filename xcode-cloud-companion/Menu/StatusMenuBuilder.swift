@@ -6,7 +6,8 @@ struct StatusMenuActions {
     var openUsagePage: () -> Void = {}
     var importUsageExport: () -> Void = {}
     var openSettings: () -> Void = {}
-    var openURL: (URL) -> Void = { _ in }
+    var openApp: () -> Void = {}
+    var openBuild: (String) -> Void = { _ in }
     var openDiagnostic: (() -> Void)?
 }
 
@@ -81,7 +82,7 @@ enum StatusMenuBuilder {
             items.append(.separator())
         }
 
-        let latest = LatestBuildsMenu.items(snapshot: state.snapshot, now: state.now, teamID: state.teamID, open: actions.openURL)
+        let latest = LatestBuildsMenu.items(snapshot: state.snapshot, now: state.now, open: actions.openBuild)
         if !latest.isEmpty {
             items += latest
             items.append(.separator())
@@ -93,7 +94,7 @@ enum StatusMenuBuilder {
             items.append(NSMenuItem.action(String(localized: "Set Your Plan’s Reset Date…"), handler: actions.openSettings))
         }
         items.append(.separator())
-        items += AppBuildsMenu.items(snapshot: state.snapshot, summary: state.summary, palette: state.palette, now: state.now, teamID: state.teamID, open: actions.openURL)
+        items += AppBuildsMenu.items(snapshot: state.snapshot, summary: state.summary, palette: state.palette, now: state.now, open: actions.openBuild)
 
         let status = NSMenuItem(title: statusLine(for: state), action: nil, keyEquivalent: "")
         status.isEnabled = false
@@ -104,6 +105,7 @@ enum StatusMenuBuilder {
         let refresh = NSMenuItem.action(String(localized: "Refresh"), keyEquivalent: "r", handler: actions.refresh)
         refresh.isEnabled = !state.isSyncing
         items.append(refresh)
+        items.append(NSMenuItem.action(String(localized: "Open Cumulus"), keyEquivalent: "0", handler: actions.openApp))
         items.append(NSMenuItem.action(String(localized: "Update from App Store Connect"), handler: actions.openUsagePage))
         items.append(NSMenuItem.action(String(localized: "Import Usage Export…"), handler: actions.importUsageExport))
         items.append(.separator())

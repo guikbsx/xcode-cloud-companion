@@ -53,3 +53,15 @@ nonisolated struct AppPaletteStore: Sendable {
         defaults.set(try? JSONEncoder().encode(palette), forKey: key)
     }
 }
+
+nonisolated extension AppPaletteStore {
+    /// The saved colours brought up to date with the apps that exist; saved again only when something changed.
+    func refreshed(for snapshot: BuildSnapshot, summary: UsageSummary?, defaults: UserDefaults = .standard) -> AppPalette {
+        var palette = load(from: defaults)
+        let ranking = AppPalette.ranking(byConsumption: summary?.appsByConsumption ?? [], allApps: snapshot.products.map(\.name))
+        if palette.update(ranking: ranking) {
+            save(palette, to: defaults)
+        }
+        return palette
+    }
+}

@@ -22,7 +22,11 @@ nonisolated struct BuildSynchronizer: Sendable {
             progress(String(localized: "Listing builds of \(product.name)…"))
             // Workflow details only refine the estimate: when Apple fails to list them, last sync's are kept.
             if let fetched = try? await client.workflows(productID: product.id) {
-                workflows += fetched
+                workflows += fetched.map { workflow in
+                    var workflow = workflow
+                    workflow.productID = product.id
+                    return workflow
+                }
             } else {
                 workflows += previous.workflows.filter { workflow in previous.runs.contains { $0.productID == product.id && $0.workflowID == workflow.id } }
             }

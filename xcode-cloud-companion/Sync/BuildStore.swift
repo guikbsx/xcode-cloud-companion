@@ -10,6 +10,10 @@ final class BuildStore {
     private(set) var syncStartedAt: Date?
     private(set) var lastError: AppStoreConnectError?
     private(set) var isConfigured = false
+    /// Apple's hourly request budget as of the last response, shared by the menu, the window and the details.
+    private(set) var rateLimit: RateLimit?
+    private(set) var windowIsOpen = false
+    private(set) var screenIsLocked = false
 
     private let credentialsStore: any CredentialsStore
     private let cacheStore: BuildCacheStore
@@ -41,11 +45,62 @@ final class BuildStore {
         loop?.cancel()
         loop = Task { [weak self] in
             await self?.loadCacheIfNeeded()
+            guard var outcome = await self?.synchronize() else { return }
+            var lastRun = self?.now() ?? Date()
+            // The pace depends on the window, the lock and the budget, which change between two syncs: it is judged every few seconds.
             while !Task.isCancelled {
+                try? await Task.sleep(for: Self.tick)
                 guard let self else { return }
-                let outcome = await self.synchronize()
-                try? await Task.sleep(for: SyncSchedule.delay(after: outcome))
+                if SyncSchedule.isDue(lastRun: lastRun, now: self.now(), outcome: outcome, context: self.syncContext) {
+                    outcome = await self.synchronize()
+                    lastRun = self.now()
+                }
             }
+        }
+    }
+
+    static let tick: Duration = .seconds(5)
+
+    var syncContext: SyncContext {
+        SyncContext(windowIsOpen: windowIsOpen, screenIsLocked: screenIsLocked, budget: rateLimit)
+    }
+
+    /// The window shows what is built right now: it asks for fresh data when the last sync is older than 30 seconds.
+    func windowDidOpen() {
+        windowIsOpen = true
+        let isStale = snapshot.lastSuccessfulSync.map { now().timeIntervalSince($0) > 30 } ?? true
+        if isStale, loop != nil {
+            Task { await refreshNow() }
+        }
+    }
+
+    func windowDidClose() {
+        windowIsOpen = false
+    }
+
+    func screenLockDidChange(isLocked: Bool) {
+        screenIsLocked = isLocked
+        if !isLocked, loop != nil {
+            let isStale = snapshot.lastSuccessfulSync.map { now().timeIntervalSince($0) > 60 } ?? true
+            if isStale { Task { await refreshNow() } }
+        }
+    }
+
+    /// A run just started from the app shows in the lists at once, before the next sync brings Apple's own copy.
+    func insertStarted(_ run: CIBuildRun) {
+        guard !snapshot.runs.contains(where: { $0.id == run.id }) else { return }
+        snapshot.runs.insert(run, at: 0)
+        // The new run is pending: the sync picks it up soon, without waiting for the idle pace.
+        Task {
+            try? await Task.sleep(for: .seconds(5))
+            await refreshNow()
+        }
+    }
+
+    /// Reads the budget the client last saw; no request is made.
+    func updateRateLimit() async {
+        if let limit = await client?.rateLimit() {
+            rateLimit = limit
         }
     }
 
@@ -95,6 +150,7 @@ final class BuildStore {
         }
         isConfigured = true
 
+        defer { Task { await updateRateLimit() } }
         do {
             var synchronizer = BuildSynchronizer(client: client)
             synchronizer.progress = { [weak self] text in
@@ -115,6 +171,11 @@ final class BuildStore {
             lastError = error
             return .failed
         }
+    }
+
+    /// The client the window's detail views fetch through; nil while no key is stored.
+    func detailClient() async -> AppStoreConnectClient? {
+        await currentClient()
     }
 
     private func currentClient() async -> AppStoreConnectClient? {

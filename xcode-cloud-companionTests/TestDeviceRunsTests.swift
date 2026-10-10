@@ -25,10 +25,9 @@ struct TestDeviceRunsTests {
 
         let workflows = try await client.workflows(productID: "product-1")
 
-        #expect(workflows == [
-            CIWorkflow(id: "workflow-release", name: "Release", testDestinationCounts: [3]),
-            CIWorkflow(id: "workflow-pr", name: "Pull Requests", testDestinationCounts: []),
-        ])
+        #expect(workflows.map(\.id) == ["workflow-release", "workflow-pr"])
+        #expect(workflows.map(\.name) == ["Release", "Pull Requests"])
+        #expect(workflows.map(\.testDestinationCounts) == [[3], []])
     }
 
     @Test func machineMinutesBillEachDeviceForItsOwnTime() {

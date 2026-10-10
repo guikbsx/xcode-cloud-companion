@@ -88,14 +88,14 @@ struct AppBuildsMenuTests {
         #expect(first.attributedTitle?.attribute(.foregroundColor, at: 0, effectiveRange: nil) as? NSColor == .systemBlue)
     }
 
-    @Test func clickingABuildOpensItInAppStoreConnect() throws {
-        var opened: URL?
+    @Test func clickingABuildOpensItInTheApp() throws {
+        var opened: String?
         let items = AppBuildsMenu.items(snapshot: snapshot, summary: nil, now: now) { opened = $0 }
         let build = try #require(items.first { $0.title.hasSuffix("Beta") }?.submenu?.items.first)
 
         (build.target as? MenuActionTarget)?.run(build)
 
-        #expect(opened?.absoluteString == "https://appstoreconnect.apple.com/apps/222/ci/builds/run-b-5/summary")
+        #expect(opened == "run-b-5")
     }
 
     @Test func cycleUsageAppearsAsABadge() throws {

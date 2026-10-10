@@ -34,6 +34,7 @@ nonisolated enum UsageDiagnostic {
         var isSyncing: Bool
         var progress: String?
         var lastError: AppStoreConnectError?
+        var rateLimit: RateLimit?
     }
 
     static func report(snapshot: BuildSnapshot, plan: UsagePlan?, syncState: SyncState? = nil, now: Date, calendar: Calendar = .current) -> String {
@@ -45,6 +46,7 @@ nonisolated enum UsageDiagnostic {
             let pending = BuildSynchronizer.pendingTestResultCount(in: snapshot)
             lines.append("Test results still to fetch: \(pending) action\(pending == 1 ? "" : "s")")
             lines.append("Last error: \(syncState.lastError.map { "\($0) — \($0.message)" } ?? "none")")
+            lines.append("Hourly request budget: \(syncState.rateLimit.map { "\($0.remaining) left of \($0.limit)" } ?? "unknown")")
         }
         lines.append("Last sync: \(snapshot.lastSuccessfulSync.map { moment($0, calendar) } ?? "never")")
         let created = snapshot.runs.compactMap(\.createdDate)

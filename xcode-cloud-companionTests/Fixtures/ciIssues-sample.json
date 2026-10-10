@@ -1,0 +1,37 @@
+{
+  "data": [
+    {
+      "type": "ciIssues",
+      "id": "issue-1",
+      "attributes": {
+        "issueType": "ERROR",
+        "message": "Cannot find 'Foo' in scope",
+        "category": "Swift Compiler Error",
+        "fileSource": {
+          "path": "Sources/App/Sync.swift",
+          "lineNumber": 42
+        }
+      }
+    },
+    {
+      "type": "ciIssues",
+      "id": "issue-2",
+      "attributes": {
+        "issueType": "TEST_FAILURE",
+        "message": "XCTAssertEqual failed",
+        "fileSource": {
+          "path": "Tests/SyncTests.swift",
+          "lineNumber": 18
+        }
+      }
+    },
+    {
+      "type": "ciIssues",
+      "id": "issue-3",
+      "attributes": {
+        "issueType": "SOMETHING_NEW",
+        "message": "Unknown kind"
+      }
+    }
+  ]
+}

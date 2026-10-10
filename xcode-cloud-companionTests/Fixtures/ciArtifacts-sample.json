@@ -1,0 +1,22 @@
+{
+  "data": [
+    {
+      "type": "ciArtifacts",
+      "id": "art-1",
+      "attributes": {
+        "fileType": "LOG_BUNDLE",
+        "fileName": "Logs.zip",
+        "fileSize": 2048
+      }
+    },
+    {
+      "type": "ciArtifacts",
+      "id": "art-2",
+      "attributes": {
+        "fileType": "RESULT_BUNDLE",
+        "fileName": "Tests.xcresult.zip",
+        "fileSize": 4096
+      }
+    }
+  ]
+}

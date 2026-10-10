@@ -182,4 +182,40 @@ struct UsageSummaryTests {
         #expect(summary.fractionUsed > 1)
         #expect(summary.exhaustionDate == now)
     }
+
+    @Test func workflowsAreCostedOverTheCycleWithTheirAverageAndTheCostliestBuildIsNamed() {
+        let summary = UsageCalculator.summary(snapshot: snapshot, ledger: ledger, plan: plan, now: now, calendar: calendar)
+
+        let wf = summary.byWorkflow.first { $0.workflow == "WF" }
+        #expect(wf?.buildCount == 3)
+        #expect(wf?.billedMinutes == 50)
+        #expect(abs((wf?.totalMinutes ?? 0) - 60) < 0.001)
+        #expect(abs((wf?.averageMinutes ?? 0) - 20) < 0.001)
+        #expect(summary.byWorkflow.map(\.workflow) == ["WF", "Other"])
+        #expect(summary.costliestBuild == BuildCost(product: "AppOne", buildNumber: 11, workflow: "WF", minutes: 30, isEstimated: false))
+    }
+
+    @Test func theOverviewReadsTheSummaryWithoutComputingAnythingItself() {
+        let summary = UsageCalculator.summary(snapshot: snapshot, ledger: ledger, plan: plan, now: now, calendar: calendar)
+
+        let overview = OverviewModel(summary: summary, palette: AppPalette())
+
+        #expect(overview.apps.map(\.name) == ["AppOne"])
+        #expect(overview.apps.first?.share == 1)
+        #expect(overview.apps.first?.billedMinutes == 50)
+        #expect(overview.workflows.map(\.workflow) == ["WF", "Other"])
+        #expect(overview.workflows.map(\.isEstimated) == [true, true])
+        #expect(overview.hasEstimates)
+        #expect(overview.costliestBuild?.buildNumber == 11)
+    }
+
+    @Test func withoutAnEstimateTheOverviewClaimsNone() {
+        var exact = snapshot
+        exact.runs = exact.runs.filter { $0.number == 10 || $0.number == 11 }
+
+        let summary = UsageCalculator.summary(snapshot: exact, ledger: ledger, plan: plan, now: now, calendar: calendar)
+
+        #expect(!OverviewModel(summary: summary, palette: AppPalette()).hasEstimates)
+        #expect(OverviewModel(summary: summary, palette: AppPalette()).workflows.allSatisfy { !$0.isEstimated })
+    }
 }

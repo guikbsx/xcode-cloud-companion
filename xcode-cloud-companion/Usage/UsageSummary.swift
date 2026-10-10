@@ -14,6 +14,27 @@ nonisolated struct AppUsage: Sendable, Equatable {
     var totalMinutes: Double { billedMinutes + estimatedMinutes }
 }
 
+/// What one workflow cost over the cycle, builds billed by Apple and builds still estimated together.
+nonisolated struct WorkflowUsage: Sendable, Equatable {
+    var product: String
+    var workflow: String
+    var billedMinutes: Double = 0
+    var estimatedMinutes: Double = 0
+    var buildCount = 0
+    var totalMinutes: Double { billedMinutes + estimatedMinutes }
+    var averageMinutes: Double { buildCount > 0 ? totalMinutes / Double(buildCount) : 0 }
+}
+
+/// The build that used the most minutes in the cycle.
+nonisolated struct BuildCost: Sendable, Equatable {
+    var product: String
+    var buildNumber: Int
+    var workflow: String?
+    var minutes: Double
+    /// True when the minutes are computed from the build's actions, not billed by Apple.
+    var isEstimated: Bool
+}
+
 /// A slice of the gauge: `product` nil stands for the minutes that are estimated rather than billed.
 nonisolated struct GaugeSegment: Sendable, Equatable {
     var product: String?
@@ -77,6 +98,8 @@ nonisolated struct UsageSummary: Sendable, Equatable {
     var buildsLast30Days: Int
     var byApp: [AppUsage]
     var measurement = MeasurementProgress()
+    var byWorkflow: [WorkflowUsage] = []
+    var costliestBuild: BuildCost?
 
     /// Gauge segments: one per app that Apple billed, biggest first, then one for everything still estimated.
     var gaugeSegments: [GaugeSegment] {
@@ -124,6 +147,8 @@ nonisolated enum UsageCalculator {
         var date: Date
         var billedMinutes: Double = 0
         var estimatedMinutes: Double = 0
+        var workflow: String?
+        var buildNumber: Int?
     }
 
     static func summary(
@@ -137,7 +162,7 @@ nonisolated enum UsageCalculator {
         let ratios = WorkflowRatios(snapshot: snapshot, ledger: ledger, productNames: productNames, now: now)
 
         var entries = ledger.builds.values.map {
-            UsageEntry(product: $0.product, date: $0.startedAt, billedMinutes: Double($0.minutes))
+            UsageEntry(product: $0.product, date: $0.startedAt, billedMinutes: Double($0.minutes), workflow: $0.workflow, buildNumber: $0.buildNumber)
         }
         var estimatedRunIDs: Set<String> = []
         var builds: [String: Date] = Dictionary(ledger.builds.values.map { ($0.key, $0.startedAt) }, uniquingKeysWith: { first, _ in first })
@@ -151,7 +176,10 @@ nonisolated enum UsageCalculator {
             // A build whose test results are still on their way has no honest estimate yet: it waits for them.
             guard !(snapshot.actionsByRunID[run.id] ?? []).contains(where: snapshot.needsTestResults) else { continue }
             let actionMinutes = actionMinutes(of: run, in: snapshot, now: now)
-            entries.append(UsageEntry(product: product, date: created, estimatedMinutes: actionMinutes * ratios.ratio(product: product, workflow: run.workflowName)))
+            entries.append(UsageEntry(
+                product: product, date: created, estimatedMinutes: actionMinutes * ratios.ratio(product: product, workflow: run.workflowName),
+                workflow: run.workflowName, buildNumber: number
+            ))
             estimatedRunIDs.insert(run.id)
         }
 
@@ -174,6 +202,24 @@ nonisolated enum UsageCalculator {
         for entry in inCycle {
             byApp[entry.product, default: AppUsage(product: entry.product)].billedMinutes += entry.billedMinutes
             byApp[entry.product, default: AppUsage(product: entry.product)].estimatedMinutes += entry.estimatedMinutes
+        }
+
+        var workflows: [String: WorkflowUsage] = [:]
+        var costliest: BuildCost?
+        for entry in inCycle {
+            let name = entry.workflow ?? String(localized: "Other workflows")
+            let key = "\(entry.product)|\(name)"
+            var usage = workflows[key] ?? WorkflowUsage(product: entry.product, workflow: name)
+            usage.billedMinutes += entry.billedMinutes
+            usage.estimatedMinutes += entry.estimatedMinutes
+            usage.buildCount += 1
+            workflows[key] = usage
+            if let number = entry.buildNumber, entry.billedMinutes + entry.estimatedMinutes > (costliest?.minutes ?? 0) {
+                costliest = BuildCost(
+                    product: entry.product, buildNumber: number, workflow: entry.workflow,
+                    minutes: entry.billedMinutes + entry.estimatedMinutes, isEstimated: entry.billedMinutes == 0
+                )
+            }
         }
 
         var measurement = MeasurementProgress()
@@ -209,7 +255,9 @@ nonisolated enum UsageCalculator {
             daily: daily,
             buildsLast30Days: builds.values.filter { $0 >= windowStart && $0 <= now }.count,
             byApp: byApp.values.sorted { $0.totalMinutes > $1.totalMinutes },
-            measurement: measurement
+            measurement: measurement,
+            byWorkflow: workflows.values.sorted { ($0.totalMinutes, $1.workflow) > ($1.totalMinutes, $0.workflow) },
+            costliestBuild: costliest
         )
     }
 

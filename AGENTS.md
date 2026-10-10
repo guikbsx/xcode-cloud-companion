@@ -12,7 +12,7 @@ Ce document oriente les sessions d'agents (Claude Code, Codex) qui travaillent s
 |---|---|
 | Plateforme | macOS 27.0+ (`MACOSX_DEPLOYMENT_TARGET = 27.0`) |
 | Langage | Swift, SwiftUI pour les vues, AppKit pour la structure du menu |
-| Target / scheme | `xcode-cloud-companion` (produit : `Cumulus.app`, module `XcodeCloudCompanion`, bundle ID `com.guik.xcode-cloud-companion`) |
+| Target / scheme | target `xcode-cloud-companion`, scheme `Cumulus` (produit : `Cumulus.app`, module `XcodeCloudCompanion`, bundle ID `com.guik.xcode-cloud-companion`) |
 | Sandbox | Activé (garder la porte du Mac App Store ouverte) |
 | Dépendances | Aucune |
 
@@ -30,7 +30,7 @@ Le modèle est CodexBar : un `NSStatusItem` + `NSMenu`, dont certaines lignes so
 
 ### Architecture
 
-**Cycle de vie AppKit**, pas d'`App` SwiftUI : `AppDelegate` porte `@main` et lance `NSApplication`. Depuis macOS 14, la scène `Settings` de SwiftUI ne s'ouvre pas depuis un `NSMenu` ; les Réglages sont une `NSWindow` qui héberge une vue SwiftUI. Un menu principal minimal (`MainMenu`) reste indispensable : invisible dans une app `LSUIElement`, il porte quand même ⌘, ⌘Q, ⌘W et le menu Édition, sans lequel ⌘V ne marche pas dans les champs.
+**Cycle de vie AppKit**, pas d'`App` SwiftUI : `AppDelegate` porte `@main` et lance `NSApplication`. Depuis macOS 14, la scène `Settings` de SwiftUI ne s'ouvre pas depuis un `NSMenu` ; les Réglages sont une `NSWindow` qui héberge une vue SwiftUI. `MainMenu` est un menu complet (Cumulus, Fichier, Édition, Présentation, Fenêtre, Aide) : invisible tant que l'app est `.accessory`, il porte quand même ⌘, ⌘Q ⌘W ⌘0 et le menu Édition, sans lequel ⌘V ne marche pas dans les champs. La fenêtre principale est une `NSWindow` (une scène SwiftUI `Window` ne s'ouvre pas depuis un `NSMenu`), comme les Réglages ; un clic sur un build du menu l'ouvre sur ce build.
 
 | Dossier / fichier | Rôle | Isolation |
 |---|---|---|
@@ -40,6 +40,7 @@ Le modèle est CodexBar : un `NSStatusItem` + `NSMenu`, dont certaines lignes so
 | `Settings/` | Trousseau (`KeychainCredentialsStore`), forfait (`UsagePlan`), ouverture à la connexion, fenêtre et modèles des Réglages | modèles d'interface `MainActor`, le reste `nonisolated` |
 | `Sync/` | `BuildSynchronizer` (calcul `@concurrent` d'un nouvel instantané), `BuildCacheStore` (cache JSON dans le conteneur), `SyncSchedule`, `BuildStore` (source de vérité des builds, `@Observable`) | `BuildStore` `MainActor`, le reste `nonisolated` |
 | `Usage/` | Minutes facturées : lecture de l'export CSV d'App Store Connect, registre `UsageLedger`, `UsageStore` + `DirectoryWatcher` (import automatique depuis Téléchargements). `UsageCalculator` combine minutes exactes et estimation calibrée par workflow. Diagnostic Debug | `UsageStore` `MainActor`, le reste `nonisolated` |
+| `Window/` | Fenêtre principale (`NSWindow` hébergeant `MainWindowView`, `NavigationSplitView` à 3 colonnes), `NavigationModel` (sélection partagée entre le menu, l'URL `cumulus://build/<id>` et la fenêtre), `ActivationPolicyCoordinator` (`.regular` à l'ouverture pour le Dock et le menu principal, `.accessory` à la fermeture ; réglage « Afficher dans le Dock »), `Sidebar/`, `Builds/` (liste par jour), `Details/` (fiche d'un build, onglets, cache `BuildDetails/`), `Workflows/`, `Launch/` (lancement, voir ci-dessous), `Components/` (style « Verre et chronologie ») | `MainActor`, sauf `CumulusURL` (`nonisolated`) |
 | `Menu/` | Construction du menu de la barre : `StatusMenuBuilder` (ordre des sections), `LatestBuildsMenu` (5 derniers builds), `AppBuildsMenu` (lignes d'apps et sous-menus), blocs SwiftUI hébergés (`UsageGaugeView`, `MeasuringHeaderView`), `BuildStatus` et `BuildStatusDot` (points d'état), `MenuBarBadge` (état de la pastille) et `MenuBarIcon` (image de la barre, symboles `logo` et `logo.badge`), `UsageFormat` | `MainActor`, sauf `UsageFormat`, `BuildStatus` et `MenuBarBadge` (`nonisolated`) |
 
 **Source des minutes** (XCO-6, mesuré sur 55 builds réels le 09/10/2026) : Apple facture **par machine**. Chaque destination de test paie son temps d'exécution (`destinationTestResults[].duration`, sommé par appareil) plus ~4,5 min de préparation, et deux fois ses tests quand l'un d'eux échoue (rejoué) ; une archive réussie paie son calcul seul, pas l'envoi à TestFlight : on prend son passage réussi le plus court. Le tout dans `MachineModel`. Résultat : +2 % sur 30 jours, 4 min d'écart moyen par build, sauf certains échecs rejoués (jusqu'à −40 min). La durée murale d'un test ne dit **ni** le nombre de simulateurs **ni** leur attente : ne jamais l'additionner. L'export CSV d'Apple (XCO-14) reste la source exacte quand il est importé.
@@ -49,6 +50,8 @@ Le modèle est CodexBar : un `NSStatusItem` + `NSMenu`, dont certaines lignes so
 - Une icône ajoutée alors que la barre est pleine est **masquée** (icône « « » de débordement) : pour voir sa propre instance, libérer de la place ou quitter une autre instance de l'app.
 - En Debug, `XCC_BADGE=running|failed|succeeded|stopped|none` force la pastille de la barre.
 - `NSMenuItem.badge` n'accepte ni couleur ni style : l'âge des builds et les minutes des apps y sont des textes courts ; les points d'état et le carré de couleur d'une app sont des caractères teintés (« • », « ◉ », « ■ ») en tête du titre attribué : le menu n'affiche **aucune** `NSMenuItem.image` (ni dessinée, ni symbole SF), vérifié le 09/10/2026.
+
+**Écriture : lancer ou relancer un build** (XCO-43, seule requête qui modifie quelque chose chez Apple) : `POST /v1/ciBuildRuns`, **jamais rejouée par l'app**, même après un timeout ou un 5xx. Un échec ambigu relit d'abord `GET /v1/ciWorkflows/{id}/buildRuns?limit=1&sort=-number` (`BuildLauncher`), l'interface ne propose un nouvel essai qu'après. Le corps n'envoie `clean` que s'il vaut `true`, un lancement a une seule source (branche/tag ou PR), une relance aucune. Le réglage « Accès de la clé » (Réglages › Général, `KeyAccess`) est déclaré par l'utilisateur ; un 403 le repasse en lecture seule. Aucun lancement par URL ni par Raccourci.
 
 **Mesure au premier chargement** : les résultats de tests par appareil arrivent par lots de 12 actions, du build le plus récent au plus ancien, un lot par minute (`BuildSynchronizer`). Tant que le cycle en a en attente, `UsageSummary.measurement.isMeasuring` est vrai et le menu n'affiche aucun chiffre qui dépendrait d'eux. Une action refusée trois fois par Apple est abandonnée (`BuildSnapshot.testResultAttempts`) ; un 429 ne coûte aucune tentative.
 
@@ -139,11 +142,11 @@ Xcode est installé sur cette machine : compiler soi-même ses changements et ra
 
 ```bash
 # Build
-xcodebuild build -scheme xcode-cloud-companion -project xcode-cloud-companion.xcodeproj \
+xcodebuild build -scheme Cumulus -project xcode-cloud-companion.xcodeproj \
   -destination 'platform=macOS'
 
 # Tests
-xcodebuild test -scheme xcode-cloud-companion -project xcode-cloud-companion.xcodeproj \
+xcodebuild test -scheme Cumulus -project xcode-cloud-companion.xcodeproj \
   -destination 'platform=macOS'
 ```
 

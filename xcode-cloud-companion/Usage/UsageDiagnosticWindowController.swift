@@ -40,7 +40,7 @@ private struct UsageDiagnosticView: View {
         UsageDiagnostic.report(
             snapshot: buildStore.snapshot,
             plan: settings.plan,
-            syncState: .init(isConfigured: buildStore.isConfigured, isSyncing: buildStore.isSyncing, progress: buildStore.progress, lastError: buildStore.lastError),
+            syncState: .init(isConfigured: buildStore.isConfigured, isSyncing: buildStore.isSyncing, progress: buildStore.progress, lastError: buildStore.lastError, rateLimit: buildStore.rateLimit),
             now: Date()
         )
     }

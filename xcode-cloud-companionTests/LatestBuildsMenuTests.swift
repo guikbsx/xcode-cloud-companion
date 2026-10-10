@@ -96,15 +96,14 @@ struct LatestBuildsMenuTests {
         #expect(items[2].badge?.stringValue == "3h")
     }
 
-    @Test func clickingOpensTheBuildInAppStoreConnect() throws {
-        var opened: URL?
+    @Test func clickingOpensTheBuildInTheApp() throws {
+        var opened: String?
         let items = LatestBuildsMenu.items(snapshot: snapshot([run(1, product: "a", minutesAgo: 5)]), now: now) { opened = $0 }
         let build = try #require(items.last)
 
         (build.target as? MenuActionTarget)?.run(build)
 
-        #expect(opened?.absoluteString == "https://appstoreconnect.apple.com/apps/111/ci/builds/run-a-1/summary")
-        #expect(build.toolTip?.contains("run-a-1/summary") == true)
+        #expect(opened == "run-a-1")
     }
 
     @Test func theHeaderCountsRunningBuilds() {

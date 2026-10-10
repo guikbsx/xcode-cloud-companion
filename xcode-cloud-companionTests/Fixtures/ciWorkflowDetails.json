@@ -1,0 +1,40 @@
+{
+  "data": [
+    {
+      "type": "ciWorkflows",
+      "id": "workflow-release",
+      "attributes": {
+        "name": "Public archive (with test)",
+        "description": "Builds, tests and archives the public app.",
+        "isEnabled": true,
+        "isLockedForEditing": false,
+        "clean": false,
+        "containerFilePath": "App.xcodeproj",
+        "lastModifiedDate": "2026-09-07T08:44:00Z",
+        "branchStartCondition": {
+          "source": { "isAllMatch": false, "patterns": [ { "pattern": "develop", "isPrefix": false }, { "pattern": "release/", "isPrefix": true } ] },
+          "filesAndFoldersRule": { "mode": "DO_NOT_START_IF_ALL_FILES_MATCH", "matchers": [] },
+          "autoCancel": true
+        },
+        "scheduledStartCondition": { "source": { "isAllMatch": true, "patterns": [] }, "schedule": { "frequency": "WEEKLY", "days": ["MONDAY"], "hour": 3, "minute": 0 } },
+        "manualBranchStartCondition": { "source": { "isAllMatch": true, "patterns": [] } },
+        "actions": [
+          { "name": "Build - iOS", "actionType": "BUILD", "destination": "ANY_IOS_DEVICE", "scheme": "App", "platform": "IOS", "isRequiredToPass": true },
+          { "name": "Test - iOS", "actionType": "TEST", "scheme": "App", "platform": "IOS", "isRequiredToPass": true,
+            "testConfiguration": { "kind": "USE_SCHEME_SETTINGS", "testDestinations": [ { "deviceTypeName": "iPhone 17 Pro", "runtimeName": "iOS 27.0" }, { "deviceTypeName": "iPad Pro 13", "runtimeName": "iOS 27.0" } ] } },
+          { "name": "Archive - iOS", "actionType": "ARCHIVE", "scheme": "App", "platform": "IOS", "buildDistributionAudience": "APP_STORE_ELIGIBLE", "isRequiredToPass": false }
+        ]
+      },
+      "relationships": {
+        "xcodeVersion": { "data": { "type": "ciXcodeVersions", "id": "xcode-27" } },
+        "macOsVersion": { "data": { "type": "ciMacOsVersions", "id": "macos-27" } },
+        "repository": { "data": { "type": "scmRepositories", "id": "repo-1" } }
+      }
+    }
+  ],
+  "included": [
+    { "type": "ciXcodeVersions", "id": "xcode-27", "attributes": { "name": "Xcode 27.0", "version": "27.0" } },
+    { "type": "ciMacOsVersions", "id": "macos-27", "attributes": { "name": "macOS Tahoe", "version": "27.0" } },
+    { "type": "scmRepositories", "id": "repo-1", "attributes": { "ownerName": "guikbsx", "repositoryName": "realmotivation" } }
+  ]
+}

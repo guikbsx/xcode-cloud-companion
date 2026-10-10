@@ -7,7 +7,7 @@ enum LatestBuildsMenu {
     static let appColumnWidth: CGFloat = 120
     static let maximumAppNameLength = 14
 
-    static func items(snapshot: BuildSnapshot, now: Date, teamID: String? = nil, open: @escaping (URL) -> Void) -> [NSMenuItem] {
+    static func items(snapshot: BuildSnapshot, now: Date, open: @escaping (String) -> Void) -> [NSMenuItem] {
         let products = Dictionary(snapshot.products.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
         let latest = snapshot.runs
             .filter { $0.createdDate != nil }
@@ -18,7 +18,7 @@ enum LatestBuildsMenu {
         let running = snapshot.runs.filter { BuildStatus(run: $0) == .running }.count
         var items: [NSMenuItem] = [.sectionHeader(title: headerTitle(running: running))]
         for run in latest {
-            items.append(buildItem(run, product: products[run.productID], now: now, teamID: teamID, open: open))
+            items.append(buildItem(run, product: products[run.productID], now: now, open: open))
         }
         return items
     }
@@ -27,13 +27,12 @@ enum LatestBuildsMenu {
         running > 0 ? String(localized: "Latest builds · \(running) running") : String(localized: "Latest builds")
     }
 
-    static func buildItem(_ run: CIBuildRun, product: CIProduct?, now: Date, teamID: String? = nil, open: @escaping (URL) -> Void) -> NSMenuItem {
-        let url = AppStoreConnectLinks.build(appID: product?.appID, buildRunID: run.id, teamID: teamID)
+    static func buildItem(_ run: CIBuildRun, product: CIProduct?, now: Date, open: @escaping (String) -> Void) -> NSMenuItem {
         let status = BuildStatus(run: run)
-        let item = NSMenuItem.action(plainTitle(run, product: product)) { open(url) }
+        let item = NSMenuItem.action(plainTitle(run, product: product)) { open(run.id) }
         item.attributedTitle = attributedTitle(run, product: product, status: status)
         item.badge = NSMenuItemBadge(string: age(of: run, status: status, now: now))
-        item.toolTip = [status.label, url.absoluteString].joined(separator: "\n")
+        item.toolTip = status.label
         item.setAccessibilityLabel(accessibilityLabel(run, product: product, status: status, age: age(of: run, status: status, now: now)))
         return item
     }

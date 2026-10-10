@@ -17,6 +17,7 @@ actor AppStoreConnectClient {
     private let transport: any HTTPTransport
     private let now: @Sendable () -> Date
     private var token: AppStoreConnectToken?
+    private var lastRateLimit: RateLimit?
 
     init(
         credentials: AppStoreConnectCredentials,
@@ -77,6 +78,64 @@ actor AppStoreConnectClient {
         return pages.flatMap(\.workflows)
     }
 
+    /// Workflows with their configuration: start conditions, actions, Xcode and macOS versions, repository.
+    func workflowDetails(productID: String, maxPages: Int = 2) async throws(AppStoreConnectError) -> [CIWorkflow] {
+        let pages = try await collectPages(
+            from: AppStoreConnectEndpoint.workflowDetails(productID: productID),
+            of: CIWorkflowAttributes.self,
+            maxPages: maxPages
+        )
+        return pages.flatMap(\.workflows)
+    }
+
+    func issues(buildActionID: String, maxPages: Int = 5) async throws(AppStoreConnectError) -> [CIIssue] {
+        let pages = try await collectPages(
+            from: AppStoreConnectEndpoint.issues(buildActionID: buildActionID),
+            of: CIIssueAttributes.self,
+            maxPages: maxPages
+        )
+        return pages.flatMap { $0.issues(buildActionID: buildActionID) }
+    }
+
+    /// Every test case of an action with its message and per-device results.
+    func testResults(buildActionID: String, maxPages: Int = 15) async throws(AppStoreConnectError) -> [CITestResult] {
+        let pages = try await collectPages(
+            from: AppStoreConnectEndpoint.testResultDetails(buildActionID: buildActionID),
+            of: CITestResultDetailAttributes.self,
+            maxPages: maxPages
+        )
+        return pages.flatMap { $0.testResults(buildActionID: buildActionID) }
+    }
+
+    func artifacts(buildActionID: String, maxPages: Int = 2) async throws(AppStoreConnectError) -> [CIArtifact] {
+        let pages = try await collectPages(
+            from: AppStoreConnectEndpoint.artifacts(buildActionID: buildActionID),
+            of: CIArtifactAttributes.self,
+            maxPages: maxPages
+        )
+        return pages.flatMap { $0.artifacts(buildActionID: buildActionID) }
+    }
+
+    /// The artifact with a fresh download address: the address is short-lived, so it is asked for just before use.
+    func artifact(id: String, buildActionID: String) async throws(AppStoreConnectError) -> CIArtifact {
+        let single: JSONAPISingleDocument<CIArtifactAttributes> = try await decoded(at: AppStoreConnectEndpoint.artifact(id: id))
+        return single.data.artifact(buildActionID: buildActionID)
+    }
+
+    func betaBuilds(buildRunID: String) async throws(AppStoreConnectError) -> [CIBetaBuild] {
+        let pages = try await collectPages(
+            from: AppStoreConnectEndpoint.betaBuilds(buildRunID: buildRunID),
+            of: CIBetaBuildAttributes.self,
+            maxPages: 1
+        )
+        return pages.flatMap(\.betaBuilds)
+    }
+
+    /// What Apple's last response said about the hourly budget of this key (nil before any response).
+    func rateLimit() -> RateLimit? {
+        lastRateLimit
+    }
+
     /// One entry per simulated device, sorted by name; `maxPages` × 200 test cases at most.
     func testDeviceRuns(buildActionID: String, maxPages: Int = 15) async throws(AppStoreConnectError) -> [CITestDeviceRun] {
         let pages = try await collectPages(
@@ -93,7 +152,7 @@ actor AppStoreConnectClient {
 
     // MARK: - Paging
 
-    private func collectPages<Attributes: Decodable & Sendable>(
+    func collectPages<Attributes: Decodable & Sendable>(
         from firstURL: URL,
         of _: Attributes.Type,
         maxPages: Int,
@@ -114,10 +173,20 @@ actor AppStoreConnectClient {
 
     // MARK: - Transport
 
-    private func document<Attributes: Decodable & Sendable>(at url: URL) async throws(AppStoreConnectError) -> JSONAPIDocument<Attributes> {
+    func document<Attributes: Decodable & Sendable>(at url: URL) async throws(AppStoreConnectError) -> JSONAPIDocument<Attributes> {
+        try await decoded(at: url)
+    }
+
+    func decoded<Body: Decodable & Sendable>(at url: URL) async throws(AppStoreConnectError) -> Body {
         var request = URLRequest(url: url, timeoutInterval: 30)
-        request.setValue("Bearer \(try currentToken())", forHTTPHeaderField: "Authorization")
         request.setValue("application/json", forHTTPHeaderField: "Accept")
+        return try await send(request)
+    }
+
+    /// Sends one request and decodes the answer. It never sends twice: a POST is not safe to repeat.
+    func send<Body: Decodable & Sendable>(_ prepared: URLRequest) async throws(AppStoreConnectError) -> Body {
+        var request = prepared
+        request.setValue("Bearer \(try currentToken())", forHTTPHeaderField: "Authorization")
 
         let data: Data
         let response: URLResponse
@@ -132,20 +201,33 @@ actor AppStoreConnectClient {
         }
 
         guard let httpResponse = response as? HTTPURLResponse else { throw .invalidResponse }
+        if let rateLimit = RateLimit(header: httpResponse.value(forHTTPHeaderField: "X-Rate-Limit")) {
+            lastRateLimit = rateLimit
+        }
         switch httpResponse.statusCode {
         case 200..<300:
             do {
-                return try JSONDecoder.appStoreConnect.decode(JSONAPIDocument<Attributes>.self, from: data)
+                return try JSONDecoder.appStoreConnect.decode(Body.self, from: data)
             } catch {
                 throw .decoding(String(describing: error))
             }
-        case 401, 403:
-            throw .unauthorized(status: httpResponse.statusCode)
+        case 401:
+            throw .unauthorized(status: 401)
         case 429:
             throw .rateLimited
         default:
-            let detail = (try? JSONDecoder().decode(JSONAPIErrorResponse.self, from: data))?.errors.first?.detail
-            throw .server(status: httpResponse.statusCode, detail: detail)
+            let entry = (try? JSONDecoder().decode(JSONAPIErrorResponse.self, from: data))?.errors.first
+            switch httpResponse.statusCode {
+            case 403:
+                throw .forbidden(code: entry?.code, detail: entry?.detail)
+            case 409, 422:
+                throw .rejected(
+                    status: httpResponse.statusCode, code: entry?.code, title: entry?.title,
+                    detail: entry?.detail, pointer: entry?.source?.pointer
+                )
+            default:
+                throw .server(status: httpResponse.statusCode, detail: entry?.detail)
+            }
         }
     }
 

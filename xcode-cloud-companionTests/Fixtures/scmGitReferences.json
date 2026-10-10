@@ -1,0 +1,8 @@
+{
+  "data": [
+    { "type": "scmGitReferences", "id": "ref-tag", "attributes": { "name": "v1.0", "canonicalName": "refs/tags/v1.0", "isDeleted": false, "kind": "TAG" } },
+    { "type": "scmGitReferences", "id": "ref-main", "attributes": { "name": "main", "canonicalName": "refs/heads/main", "isDeleted": false, "kind": "BRANCH" } },
+    { "type": "scmGitReferences", "id": "ref-old", "attributes": { "name": "old-feature", "canonicalName": "refs/heads/old-feature", "isDeleted": true, "kind": "BRANCH" } },
+    { "type": "scmGitReferences", "id": "ref-dev", "attributes": { "name": "develop", "canonicalName": "refs/heads/develop", "isDeleted": false, "kind": "BRANCH" } }
+  ]
+}

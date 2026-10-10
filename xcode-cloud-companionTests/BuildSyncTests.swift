@@ -232,3 +232,57 @@ struct SyncScheduleTests {
         #expect(SyncSchedule.delay(after: .rateLimited(consecutive: 10)) == .seconds(2 * 3600))
     }
 }
+
+
+@MainActor
+struct SyncPaceTests {
+    private let busy = SyncOutcome.succeeded(hasActiveBuilds: true)
+    private let calm = SyncOutcome.succeeded(hasActiveBuilds: false)
+
+    @Test func theOpenWindowWatchesRunningBuildsClosely() {
+        #expect(SyncSchedule.delay(after: busy, context: SyncContext(windowIsOpen: true)) == .seconds(30))
+        #expect(SyncSchedule.delay(after: busy) == .seconds(60))
+        #expect(SyncSchedule.delay(after: calm, context: SyncContext(windowIsOpen: true)) == .seconds(300))
+        #expect(SyncSchedule.delay(after: calm) == .seconds(600))
+    }
+
+    @Test func aLockedScreenNeverGoesFasterThanTheSlowPace() {
+        #expect(SyncSchedule.delay(after: busy, context: SyncContext(windowIsOpen: true, screenIsLocked: true)) == .seconds(600))
+    }
+
+    @Test func thePaceSlowsAsTheHourlyBudgetRunsDown() {
+        func delay(_ remaining: Int) -> Duration {
+            SyncSchedule.delay(after: busy, context: SyncContext(budget: RateLimit(limit: 3500, remaining: remaining)))
+        }
+
+        #expect(delay(3000) == .seconds(60))
+        #expect(delay(1500) == .seconds(120))
+        #expect(delay(700) == .seconds(240))
+        #expect(delay(300) == .seconds(480))
+        #expect(delay(40) == .seconds(1200))
+    }
+
+    @Test func aRateLimitStillBacksOffWhateverTheContext() {
+        #expect(SyncSchedule.delay(after: .rateLimited(consecutive: 1), context: SyncContext(windowIsOpen: true)) == .seconds(900))
+    }
+
+    @Test func aSyncIsDueOnlyOnceItsDelayHasPassedAndFollowsTheContextAsItChanges() {
+        let start = Date(timeIntervalSince1970: 1_791_000_000)
+
+        #expect(!SyncSchedule.isDue(lastRun: start, now: start.addingTimeInterval(40), outcome: busy, context: SyncContext()))
+        #expect(SyncSchedule.isDue(lastRun: start, now: start.addingTimeInterval(40), outcome: busy, context: SyncContext(windowIsOpen: true)))
+        #expect(!SyncSchedule.isDue(lastRun: start, now: start.addingTimeInterval(200), outcome: busy, context: SyncContext(screenIsLocked: true)))
+    }
+
+    @Test func openingTheWindowAndLockingTheScreenAreRemembered() {
+        let store = BuildStore()
+
+        store.windowDidOpen()
+        store.screenLockDidChange(isLocked: true)
+        #expect(store.syncContext == SyncContext(windowIsOpen: true, screenIsLocked: true, budget: nil))
+
+        store.windowDidClose()
+        store.screenLockDidChange(isLocked: false)
+        #expect(store.syncContext == SyncContext())
+    }
+}

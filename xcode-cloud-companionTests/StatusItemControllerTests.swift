@@ -6,6 +6,9 @@ import Testing
 struct StatusMenuTests {
     private final class Target: NSObject {
         @objc func openSettings() {}
+        @objc func openMainWindow() {}
+        @objc func refresh() {}
+        @objc func openHelp() {}
     }
 
     private let now = Date(timeIntervalSince1970: 1_791_547_200)
@@ -84,12 +87,19 @@ struct StatusMenuTests {
 
     @Test func mainMenuKeepsCopyAndPasteWorkingInTextFields() {
         let target = Target()
-        let menu = MainMenu.make(settingsTarget: target, settingsAction: #selector(Target.openSettings))
+        let menu = MainMenu.make(target: target, MainMenu.Actions(
+            openSettings: #selector(Target.openSettings), openMainWindow: #selector(Target.openMainWindow),
+            refresh: #selector(Target.refresh), openHelp: #selector(Target.openHelp)
+        ))
 
         let editItems = menu.items.compactMap(\.submenu).flatMap(\.items)
         #expect(editItems.contains { $0.action == #selector(NSText.paste(_:)) && $0.keyEquivalent == "v" })
         #expect(editItems.contains { $0.action == #selector(NSText.copy(_:)) && $0.keyEquivalent == "c" })
         #expect(editItems.contains { $0.action == #selector(Target.openSettings) && $0.keyEquivalent == "," })
+        #expect(editItems.contains { $0.action == #selector(NSWindow.performClose(_:)) && $0.keyEquivalent == "w" })
+        #expect(editItems.contains { $0.action == #selector(NSApplication.terminate(_:)) && $0.keyEquivalent == "q" })
+        #expect(editItems.contains { $0.action == #selector(Target.openMainWindow) && $0.keyEquivalent == "0" })
+        #expect(menu.items.map(\.title) == ["Cumulus", "File", "Edit", "View", "Window", "Help"])
     }
 
     @Test func appStaysOutOfTheDock() {

@@ -9,6 +9,12 @@ nonisolated struct JSONAPIDocument<Attributes: Decodable & Sendable>: Decodable,
         let next: URL?
     }
 
+    init(single: JSONAPISingleDocument<Attributes>) {
+        data = [single.data]
+        included = single.included
+        links = nil
+    }
+
     func includedResource(for identifier: JSONAPIResourceIdentifier?) -> JSONAPIIncludedResource? {
         guard let identifier else { return nil }
         return included?.first { $0.type == identifier.type && $0.id == identifier.id }
@@ -23,10 +29,23 @@ nonisolated struct JSONAPIResource<Attributes: Decodable & Sendable>: Decodable,
     func relationship(_ name: String) -> JSONAPIResourceIdentifier? {
         relationships?[name]?.data
     }
+
+    func relationships(_ name: String) -> [JSONAPIResourceIdentifier] {
+        relationships?[name]?.dataList ?? []
+    }
+}
+
+/// A response holding one resource (`GET /v1/ciArtifacts/{id}`) rather than a collection.
+nonisolated struct JSONAPISingleDocument<Attributes: Decodable & Sendable>: Decodable, Sendable {
+    let data: JSONAPIResource<Attributes>
+    let included: [JSONAPIIncludedResource]?
 }
 
 nonisolated struct JSONAPIRelationship: Decodable, Sendable {
+    /// The target of a to-one relationship; nil for a to-many or link-only one.
     let data: JSONAPIResourceIdentifier?
+    /// The targets of a to-many relationship (empty for a to-one or link-only one).
+    let dataList: [JSONAPIResourceIdentifier]
 
     private enum CodingKeys: String, CodingKey {
         case data
@@ -34,8 +53,8 @@ nonisolated struct JSONAPIRelationship: Decodable, Sendable {
 
     init(from decoder: any Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        // Only to-one relationships are used; to-many or link-only relationships decode as nil.
         data = try? container.decodeIfPresent(JSONAPIResourceIdentifier.self, forKey: .data)
+        dataList = (try? container.decodeIfPresent([JSONAPIResourceIdentifier].self, forKey: .data)) ?? []
     }
 }
 
@@ -53,6 +72,18 @@ nonisolated struct JSONAPIIncludedResource: Decodable, Sendable {
         let name: String?
         let bundleId: String?
         let kind: String?
+        // ciXcodeVersions, ciMacOsVersions
+        let version: String?
+        // scmRepositories
+        let ownerName: String?
+        let repositoryName: String?
+        // scmPullRequests
+        let title: String?
+        let number: Int?
+        let webUrl: String?
+        let sourceBranchName: String?
+        let destinationBranchName: String?
+        let isClosed: Bool?
     }
 }
 
@@ -64,6 +95,12 @@ nonisolated struct JSONAPIErrorResponse: Decodable, Sendable {
         let code: String?
         let title: String?
         let detail: String?
+        let source: Source?
+
+        /// Where in the request the refusal points, e.g. `/data/relationships/sourceBranchOrTag`.
+        struct Source: Decodable, Sendable {
+            let pointer: String?
+        }
     }
 }
 

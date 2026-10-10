@@ -1,0 +1,12 @@
+{
+  "data": {
+    "type": "ciArtifacts",
+    "id": "art-1",
+    "attributes": {
+      "fileType": "LOG_BUNDLE",
+      "fileName": "Logs.zip",
+      "fileSize": 2048,
+      "downloadUrl": "https://example.icloud-content.com/abc?signature=xyz"
+    }
+  }
+}

@@ -17,6 +17,32 @@
         }
       }
     },
+    "%@ of %lld h" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ of %2$lld h"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ sur %2$lld h"
+          }
+        }
+      }
+    },
+    "%@ per build" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ par build"
+          }
+        }
+      }
+    },
     "%@ · %@" : {
       "comment" : "Joins two parts of a line, such as a build's state and its duration. Keep the middle dot.",
       "localizations" : {
@@ -30,6 +56,39 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%1$@ · %2$@"
+          }
+        }
+      }
+    },
+    "%@, %@, %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@, %2$@, %3$@"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@, %2$@, %3$@"
+          }
+        }
+      }
+    },
+    "%@: %@" : {
+      "comment" : "Apple's refusal: its title, then its detail",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@: %2$@"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ : %2$@"
           }
         }
       }
@@ -182,6 +241,115 @@
         }
       }
     },
+    "%lld errors" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld erreurs"
+          }
+        }
+      }
+    },
+    "%lld failed" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld en échec"
+          }
+        }
+      }
+    },
+    "%lld failures" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld échecs"
+          }
+        }
+      }
+    },
+    "%lld of %lld requests left this hour" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld of %2$lld requests left this hour"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld requêtes sur %2$lld restantes cette heure"
+          }
+        }
+      }
+    },
+    "%lld passed (%@)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld passed (%2$@)"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld réussis (%2$@)"
+          }
+        }
+      }
+    },
+    "%lld test failures" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld tests en échec"
+          }
+        }
+      }
+    },
+    "%lld tests" : {
+      "comment" : "Number of failed tests of a build, in the build list",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld tests"
+          }
+        }
+      }
+    },
+    "%lld tests · %lld failed" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld tests · %2$lld failed"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld tests · %2$lld en échec"
+          }
+        }
+      }
+    },
+    "A launch is already in progress." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Un lancement est déjà en cours."
+          }
+        }
+      }
+    },
     "API Key" : {
       "localizations" : {
         "fr" : {
@@ -192,12 +360,32 @@
         }
       }
     },
+    "API key" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Clé d’API"
+          }
+        }
+      }
+    },
     "API key saved" : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Clé API enregistrée"
+          }
+        }
+      }
+    },
+    "About Cumulus" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "À propos de Cumulus"
           }
         }
       }
@@ -213,6 +401,86 @@
         }
       }
     },
+    "Action" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Action"
+          }
+        }
+      }
+    },
+    "Actions" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Actions"
+          }
+        }
+      }
+    },
+    "Add your App Store Connect API key to see your Xcode Cloud builds here." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ajoutez votre clé d’API App Store Connect pour voir ici vos builds Xcode Cloud."
+          }
+        }
+      }
+    },
+    "All" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tous"
+          }
+        }
+      }
+    },
+    "All actions" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Toutes les actions"
+          }
+        }
+      }
+    },
+    "All builds" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tous les builds"
+          }
+        }
+      }
+    },
+    "All destinations" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Toutes les destinations"
+          }
+        }
+      }
+    },
+    "An agreement of your team is missing or has expired. The Account Holder must accept it in App Store Connect." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Un accord de votre équipe est manquant ou a expiré. Le titulaire du compte doit l’accepter dans App Store Connect."
+          }
+        }
+      }
+    },
     "An app is missing? It has no Xcode Cloud workflow yet, or the key has no access to this team." : {
       "comment" : "Keep \"Xcode Cloud\", \"App Store Connect\" and \"TestFlight\" untranslated as product names.",
       "localizations" : {
@@ -220,6 +488,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Une app manque ? Elle n’a pas encore de workflow Xcode Cloud, ou la clé n’a pas accès à cette équipe."
+          }
+        }
+      }
+    },
+    "Analyze" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Analyse"
+          }
+        }
+      }
+    },
+    "Analyzer warning" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Avertissement de l’analyseur"
           }
         }
       }
@@ -268,6 +556,16 @@
         }
       }
     },
+    "App Store Connect refused the request." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App Store Connect a refusé la requête."
+          }
+        }
+      }
+    },
     "App Store Connect refuses this key." : {
       "comment" : "Keep \"Xcode Cloud\", \"App Store Connect\" and \"TestFlight\" untranslated as product names.",
       "localizations" : {
@@ -301,12 +599,62 @@
         }
       }
     },
+    "Apple did not confirm the launch, and the build list shows no new build. Nothing seems to have started; you can try again." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apple n’a pas confirmé le lancement et la liste des builds n’en montre aucun de nouveau. Rien ne semble avoir démarré ; vous pouvez réessayer."
+          }
+        }
+      }
+    },
     "Apple does not expose the plan or its reset date in the API. Without the right date, the gauge counts the hours over the wrong cycle." : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Apple n’expose ni le forfait ni sa date de réinitialisation dans l’API. Sans la bonne date, la jauge compte les heures sur le mauvais cycle."
+          }
+        }
+      }
+    },
+    "Apple gave an address this app doesn’t trust, so nothing was opened." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apple a donné une adresse à laquelle cette app ne fait pas confiance : rien n’a été ouvert."
+          }
+        }
+      }
+    },
+    "Apple gave no download address for this file. It may have expired." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apple n’a donné aucune adresse de téléchargement pour ce fichier. Elle a peut-être expiré."
+          }
+        }
+      }
+    },
+    "Apple publishes no usage figure through its API: the gauge needs your plan and the day it resets." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apple ne publie aucun chiffre de consommation par son API : la jauge a besoin de votre forfait et du jour de sa réinitialisation."
+          }
+        }
+      }
+    },
+    "Apple’s hourly request limit is reached. Nothing was started; try again later." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La limite horaire de requêtes d’Apple est atteinte. Rien n’a démarré ; réessayez plus tard."
           }
         }
       }
@@ -321,12 +669,42 @@
         }
       }
     },
+    "Archive" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Archive"
+          }
+        }
+      }
+    },
+    "Artifacts" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Artefacts"
+          }
+        }
+      }
+    },
     "At the top of the page, note the plan's **number of hours** and the **reset date**." : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "En haut de la page, relevez le **nombre d’heures** du forfait et la **date de réinitialisation**."
+          }
+        }
+      }
+    },
+    "Auto-cancel" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Annulation automatique"
           }
         }
       }
@@ -352,6 +730,76 @@
         }
       }
     },
+    "Branch change" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Modification de branche"
+          }
+        }
+      }
+    },
+    "Branch changes" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Modifications de branche"
+          }
+        }
+      }
+    },
+    "Branch or tag" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Branche ou tag"
+          }
+        }
+      }
+    },
+    "Bring All to Front" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tout ramener au premier plan"
+          }
+        }
+      }
+    },
+    "Build" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Build"
+          }
+        }
+      }
+    },
+    "Build %@" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Build %@"
+          }
+        }
+      }
+    },
+    "Build products" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Produits de build"
+          }
+        }
+      }
+    },
     "Building now" : {
       "localizations" : {
         "fr" : {
@@ -372,12 +820,42 @@
         }
       }
     },
+    "Builds of the last 30 days appear here once Xcode Cloud has run one." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Les builds des 30 derniers jours apparaissent ici dès que Xcode Cloud en a lancé un."
+          }
+        }
+      }
+    },
     "Builds with Billed Minutes" : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Builds aux minutes facturées"
+          }
+        }
+      }
+    },
+    "Can launch builds" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Peut lancer des builds"
+          }
+        }
+      }
+    },
+    "Cancel" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Annuler"
           }
         }
       }
@@ -389,6 +867,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Annulé"
+          }
+        }
+      }
+    },
+    "Change the filter or the search to see more." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Changez le filtre ou la recherche pour en voir davantage."
           }
         }
       }
@@ -410,6 +898,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Choisissez un export d’utilisation téléchargé depuis App Store Connect › Xcode Cloud › Utilisation."
+          }
+        }
+      }
+    },
+    "Clean build" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Build propre"
           }
         }
       }
@@ -521,12 +1019,52 @@
         }
       }
     },
+    "Copy Message" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Copier le message"
+          }
+        }
+      }
+    },
+    "Copy Path" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Copier le chemin"
+          }
+        }
+      }
+    },
     "Copy the **Issuer ID**, shown above the table of keys, then the **Key ID** on the new key's row." : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Copiez l’**Issuer ID**, affiché au-dessus du tableau des clés, puis l’**ID de la clé** sur la ligne de la nouvelle clé."
+          }
+        }
+      }
+    },
+    "Copy the commit SHA" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Copier le SHA du commit"
+          }
+        }
+      }
+    },
+    "Cost by workflow" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Coût par workflow"
           }
         }
       }
@@ -559,6 +1097,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Cumulus"
+          }
+        }
+      }
+    },
+    "Cumulus isn’t set up yet" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cumulus n’est pas encore configuré"
           }
         }
       }
@@ -597,6 +1145,7 @@
       }
     },
     "Cumulus, the last build was canceled" : {
+      "comment" : "VoiceOver label of the menu bar icon. Do not translate the app name.",
       "localizations" : {
         "fr" : {
           "stringUnit" : {
@@ -604,8 +1153,17 @@
             "value" : "Cumulus, le dernier build a été annulé"
           }
         }
-      },
-      "comment" : "VoiceOver label of the menu bar icon. Do not translate the app name."
+      }
+    },
+    "Current workflow configuration: Apple doesn’t record the versions used by each build." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Configuration actuelle du workflow : Apple n’enregistre pas les versions utilisées par chaque build."
+          }
+        }
+      }
     },
     "Cut" : {
       "localizations" : {
@@ -617,12 +1175,42 @@
         }
       }
     },
+    "Cycle · %@" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cycle · %@"
+          }
+        }
+      }
+    },
     "Date not set yet: until then the menu shows no gauge, only the hours of the last 30 days." : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Date pas encore saisie : en attendant, le menu ne montre pas de jauge, seulement les heures des 30 derniers jours."
+          }
+        }
+      }
+    },
+    "Destination" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Destination"
+          }
+        }
+      }
+    },
+    "Details" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Détails"
           }
         }
       }
@@ -649,12 +1237,52 @@
         }
       }
     },
+    "Disabled" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Désactivé"
+          }
+        }
+      }
+    },
+    "Don’t start if every changed file matches" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ne pas démarrer si tous les fichiers modifiés correspondent"
+          }
+        }
+      }
+    },
+    "Download" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Télécharger"
+          }
+        }
+      }
+    },
     "Drop the `.p8` file here" : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Déposez le fichier `.p8` ici"
+          }
+        }
+      }
+    },
+    "Duration" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Durée"
           }
         }
       }
@@ -670,12 +1298,42 @@
         }
       }
     },
+    "Elapsed" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Écoulé"
+          }
+        }
+      }
+    },
+    "Enabled" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Activé"
+          }
+        }
+      }
+    },
     "English or French. To pick another language for this app only, use System Settings." : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Français ou anglais. Pour choisir une autre langue pour cette app seulement, passez par Réglages Système."
+          }
+        }
+      }
+    },
+    "Enter Full Screen" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Passer en plein écran"
           }
         }
       }
@@ -762,12 +1420,62 @@
         }
       }
     },
+    "Every day" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tous les jours"
+          }
+        }
+      }
+    },
+    "Every hour" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Toutes les heures"
+          }
+        }
+      }
+    },
+    "Every week" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Toutes les semaines"
+          }
+        }
+      }
+    },
+    "Expected failure" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Échec attendu"
+          }
+        }
+      }
+    },
     "Export %@" : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Export %@"
+          }
+        }
+      }
+    },
+    "Exported archive" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Archive exportée"
           }
         }
       }
@@ -779,6 +1487,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Échec"
+          }
+        }
+      }
+    },
+    "Failures" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Échecs"
           }
         }
       }
@@ -909,6 +1627,36 @@
         }
       }
     },
+    "Figures with a ~ are estimates computed from the builds’ durations, not Apple’s billing. Import an export for exact minutes." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Les chiffres précédés de ~ sont des estimations calculées d’après la durée des builds, pas la facturation d’Apple. Importez un export pour les minutes exactes."
+          }
+        }
+      }
+    },
+    "File" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fichier"
+          }
+        }
+      }
+    },
+    "Files and folders" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fichiers et dossiers"
+          }
+        }
+      }
+    },
     "Filled in from the .p8 file" : {
       "comment" : "Placeholder of the Key ID field before a key file is added",
       "localizations" : {
@@ -916,6 +1664,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Rempli d’après le fichier .p8"
+          }
+        }
+      }
+    },
+    "Filter" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Filtre"
           }
         }
       }
@@ -969,6 +1727,46 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Général"
+          }
+        }
+      }
+    },
+    "Git reference change" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Modification de référence Git"
+          }
+        }
+      }
+    },
+    "Help" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aide"
+          }
+        }
+      }
+    },
+    "Hide Cumulus" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Masquer Cumulus"
+          }
+        }
+      }
+    },
+    "Hide Others" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Masquer les autres"
           }
         }
       }
@@ -1086,6 +1884,16 @@
         }
       }
     },
+    "Issues" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Problèmes"
+          }
+        }
+      }
+    },
     "Just lasts until the reset at this pace" : {
       "localizations" : {
         "fr" : {
@@ -1103,6 +1911,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "ID de la clé"
+          }
+        }
+      }
+    },
+    "Key access" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Accès de la clé"
           }
         }
       }
@@ -1134,6 +1952,36 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Dernier export importé"
+          }
+        }
+      }
+    },
+    "Last commit" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dernier commit"
+          }
+        }
+      }
+    },
+    "Last export imported" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dernier export importé"
+          }
+        }
+      }
+    },
+    "Last modified" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dernière modification"
           }
         }
       }
@@ -1198,6 +2046,46 @@
         }
       }
     },
+    "Launch" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lancer"
+          }
+        }
+      }
+    },
+    "Launch this workflow" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lancer ce workflow"
+          }
+        }
+      }
+    },
+    "Launch “%@”?" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lancer « %@ » ?"
+          }
+        }
+      }
+    },
+    "Launching a build needs a team key with the App Manager role. Choose Read only to hide the launch buttons." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lancer un build demande une clé d’équipe au rôle App Manager. Choisissez Lecture seule pour masquer les boutons de lancement."
+          }
+        }
+      }
+    },
     "Line %lld of the usage export can’t be read." : {
       "localizations" : {
         "fr" : {
@@ -1234,6 +2122,72 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Liste de vos apps et de leurs builds…"
+          }
+        }
+      }
+    },
+    "Loading %lld of %lld" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Loading %1$lld of %2$lld"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chargement de %1$lld sur %2$lld"
+          }
+        }
+      }
+    },
+    "Loading branches…" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chargement des branches…"
+          }
+        }
+      }
+    },
+    "Locked" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verrouillé"
+          }
+        }
+      }
+    },
+    "Logs" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Journaux"
+          }
+        }
+      }
+    },
+    "Manual rebuild" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Relance manuelle"
+          }
+        }
+      }
+    },
+    "Manual start" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Démarrage manuel"
           }
         }
       }
@@ -1279,6 +2233,46 @@
         }
       }
     },
+    "Minimize" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Réduire"
+          }
+        }
+      }
+    },
+    "Minutes by app" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Minutes par app"
+          }
+        }
+      }
+    },
+    "Mixed" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mixte"
+          }
+        }
+      }
+    },
+    "Most expensive build" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Build le plus coûteux"
+          }
+        }
+      }
+    },
     "Name" : {
       "comment" : "Column of the key table in App Store Connect",
       "localizations" : {
@@ -1301,6 +2295,26 @@
         }
       }
     },
+    "No" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Non"
+          }
+        }
+      }
+    },
+    "No API key is set up." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aucune clé d’API n’est configurée."
+          }
+        }
+      }
+    },
     "No Xcode Cloud app yet." : {
       "comment" : "Keep \"Xcode Cloud\", \"App Store Connect\" and \"TestFlight\" untranslated as product names.",
       "localizations" : {
@@ -1312,12 +2326,72 @@
         }
       }
     },
+    "No action recorded yet." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aucune action enregistrée pour l’instant."
+          }
+        }
+      }
+    },
+    "No branch or tag was found for this workflow." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aucune branche ni aucun tag trouvé pour ce workflow."
+          }
+        }
+      }
+    },
+    "No builds yet" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aucun build pour l’instant"
+          }
+        }
+      }
+    },
     "No internet connection." : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Pas de connexion à Internet."
+          }
+        }
+      }
+    },
+    "No issue recorded for this build." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aucun problème enregistré pour ce build."
+          }
+        }
+      }
+    },
+    "No matching build" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aucun build ne correspond"
+          }
+        }
+      }
+    },
+    "No test matches these filters." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aucun test ne correspond à ces filtres."
           }
         }
       }
@@ -1342,6 +2416,16 @@
         }
       }
     },
+    "None" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aucun"
+          }
+        }
+      }
+    },
     "Normally filled in on its own when you add the `.p8` file: its name, `AuthKey_<Key ID>.p8`, holds the Key ID. Type it only if the file was renamed." : {
       "localizations" : {
         "fr" : {
@@ -1362,12 +2446,62 @@
         }
       }
     },
+    "Notarized archive" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Archive notarisée"
+          }
+        }
+      }
+    },
+    "Number, commit or name" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Numéro, commit ou nom"
+          }
+        }
+      }
+    },
+    "Off" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Désactivée"
+          }
+        }
+      }
+    },
+    "On" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Activée"
+          }
+        }
+      }
+    },
     "Only the Account Holder or an Admin of the team can create a team key." : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Seuls le titulaire du compte et les admins de l’équipe peuvent créer une clé d’équipe."
+          }
+        }
+      }
+    },
+    "Open Cumulus" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ouvrir Cumulus"
           }
         }
       }
@@ -1402,6 +2536,16 @@
         }
       }
     },
+    "Open in App Store Connect" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ouvrir dans App Store Connect"
+          }
+        }
+      }
+    },
     "Open in App Store Connect ↗" : {
       "comment" : "Keep \"Xcode Cloud\", \"App Store Connect\" and \"TestFlight\" untranslated as product names.",
       "localizations" : {
@@ -1413,12 +2557,103 @@
         }
       }
     },
+    "Open in Xcode" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ouvrir dans Xcode"
+          }
+        }
+      }
+    },
+    "Other tests" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Autres tests"
+          }
+        }
+      }
+    },
+    "Other workflows" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Autres workflows"
+          }
+        }
+      }
+    },
+    "Overview" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vue d’ensemble"
+          }
+        }
+      }
+    },
+    "PR #%lld" : {
+      "comment" : "A pull request, in a build's line",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PR #%lld"
+          }
+        }
+      }
+    },
+    "Passed" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Réussi"
+          }
+        }
+      }
+    },
     "Paste" : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Coller"
+          }
+        }
+      }
+    },
+    "Pick another branch or tag." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choisissez une autre branche ou un autre tag."
+          }
+        }
+      }
+    },
+    "Pin" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Épingler"
+          }
+        }
+      }
+    },
+    "Pinned" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Épinglés"
           }
         }
       }
@@ -1443,6 +2678,66 @@
         }
       }
     },
+    "Products" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Produits"
+          }
+        }
+      }
+    },
+    "Project" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Projet"
+          }
+        }
+      }
+    },
+    "Pull request opened" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pull request ouverte"
+          }
+        }
+      }
+    },
+    "Pull request updated" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pull request mise à jour"
+          }
+        }
+      }
+    },
+    "Pull requests" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pull requests"
+          }
+        }
+      }
+    },
+    "Queued for" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "En file"
+          }
+        }
+      }
+    },
     "Quit Cumulus" : {
       "comment" : "Do not translate the app name.",
       "localizations" : {
@@ -1450,6 +2745,52 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Quitter Cumulus"
+          }
+        }
+      }
+    },
+    "Read only" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lecture seule"
+          }
+        }
+      }
+    },
+    "Rebuild" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Relancer"
+          }
+        }
+      }
+    },
+    "Rebuild %@ of “%@”?" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Rebuild %1$@ of “%2$@”?"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Relancer %1$@ de « %2$@ » ?"
+          }
+        }
+      }
+    },
+    "Rebuild this build" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Relancer ce build"
           }
         }
       }
@@ -1501,6 +2842,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Supprimer la clé API et toutes ses données ?"
+          }
+        }
+      }
+    },
+    "Repository" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dépôt"
+          }
+        }
+      }
+    },
+    "Required" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Requise"
           }
         }
       }
@@ -1567,12 +2928,32 @@
         }
       }
     },
+    "Schedule" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Planification"
+          }
+        }
+      }
+    },
     "Select All" : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Tout sélectionner"
+          }
+        }
+      }
+    },
+    "Select a build" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choisissez un build"
           }
         }
       }
@@ -1587,12 +2968,52 @@
         }
       }
     },
+    "Set Your Plan…" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Saisir votre forfait…"
+          }
+        }
+      }
+    },
+    "Set your plan’s reset date to see the cycle." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Saisissez la date de réinitialisation de votre forfait pour voir le cycle."
+          }
+        }
+      }
+    },
     "Settings…" : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Réglages…"
+          }
+        }
+      }
+    },
+    "Show All" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tout afficher"
+          }
+        }
+      }
+    },
+    "Show in the Dock" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Afficher dans le Dock"
           }
         }
       }
@@ -1608,6 +3029,46 @@
         }
       }
     },
+    "Start condition" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Démarrage"
+          }
+        }
+      }
+    },
+    "Start conditions" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Conditions de démarrage"
+          }
+        }
+      }
+    },
+    "Start only if a changed file matches" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Démarrer seulement si un fichier modifié correspond"
+          }
+        }
+      }
+    },
+    "Started" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Démarré"
+          }
+        }
+      }
+    },
     "Startup" : {
       "comment" : "Settings, general tab: section about opening the app at login.",
       "localizations" : {
@@ -1615,6 +3076,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Démarrage"
+          }
+        }
+      }
+    },
+    "Status" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Statut"
           }
         }
       }
@@ -1651,12 +3122,102 @@
         }
       }
     },
+    "Tag changes" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Modifications de tag"
+          }
+        }
+      }
+    },
+    "Test" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Test"
+          }
+        }
+      }
+    },
     "Test Connection" : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Tester la connexion"
+          }
+        }
+      }
+    },
+    "Test failure" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Échec de test"
+          }
+        }
+      }
+    },
+    "Test products" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Produits de test"
+          }
+        }
+      }
+    },
+    "Test results" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Résultats de test"
+          }
+        }
+      }
+    },
+    "TestFlight" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "TestFlight"
+          }
+        }
+      }
+    },
+    "TestFlight and App Store" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "TestFlight et App Store"
+          }
+        }
+      }
+    },
+    "TestFlight internal testing" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tests internes TestFlight"
+          }
+        }
+      }
+    },
+    "Tests" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tests"
           }
         }
       }
@@ -1699,6 +3260,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Le cycle se renouvelle chaque mois à cette date. Si la jauge ne correspond pas à App Store Connect, revérifiez-la."
+          }
+        }
+      }
+    },
+    "The download could not start." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Le téléchargement n’a pas pu démarrer."
           }
         }
       }
@@ -1771,6 +3342,36 @@
         }
       }
     },
+    "This API key isn’t allowed to do that. Check its role, and that it is a team key." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cette clé d’API n’a pas le droit de faire cela. Vérifiez son rôle, et qu’il s’agit d’une clé d’équipe."
+          }
+        }
+      }
+    },
+    "This build has no test results." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ce build n’a aucun résultat de test."
+          }
+        }
+      }
+    },
+    "This build produced no downloadable file." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ce build n’a produit aucun fichier à télécharger."
+          }
+        }
+      }
+    },
     "This file can’t be read as text." : {
       "localizations" : {
         "fr" : {
@@ -1803,6 +3404,36 @@
         }
       }
     },
+    "This week" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cette semaine"
+          }
+        }
+      }
+    },
+    "Today" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aujourd’hui"
+          }
+        }
+      }
+    },
+    "Toggle Sidebar" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Afficher ou masquer la barre latérale"
+          }
+        }
+      }
+    },
     "Too early in the cycle to project a pace" : {
       "localizations" : {
         "fr" : {
@@ -1813,12 +3444,42 @@
         }
       }
     },
+    "Try Again" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Réessayer"
+          }
+        }
+      }
+    },
+    "Undated" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sans date"
+          }
+        }
+      }
+    },
     "Undo" : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Annuler"
+          }
+        }
+      }
+    },
+    "Unpin" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Désépingler"
           }
         }
       }
@@ -1886,12 +3547,42 @@
         }
       }
     },
+    "View" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Présentation"
+          }
+        }
+      }
+    },
+    "View commit" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Voir le commit"
+          }
+        }
+      }
+    },
     "Waiting for your approval in System Settings." : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "En attente de votre accord dans Réglages Système."
+          }
+        }
+      }
+    },
+    "Warning" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Avertissement"
           }
         }
       }
@@ -1912,6 +3603,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Où les trouver"
+          }
+        }
+      }
+    },
+    "While the Cumulus window is open. Takes effect the next time it opens." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tant que la fenêtre de Cumulus est ouverte. Pris en compte à sa prochaine ouverture."
           }
         }
       }
@@ -1948,6 +3649,16 @@
         }
       }
     },
+    "Xcode Cloud Documentation" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Documentation Xcode Cloud"
+          }
+        }
+      }
+    },
     "Xcode Cloud Plan" : {
       "comment" : "Keep \"Xcode Cloud\", \"App Store Connect\" and \"TestFlight\" untranslated as product names.",
       "localizations" : {
@@ -1959,6 +3670,56 @@
         }
       }
     },
+    "Xcode Cloud repeats this build and uses compute hours. Cumulus cannot cancel it." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Xcode Cloud refait ce build et consomme des heures de calcul. Cumulus ne peut pas l’annuler."
+          }
+        }
+      }
+    },
+    "Xcode Cloud starts a manual build and uses compute hours. The workflow needs a manual start condition that matches this branch. Cumulus cannot cancel it." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Xcode Cloud démarre un build manuel et consomme des heures de calcul. Le workflow doit avoir une condition de démarrage manuel qui couvre cette branche. Cumulus ne peut pas l’annuler."
+          }
+        }
+      }
+    },
+    "Yes" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Oui"
+          }
+        }
+      }
+    },
+    "Yesterday" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hier"
+          }
+        }
+      }
+    },
+    "Zoom" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zoom"
+          }
+        }
+      }
+    },
     "[DD Month YYYY]" : {
       "comment" : "Placeholder of a date in the diagram of App Store Connect's usage page",
       "localizations" : {
@@ -1966,6 +3727,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "[JJ mois AAAA]"
+          }
+        }
+      }
+    },
+    "branches" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "branches"
+          }
+        }
+      }
+    },
+    "canceled" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "annulée"
           }
         }
       }
@@ -1991,6 +3772,36 @@
         }
       }
     },
+    "pull requests" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "pull requests"
+          }
+        }
+      }
+    },
+    "skipped" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ignorée"
+          }
+        }
+      }
+    },
+    "tags" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "tags"
+          }
+        }
+      }
+    },
     "used of" : {
       "comment" : "Between the hours used and the plan's hours in the diagram",
       "localizations" : {
@@ -1998,6 +3809,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "utilisées sur"
+          }
+        }
+      }
+    },
+    "waiting" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "en attente"
           }
         }
       }

@@ -1,39 +1,96 @@
 import AppKit
 
+/// The menu bar shown while the main window is open. It also carries the key equivalents (⌘, ⌘Q ⌘W ⌘V) when it is hidden.
 enum MainMenu {
-    static func make(settingsTarget: AnyObject, settingsAction: Selector) -> NSMenu {
+    struct Actions {
+        var openSettings: Selector
+        var openMainWindow: Selector
+        var refresh: Selector
+        var openHelp: Selector
+    }
+
+    static func make(target: AnyObject, _ actions: Actions) -> NSMenu {
         let mainMenu = NSMenu()
-        mainMenu.addItem(submenu: appMenu(settingsTarget: settingsTarget, settingsAction: settingsAction))
+        mainMenu.addItem(submenu: appMenu(target, actions))
+        mainMenu.addItem(submenu: fileMenu(target, actions))
         mainMenu.addItem(submenu: editMenu())
-        mainMenu.addItem(submenu: windowMenu())
+        mainMenu.addItem(submenu: viewMenu())
+        let window = windowMenu(target, actions)
+        mainMenu.addItem(submenu: window)
+        let help = helpMenu(target, actions)
+        mainMenu.addItem(submenu: help)
+        NSApp?.windowsMenu = window
+        NSApp?.helpMenu = help
         return mainMenu
     }
 
-    private static func appMenu(settingsTarget: AnyObject, settingsAction: Selector) -> NSMenu {
+    @discardableResult
+    private static func item(_ menu: NSMenu, _ title: String, _ action: Selector, _ key: String = "", target: AnyObject? = nil) -> NSMenuItem {
+        let item = menu.addItem(withTitle: title, action: action, keyEquivalent: key)
+        item.target = target
+        return item
+    }
+
+    private static func appMenu(_ target: AnyObject, _ actions: Actions) -> NSMenu {
         let menu = NSMenu(title: "Cumulus")
-        let settings = menu.addItem(withTitle: String(localized: "Settings…"), action: settingsAction, keyEquivalent: ",")
-        settings.target = settingsTarget
+        item(menu, String(localized: "About Cumulus"), #selector(NSApplication.orderFrontStandardAboutPanel(_:)))
         menu.addItem(.separator())
-        menu.addItem(withTitle: String(localized: "Quit Cumulus"), action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q")
+        item(menu, String(localized: "Settings…"), actions.openSettings, ",", target: target)
+        menu.addItem(.separator())
+        item(menu, String(localized: "Hide Cumulus"), #selector(NSApplication.hide(_:)), "h")
+        let hideOthers = item(menu, String(localized: "Hide Others"), #selector(NSApplication.hideOtherApplications(_:)), "h")
+        hideOthers.keyEquivalentModifierMask = [.command, .option]
+        item(menu, String(localized: "Show All"), #selector(NSApplication.unhideAllApplications(_:)))
+        menu.addItem(.separator())
+        item(menu, String(localized: "Quit Cumulus"), #selector(NSApplication.terminate(_:)), "q")
+        return menu
+    }
+
+    private static func fileMenu(_ target: AnyObject, _ actions: Actions) -> NSMenu {
+        let menu = NSMenu(title: String(localized: "File"))
+        item(menu, String(localized: "Refresh"), actions.refresh, "r", target: target)
+        menu.addItem(.separator())
+        item(menu, String(localized: "Close"), #selector(NSWindow.performClose(_:)), "w")
         return menu
     }
 
     private static func editMenu() -> NSMenu {
         let menu = NSMenu(title: String(localized: "Edit"))
-        menu.addItem(withTitle: String(localized: "Undo"), action: Selector(("undo:")), keyEquivalent: "z")
-        let redo = menu.addItem(withTitle: String(localized: "Redo"), action: Selector(("redo:")), keyEquivalent: "z")
+        item(menu, String(localized: "Undo"), Selector(("undo:")), "z")
+        let redo = item(menu, String(localized: "Redo"), Selector(("redo:")), "z")
         redo.keyEquivalentModifierMask = [.command, .shift]
         menu.addItem(.separator())
-        menu.addItem(withTitle: String(localized: "Cut"), action: #selector(NSText.cut(_:)), keyEquivalent: "x")
-        menu.addItem(withTitle: String(localized: "Copy"), action: #selector(NSText.copy(_:)), keyEquivalent: "c")
-        menu.addItem(withTitle: String(localized: "Paste"), action: #selector(NSText.paste(_:)), keyEquivalent: "v")
-        menu.addItem(withTitle: String(localized: "Select All"), action: #selector(NSText.selectAll(_:)), keyEquivalent: "a")
+        item(menu, String(localized: "Cut"), #selector(NSText.cut(_:)), "x")
+        item(menu, String(localized: "Copy"), #selector(NSText.copy(_:)), "c")
+        item(menu, String(localized: "Paste"), #selector(NSText.paste(_:)), "v")
+        item(menu, String(localized: "Select All"), #selector(NSText.selectAll(_:)), "a")
         return menu
     }
 
-    private static func windowMenu() -> NSMenu {
+    private static func viewMenu() -> NSMenu {
+        let menu = NSMenu(title: String(localized: "View"))
+        let sidebar = item(menu, String(localized: "Toggle Sidebar"), #selector(NSSplitViewController.toggleSidebar(_:)), "s")
+        sidebar.keyEquivalentModifierMask = [.command, .control]
+        menu.addItem(.separator())
+        let fullScreen = item(menu, String(localized: "Enter Full Screen"), #selector(NSWindow.toggleFullScreen(_:)), "f")
+        fullScreen.keyEquivalentModifierMask = [.command, .control]
+        return menu
+    }
+
+    private static func windowMenu(_ target: AnyObject, _ actions: Actions) -> NSMenu {
         let menu = NSMenu(title: String(localized: "Window"))
-        menu.addItem(withTitle: String(localized: "Close"), action: #selector(NSWindow.performClose(_:)), keyEquivalent: "w")
+        item(menu, String(localized: "Minimize"), #selector(NSWindow.performMiniaturize(_:)), "m")
+        item(menu, String(localized: "Zoom"), #selector(NSWindow.performZoom(_:)))
+        menu.addItem(.separator())
+        item(menu, "Cumulus", actions.openMainWindow, "0", target: target)
+        menu.addItem(.separator())
+        item(menu, String(localized: "Bring All to Front"), #selector(NSApplication.arrangeInFront(_:)))
+        return menu
+    }
+
+    private static func helpMenu(_ target: AnyObject, _ actions: Actions) -> NSMenu {
+        let menu = NSMenu(title: String(localized: "Help"))
+        item(menu, String(localized: "Xcode Cloud Documentation"), actions.openHelp, target: target)
         return menu
     }
 }

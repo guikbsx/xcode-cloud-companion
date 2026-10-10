@@ -1,0 +1,13 @@
+{
+  "data": [
+    {
+      "type": "builds",
+      "id": "beta-1",
+      "attributes": {
+        "version": "390",
+        "uploadedDate": "2026-10-08T12:10:00Z",
+        "processingState": "VALID"
+      }
+    }
+  ]
+}

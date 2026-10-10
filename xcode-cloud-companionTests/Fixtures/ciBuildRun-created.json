@@ -1,0 +1,16 @@
+{
+  "data": {
+    "type": "ciBuildRuns",
+    "id": "run-new",
+    "attributes": {
+      "number": 391,
+      "createdDate": "2026-10-09T21:30:00.000Z",
+      "executionProgress": "PENDING",
+      "startReason": "MANUAL",
+      "isPullRequestBuild": false
+    },
+    "relationships": {
+      "workflow": { "data": { "type": "ciWorkflows", "id": "wf-1" } }
+    }
+  }
+}

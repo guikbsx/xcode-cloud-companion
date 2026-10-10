@@ -1,0 +1,58 @@
+{
+  "data": [
+    {
+      "type": "ciTestResults",
+      "id": "t-1",
+      "attributes": {
+        "className": "SyncTests",
+        "name": "pastWeeksAreMerged()",
+        "status": "FAILURE",
+        "message": "XCTAssertEqual failed",
+        "fileSource": {
+          "path": "Tests/SyncTests.swift",
+          "lineNumber": 18
+        },
+        "destinationTestResults": [
+          {
+            "deviceName": "iPhone 17 Pro",
+            "osVersion": "27.0",
+            "status": "FAILURE",
+            "duration": 1.2
+          },
+          {
+            "deviceName": "iPad Pro 13",
+            "osVersion": "27.0",
+            "status": "SUCCESS",
+            "duration": 1.4
+          }
+        ]
+      }
+    },
+    {
+      "type": "ciTestResults",
+      "id": "t-2",
+      "attributes": {
+        "className": "WidgetTests",
+        "name": "weekViewShowsSevenDays()",
+        "status": "MIXED",
+        "destinationTestResults": [
+          {
+            "deviceName": "iPhone 17 Pro",
+            "osVersion": "27.0",
+            "status": "SUCCESS",
+            "duration": 0.3
+          }
+        ]
+      }
+    },
+    {
+      "type": "ciTestResults",
+      "id": "t-3",
+      "attributes": {
+        "className": "WidgetTests",
+        "name": "future()",
+        "status": "EXPECTED_FAILURE"
+      }
+    }
+  ]
+}

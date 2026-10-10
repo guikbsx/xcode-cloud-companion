@@ -53,6 +53,7 @@ actor MockTransport: HTTPTransport {
         var status = 200
         var body = Data()
         var error: URLError?
+        var headers: [String: String] = [:]
     }
 
     private(set) var requests: [URLRequest] = []
@@ -68,7 +69,7 @@ actor MockTransport: HTTPTransport {
         if let error = reply.error {
             throw error
         }
-        let response = HTTPURLResponse(url: request.url ?? URL(filePath: "/"), statusCode: reply.status, httpVersion: nil, headerFields: nil)
+        let response = HTTPURLResponse(url: request.url ?? URL(filePath: "/"), statusCode: reply.status, httpVersion: nil, headerFields: reply.headers)
         return (reply.body, response ?? URLResponse())
     }
 }
