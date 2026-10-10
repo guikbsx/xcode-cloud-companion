@@ -31,7 +31,8 @@ struct BuildListView: View {
                                     } label: {
                                         BuildCard(
                                             status: row.status, number: row.numberText, summary: row.summary(now: now), detail: row.detail,
-                                            duration: row.duration(now: now), isSelected: row.id == navigation.selectedBuildID
+                                            duration: row.duration(now: now), isSelected: row.id == navigation.selectedBuildID,
+                                            spokenDetail: row.spokenDetail
                                         )
                                     }
                                     .buttonStyle(.plain)

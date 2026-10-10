@@ -89,7 +89,7 @@ enum StatusMenuBuilder {
         }
 
         if let summary = state.summary {
-            items.append(viewItem(UsageGaugeView(summary: summary, palette: state.palette)))
+            items.append(viewItem(UsageGaugeView(summary: summary, palette: state.palette, displayNames: state.snapshot.displayNames)))
         } else {
             items.append(NSMenuItem.action(String(localized: "Set Your Plan’s Reset Date…"), handler: actions.openSettings))
         }

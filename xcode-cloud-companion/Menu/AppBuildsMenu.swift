@@ -20,9 +20,10 @@ enum AppBuildsMenu {
         var items: [NSMenuItem] = [.sectionHeader(title: String(localized: "Apps · this cycle"))]
         for product in products {
             let runs = (runsByProduct[product.id] ?? []).sorted { ($0.number ?? 0) > ($1.number ?? 0) }
-            let item = NSMenuItem(title: product.name, action: nil, keyEquivalent: "")
+            // The Store name is what is read; the product name stays the key of the colour and of the minutes.
+            let item = NSMenuItem(title: product.displayName, action: nil, keyEquivalent: "")
             if let latest = runs.first {
-                item.attributedTitle = BuildStatusDot.title(product.name, status: BuildStatus(run: latest), appSwatch: palette.swatch(for: product.name))
+                item.attributedTitle = BuildStatusDot.title(product.displayName, status: BuildStatus(run: latest), appSwatch: palette.swatch(for: product.name))
             }
             let measuring = summary?.measurement.isMeasuring == true
             if let usage = summary?.byApp.first(where: { $0.product == product.name }), usage.totalMinutes > 0 {

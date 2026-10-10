@@ -8,6 +8,8 @@ struct BuildCard: View {
     let detail: String
     let duration: String?
     var isSelected = false
+    /// What VoiceOver reads for `detail` when the row shortens it: the app's full name, the workflow, the branch.
+    var spokenDetail: String?
 
     var body: some View {
         HStack(spacing: 10) {
@@ -42,6 +44,7 @@ struct BuildCard: View {
         .shadow(color: isSelected ? CumulusStyle.accent.opacity(0.35) : .clear, radius: 8, y: 4)
         .accessibilityElement(children: .combine)
         .accessibilityLabel(Text("\(number), \(status.label), \(summary)"))
+        .accessibilityValue(Text(spokenDetail ?? detail))
         .accessibilityAddTraits(isSelected ? .isSelected : [])
     }
 }
@@ -52,6 +55,7 @@ struct BuildCard: View {
         BuildCard(status: .failed, number: "#389", summary: "Échec · 3 tests", detail: "realmotivation · Public archive · develop", duration: "6:12", isSelected: true)
         BuildCard(status: .succeeded, number: "#17", summary: "Réussi · TestFlight", detail: "second-brain · Internal TestFlight Build · main", duration: "11:05")
         BuildCard(status: .canceled, number: "#385", summary: "Annulé", detail: "realmotivation · develop", duration: nil)
+        BuildCard(status: .failed, number: "#386", summary: "Échec", detail: "Crossfit Hyro… · Public archive (with test) · develop", duration: "1:57")
     }
     .padding(16)
     .frame(width: 372)

@@ -84,6 +84,8 @@ nonisolated struct JSONAPIIncludedResource: Decodable, Sendable {
         let sourceBranchName: String?
         let destinationBranchName: String?
         let isClosed: Bool?
+        // builds
+        let iconAssetToken: CIIconAssetToken?
     }
 }
 

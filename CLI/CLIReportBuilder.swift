@@ -109,7 +109,7 @@ nonisolated struct CLIReportBuilder: Sendable {
             let runs = sorted(snapshot.runs(forProductID: product.id))
             let usage = summary?.byApp.first { $0.product == product.name }
             return AppOutput(
-                id: product.id, name: product.name, bundleID: product.bundleID, type: product.productType,
+                id: product.id, name: product.name, storeName: product.appName, bundleID: product.bundleID, type: product.productType,
                 latestBuild: runs.first.map { brief($0, productName: product.name) },
                 runningBuilds: runs.filter { $0.executionProgress != .complete }.count,
                 cycle: summary.map { _ in

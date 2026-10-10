@@ -5,7 +5,6 @@ enum LatestBuildsMenu {
     static let buildCount = 5
     /// Width left to the app name before the build, so the numbers line up in a column.
     static let appColumnWidth: CGFloat = 120
-    static let maximumAppNameLength = 14
 
     static func items(snapshot: BuildSnapshot, now: Date, open: @escaping (String) -> Void) -> [NSMenuItem] {
         let products = Dictionary(snapshot.products.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
@@ -78,7 +77,6 @@ enum LatestBuildsMenu {
     }
 
     private static func appName(_ product: CIProduct?) -> String {
-        let name = product?.name ?? "?"
-        return name.count > maximumAppNameLength ? name.prefix(maximumAppNameLength - 1) + "…" : name
+        CIProduct.compact(product?.displayName ?? "?")
     }
 }

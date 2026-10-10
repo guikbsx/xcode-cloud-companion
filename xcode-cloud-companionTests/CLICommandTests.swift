@@ -276,7 +276,7 @@ struct CLICommandTests {
         }
 
         #expect(try await keys("status") == ["appCount", "planConfigured", "runningBuilds", "usage"])
-        #expect(try await keys("apps") == ["bundleID", "cycle", "id", "latestBuild", "name", "runningBuilds", "type"])
+        #expect(try await keys("apps") == ["bundleID", "cycle", "id", "latestBuild", "name", "runningBuilds", "storeName", "type"])
         #expect(try await keys("workflows", "--app", "Alpha") == [
             "app", "cycle", "description", "id", "isEnabled", "lastBuild", "name", "productID", "repository", "testDestinations", "xcodeVersion",
         ])

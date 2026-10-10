@@ -7,6 +7,10 @@ nonisolated struct BuildSynchronizer: Sendable {
     /// A first sync has dozens of test actions, each several pages deep: the rest waits for the next sync.
     static let maxTestResultFetchesPerSync = 12
 
+    /// An icon only changes with a new build: once a day is plenty.
+    static let iconRefreshInterval: TimeInterval = 24 * 3600
+    static let iconRetryInterval: TimeInterval = 3600
+
     let client: AppStoreConnectClient
     var progress: @Sendable (String) -> Void = { _ in }
 
@@ -88,6 +92,8 @@ nonisolated struct BuildSynchronizer: Sendable {
         let knownActions = Set(actionsByRunID.values.joined().map(\.id))
         attempts = attempts.filter { knownActions.contains($0.key) }
 
+        let icons = await refreshedIcons(products: products, previous: previous, now: now)
+
         return BuildSnapshot(
             products: products,
             runs: runs,
@@ -95,8 +101,28 @@ nonisolated struct BuildSynchronizer: Sendable {
             testDevicesByActionID: testDevicesByActionID,
             testResultAttempts: attempts,
             workflows: workflows,
+            appIcons: icons.byAppID,
+            appIconsCheckedAt: icons.checkedAt,
             lastSuccessfulSync: now
         )
+    }
+
+    /// At most one request, once a day or when an app appears. With no icon yet or a new app, every app is asked with
+    /// whichever build Apple includes; after that, the account's newest builds say whether an icon changed, and bring the
+    /// icon of an app that had no build before. Icons never fail a sync.
+    private func refreshedIcons(products: [CIProduct], previous: BuildSnapshot, now: Date) async -> (byAppID: [String: CIAppIcon], checkedAt: Date?) {
+        let appIDs = Set(products.compactMap(\.appID))
+        let known = previous.appIcons.filter { appIDs.contains($0.key) }
+        guard !appIDs.isEmpty else { return (known, previous.appIconsCheckedAt) }
+        let isDue = previous.appIconsCheckedAt.map { now.timeIntervalSince($0) >= Self.iconRefreshInterval } ?? true
+        let hasNewApp = !appIDs.isSubset(of: previous.products.compactMap(\.appID))
+        guard isDue || hasNewApp else { return (known, previous.appIconsCheckedAt) }
+
+        guard let fetched = try? await client.appIcons(fromNewestBuilds: !known.isEmpty && !hasNewApp) else {
+            // A key that cannot read builds, or a bad moment: asked again in an hour, not at every sync.
+            return (known, now.addingTimeInterval(Self.iconRetryInterval - Self.iconRefreshInterval))
+        }
+        return (known.merging(fetched.filter { appIDs.contains($0.key) }) { _, new in new }, now)
     }
 
     /// Paging stops at the newest cached build, unless an older cached build is still running.

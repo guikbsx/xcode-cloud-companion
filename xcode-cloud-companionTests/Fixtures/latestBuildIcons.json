@@ -1,0 +1,40 @@
+{
+  "data": [
+    {
+      "type": "builds",
+      "id": "build-390",
+      "attributes": {
+        "iconAssetToken": {
+          "templateUrl": "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/a8/77/87/sample-new/logo76x76@2x_U007eipad.png/{w}x{h}bb.{f}",
+          "width": 152,
+          "height": 152
+        }
+      },
+      "relationships": { "app": { "data": { "type": "apps", "id": "app-1" } } }
+    },
+    {
+      "type": "builds",
+      "id": "build-389",
+      "attributes": {
+        "iconAssetToken": {
+          "templateUrl": "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/49/4f/6e/sample-previous/logo76x76@2x_U007eipad.png/{w}x{h}bb.{f}",
+          "width": 152,
+          "height": 152
+        }
+      },
+      "relationships": { "app": { "data": { "type": "apps", "id": "app-1" } } }
+    },
+    {
+      "type": "builds",
+      "id": "build-processing",
+      "attributes": {},
+      "relationships": { "app": { "data": { "type": "apps", "id": "app-other" } } }
+    }
+  ],
+  "included": [
+    { "type": "apps", "id": "app-1", "attributes": { "bundleId": "com.example.sample" } },
+    { "type": "apps", "id": "app-other", "attributes": { "bundleId": "com.example.other" } }
+  ],
+  "links": { "self": "https://api.appstoreconnect.apple.com/v1/builds" },
+  "meta": { "paging": { "total": 300, "limit": 200 } }
+}

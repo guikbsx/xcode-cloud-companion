@@ -11,6 +11,8 @@ extension AppSwatch {
 struct UsageGaugeView: View {
     let summary: UsageSummary
     let palette: AppPalette
+    /// Store names by product name, for what VoiceOver reads; the colours stay keyed by the product.
+    var displayNames: [String: String] = [:]
 
     private var isMeasuring: Bool { summary.measurement.isMeasuring }
 
@@ -28,7 +30,7 @@ struct UsageGaugeView: View {
                     .foregroundStyle(.secondary)
                     .lineLimit(1)
             }
-            SegmentedUsageBar(segments: summary.gaugeSegments, quotaMinutes: summary.quotaMinutes, palette: palette, remainingTint: remainingTint)
+            SegmentedUsageBar(segments: summary.gaugeSegments, quotaMinutes: summary.quotaMinutes, palette: palette, remainingTint: remainingTint, displayNames: displayNames)
                 .opacity(isMeasuring ? 0.45 : 1)
             if isMeasuring {
                 HStack(alignment: .top, spacing: 12) {
@@ -193,6 +195,7 @@ struct SegmentedUsageBar: View {
     let quotaMinutes: Double
     let palette: AppPalette
     let remainingTint: Color
+    var displayNames: [String: String] = [:]
 
     var body: some View {
         GeometryReader { proxy in
@@ -220,7 +223,7 @@ struct SegmentedUsageBar: View {
 
     private var accessibilityValue: String {
         segments.map { segment in
-            let name = segment.product ?? String(localized: "Estimated")
+            let name = segment.product.map { displayNames[$0] ?? $0 } ?? String(localized: "Estimated")
             return "\(name) \(UsageFormat.minutes(segment.minutes))"
         }
         .formatted(.list(type: .and))

@@ -8,12 +8,12 @@ struct BuildDetailView: View {
     let artifactSaver: ArtifactSaver
     var onRebuild: (() -> Void)?
     let teamID: String?
+    var icons: AppIconStore?
+    var palette = AppPalette()
+    var openBuild: (String) -> Void = { _ in }
+    var logOpener: LogOpener?
 
-    private enum Tab: Hashable {
-        case actions, tests, problems, artifacts
-    }
-
-    @State private var tab = Tab.actions
+    @Binding var tab: BuildTab
 
     var body: some View {
         TimelineView(.everyMinute) { context in
@@ -34,7 +34,13 @@ struct BuildDetailView: View {
             VStack(alignment: .leading, spacing: 18) {
                 header(model)
                 if !model.frieze.isEmpty {
-                    ActionsFrieze(steps: model.frieze).cumulusGroup()
+                    ActionsFrieze(
+                        steps: model.frieze,
+                        logSteps: Set(model.frieze.filter { ($0.status == .failed || $0.status == .errored) && offersLogs($0.id) }.map(\.id)),
+                        busyLogSteps: Set(model.frieze.filter { logOpener?.state(of: $0.id).isBusy == true }.map(\.id)),
+                        openLogs: { openLogs(of: $0, model: model) }
+                    )
+                    .cumulusGroup()
                 }
                 if !model.info.isEmpty {
                     LazyVGrid(columns: [GridItem(.adaptive(minimum: 150), alignment: .topLeading)], alignment: .leading, spacing: 14) {
@@ -45,6 +51,7 @@ struct BuildDetailView: View {
                 if let commit = model.commit {
                     commitGroup(commit)
                 }
+                RegressionGroup(run: run, buildStore: buildStore, extrasStore: extrasStore, openBuild: openBuild).id(run.id)
                 testFlightGroup
                 tabs(model)
             }
@@ -76,12 +83,20 @@ struct BuildDetailView: View {
 
     private func header(_ model: BuildDetailModel) -> some View {
         VStack(alignment: .leading, spacing: 10) {
-            HStack(alignment: .firstTextBaseline, spacing: 12) {
-                Text(model.numberText)
-                    .font(.system(size: 44, weight: .bold, design: .rounded).monospacedDigit())
-                Text(model.title)
-                    .font(.title3)
-                    .foregroundStyle(.secondary)
+            HStack(alignment: .center, spacing: 14) {
+                if let product = buildStore.snapshot.product(id: run.productID) {
+                    AppIconView(
+                        name: product.displayName, swatch: palette.swatch(for: product.name), lastStatus: model.status, size: 44,
+                        artwork: icons?.artwork(of: product, in: buildStore.snapshot)
+                    )
+                }
+                HStack(alignment: .firstTextBaseline, spacing: 12) {
+                    Text(model.numberText)
+                        .font(.system(size: 44, weight: .bold, design: .rounded).monospacedDigit())
+                    Text(model.title)
+                        .font(.title3)
+                        .foregroundStyle(.secondary)
+                }
             }
             HStack(spacing: 6) {
                 CapsuleTag(text: model.status.label, systemImage: model.status.systemImage, tint: model.status.tint)
@@ -156,10 +171,10 @@ struct BuildDetailView: View {
     private func tabs(_ model: BuildDetailModel) -> some View {
         VStack(alignment: .leading, spacing: 12) {
             Picker("Details", selection: $tab) {
-                Text(Self.title(String(localized: "Actions"), count: model.actions.count)).tag(Tab.actions)
-                Text(Self.title(String(localized: "Tests"), suffix: model.testFailureCount.flatMap { $0 > 0 ? String(localized: "\($0) failed") : nil })).tag(Tab.tests)
-                Text(Self.title(String(localized: "Issues"), count: model.issueCount)).tag(Tab.problems)
-                Text("Artifacts").tag(Tab.artifacts)
+                Text(Self.title(String(localized: "Actions"), count: model.actions.count)).tag(BuildTab.actions)
+                Text(Self.title(String(localized: "Tests"), suffix: model.testFailureCount.flatMap { $0 > 0 ? String(localized: "\($0) failed") : nil })).tag(BuildTab.tests)
+                Text(Self.title(String(localized: "Issues"), count: model.issueCount)).tag(BuildTab.problems)
+                Text("Artifacts").tag(BuildTab.artifacts)
             }
             .pickerStyle(.segmented)
             .labelsHidden()
@@ -190,6 +205,55 @@ struct BuildDetailView: View {
         }
     }
 
+    // MARK: - Logs
+
+    private func action(_ id: String) -> CIBuildAction? {
+        buildStore.snapshot.actionsByRunID[run.id]?.first { $0.id == id }
+    }
+
+    private func knownArtifacts(of actionID: String) -> [CIArtifact]? {
+        extrasStore.extras(for: run.id)?.artifactsByAction[actionID]
+    }
+
+    private func offersLogs(_ actionID: String) -> Bool {
+        guard let logOpener, let action = action(actionID) else { return false }
+        return logOpener.offersLogs(for: action, knownArtifacts: knownArtifacts(of: actionID))
+    }
+
+    private func openLogs(of actionID: String, model: BuildDetailModel) {
+        guard let action = action(actionID) else { return }
+        let name = model.actions.first { $0.id == actionID }?.name ?? ""
+        let title = [[model.appName, model.numberText].compactMap(\.self).joined(separator: " "), name].filter { !$0.isEmpty }.joined(separator: " – ")
+        logOpener?.start(action, run: run, knownArtifacts: knownArtifacts(of: actionID), title: title)
+    }
+
+    @ViewBuilder
+    private func logsControl(for actionID: String, model: BuildDetailModel) -> some View {
+        switch logOpener?.state(of: actionID) ?? .idle {
+        case .preparing, .unpacking:
+            ProgressView().controlSize(.small)
+        case .downloading(let fraction):
+            HStack(spacing: 8) {
+                if let fraction {
+                    ProgressView(value: fraction).frame(width: 70)
+                } else {
+                    ProgressView().controlSize(.small)
+                }
+                Button("Cancel") { logOpener?.cancel(actionID) }.controlSize(.small)
+            }
+        case .idle, .failed:
+            if offersLogs(actionID) {
+                Button {
+                    openLogs(of: actionID, model: model)
+                } label: {
+                    Label("Logs", systemImage: "doc.text.magnifyingglass")
+                }
+                .controlSize(.small)
+                .help("Download this action’s logs and open them in the Finder")
+            }
+        }
+    }
+
     private func actionsTab(_ model: BuildDetailModel) -> some View {
         VStack(spacing: 0) {
             ForEach(model.actions) { action in
@@ -201,12 +265,17 @@ struct BuildDetailView: View {
                         Text(UsageFormat.dotted(facts.compactMap(\.self))).font(.caption).foregroundStyle(.secondary)
                     }
                     Spacer()
+                    logsControl(for: action.id, model: model)
                     if let duration = action.duration {
                         Text(duration).font(.system(.caption, design: .monospaced)).foregroundStyle(.secondary)
                     }
                 }
                 .padding(.vertical, 8)
                 .accessibilityElement(children: .combine)
+                if case .failed(let message)? = logOpener?.state(of: action.id) {
+                    Text(message).font(.caption).foregroundStyle(BuildStatus.errored.tint)
+                        .frame(maxWidth: .infinity, alignment: .leading).padding(.bottom, 8)
+                }
                 if action.id != model.actions.last?.id { Divider() }
             }
             if model.actions.isEmpty {

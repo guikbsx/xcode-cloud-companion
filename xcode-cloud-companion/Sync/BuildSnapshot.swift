@@ -10,6 +10,9 @@ nonisolated struct BuildSnapshot: Codable, Sendable, Equatable {
     /// Failed attempts to fetch an action's results: after three, Apple is taken to refuse them and the action is left alone.
     var testResultAttempts: [String: Int] = [:]
     var workflows: [CIWorkflow] = []
+    /// Icons by app ID (`CIProduct.appID`), and when Apple was last asked for them.
+    var appIcons: [String: CIAppIcon] = [:]
+    var appIconsCheckedAt: Date?
     var lastSuccessfulSync: Date?
 
     static let empty = BuildSnapshot()
@@ -21,6 +24,8 @@ nonisolated struct BuildSnapshot: Codable, Sendable, Equatable {
         testDevicesByActionID: [String: [CITestDeviceRun]] = [:],
         testResultAttempts: [String: Int] = [:],
         workflows: [CIWorkflow] = [],
+        appIcons: [String: CIAppIcon] = [:],
+        appIconsCheckedAt: Date? = nil,
         lastSuccessfulSync: Date? = nil
     ) {
         self.products = products
@@ -29,6 +34,8 @@ nonisolated struct BuildSnapshot: Codable, Sendable, Equatable {
         self.testDevicesByActionID = testDevicesByActionID
         self.testResultAttempts = testResultAttempts
         self.workflows = workflows
+        self.appIcons = appIcons
+        self.appIconsCheckedAt = appIconsCheckedAt
         self.lastSuccessfulSync = lastSuccessfulSync
     }
 
@@ -41,6 +48,8 @@ nonisolated struct BuildSnapshot: Codable, Sendable, Equatable {
         testDevicesByActionID = try container.decodeIfPresent([String: [CITestDeviceRun]].self, forKey: .testDevicesByActionID) ?? [:]
         testResultAttempts = try container.decodeIfPresent([String: Int].self, forKey: .testResultAttempts) ?? [:]
         workflows = try container.decodeIfPresent([CIWorkflow].self, forKey: .workflows) ?? []
+        appIcons = try container.decodeIfPresent([String: CIAppIcon].self, forKey: .appIcons) ?? [:]
+        appIconsCheckedAt = try container.decodeIfPresent(Date.self, forKey: .appIconsCheckedAt)
         lastSuccessfulSync = try container.decodeIfPresent(Date.self, forKey: .lastSuccessfulSync)
     }
 
@@ -59,6 +68,19 @@ nonisolated struct BuildSnapshot: Codable, Sendable, Equatable {
         action.actionType == .test && action.executionProgress == .complete
             && testDevicesByActionID[action.id] == nil
             && testResultAttempts[action.id, default: 0] < Self.maximumTestResultAttempts
+    }
+
+    func product(id: String) -> CIProduct? {
+        products.first { $0.id == id }
+    }
+
+    func icon(of product: CIProduct?) -> CIAppIcon? {
+        product?.appID.flatMap { appIcons[$0] }
+    }
+
+    /// Store names by product name, for what is keyed by the product: usage figures and colours.
+    var displayNames: [String: String] {
+        Dictionary(products.map { ($0.name, $0.displayName) }, uniquingKeysWith: { first, _ in first })
     }
 
     func workflow(id: String?) -> CIWorkflow? {

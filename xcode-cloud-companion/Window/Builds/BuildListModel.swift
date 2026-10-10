@@ -18,10 +18,18 @@ nonisolated struct BuildRowData: Identifiable, Equatable, Sendable {
     let failedTests: Int
     let shipsToTestFlight: Bool
     let commitSha: String?
+    /// The Xcode Cloud product name, still found by the search when the row shows the Store name.
+    var productKey: String?
 
     var numberText: String { number.map { "#\($0)" } ?? "#?" }
 
+    /// A long Store name is cut like in the menu, so it leaves the workflow and the branch their room.
     var detail: String {
+        UsageFormat.dotted([CIProduct.compact(productName), workflowName, reference].compactMap(\.self))
+    }
+
+    /// The same line with the app's whole name, for VoiceOver.
+    var spokenDetail: String {
         UsageFormat.dotted([productName, workflowName, reference].compactMap(\.self))
     }
 
@@ -61,7 +69,7 @@ nonisolated struct BuildRowData: Identifiable, Equatable, Sendable {
         let digits = query.hasPrefix("#") ? String(query.dropFirst()) : query
         if let number, !digits.isEmpty, digits.allSatisfy(\.isNumber), String(number).hasPrefix(digits) { return true }
         if query.count >= 3, let commitSha, commitSha.lowercased().hasPrefix(query) { return true }
-        return [productName, workflowName, reference].compactMap(\.self).contains { $0.lowercased().contains(query) }
+        return [productName, productKey, workflowName, reference].compactMap(\.self).contains { $0.lowercased().contains(query) }
     }
 }
 
@@ -104,7 +112,7 @@ nonisolated struct BuildListModel: Equatable, Sendable {
             title = String(localized: "All builds")
             scoped = snapshot.runs
         case .product(let id):
-            title = products[id]?.name ?? String(localized: "All builds")
+            title = products[id]?.displayName ?? String(localized: "All builds")
             scoped = snapshot.runs(forProductID: id)
         case .workflow(let id):
             title = workflows[id]?.name ?? String(localized: "All builds")
@@ -117,10 +125,10 @@ nonisolated struct BuildListModel: Equatable, Sendable {
                 BuildRowData(
                     id: run.id, number: run.number, status: BuildStatus(run: run), createdDate: run.createdDate,
                     startedDate: run.startedDate, finishedDate: run.finishedDate,
-                    productName: products[run.productID]?.name ?? "?", workflowName: run.workflowName ?? run.workflowID.flatMap { workflows[$0]?.name },
+                    productName: products[run.productID]?.displayName ?? "?", workflowName: run.workflowName ?? run.workflowID.flatMap { workflows[$0]?.name },
                     reference: Self.reference(of: run), failedTests: run.issueCounts?.testFailures ?? 0,
                     shipsToTestFlight: run.workflowID.flatMap { workflows[$0] }?.shipsToTestFlight ?? false,
-                    commitSha: run.sourceCommit?.commitSha
+                    commitSha: run.sourceCommit?.commitSha, productKey: products[run.productID]?.name
                 )
             }
             .filter { Self.passes($0, filter) && $0.matches(query) }

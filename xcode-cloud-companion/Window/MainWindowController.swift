@@ -12,6 +12,21 @@ final class MainWindowController: NSObject, NSWindowDelegate {
     private lazy var workflowStore = WorkflowDetailStore(client: { [buildStore] in await buildStore.detailClient() })
     private lazy var artifactSaver = ArtifactSaver(client: { [buildStore] in await buildStore.detailClient() })
     private lazy var launcher = BuildLauncher(client: { [buildStore] in await buildStore.detailClient() })
+    private let icons = AppIconStore()
+    private lazy var logOpener = LogOpener(client: { [buildStore] in await buildStore.detailClient() })
+    private lazy var workflowTests = WorkflowTestsModel(
+        snapshot: { [buildStore] in buildStore.snapshot },
+        loadTests: { [weak self] run, actions in
+            guard let self else { return nil }
+            await extrasStore.loadTests(for: run, actions: actions)
+            if case .failed(let message, _, _) = extrasStore.state(.tests, runID: run.id) { return message }
+            return nil
+        },
+        budget: { [buildStore] in
+            await buildStore.updateRateLimit()
+            return buildStore.rateLimit
+        }
+    )
     private lazy var extrasStore = BuildExtrasStore(client: { [buildStore] in await buildStore.detailClient() })
     private let navigation: NavigationModel
     private let activation: ActivationPolicyCoordinator
@@ -43,7 +58,7 @@ final class MainWindowController: NSObject, NSWindowDelegate {
 
     private func makeWindow() -> NSWindow {
         let hosting = NSHostingController(rootView: MainWindowView(
-            buildStore: buildStore, usageStore: usageStore, settings: settings, extrasStore: extrasStore, workflowStore: workflowStore, artifactSaver: artifactSaver, launcher: launcher, navigation: navigation, pins: pins, openSettings: openSettings
+            buildStore: buildStore, usageStore: usageStore, settings: settings, extrasStore: extrasStore, workflowStore: workflowStore, artifactSaver: artifactSaver, launcher: launcher, icons: icons, logOpener: logOpener, workflowTests: workflowTests, navigation: navigation, pins: pins, openSettings: openSettings
         ))
         let window = NSWindow(contentViewController: hosting)
         window.styleMask = [.titled, .closable, .miniaturizable, .resizable, .fullSizeContentView]

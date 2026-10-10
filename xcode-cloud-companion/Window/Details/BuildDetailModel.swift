@@ -33,6 +33,8 @@ nonisolated struct BuildDetailModel: Equatable, Sendable {
     let numberText: String
     let status: BuildStatus
     let title: String
+    /// The app's Store name, for the icon's initial while no icon is loaded.
+    let appName: String?
     let reference: String?
     let shortSha: String?
     let frieze: [FriezeStep]
@@ -47,7 +49,8 @@ nonisolated struct BuildDetailModel: Equatable, Sendable {
         id = run.id
         numberText = run.number.map { "#\($0)" } ?? "#?"
         status = BuildStatus(run: run)
-        title = UsageFormat.dotted([product?.name, run.workflowName ?? workflow?.name].compactMap(\.self))
+        appName = product?.displayName
+        title = UsageFormat.dotted([appName, run.workflowName ?? workflow?.name].compactMap(\.self))
         reference = run.isPullRequestBuild == true
             ? run.pullRequestNumber.map { String(localized: "PR #\($0)", comment: "A pull request, in a build's line") }
             : run.sourceBranchOrTag

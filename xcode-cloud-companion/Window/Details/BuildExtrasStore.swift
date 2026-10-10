@@ -83,6 +83,12 @@ final class BuildExtrasStore {
         states[key(part, runID)] ?? .idle
     }
 
+    /// Brings back what is on disk for a finished build, without asking Apple anything.
+    func loadCached(_ run: CIBuildRun) async {
+        guard run.executionProgress == .complete else { return }
+        _ = await restoreFromDisk(run.id)
+    }
+
     /// TestFlight builds of the run. A finished run already known is not asked for again; a running one always is.
     func loadBetaBuilds(for run: CIBuildRun) async {
         let isFinished = run.executionProgress == .complete

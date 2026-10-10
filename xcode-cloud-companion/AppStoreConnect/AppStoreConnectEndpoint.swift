@@ -96,6 +96,24 @@ nonisolated enum AppStoreConnectEndpoint {
         ])
     }
 
+    /// Every app with one of its builds, for the icon that build carries. Apple picks the build, and not always the newest.
+    static let appIcons: URL = url(path: "/v1/apps", query: [
+        "include": "builds",
+        "fields[apps]": "builds",
+        "fields[builds]": "iconAssetToken",
+        "limit[builds]": "1",
+        "limit": String(maximumPageSize),
+    ])
+
+    /// The account's newest builds with their app: where an icon that changed shows up.
+    static let latestBuildIcons: URL = url(path: "/v1/builds", query: [
+        "sort": "-uploadedDate",
+        "include": "app",
+        "fields[builds]": "iconAssetToken,app",
+        "fields[apps]": "bundleId",
+        "limit": String(maximumPageSize),
+    ])
+
     /// The only write the app makes: starting or rebuilding a run.
     static let createBuildRun: URL = url(path: "/v1/ciBuildRuns", query: [:])
 

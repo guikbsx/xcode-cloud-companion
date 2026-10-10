@@ -53,7 +53,7 @@ While `measurement.isMeasuring` is true, the app is still reading the test resul
 
 ## `apps`
 
-`data` is an array of: `id`, `name`, `bundleID`, `type`, `latestBuild` (`id`, `reference`, `number`, `status`, `createdDate`, `finishedDate`), `runningBuilds`, `cycle` (`billedMinutes`, `estimatedMinutes`, `totalMinutes`; absent when no plan is set).
+`data` is an array of: `id`, `name` (the Xcode Cloud product name: what `--app` and build references use), `storeName` (the app's App Store name, when the product is an app that has one), `bundleID`, `type`, `latestBuild` (`id`, `reference`, `number`, `status`, `createdDate`, `finishedDate`), `runningBuilds`, `cycle` (`billedMinutes`, `estimatedMinutes`, `totalMinutes`; absent when no plan is set).
 
 ## `builds`
 

@@ -1,18 +1,15 @@
 import SwiftUI
 
-/// An app's icon in its palette colour, with the state of its last build when known.
+/// An app's icon, or its initial in its palette colour while it has none, with the state of its last build when known.
 struct AppIconView: View {
     let name: String
     let swatch: AppSwatch
     var lastStatus: BuildStatus?
     var size: CGFloat = 22
+    var artwork: AppArtwork?
 
     var body: some View {
-        Text(String(name.prefix(1)).uppercased())
-            .font(.system(size: size * 0.5, weight: .bold))
-            .foregroundStyle(.white)
-            .frame(width: size, height: size)
-            .background(swatch.gradient, in: .rect(cornerRadius: size * 0.27))
+        face
             .overlay(alignment: .bottomTrailing) {
                 if let lastStatus {
                     Circle()
@@ -23,6 +20,24 @@ struct AppIconView: View {
                 }
             }
             .accessibilityHidden(true)
+    }
+
+    @ViewBuilder
+    private var face: some View {
+        if let artwork {
+            // A Mac icon is drawn as it comes; any other is a full square, rounded like on the Home Screen.
+            Image(nsImage: artwork.image)
+                .resizable()
+                .interpolation(.high)
+                .frame(width: size, height: size)
+                .clipShape(.rect(cornerRadius: artwork.isMacIcon ? 0 : size * 0.225, style: .continuous))
+        } else {
+            Text(String(name.prefix(1)).uppercased())
+                .font(.system(size: size * 0.5, weight: .bold))
+                .foregroundStyle(.white)
+                .frame(width: size, height: size)
+                .background(swatch.gradient, in: .rect(cornerRadius: size * 0.27))
+        }
     }
 }
 

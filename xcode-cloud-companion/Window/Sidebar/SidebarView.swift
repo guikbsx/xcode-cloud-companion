@@ -7,6 +7,8 @@ struct SidebarView: View {
     @Binding var selection: SidebarSelection
     let cycle: CycleCard.Content?
     var budgetText: String?
+    /// Loaded app icons by product ID.
+    var artwork: [String: AppArtwork] = [:]
 
     @State private var collapsed: Set<String> = []
 
@@ -59,7 +61,7 @@ struct SidebarView: View {
 
     private func productLabel(_ product: SidebarContent.Product) -> some View {
         HStack(spacing: 8) {
-            AppIconView(name: product.name, swatch: product.swatch, lastStatus: product.lastStatus)
+            AppIconView(name: product.name, swatch: product.swatch, lastStatus: product.lastStatus, artwork: artwork[product.id])
             Text(product.name)
             Spacer(minLength: 4)
             Text(product.buildCount, format: .number)

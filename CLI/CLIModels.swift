@@ -55,6 +55,8 @@ nonisolated struct BuildBrief: Equatable, Sendable, Encodable {
 nonisolated struct AppOutput: Equatable, Sendable, Encodable {
     var id: String
     var name: String
+    /// The app's App Store name; nil for a product that is not an app. `name` stays the product name, the one `--app` and references use.
+    var storeName: String?
     var bundleID: String?
     var type: String?
     var latestBuild: BuildBrief?

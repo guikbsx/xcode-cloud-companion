@@ -9,6 +9,9 @@ struct MainWindowView: View {
     let workflowStore: WorkflowDetailStore
     let artifactSaver: ArtifactSaver
     let launcher: BuildLauncher
+    let icons: AppIconStore
+    let logOpener: LogOpener
+    let workflowTests: WorkflowTestsModel
     @Bindable var navigation: NavigationModel
     @Bindable var pins: PinnedWorkflows
     let openSettings: () -> Void
@@ -45,6 +48,7 @@ struct MainWindowView: View {
                     onNotAllowed: { keyAccess = KeyAccess.readOnly.rawValue }
                 )
             }
+            .task(id: buildStore.snapshot.appIcons) { await icons.load(buildStore.snapshot.appIcons) }
             .task {
                 // The detail views spend requests too: the budget shown follows what the client last saw.
                 while !Task.isCancelled {
@@ -77,7 +81,8 @@ struct MainWindowView: View {
             pins: pins,
             selection: $navigation.sidebarSelection,
             cycle: CycleCard.Content(summary: summary),
-            budgetText: buildStore.rateLimit.map { String(localized: "\($0.remaining) of \($0.limit) requests left this hour") }
+            budgetText: buildStore.rateLimit.map { String(localized: "\($0.remaining) of \($0.limit) requests left this hour") },
+            artwork: icons.artwork(in: buildStore.snapshot, by: \.id)
         )
     }
 
@@ -86,17 +91,34 @@ struct MainWindowView: View {
         if let run = buildStore.snapshot.runs.first(where: { $0.id == navigation.selectedBuildID }) {
             BuildDetailView(
                 run: run, buildStore: buildStore, extrasStore: extrasStore, artifactSaver: artifactSaver, onRebuild: rebuildAction(for: run),
-                teamID: settings.issuerID.isEmpty ? nil : settings.issuerID
+                teamID: settings.issuerID.isEmpty ? nil : settings.issuerID,
+                icons: icons, palette: AppPaletteStore().refreshed(for: buildStore.snapshot, summary: usageSummary),
+                openBuild: { navigation.selectedBuildID = $0 }, logOpener: logOpener, tab: $navigation.buildTab
             )
         } else if navigation.sidebarSelection == .overview {
             OverviewView(
                 summary: usageSummary, palette: AppPaletteStore().refreshed(for: buildStore.snapshot, summary: usageSummary), usage: usageStore,
                 openSettings: openSettings,
-                openUsagePage: { NSWorkspace.shared.open(AppStoreConnectLinks.xcodeCloudUsage(teamID: settings.issuerID)) }
+                openUsagePage: { NSWorkspace.shared.open(AppStoreConnectLinks.xcodeCloudUsage(teamID: settings.issuerID)) },
+                displayNames: buildStore.snapshot.displayNames, artwork: icons.artwork(in: buildStore.snapshot, by: \.name),
+                breakdown: { row in
+                    settings.plan.map {
+                        WorkflowCostBreakdown(
+                            product: row.productKey, workflow: row.workflow, snapshot: buildStore.snapshot, ledger: usageStore.ledger, plan: $0, now: Date()
+                        )
+                    }
+                }
             )
         } else if case .workflow(let id) = navigation.sidebarSelection, let workflow = workflowStore.workflow(id: id) ?? buildStore.snapshot.workflow(id: id) {
             let product = buildStore.snapshot.products.first { $0.id == workflow.productID }
-            WorkflowDetailView(model: WorkflowDetailModel(workflow: workflow, productName: product?.name))
+            WorkflowDetailView(
+                model: WorkflowDetailModel(workflow: workflow, productName: product?.displayName), tests: workflowTests,
+                openBuildTests: { id in
+                    // The build stays in its workflow's list: only the sheet and its tab change.
+                    navigation.buildTab = .tests
+                    navigation.selectedBuildID = id
+                }
+            )
                 .task(id: id) { await loadWorkflow(id) }
         } else {
             ContentUnavailableView("Select a build", systemImage: "cloud")

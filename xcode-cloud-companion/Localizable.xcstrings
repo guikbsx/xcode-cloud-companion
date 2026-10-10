@@ -1,12 +1,97 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "%@ #%@ failed" : {
+      "comment" : "Notification title: app name, then build number.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ #%2$@ failed"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ #%2$@ a échoué"
+          }
+        }
+      }
+    },
+    "%@ #%@ may be stuck" : {
+      "comment" : "Notification title: app name, then build number.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ #%2$@ may be stuck"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ #%2$@ semble bloqué"
+          }
+        }
+      }
+    },
+    "%@ #%@ succeeded" : {
+      "comment" : "Notification title: app name, then build number.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ #%2$@ succeeded"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ #%2$@ a réussi"
+          }
+        }
+      }
+    },
+    "%@ #%@ was canceled" : {
+      "comment" : "Notification title: app name, then build number.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ #%2$@ was canceled"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ #%2$@ a été annulé"
+          }
+        }
+      }
+    },
     "%@ already holds something named “cumulus”." : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "%@ contient déjà un élément nommé « cumulus »."
+          }
+        }
+      }
+    },
+    "%@ has been running for %@, usually %@." : {
+      "comment" : "Notification body: action name, time it has run, its usual duration.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ has been running for %2$@, usually %3$@."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ tourne depuis %2$@, contre %3$@ d’habitude."
           }
         }
       }
@@ -43,12 +128,69 @@
         }
       }
     },
+    "%@ of the plan used" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ du forfait utilisés"
+          }
+        }
+      }
+    },
+    "%@ of the test time" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ du temps de test"
+          }
+        }
+      }
+    },
+    "%@ of your Xcode Cloud plan used" : {
+      "comment" : "Notification title: a percentage such as 75%.",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ de votre forfait Xcode Cloud utilisés"
+          }
+        }
+      }
+    },
+    "%@ over %@: exact minutes, from Apple’s usage export. Apple gives one figure per build, so the split below is modelled from each build’s actions." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ over %2$@: exact minutes, from Apple’s usage export. Apple gives one figure per build, so the split below is modelled from each build’s actions."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ sur %2$@ : minutes exactes, tirées de l’export d’utilisation d’Apple. Apple donne un seul chiffre par build : la répartition ci-dessous est modélisée d’après les actions de chaque build."
+          }
+        }
+      }
+    },
     "%@ per build" : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "%@ par build"
+          }
+        }
+      }
+    },
+    "%@ per device on average" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ par appareil en moyenne"
           }
         }
       }
@@ -253,10 +395,40 @@
     },
     "%lld errors" : {
       "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld error"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld errors"
+                }
+              }
+            }
+          }
+        },
         "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%lld erreurs"
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld erreur"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld erreurs"
+                }
+              }
+            }
           }
         }
       }
@@ -277,6 +449,46 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%lld échecs"
+          }
+        }
+      }
+    },
+    "%lld more in the tabs below" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld more in the tabs below"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld more in the tabs below"
+                }
+              }
+            }
+          }
+        },
+        "fr" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld autre dans les onglets ci-dessous"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld autres dans les onglets ci-dessous"
+                }
+              }
+            }
           }
         }
       }
@@ -313,12 +525,58 @@
         }
       }
     },
-    "%lld test failures" : {
+    "%lld test destinations: together, %@ of this workflow’s cost." : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld test destinations: together, %2$@ of this workflow’s cost."
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%lld tests en échec"
+            "value" : "%1$lld destinations de test : ensemble, %2$@ du coût de ce workflow."
+          }
+        }
+      }
+    },
+    "%lld test failures" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld test failure"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld test failures"
+                }
+              }
+            }
+          }
+        },
+        "fr" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld test en échec"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld tests en échec"
+                }
+              }
+            }
           }
         }
       }
@@ -350,12 +608,32 @@
         }
       }
     },
+    "%lld× the usual duration" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld fois la durée habituelle"
+          }
+        }
+      }
+    },
     "A launch is already in progress." : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Un lancement est déjà en cours."
+          }
+        }
+      }
+    },
+    "A running action takes far longer than usual" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Une action en cours dure bien plus longtemps que d’habitude"
           }
         }
       }
@@ -492,6 +770,16 @@
         }
       }
     },
+    "Allow Notifications…" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Autoriser les notifications…"
+          }
+        }
+      }
+    },
     "An agreement of your team is missing or has expired. The Account Holder must accept it in App Store Connect." : {
       "localizations" : {
         "fr" : {
@@ -523,12 +811,38 @@
         }
       }
     },
+    "Analyze More Builds (%lld)" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Analyser d’autres builds (%lld)"
+          }
+        }
+      }
+    },
     "Analyzer warning" : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Avertissement de l’analyseur"
+          }
+        }
+      }
+    },
+    "Analyzing build %lld of %lld…" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Analyzing build %1$lld of %2$lld…"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Analyse du build %1$lld sur %2$lld…"
           }
         }
       }
@@ -676,6 +990,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "La limite horaire de requêtes d’Apple est atteinte. Rien n’a démarré ; réessayez plus tard."
+          }
+        }
+      }
+    },
+    "Apps" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apps"
           }
         }
       }
@@ -841,6 +1165,22 @@
         }
       }
     },
+    "Builds analyzed: %lld of %lld. Only builds whose test results were loaded count, among the finished builds Cumulus keeps (about a month)." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Builds analyzed: %1$lld of %2$lld. Only builds whose test results were loaded count, among the finished builds Cumulus keeps (about a month)."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Builds analysés : %1$lld sur %2$lld. Seuls comptent les builds dont les résultats de tests ont été chargés, parmi les builds terminés que Cumulus conserve (environ un mois)."
+          }
+        }
+      }
+    },
     "Builds of the last 30 days appear here once Xcode Cloud has run one." : {
       "localizations" : {
         "fr" : {
@@ -976,6 +1316,7 @@
       }
     },
     "Command" : {
+      "comment" : "Settings › Agents: section about the cumulus command-line tool",
       "localizations" : {
         "fr" : {
           "stringUnit" : {
@@ -983,8 +1324,37 @@
             "value" : "Commande"
           }
         }
-      },
-      "comment" : "Settings › Agents: section about the cumulus command-line tool"
+      }
+    },
+    "Compare commits" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Comparer les commits"
+          }
+        }
+      }
+    },
+    "Compare with %@" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Comparer avec le %@"
+          }
+        }
+      }
+    },
+    "Compared with the same action’s usual duration in its workflow. Needs three earlier successful builds." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Par rapport à la durée habituelle de la même action dans son workflow. Il faut trois builds réussis auparavant."
+          }
+        }
+      }
     },
     "Compute hours" : {
       "comment" : "Label in the diagram of App Store Connect's Xcode Cloud usage page",
@@ -1052,6 +1422,7 @@
       }
     },
     "Copied" : {
+      "comment" : "Button label shown for two seconds after copying a snippet",
       "localizations" : {
         "fr" : {
           "stringUnit" : {
@@ -1059,8 +1430,7 @@
             "value" : "Copié"
           }
         }
-      },
-      "comment" : "Button label shown for two seconds after copying a snippet"
+      }
     },
     "Copy" : {
       "localizations" : {
@@ -1150,6 +1520,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Cumulus"
+          }
+        }
+      }
+    },
+    "Cumulus asks for your permission the first time it has something to tell you." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cumulus demande votre autorisation la première fois qu’il a quelque chose à vous dire."
           }
         }
       }
@@ -1300,6 +1680,16 @@
         }
       }
     },
+    "Differs between devices" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Diffère d’un appareil à l’autre"
+          }
+        }
+      }
+    },
     "Disabled" : {
       "localizations" : {
         "fr" : {
@@ -1320,6 +1710,16 @@
         }
       }
     },
+    "Download this action’s logs and open them in the Finder" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Télécharger les journaux de cette action et les ouvrir dans le Finder"
+          }
+        }
+      }
+    },
     "Drop the `.p8` file here" : {
       "localizations" : {
         "fr" : {
@@ -1336,6 +1736,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Durée"
+          }
+        }
+      }
+    },
+    "Each alert is sent once per cycle. The figure is an estimate until a recent usage export is imported, and the alert says so." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chaque alerte est envoyée une fois par cycle. Le chiffre est une estimation tant qu’aucun export d’utilisation récent n’est importé, et l’alerte le dit."
           }
         }
       }
@@ -1429,6 +1839,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Estimé"
+          }
+        }
+      }
+    },
+    "Estimated from your builds: import a usage export for Apple’s exact figure." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Estimation d’après vos builds : importez un export d’utilisation pour le chiffre exact d’Apple."
           }
         }
       }
@@ -1544,12 +1964,39 @@
         }
       }
     },
+    "Fails and passes on the same commit" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Échoue et réussit sur le même commit"
+          }
+        }
+      }
+    },
     "Failures" : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Échecs"
+          }
+        }
+      }
+    },
+    "Failures: %lld / %lld" : {
+      "comment" : "Failures of a test over the builds where it ran",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Failures: %1$lld / %2$lld"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Échecs : %1$lld / %2$lld"
           }
         }
       }
@@ -1752,6 +2199,16 @@
         }
       }
     },
+    "Flaky tests" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tests instables"
+          }
+        }
+      }
+    },
     "Follows the language of macOS" : {
       "localizations" : {
         "fr" : {
@@ -1927,6 +2384,7 @@
       }
     },
     "Install Here" : {
+      "comment" : "Confirmation button of the folder panel, when installing the command or the skill",
       "localizations" : {
         "fr" : {
           "stringUnit" : {
@@ -1934,8 +2392,7 @@
             "value" : "Installer ici"
           }
         }
-      },
-      "comment" : "Confirmation button of the folder panel, when installing the command or the skill"
+      }
     },
     "Installed in %@." : {
       "localizations" : {
@@ -1984,6 +2441,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Problèmes"
+          }
+        }
+      }
+    },
+    "Judged from the pace of the cycle, once it is a day old." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "D’après le rythme du cycle, une fois sa première journée passée."
           }
         }
       }
@@ -2066,6 +2533,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Dernier export importé"
+          }
+        }
+      }
+    },
+    "Last failure: %@" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dernier échec : %@"
           }
         }
       }
@@ -2246,6 +2723,26 @@
         }
       }
     },
+    "Loading the tests and issues of both builds…" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chargement des tests et des problèmes des deux builds…"
+          }
+        }
+      }
+    },
+    "Loads the tests and issues of both builds, one action at a time." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Charge les tests et les problèmes des deux builds, une action à la fois."
+          }
+        }
+      }
+    },
     "Locked" : {
       "localizations" : {
         "fr" : {
@@ -2267,6 +2764,7 @@
       }
     },
     "MCP Server" : {
+      "comment" : "Settings › Agents: section about the Model Context Protocol server",
       "localizations" : {
         "fr" : {
           "stringUnit" : {
@@ -2274,8 +2772,7 @@
             "value" : "Serveur MCP"
           }
         }
-      },
-      "comment" : "Settings › Agents: section about the Model Context Protocol server"
+      }
     },
     "Manual rebuild" : {
       "localizations" : {
@@ -2405,6 +2902,26 @@
         }
       }
     },
+    "New issues" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nouveaux problèmes"
+          }
+        }
+      }
+    },
+    "New tests that fail" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nouveaux tests en échec"
+          }
+        }
+      }
+    },
     "Next reset" : {
       "comment" : "Settings: date when the plan's monthly cycle starts again.",
       "localizations" : {
@@ -2473,6 +2990,36 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Aucun build pour l’instant"
+          }
+        }
+      }
+    },
+    "No earlier successful build of this workflow to compare with." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aucun build réussi de ce workflow auquel comparer celui-ci."
+          }
+        }
+      }
+    },
+    "No failing test and no new issue to tell apart from %@." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aucun test en échec ni nouveau problème par rapport au %@."
+          }
+        }
+      }
+    },
+    "No flaky test in the builds analyzed." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aucun test instable dans les builds analysés."
           }
         }
       }
@@ -2607,6 +3154,47 @@
         }
       }
     },
+    "Notifications" : {
+      "comment" : "Settings tab",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Notifications"
+          }
+        }
+      }
+    },
+    "Notifications are allowed." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Les notifications sont autorisées."
+          }
+        }
+      }
+    },
+    "Notifications are turned off for Cumulus in System Settings." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Les notifications de Cumulus sont désactivées dans Réglages Système."
+          }
+        }
+      }
+    },
+    "Notifications follow the app’s own refresh: a build is announced within a minute or so of its end, while Cumulus is running." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Les notifications suivent l’actualisation de l’app : un build est annoncé dans la minute qui suit sa fin, tant que Cumulus est ouvert."
+          }
+        }
+      }
+    },
     "Number, commit or name" : {
       "localizations" : {
         "fr" : {
@@ -2667,6 +3255,16 @@
         }
       }
     },
+    "Open Notification Settings…" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ouvrir les réglages de notifications…"
+          }
+        }
+      }
+    },
     "Open Usage ↗" : {
       "localizations" : {
         "fr" : {
@@ -2714,6 +3312,46 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ouvrir dans Xcode"
+          }
+        }
+      }
+    },
+    "Open the last build where it failed" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ouvrir le dernier build où il a échoué"
+          }
+        }
+      }
+    },
+    "Open this build" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ouvrir ce build"
+          }
+        }
+      }
+    },
+    "Opens the last build where it failed, on its Tests tab" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ouvre le dernier build où il a échoué, sur son onglet Tests"
+          }
+        }
+      }
+    },
+    "Other" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Autre"
           }
         }
       }
@@ -2825,6 +3463,32 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Forfait épuisé · réinitialisation le %@"
+          }
+        }
+      }
+    },
+    "Preparing the test machines" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Préparation des machines de test"
+          }
+        }
+      }
+    },
+    "Preparing the test machines (~%@) weighs more than running the tests (~%@)." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Preparing the test machines (~%1$@) weighs more than running the tests (~%2$@)."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La préparation des machines de test (~%1$@) pèse plus que l’exécution des tests (~%2$@)."
           }
         }
       }
@@ -2978,6 +3642,7 @@
       }
     },
     "Remove" : {
+      "comment" : "Button that removes a link the app installed (the command or the skill)",
       "localizations" : {
         "fr" : {
           "stringUnit" : {
@@ -2985,8 +3650,7 @@
             "value" : "Retirer"
           }
         }
-      },
-      "comment" : "Button that removes a link the app installed (the command or the skill)"
+      }
     },
     "Remove Key and Data" : {
       "localizations" : {
@@ -3009,6 +3673,7 @@
       }
     },
     "Remove from Here" : {
+      "comment" : "Confirmation button of the folder panel, when removing the command or the skill",
       "localizations" : {
         "fr" : {
           "stringUnit" : {
@@ -3016,8 +3681,7 @@
             "value" : "Retirer d’ici"
           }
         }
-      },
-      "comment" : "Confirmation button of the folder panel, when removing the command or the skill"
+      }
     },
     "Remove the API key and all its data?" : {
       "localizations" : {
@@ -3030,6 +3694,7 @@
       }
     },
     "Remove…" : {
+      "comment" : "Button that removes a link the app installed, after asking for the folder again",
       "localizations" : {
         "fr" : {
           "stringUnit" : {
@@ -3037,8 +3702,7 @@
             "value" : "Retirer…"
           }
         }
-      },
-      "comment" : "Button that removes a link the app installed, after asking for the folder again"
+      }
     },
     "Repair…" : {
       "localizations" : {
@@ -3252,7 +3916,28 @@
         }
       }
     },
+    "Shows where this workflow’s minutes went" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Montre où sont passées les minutes de ce workflow"
+          }
+        }
+      }
+    },
+    "Since the last successful build" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Depuis le dernier build réussi"
+          }
+        }
+      }
+    },
     "Skill" : {
+      "comment" : "Settings › Agents: section about the agent skill, a folder of instructions for AI agents. Keep “skill”.",
       "localizations" : {
         "fr" : {
           "stringUnit" : {
@@ -3260,8 +3945,7 @@
             "value" : "Skill"
           }
         }
-      },
-      "comment" : "Settings › Agents: section about the agent skill, a folder of instructions for AI agents. Keep “skill”."
+      }
     },
     "Skipped" : {
       "comment" : "State of a build that Xcode Cloud did not run.",
@@ -3270,6 +3954,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ignoré"
+          }
+        }
+      }
+    },
+    "Slowest tests" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tests les plus lents"
           }
         }
       }
@@ -3356,6 +4050,26 @@
         }
       }
     },
+    "Stop" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Arrêter"
+          }
+        }
+      }
+    },
+    "Stopped: too few requests left this hour. Try again later." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Arrêté : trop peu de requêtes restantes cette heure-ci. Réessayez plus tard."
+          }
+        }
+      }
+    },
     "Succeeded" : {
       "comment" : "State of a build that ended well.",
       "localizations" : {
@@ -3403,6 +4117,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Tester la connexion"
+          }
+        }
+      }
+    },
+    "Test actions without per-device results from Apple: %lld. Their time is counted whole, so the split by destination is incomplete." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Actions de test sans résultats par appareil de la part d’Apple : %lld. Leur durée est comptée en bloc, la répartition par destination est donc incomplète."
           }
         }
       }
@@ -3473,6 +4197,67 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Tests"
+          }
+        }
+      }
+    },
+    "Tests already failing in %@" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tests qui échouaient déjà dans le %@"
+          }
+        }
+      }
+    },
+    "Tests broken by this build" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tests cassés par ce build"
+          }
+        }
+      }
+    },
+    "Tests rerun after a failure" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tests rejoués après un échec"
+          }
+        }
+      }
+    },
+    "Tests rerun after a failure cost ~%@ this cycle." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Les tests rejoués après un échec ont coûté ~%@ sur ce cycle."
+          }
+        }
+      }
+    },
+    "Tests · %@" : {
+      "comment" : "Cost of the tests on one destination, such as iPhone 17 Pro",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tests · %@"
+          }
+        }
+      }
+    },
+    "Tests, not split by destination" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tests, non répartis par destination"
           }
         }
       }
@@ -3576,6 +4361,16 @@
         }
       }
     },
+    "The latest first, one action at a time. You can stop at any moment." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Les plus récents d’abord, une action à la fois. Vous pouvez arrêter à tout moment."
+          }
+        }
+      }
+    },
     "The link expired or is invalid (HTTP %lld)." : {
       "localizations" : {
         "fr" : {
@@ -3592,6 +4387,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Le lien dans %@ mène à une copie de Cumulus qui a été déplacée. Réparez-le pour qu’il pointe ici."
+          }
+        }
+      }
+    },
+    "The log archive can’t be unpacked safely. Save it from the Artifacts tab instead." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "L’archive des journaux ne peut pas être décompressée en toute sécurité. Enregistrez-la plutôt depuis l’onglet Artefacts."
+          }
+        }
+      }
+    },
+    "The plan may run out before it resets" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Le forfait risque d’être épuisé avant sa réinitialisation"
           }
         }
       }
@@ -3699,6 +4514,16 @@
         }
       }
     },
+    "Threshold" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Seuil"
+          }
+        }
+      }
+    },
     "Today" : {
       "localizations" : {
         "fr" : {
@@ -3725,6 +4550,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Trop tôt dans le cycle pour estimer un rythme"
+          }
+        }
+      }
+    },
+    "Too few requests left this hour to compare. Try again later." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Trop peu de requêtes restantes cette heure-ci pour comparer. Réessayez plus tard."
           }
         }
       }
@@ -3872,6 +4707,36 @@
         }
       }
     },
+    "When a build ends" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "À la fin d’un build"
+          }
+        }
+      }
+    },
+    "When a build seems stuck" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quand un build semble bloqué"
+          }
+        }
+      }
+    },
+    "When the plan runs low" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quand le forfait s’épuise"
+          }
+        }
+      }
+    },
     "Where to find the key and the reset date?" : {
       "localizations" : {
         "fr" : {
@@ -3909,6 +4774,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Fenêtre"
+          }
+        }
+      }
+    },
+    "With the number of test failures or errors." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Avec le nombre de tests en échec ou d’erreurs."
           }
         }
       }
@@ -4001,6 +4876,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Hier"
+          }
+        }
+      }
+    },
+    "Your Xcode Cloud plan may run out before it resets" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Votre forfait Xcode Cloud risque d’être épuisé avant sa réinitialisation"
           }
         }
       }
@@ -4114,6 +4999,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "en attente"
+          }
+        }
+      }
+    },
+    "~%@ over %@. Builds estimated from their actions, not yet in a usage export: %lld. The split below follows the same model." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "~%1$@ over %2$@. Builds estimated from their actions, not yet in a usage export: %3$lld. The split below follows the same model."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "~%1$@ sur %2$@. Builds estimés d’après leurs actions, pas encore dans un export d’utilisation : %3$lld. La répartition ci-dessous suit le même modèle."
           }
         }
       }

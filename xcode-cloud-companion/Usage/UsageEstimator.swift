@@ -82,6 +82,24 @@ nonisolated enum UsageEstimator {
     }
 }
 
+/// What one action costs under `MachineModel`: its own compute, or one machine per test device.
+nonisolated struct ActionCost: Sendable, Equatable {
+    struct Device: Sendable, Equatable {
+        var name: String
+        var tests: TimeInterval
+        /// The tests paid a second time because one of them failed on this device.
+        var rerun: TimeInterval
+        var preparation: TimeInterval
+
+        var total: TimeInterval { tests + rerun + preparation }
+    }
+
+    var compute: TimeInterval = 0
+    var devices: [Device] = []
+
+    var total: TimeInterval { devices.reduce(compute) { $0 + $1.total } }
+}
+
 /// How Apple bills a build, as measured against its usage exports (XCO-6, 09/10/2026).
 ///
 /// Each simulated device pays its own test time plus a few minutes of preparation; a failed test is
@@ -113,19 +131,27 @@ nonisolated struct MachineModel: Sendable {
     }
 
     func seconds(of action: CIBuildAction, now: Date) -> TimeInterval {
+        cost(of: action, now: now).total
+    }
+
+    /// The same figure as `seconds(of:now:)`, with what it is made of.
+    func cost(of action: CIBuildAction, now: Date) -> ActionCost {
         let wallClock = UsageEstimator.duration(from: action.startedDate, to: action.finishedDate, now: now)
         if action.actionType == .test {
             // No device results on a completed test action: the tests never ran (compile error).
-            guard let devices = snapshot.testDevicesByActionID[action.id], !devices.isEmpty else { return wallClock }
-            return devices.reduce(0) { total, device in
-                total + device.totalSeconds * (device.failedCount > 0 ? Self.failureRetryFactor : 1) + Self.deviceOverhead
-            }
+            guard let devices = snapshot.testDevicesByActionID[action.id], !devices.isEmpty else { return ActionCost(compute: wallClock) }
+            return ActionCost(devices: devices.map { device in
+                ActionCost.Device(
+                    name: device.deviceName, tests: device.totalSeconds,
+                    rerun: device.failedCount > 0 ? device.totalSeconds * (Self.failureRetryFactor - 1) : 0, preparation: Self.deviceOverhead
+                )
+            })
         }
         guard action.completionStatus == .succeeded,
               let run = snapshot.runs.first(where: { $0.id == action.buildRunID }),
               let cap = computeCaps[Self.capKey(productID: run.productID, action: action)]
-        else { return wallClock }
-        return min(wallClock, cap)
+        else { return ActionCost(compute: wallClock) }
+        return ActionCost(compute: min(wallClock, cap))
     }
 
     private static func capKey(productID: String, action: CIBuildAction) -> String {

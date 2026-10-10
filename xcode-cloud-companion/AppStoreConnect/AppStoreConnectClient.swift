@@ -131,6 +131,16 @@ actor AppStoreConnectClient {
         return pages.flatMap(\.betaBuilds)
     }
 
+    /// App icons by app ID, in one request: every app with whichever build Apple includes, or the newest builds of the account.
+    func appIcons(fromNewestBuilds: Bool) async throws(AppStoreConnectError) -> [String: CIAppIcon] {
+        if fromNewestBuilds {
+            let page: JSONAPIDocument<CIBuildIconAttributes> = try await document(at: AppStoreConnectEndpoint.latestBuildIcons)
+            return page.appIcons
+        }
+        let page: JSONAPIDocument<CIAppIconsAttributes> = try await document(at: AppStoreConnectEndpoint.appIcons)
+        return page.appIcons
+    }
+
     /// What Apple's last response said about the hourly budget of this key (nil before any response).
     func rateLimit() -> RateLimit? {
         lastRateLimit

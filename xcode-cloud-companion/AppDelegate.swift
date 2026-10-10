@@ -1,5 +1,6 @@
 import AppKit
 import UniformTypeIdentifiers
+import UserNotifications
 
 @main
 final class AppDelegate: NSObject, NSApplicationDelegate {
@@ -7,7 +8,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private let loginItemModel = LoginItemModel()
     private let buildStore = BuildStore()
     private let usageStore = UsageStore()
-    private lazy var settingsWindowController = SettingsWindowController(model: settingsModel, loginItem: loginItemModel, usage: usageStore)
+    private let notificationPreferences = NotificationPreferences()
+    private lazy var notifications = NotificationCoordinator(preferences: notificationPreferences)
+    private var notificationResponder: NotificationResponder?
+    private lazy var settingsWindowController = SettingsWindowController(
+        model: settingsModel, loginItem: loginItemModel, usage: usageStore, notificationPreferences: notificationPreferences,
+        notifications: notifications, buildStore: buildStore
+    )
     private let navigation = NavigationModel()
     private lazy var mainWindowController = MainWindowController(
         buildStore: buildStore,
@@ -58,11 +65,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         settingsModel.onReset = { [usageStore] in
             await BuildExtrasCache().deleteAll()
             await WorkflowDetailsCache().deleteAll()
+            await AppIconCache().deleteAll()
+            await LogCache().deleteAll()
             await usageStore.reset()
         }
 
         // Unit tests run inside this app: they must not reach App Store Connect with the user's real key.
         guard ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] == nil else { return }
+        startNotifications()
         let workspaceCenter = NSWorkspace.shared.notificationCenter
         workspaceCenter.addObserver(self, selector: #selector(systemWillSleep), name: NSWorkspace.willSleepNotification, object: nil)
         workspaceCenter.addObserver(self, selector: #selector(systemDidWake), name: NSWorkspace.didWakeNotification, object: nil)
@@ -109,6 +119,49 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         guard (try? await server.start()) != nil else { return }
         ipcServer = server
         ipcIsListening = true
+    }
+
+    /// Banners come from what each sync changed. The delegate is in place at launch, so a click on a banner that
+    /// starts the app still opens its build; the permission itself is only asked when a first banner is due.
+    private func startNotifications() {
+        let responder = NotificationResponder { [weak self] url in self?.open(url) }
+        UNUserNotificationCenter.current().delegate = responder
+        notificationResponder = responder
+        buildStore.onSync = { [weak self] previous, current in
+            guard let self else { return }
+            let summary = usageSummary(of: current)
+            Task { await self.notifications.buildsDidSync(previous: previous, current: current, summary: summary) }
+        }
+        #if DEBUG
+        // XCC_NOTIFY=1 posts a sample banner about the newest build after the first sync, to try the permission and the click without waiting for a build.
+        if ProcessInfo.processInfo.environment["XCC_NOTIFY"] != nil {
+            var isPosted = false
+            buildStore.onSync = { [weak self] previous, current in
+                guard let self else { return }
+                let summary = usageSummary(of: current)
+                let notifications = notifications
+                Task {
+                    await notifications.buildsDidSync(previous: previous, current: current, summary: summary)
+                    guard !isPosted, let run = current.runs.first else { return }
+                    isPosted = true
+                    await notifications.deliver([LocalNotification(
+                        id: "sample", title: "Sample notification", body: "Click to open build #\(run.number ?? 0).", url: CumulusURL.build(id: run.id)
+                    )])
+                }
+            }
+        }
+        #endif
+    }
+
+    /// The same figure as the menu and the Overview; nil while no reset date is set.
+    private func usageSummary(of snapshot: BuildSnapshot) -> UsageSummary? {
+        settingsModel.plan.map { UsageCalculator.summary(snapshot: snapshot, ledger: usageStore.ledger, plan: $0, now: Date()) }
+    }
+
+    private func open(_ url: URL) {
+        guard navigation.open(url) else { return }
+        mainWindowController.show()
+        NSApp.activate()
     }
 
     @objc func openSettings() {

@@ -1,0 +1,56 @@
+{
+  "data": [
+    {
+      "type": "apps",
+      "id": "app-1",
+      "relationships": {
+        "builds": {
+          "meta": { "paging": { "total": 282, "limit": 1 } },
+          "data": [ { "type": "builds", "id": "build-old" } ],
+          "links": { "related": "https://api.appstoreconnect.apple.com/v1/apps/app-1/builds" }
+        }
+      }
+    },
+    {
+      "type": "apps",
+      "id": "app-mac",
+      "relationships": {
+        "builds": {
+          "meta": { "paging": { "total": 1, "limit": 1 } },
+          "data": [ { "type": "builds", "id": "build-mac" } ]
+        }
+      }
+    },
+    {
+      "type": "apps",
+      "id": "app-without-build",
+      "relationships": { "builds": { "meta": { "paging": { "total": 0, "limit": 1 } }, "data": [] } }
+    }
+  ],
+  "included": [
+    {
+      "type": "builds",
+      "id": "build-old",
+      "attributes": {
+        "iconAssetToken": {
+          "templateUrl": "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/00/49/48/sample-old/logo60x60@2x.png/{w}x{h}bb.{f}",
+          "width": 120,
+          "height": 120
+        }
+      }
+    },
+    {
+      "type": "builds",
+      "id": "build-mac",
+      "attributes": {
+        "iconAssetToken": {
+          "templateUrl": "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/7c/f2/8e/sample-mac/logo.icns/{w}x{h}bb.{f}",
+          "width": 256,
+          "height": 256
+        }
+      }
+    }
+  ],
+  "links": { "self": "https://api.appstoreconnect.apple.com/v1/apps" },
+  "meta": { "paging": { "total": 3, "limit": 200 } }
+}

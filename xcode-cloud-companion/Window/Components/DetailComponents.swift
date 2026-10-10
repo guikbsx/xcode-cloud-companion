@@ -55,6 +55,10 @@ nonisolated struct FriezeStep: Identifiable, Equatable, Sendable {
 /// The actions of a build as connected nodes, each with its state and its time.
 struct ActionsFrieze: View {
     let steps: [FriezeStep]
+    /// Steps that failed and can show their logs, with what the button does; a step being fetched shows a spinner instead.
+    var logSteps: Set<String> = []
+    var busyLogSteps: Set<String> = []
+    var openLogs: (String) -> Void = { _ in }
 
     var body: some View {
         HStack(alignment: .top, spacing: 0) {
@@ -63,6 +67,14 @@ struct ActionsFrieze: View {
                     node(for: step)
                     Text(step.name).font(.caption.weight(.semibold))
                     Text(step.detail).font(.caption2).foregroundStyle(.secondary).multilineTextAlignment(.center)
+                    if busyLogSteps.contains(step.id) {
+                        ProgressView().controlSize(.small)
+                    } else if logSteps.contains(step.id) {
+                        Button("Logs") { openLogs(step.id) }
+                            .buttonStyle(.borderless)
+                            .font(.caption)
+                            .help("Download this action’s logs and open them in the Finder")
+                    }
                 }
                 .frame(width: 120)
                 .opacity(step.status == .skipped ? 0.5 : 1)

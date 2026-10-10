@@ -38,8 +38,8 @@ struct BuildSynchronizerTests {
         #expect(snapshot.workflows.map(\.name) == ["Release", "Pull Requests", "Release", "Pull Requests"])
         #expect(Set(snapshot.testDevicesByActionID.keys) == ["action-test"])
         #expect(snapshot.testDevicesByActionID["action-test"]?.count == 3)
-        // products + 2 workflows + 3 build-run pages + 3 action lists + 1 test-results request (one action id, asked once)
-        #expect(await transport.requests.count == 10)
+        // products + 2 workflows + 3 build-run pages + 3 action lists + 1 test-results request (one action id, asked once) + 1 for the app icons
+        #expect(await transport.requests.count == 11)
     }
 
     @Test func laterSyncsOnlyAskForNewAndRunningBuilds() async throws {
@@ -158,6 +158,31 @@ struct BuildStoreTests {
         #expect(store.snapshot.lastSuccessfulSync == now)
         #expect(store.lastError == nil)
         #expect(await cache.load() == store.snapshot)
+    }
+
+    @Test func eachSuccessfulSyncHandsOverTheSnapshotBeforeAndAfter() async {
+        let store = makeStore(transport: MockTransport(reply: apiReply))
+        var changes: [(previous: BuildSnapshot, current: BuildSnapshot)] = []
+        store.onSync = { changes.append(($0, $1)) }
+
+        await store.synchronize()
+        await store.synchronize()
+
+        #expect(changes.count == 2)
+        #expect(changes.first?.previous == .empty)
+        #expect(changes.first?.current.runs.count == 3)
+        #expect(changes.last?.previous == changes.first?.current)
+        #expect(changes.last?.current == store.snapshot)
+    }
+
+    @Test func aFailedSyncHandsOverNothing() async {
+        let store = makeStore(transport: MockTransport { _ in MockTransport.Reply(status: 500) })
+        var calls = 0
+        store.onSync = { _, _ in calls += 1 }
+
+        await store.synchronize()
+
+        #expect(calls == 0)
     }
 
     @Test func theCacheIsShownBeforeAnyNetworkCall() async throws {

@@ -8,17 +8,23 @@ struct OverviewView: View {
     let usage: UsageStore
     let openSettings: () -> Void
     let openUsagePage: () -> Void
+    /// Store names and loaded icons by product name.
+    var displayNames: [String: String] = [:]
+    var artwork: [String: AppArtwork] = [:]
+    /// Where a workflow's minutes went, worked out from what the app already holds; nil when it cannot be told.
+    var breakdown: (OverviewModel.WorkflowRow) -> WorkflowCostBreakdown? = { _ in nil }
 
     @State private var isImporting = false
+    @State private var expandedWorkflow: String?
 
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 18) {
                 Text("Overview").font(.system(size: 30, weight: .bold, design: .rounded))
                 if let summary {
-                    UsageGaugeView(summary: summary, palette: palette).cumulusGroup()
+                    UsageGaugeView(summary: summary, palette: palette, displayNames: displayNames).cumulusGroup()
                     if !summary.measurement.isMeasuring {
-                        details(OverviewModel(summary: summary, palette: palette))
+                        details(OverviewModel(summary: summary, palette: palette, displayNames: displayNames))
                     }
                 } else {
                     noPlan
@@ -55,10 +61,10 @@ struct OverviewView: View {
             section("Minutes by app") {
                 ForEach(model.apps) { app in
                     HStack(spacing: 10) {
-                        AppIconView(name: app.name, swatch: app.swatch, size: 22)
+                        AppIconView(name: app.displayName, swatch: app.swatch, size: 22, artwork: artwork[app.name])
                         VStack(alignment: .leading, spacing: 4) {
                             HStack {
-                                Text(app.name).fontWeight(.semibold)
+                                Text(app.displayName).fontWeight(.semibold)
                                 Spacer()
                                 Text(Self.minutesText(app)).font(.callout.monospacedDigit())
                             }
@@ -84,20 +90,37 @@ struct OverviewView: View {
         if !model.workflows.isEmpty {
             section("Cost by workflow") {
                 ForEach(model.workflows.prefix(8)) { workflow in
-                    HStack(alignment: .firstTextBaseline) {
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text(workflow.workflow).fontWeight(.semibold)
-                            Text(UsageFormat.dotted([workflow.product, String(localized: "\(workflow.buildCount) builds")]))
-                                .font(.caption).foregroundStyle(.secondary)
+                    let isExpanded = expandedWorkflow == workflow.id
+                    Button {
+                        expandedWorkflow = isExpanded ? nil : workflow.id
+                    } label: {
+                        HStack(alignment: .firstTextBaseline) {
+                            Image(systemName: "chevron.right")
+                                .font(.caption.weight(.semibold))
+                                .foregroundStyle(.secondary)
+                                .rotationEffect(.degrees(isExpanded ? 90 : 0))
+                                .accessibilityHidden(true)
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text(workflow.workflow).fontWeight(.semibold)
+                                Text(UsageFormat.dotted([workflow.product, String(localized: "\(workflow.buildCount) builds")]))
+                                    .font(.caption).foregroundStyle(.secondary)
+                            }
+                            Spacer()
+                            VStack(alignment: .trailing, spacing: 2) {
+                                Text((workflow.isEstimated ? "~" : "") + UsageFormat.minutes(workflow.totalMinutes)).font(.callout.monospacedDigit())
+                                Text(String(localized: "\(UsageFormat.minutes(workflow.averageMinutes)) per build"))
+                                    .font(.caption).foregroundStyle(.secondary)
+                            }
                         }
-                        Spacer()
-                        VStack(alignment: .trailing, spacing: 2) {
-                            Text((workflow.isEstimated ? "~" : "") + UsageFormat.minutes(workflow.totalMinutes)).font(.callout.monospacedDigit())
-                            Text(String(localized: "\(UsageFormat.minutes(workflow.averageMinutes)) per build"))
-                                .font(.caption).foregroundStyle(.secondary)
-                        }
+                        .contentShape(.rect)
                     }
+                    .buttonStyle(.plain)
                     .accessibilityElement(children: .combine)
+                    .accessibilityHint(Text("Shows where this workflow’s minutes went"))
+                    .accessibilityAddTraits(isExpanded ? .isSelected : [])
+                    if isExpanded, let breakdown = breakdown(workflow) {
+                        WorkflowBreakdownView(breakdown: breakdown)
+                    }
                 }
             }
         }

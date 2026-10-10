@@ -3,6 +3,8 @@ import SwiftUI
 /// The sheet of a workflow: how it starts, where it runs, what it does. Read only.
 struct WorkflowDetailView: View {
     let model: WorkflowDetailModel
+    var tests: WorkflowTestsModel?
+    var openBuildTests: (String) -> Void = { _ in }
 
     var body: some View {
         ScrollView {
@@ -39,6 +41,9 @@ struct WorkflowDetailView: View {
                             .accessibilityElement(children: .combine)
                         }
                     }
+                }
+                if let tests {
+                    WorkflowTestsSection(workflowID: model.id, model: tests, openBuild: openBuildTests)
                 }
             }
             .padding(24)

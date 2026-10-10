@@ -14,6 +14,8 @@ final class BuildStore {
     private(set) var rateLimit: RateLimit?
     private(set) var windowIsOpen = false
     private(set) var screenIsLocked = false
+    /// Called after each successful sync with the snapshot before and after it: what just changed is what notifications are made of.
+    @ObservationIgnored var onSync: ((_ previous: BuildSnapshot, _ current: BuildSnapshot) -> Void)?
 
     private let credentialsStore: any CredentialsStore
     private let cacheStore: BuildCacheStore
@@ -156,7 +158,9 @@ final class BuildStore {
             synchronizer.progress = { [weak self] text in
                 Task { @MainActor in self?.progress = text }
             }
-            snapshot = try await synchronizer.sync(from: snapshot, now: now())
+            let previous = snapshot
+            snapshot = try await synchronizer.sync(from: previous, now: now())
+            onSync?(previous, snapshot)
             lastError = nil
             consecutiveRateLimits = 0
             try? await cacheStore.save(snapshot)

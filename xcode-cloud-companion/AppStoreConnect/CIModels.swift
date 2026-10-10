@@ -9,6 +9,43 @@ nonisolated struct CIProduct: Codable, Sendable, Equatable, Identifiable {
     let bundleID: String?
 }
 
+nonisolated extension CIProduct {
+    /// What the interface calls the app: its App Store name when it has one. `name` stays the key of an app's colour and of its usage.
+    var displayName: String {
+        guard let appName, !appName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return name }
+        return appName
+    }
+
+    /// Where room is counted (the menu's app column, a build row), a name gives way after this many characters.
+    static let compactNameLength = 14
+
+    static func compact(_ name: String) -> String {
+        name.count > compactNameLength ? name.prefix(compactNameLength - 1) + "…" : name
+    }
+}
+
+/// Where Apple serves an app's icon, from a build's `iconAssetToken`: a template whose size and format are filled in.
+nonisolated struct CIAppIcon: Codable, Sendable, Equatable {
+    var templateURL: String
+
+    /// A Mac icon comes with its own shape and margins; every other one is a full square, to be rounded like on the Home Screen.
+    var isMacIcon: Bool {
+        templateURL.contains(".icns/")
+    }
+
+    /// The image at `pixels` × `pixels`, only ever from Apple's image servers; no credential goes with the request.
+    func imageURL(pixels: Int) -> URL? {
+        let address = templateURL
+            .replacing("{w}", with: String(pixels))
+            .replacing("{h}", with: String(pixels))
+            .replacing("{f}", with: "png")
+        guard let url = URL(string: address), url.scheme == "https", let host = url.host(),
+              host == "mzstatic.com" || host.hasSuffix(".mzstatic.com")
+        else { return nil }
+        return url
+    }
+}
+
 nonisolated struct CIBuildRun: Codable, Sendable, Equatable, Identifiable {
     let id: String
     let productID: String
@@ -240,6 +277,17 @@ nonisolated struct CITestResultAttributes: Decodable, Sendable {
     }
 }
 
+nonisolated struct CIIconAssetToken: Decodable, Sendable {
+    let templateUrl: String?
+}
+
+/// `GET /v1/apps` asked only for its builds relationship: the icons are in the included builds.
+nonisolated struct CIAppIconsAttributes: Decodable, Sendable {}
+
+nonisolated struct CIBuildIconAttributes: Decodable, Sendable {
+    let iconAssetToken: CIIconAssetToken?
+}
+
 nonisolated struct CIWorkflowAttributes: Decodable, Sendable {
     let name: String?
     let description: String?
@@ -294,6 +342,36 @@ nonisolated extension JSONAPIDocument where Attributes == CIProductAttributes {
                 bundleID: app?.attributes?.bundleId
             )
         }
+    }
+}
+
+nonisolated extension JSONAPIDocument where Attributes == CIAppIconsAttributes {
+    /// One icon per app ID, from the build Apple chose to include: not always the newest.
+    var appIcons: [String: CIAppIcon] {
+        var icons: [String: CIAppIcon] = [:]
+        for app in data {
+            let template = app.relationships("builds").lazy
+                .compactMap { includedResource(for: $0)?.attributes?.iconAssetToken?.templateUrl }
+                .first
+            if let template {
+                icons[app.id] = CIAppIcon(templateURL: template)
+            }
+        }
+        return icons
+    }
+}
+
+nonisolated extension JSONAPIDocument where Attributes == CIBuildIconAttributes {
+    /// Builds come newest first: the first one of each app carries its current icon.
+    var appIcons: [String: CIAppIcon] {
+        var icons: [String: CIAppIcon] = [:]
+        for build in data {
+            guard let appID = build.relationship("app")?.id, icons[appID] == nil,
+                  let template = build.attributes?.iconAssetToken?.templateUrl
+            else { continue }
+            icons[appID] = CIAppIcon(templateURL: template)
+        }
+        return icons
     }
 }
 

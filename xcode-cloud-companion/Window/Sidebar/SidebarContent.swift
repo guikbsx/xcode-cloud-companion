@@ -12,6 +12,7 @@ nonisolated struct SidebarContent: Equatable {
 
     struct Product: Identifiable, Equatable {
         let id: String
+        /// The name shown: the App Store name when the product is an app that has one.
         let name: String
         let buildCount: Int
         let lastStatus: BuildStatus?
@@ -35,7 +36,7 @@ nonisolated struct SidebarContent: Equatable {
             let runs = runsByWorkflow[workflow.id] ?? []
             guard let productID = workflow.productID ?? runs.first?.productID, let product = productsByID[productID] else { continue }
             workflowsByProduct[productID, default: []].append(
-                Workflow(id: workflow.id, name: workflow.name, productID: productID, productName: product.name, buildCount: runs.count)
+                Workflow(id: workflow.id, name: workflow.name, productID: productID, productName: product.displayName, buildCount: runs.count)
             )
         }
 
@@ -45,7 +46,7 @@ nonisolated struct SidebarContent: Equatable {
                 let latest = runs.max { ($0.createdDate ?? .distantPast) < ($1.createdDate ?? .distantPast) }
                 return Product(
                     id: product.id,
-                    name: product.name,
+                    name: product.displayName,
                     buildCount: runs.count,
                     lastStatus: latest.map(BuildStatus.init(run:)),
                     swatch: palette.swatch(for: product.name),
