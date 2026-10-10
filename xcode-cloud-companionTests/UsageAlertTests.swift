@@ -169,7 +169,7 @@ struct UsageAlertCoordinatorTests {
 
         await coordinator.buildsDidSync(previous: snapshot, current: snapshot, summary: high)
         await coordinator.buildsDidSync(previous: snapshot, current: snapshot, summary: high)
-        #expect(await center.posted.map(\.id) == ["usage-threshold75"])
+        #expect(await center.posted.map(\.id) == ["usage-threshold75-default"])
 
         let restarted = makeCoordinator(center)
         await restarted.buildsDidSync(previous: snapshot, current: snapshot, summary: high)
@@ -178,7 +178,29 @@ struct UsageAlertCoordinatorTests {
 
         let nextCycle = summary(used: 1_130, cycle: 1)
         await restarted.buildsDidSync(previous: snapshot, current: snapshot, summary: nextCycle)
-        #expect(await center.posted.map(\.id) == ["usage-threshold75", "usage-threshold75"])
+        #expect(await center.posted.map(\.id) == ["usage-threshold75-default", "usage-threshold75-default"])
+    }
+
+    @Test func eachAccountIsWarnedAboutItsOwnPlanAndTheClickOpensItsOverview() async throws {
+        let center = MockNotificationCenter(status: .allowed)
+        let coordinator = makeCoordinator(center)
+        let personal = NotificationAccount(id: "personal", name: "Personal")
+        let work = NotificationAccount(id: "work", name: "Work")
+        let high = summary(used: 1_130)
+        for account in [personal, work] {
+            await coordinator.buildsDidSync(account: account, previous: snapshot, current: snapshot, summary: nil)
+        }
+
+        await coordinator.buildsDidSync(account: personal, previous: snapshot, current: snapshot, summary: high)
+        // One account past its threshold says nothing of the other: it is warned in its turn, once.
+        await coordinator.buildsDidSync(account: work, previous: snapshot, current: snapshot, summary: high)
+        await coordinator.buildsDidSync(account: work, previous: snapshot, current: snapshot, summary: high)
+
+        let posted = await center.posted
+        #expect(posted.map(\.id) == ["usage-threshold75-personal", "usage-threshold75-work"])
+        #expect(posted.map(\.subtitle) == ["Personal", "Work"])
+        let url = try #require(posted.last?.url)
+        #expect(CumulusURL.destination(of: url) == .overview(accountID: "work"))
     }
 
     @Test func planAlertPreferencesSurviveARestart() {

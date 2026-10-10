@@ -1,19 +1,45 @@
 import SwiftUI
 import UniformTypeIdentifiers
 
-/// The API key and the plan: the two things the app needs before it shows anything.
+/// The tab shows the account on screen: what was typed or opened for one account never carries over to another.
+struct ConfigurationSettingsRoot: View {
+    let accounts: AccountsModel
+
+    var body: some View {
+        let session = accounts.selected
+        ConfigurationSettingsView(accounts: accounts, session: session, model: session.settings)
+            .id(session.id)
+    }
+}
+
+/// The accounts, then the API key and the plan of the one on screen: the two things the app needs before it shows anything.
 struct ConfigurationSettingsView: View {
+    let accounts: AccountsModel
+    let session: AccountSession
     @Bindable var model: SettingsModel
-    @AppStorage(KeyAccess.defaultsKey) private var keyAccess = KeyAccess.defaultValue.rawValue
     @State private var isImportingKey = false
     @State private var isConfirmingRemoval = false
+    @State private var isConfirmingAccountRemoval = false
     @State private var isDropTargeted = false
     @State private var showsGuides = false
+    @State private var name: String
+    @FocusState private var nameIsFocused: Bool
+
+    init(accounts: AccountsModel, session: AccountSession, model: SettingsModel) {
+        self.accounts = accounts
+        self.session = session
+        self.model = model
+        _name = State(initialValue: session.name)
+    }
 
     private var showsKeyGuide: Bool { !model.hasStoredKey || showsGuides }
 
     var body: some View {
         Form {
+            // The list says which account the rest of the tab is about: with one account there is nothing to say.
+            if accounts.hasSeveral {
+                accountsSection
+            }
             if model.hasStoredKey {
                 connectedHeader
             } else {
@@ -41,6 +67,9 @@ struct ConfigurationSettingsView: View {
                     .buttonStyle(.link)
                 }
             }
+            if !accounts.hasSeveral {
+                anotherAccount
+            }
         }
         .formStyle(.grouped)
         .fileImporter(isPresented: $isImportingKey, allowedContentTypes: [Self.privateKeyType]) { result in
@@ -55,6 +84,80 @@ struct ConfigurationSettingsView: View {
         } message: {
             Text("The key leaves the keychain, and the cached builds, imported usage exports, plan and reset date are deleted. Exports already in Downloads are not imported again.")
         }
+        .confirmationDialog("Remove the account “\(session.name)” and all its data?", isPresented: $isConfirmingAccountRemoval) {
+            Button("Remove Account", role: .destructive) {
+                Task { await accounts.remove(session.id) }
+            }
+        } message: {
+            Text("Its key leaves the keychain, and its cached builds, imported usage exports, plan and reset date are deleted. The other accounts are not touched.")
+        }
+    }
+
+    // MARK: - Accounts
+
+    private var accountsSection: some View {
+        Section {
+            ForEach(accounts.sessions) { account in
+                Button {
+                    renameIfNeeded()
+                    accounts.select(account.id)
+                } label: {
+                    AccountRow(
+                        name: account.name, detail: Self.detail(of: account.settings), hasKey: account.settings.hasStoredKey,
+                        isSelected: account.id == session.id
+                    )
+                }
+                .buttonStyle(.plain)
+            }
+            TextField("Name", text: $name, prompt: Text(AccountsModel.defaultName(among: [])))
+                .focused($nameIsFocused)
+                .onSubmit(renameIfNeeded)
+                .onChange(of: nameIsFocused) { _, isFocused in
+                    if !isFocused { renameIfNeeded() }
+                }
+            HStack {
+                Button("Remove Account…", role: .destructive) { isConfirmingAccountRemoval = true }
+                    .disabled(!accounts.hasSeveral)
+                Spacer()
+                Button("Add Account") {
+                    renameIfNeeded()
+                    accounts.add()
+                }
+            }
+            if let removalError = accounts.removalError {
+                Label(removalError, systemImage: "exclamationmark.triangle.fill")
+                    .foregroundStyle(.red)
+            }
+        } header: {
+            Text("Accounts")
+        } footer: {
+            Text("One account per App Store Connect team, each with its own API key and plan. Every account stays up to date and sends its notifications; the menu and the window show one at a time.")
+        }
+    }
+
+    /// With a single account, the way to a second one, after everything the first one needs.
+    private var anotherAccount: some View {
+        Section {
+            LabeledContent {
+                Button("Add Account") { accounts.add() }
+            } label: {
+                Text("Follow another team")
+            }
+        } footer: {
+            Text("One account per App Store Connect team, each with its own API key and plan. Every account stays up to date and sends its notifications; the menu and the window show one at a time.")
+        }
+    }
+
+    /// A blank name is not a name: the field goes back to the one the account has.
+    private func renameIfNeeded() {
+        accounts.rename(session.id, to: name)
+        name = session.name
+    }
+
+    /// The team behind an account, as far as it may be shown.
+    static func detail(of settings: SettingsModel) -> String {
+        guard settings.hasStoredKey else { return String(localized: "No API key yet") }
+        return String(localized: "Issuer ID \(masked(settings.issuerID))", comment: "The masked identifier of an App Store Connect team")
     }
 
     // MARK: - Key, before it is set
@@ -155,9 +258,9 @@ struct ConfigurationSettingsView: View {
 
     /// What the key may do. The app assumes it may launch builds; the first refusal from Apple switches it to Read only.
     private var keyAccessPicker: some View {
-        Picker(selection: $keyAccess) {
-            Text("Read only").tag(KeyAccess.readOnly.rawValue)
-            Text("Read + Build").tag(KeyAccess.canLaunch.rawValue)
+        Picker(selection: $model.keyAccess) {
+            Text("Read only").tag(KeyAccess.readOnly)
+            Text("Read + Build").tag(KeyAccess.canLaunch)
         } label: {
             VStack(alignment: .leading, spacing: 2) {
                 Text("Key access")
@@ -340,4 +443,34 @@ struct ConfigurationSettingsView: View {
     }
 
     private static let privateKeyType = UTType(filenameExtension: "p8") ?? .data
+}
+
+/// One account of the list: its name, its team as far as it may be shown, and whether it is the one on screen.
+private struct AccountRow: View {
+    let name: String
+    let detail: String
+    let hasKey: Bool
+    let isSelected: Bool
+
+    var body: some View {
+        HStack(spacing: 10) {
+            Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
+                .foregroundStyle(isSelected ? Color.accentColor : Color.secondary)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(name)
+                Text(detail)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+            Spacer()
+            if !hasKey {
+                Image(systemName: "key.slash")
+                    .foregroundStyle(.orange)
+                    .accessibilityHidden(true)
+            }
+        }
+        .contentShape(Rectangle())
+        .accessibilityElement(children: .combine)
+        .accessibilityAddTraits(isSelected ? .isSelected : [])
+    }
 }

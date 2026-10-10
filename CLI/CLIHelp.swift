@@ -16,6 +16,11 @@ nonisolated enum CLIHelp {
             example: "cumulus status --json",
             notes: ["Minutes Apple has not billed yet are estimated from the builds' actions."]
         ),
+        Topic(
+            name: "accounts", summary: "App Store Connect accounts the app follows", usage: "cumulus accounts",
+            example: "cumulus accounts",
+            notes: ["Every other command answers for the account shown in the app, or for the one named with --account."]
+        ),
         Topic(name: "apps", summary: "Apps of the account with their latest build", usage: "cumulus apps", example: "cumulus apps"),
         Topic(
             name: "builds", summary: "Recent builds, newest first", usage: "cumulus builds [options]",
@@ -74,6 +79,10 @@ nonisolated enum CLIHelp {
         Topic(name: "help", summary: "This list, or one command's options", usage: "cumulus help [command]", example: "cumulus help builds"),
     ]
 
+    /// The commands that read one account's cache: each answers for another account when asked.
+    private static let accountCommands: Set<String> = ["status", "apps", "builds", "build", "workflows", "usage", "refresh", "open"]
+    private static let accountOption = ("--account <name>", "Answer for this account instead of the one shown in the app")
+
     static var overview: String {
         var lines = [
             "cumulus: Xcode Cloud builds and usage, read from the Cumulus app.",
@@ -91,6 +100,9 @@ nonisolated enum CLIHelp {
             "  --json     JSON: { \"data\": ..., \"meta\": { \"lastSuccessfulSync\": ... } }. The default into a pipe.",
             "  --table    Readable text. The default on a terminal.",
             "",
+            "ACCOUNT:",
+            "  --account <name>   Answer for this account instead of the one shown in the app ('cumulus accounts' lists them).",
+            "",
             "Everything is read from the cache the Cumulus app keeps: nothing is asked from Apple.",
             "Run 'cumulus help <command>' for a command's options.",
             "Install this command and its agent skill from Cumulus › Settings › Agents.",
@@ -102,10 +114,11 @@ nonisolated enum CLIHelp {
     static func topic(_ name: String) -> String? {
         guard let topic = topics.first(where: { $0.name == name }) else { return nil }
         var lines = ["\(topic.summary).", "", "USAGE: \(topic.usage)"]
-        if !topic.options.isEmpty {
+        let options = topic.options + (accountCommands.contains(name) ? [accountOption] : [])
+        if !options.isEmpty {
             lines += ["", "OPTIONS:"]
-            let width = topic.options.map(\.0.count).max() ?? 0
-            lines += topic.options.map { "  \($0.0.padding(toLength: width, withPad: " ", startingAt: 0))  \($0.1)" }
+            let width = options.map(\.0.count).max() ?? 0
+            lines += options.map { "  \($0.0.padding(toLength: width, withPad: " ", startingAt: 0))  \($0.1)" }
         }
         lines += ["", "EXAMPLE:", "  \(topic.example)"]
         if !topic.notes.isEmpty {

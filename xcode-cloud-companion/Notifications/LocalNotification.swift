@@ -5,11 +5,20 @@ import UserNotifications
 nonisolated struct LocalNotification: Sendable, Equatable {
     var id: String
     var title: String
+    /// The account's name, when the app follows several.
+    var subtitle: String?
     var body: String
     /// A `cumulus://` address, the only kind a click ever follows.
     var url: URL?
     /// Banners of one app stack together.
     var thread: String?
+}
+
+/// The account a sync belongs to: what was already said is remembered for each account on its own.
+nonisolated struct NotificationAccount: Sendable, Equatable {
+    var id = AccountRegistry.firstAccountID
+    /// Nil with a single account: its banners need no name.
+    var name: String?
 }
 
 nonisolated enum NotificationAuthorization: Sendable, Equatable {
@@ -44,6 +53,9 @@ nonisolated struct SystemNotificationCenter: NotificationPosting {
     @concurrent func post(_ notification: LocalNotification) async {
         let content = UNMutableNotificationContent()
         content.title = notification.title
+        if let subtitle = notification.subtitle {
+            content.subtitle = subtitle
+        }
         content.body = notification.body
         content.sound = .default
         if let thread = notification.thread {

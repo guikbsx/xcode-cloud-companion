@@ -80,3 +80,53 @@ extension URLRequest {
         return URLComponents(url: url, resolvingAgainstBaseURL: false)?.queryItems?.first { $0.name == name }?.value
     }
 }
+
+/// Accounts that live in a temporary folder and in their own preferences: no keychain, no network, nothing of the real app.
+@MainActor
+final class TestAccounts {
+    let root: URL
+    let defaults: UserDefaults
+    let registryStore: AccountRegistryStore
+    /// The keychain of each account made so far, by account id.
+    private(set) var credentials: [String: InMemoryCredentialsStore] = [:]
+    /// What stands in for Apple: offline unless a test says otherwise, so no account ever reaches the network.
+    var transport = MockTransport { _ in MockTransport.Reply(error: URLError(.notConnectedToInternet)) }
+    private(set) lazy var model = makeModel()
+
+    init() {
+        root = FileManager.default.temporaryDirectory.appending(path: "cumulus-accounts-\(UUID().uuidString)")
+        let suiteName = "TestAccounts.\(UUID().uuidString)"
+        defaults = UserDefaults(suiteName: suiteName) ?? .standard
+        defaults.removePersistentDomain(forName: suiteName)
+        registryStore = AccountRegistryStore(fileURL: root.appending(path: "Accounts.json"))
+    }
+
+    func paths(_ accountID: String) -> AccountPaths {
+        AccountPaths(accountID: accountID, supportRoot: root.appending(path: "Support"), cachesRoot: root.appending(path: "Caches"))
+    }
+
+    /// Another model over the same folder and preferences, as after a restart of the app.
+    func makeModel(migration: AccountMigration? = nil, watchedDirectory: URL? = nil) -> AccountsModel {
+        AccountsModel(registryStore: registryStore, defaults: defaults, migration: migration, watchedDirectory: watchedDirectory) { [self] account in
+            session(account)
+        }
+    }
+
+    private func session(_ account: Account) -> AccountSession {
+        let paths = paths(account.id)
+        let store = credentials[account.id] ?? InMemoryCredentialsStore()
+        credentials[account.id] = store
+        let buildStore = BuildStore(
+            credentialsStore: store, cacheStore: BuildCacheStore(fileURL: paths.buildCache),
+            makeClient: { [transport] in AppStoreConnectClient(credentials: $0, transport: transport) }
+        )
+        return AccountSession(
+            account: account, paths: paths,
+            settings: SettingsModel(accountID: account.id, store: store, defaults: defaults, planMirror: SharedPlanStore(fileURL: paths.usagePlan)),
+            buildStore: buildStore,
+            usageStore: UsageStore(ledgerStore: UsageLedgerStore(fileURL: paths.usageLedger), watchedDirectory: nil),
+            extrasStore: BuildExtrasStore(cache: BuildExtrasCache(directory: paths.buildDetails), client: { [buildStore] in await buildStore.detailClient() }),
+            defaults: defaults
+        )
+    }
+}

@@ -284,7 +284,17 @@ nonisolated struct RefreshOutput: Equatable, Sendable, Encodable {
     var status: StatusOutput?
 }
 
+/// One App Store Connect account the app follows. `name` is what `--account` takes.
+nonisolated struct AccountOutput: Equatable, Sendable, Encodable {
+    var name: String
+    /// The account on screen in the app: the one every command answers for unless another is named.
+    var selected: Bool
+    var lastSuccessfulSync: Date?
+    var appCount: Int
+}
+
 nonisolated enum CLIReport: Equatable, Sendable {
+    case accounts([AccountOutput])
     case status(StatusOutput)
     case apps([AppOutput])
     case builds([BuildOutput])
@@ -300,6 +310,7 @@ nonisolated struct CLIResponse: Equatable, Sendable {
 
     var jsonData: Data {
         switch report {
+        case .accounts(let value): CLIJSON.data(CLIEnvelope(data: value, meta: meta))
         case .status(let value): CLIJSON.data(CLIEnvelope(data: value, meta: meta))
         case .apps(let value): CLIJSON.data(CLIEnvelope(data: value, meta: meta))
         case .builds(let value): CLIJSON.data(CLIEnvelope(data: value, meta: meta))

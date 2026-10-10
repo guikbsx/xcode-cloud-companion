@@ -32,18 +32,20 @@ nonisolated enum SharedContainer {
     }
 }
 
-/// Moves the caches written before the app group existed, once: what is already at the destination is never replaced.
+/// Moves the caches from where an earlier version kept them (before the app group, then before accounts), once:
+/// what is already at the destination is never replaced.
 nonisolated struct CacheMigration: Sendable {
     static let itemNames = ["BuildCache.json", "UsageLedger.json", "BuildDetails", "WorkflowDetails"]
 
     var source: URL = .applicationSupportDirectory
     var destination: URL = SharedContainer.applicationSupport
+    var itemNames = CacheMigration.itemNames
 
     @concurrent func run() async {
         let fileManager = FileManager.default
         guard source.standardizedFileURL != destination.standardizedFileURL else { return }
         try? fileManager.createDirectory(at: destination, withIntermediateDirectories: true)
-        for name in Self.itemNames {
+        for name in itemNames {
             move(source.appending(path: name), to: destination.appending(path: name), fileManager: fileManager)
         }
     }

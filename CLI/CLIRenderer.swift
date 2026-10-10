@@ -9,6 +9,7 @@ nonisolated struct CLIRenderer: Sendable {
     func text(_ response: CLIResponse) -> String {
         var sections: [String]
         switch response.report {
+        case .accounts(let accounts): sections = [self.accounts(accounts)]
         case .status(let status): sections = [self.status(status)]
         case .apps(let apps): sections = [self.apps(apps)]
         case .builds(let builds): sections = [self.builds(builds)]
@@ -25,6 +26,9 @@ nonisolated struct CLIRenderer: Sendable {
         var lines: [String] = []
         if meta.isEstimate {
             lines.append(CLIText.estimateFootnote)
+        }
+        if meta.showsAccount, let account = meta.account {
+            lines.append("Account: \(account)")
         }
         lines.append(meta.lastSuccessfulSync.map { "Last sync: \(CLIText.date($0, calendar: calendar)) (\(CLIText.age(since: $0, now: now)))" } ?? "Last sync: never")
         return lines.joined(separator: "\n") + "\n"
@@ -109,6 +113,17 @@ nonisolated struct CLIRenderer: Sendable {
     }
 
     // MARK: - Lists
+
+    private func accounts(_ accounts: [AccountOutput]) -> String {
+        var table = CLITable(headers: ["ACCOUNT", "SHOWN", "APPS", "LAST SYNC"], rightAligned: [2], uncut: [0])
+        table.rows = accounts.map { account in
+            [
+                account.name, account.selected ? "yes" : "-", "\(account.appCount)",
+                account.lastSuccessfulSync.map { CLIText.age(since: $0, now: now) } ?? "never",
+            ]
+        }
+        return table.render(width: width)
+    }
 
     private func apps(_ apps: [AppOutput]) -> String {
         guard !apps.isEmpty else { return "No app in the cache.\n" }

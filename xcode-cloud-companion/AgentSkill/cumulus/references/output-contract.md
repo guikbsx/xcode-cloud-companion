@@ -12,7 +12,8 @@ Every successful answer, on standard output:
     "generatedAt": "2026-10-10T10:00:00Z",
     "cliVersion": "1.0",
     "appRunning": true,
-    "isEstimate": true
+    "isEstimate": true,
+    "account": "Personal"
   }
 }
 ```
@@ -20,6 +21,7 @@ Every successful answer, on standard output:
 - `lastSuccessfulSync`: when the Cumulus app last synced with App Store Connect; `null` before its first sync.
 - `appRunning`: whether the app answered on its socket. When false, the cache only gets older, and `cumulus refresh` starts the app.
 - `isEstimate`: present and true when the answer contains minutes estimated by Cumulus. Absent otherwise.
+- `account`: the name of the App Store Connect account the answer is about: the one shown in the app, or the one named with `--account`.
 - Dates are ISO 8601 in UTC. Durations are whole seconds. Minutes are decimal, to one decimal.
 - A key whose value is unknown is left out, not set to `null` (except `lastSuccessfulSync`).
 
@@ -38,10 +40,16 @@ On standard error, with a non-zero exit code:
 | 2 | `USAGE` | Unknown command, option or value | Read `cumulus help <command>` |
 | 3 | `NO_CACHE` | The app never synced, or has no API key | Ask the user to open Cumulus and add their App Store Connect API key |
 | 4 | `APP_UNREACHABLE` | `refresh` could not reach or start the app | Ask the user to open Cumulus |
-| 5 | `NOT_FOUND`, `AMBIGUOUS` | No app or build matches, or several do | `suggestions` lists what exists or the candidates; pick one and retry |
+| 5 | `NOT_FOUND`, `AMBIGUOUS` | No app, build or account matches, or several do | `suggestions` lists what exists or the candidates; pick one and retry |
 | 6 | `TIMEOUT` | `refresh --wait` waited past `--timeout` | The sync goes on in the app; run `cumulus status` later |
 
 Through MCP, the same `error` object comes back as the text of a result with `isError: true`.
+
+## `accounts`
+
+`data` is an array of: `name` (what `--account` takes), `selected` (true for the account shown in the app, the one every other command answers for by default), `lastSuccessfulSync` (absent before the account's first sync), `appCount`.
+
+Every account syncs in the background, whichever one is selected. `meta` is about the selected account.
 
 ## `status`
 
@@ -110,6 +118,8 @@ While `measurement.isMeasuring` is true, the app is still reading the test resul
 
 `cumulus mcp` serves the same answers over the Model Context Protocol (stdio). Each tool returns the JSON above as text and as `structuredContent`.
 
+Every tool except `list_accounts` also takes `account`, an account's name: the same as `--account`.
+
 | Tool | Arguments | Same as |
 |---|---|---|
 | `get_status` | - | `status` |
@@ -119,3 +129,4 @@ While `measurement.isMeasuring` is true, the app is still reading the test resul
 | `list_workflows` | `app` | `workflows` |
 | `get_usage` | `breakdown`: `summary`, `byApp`, `byWorkflow`, `daily` | `usage` |
 | `refresh` | `wait` (default true), `timeoutSeconds` (default 120) | `refresh` |
+| `list_accounts` | - | `accounts` |

@@ -27,6 +27,8 @@ final class BuildStore {
     /// Workflow states Apple confirmed after a change made here, kept until a sync that began later has read them itself.
     private var confirmedWorkflowStates: [String: (isEnabled: Bool, at: Date)] = [:]
     private var loop: Task<Void, Never>?
+    /// The account was removed: nothing is fetched or written any more.
+    private var isRetired = false
 
     init(
         credentialsStore: any CredentialsStore = KeychainCredentialsStore(),
@@ -46,6 +48,7 @@ final class BuildStore {
 
     /// Starts the refresh loop; calling it again restarts the loop with an immediate refresh.
     func start() {
+        guard !isRetired else { return }
         loop?.cancel()
         loop = Task { [weak self] in
             await self?.loadCacheIfNeeded()
@@ -106,6 +109,7 @@ final class BuildStore {
     func setWorkflowEnabled(_ isEnabled: Bool, workflowID: String) async {
         confirmedWorkflowStates[workflowID] = (isEnabled, now())
         applyConfirmedWorkflowStates(syncStartedAt: nil)
+        guard !isRetired else { return }
         try? await cacheStore.save(snapshot)
     }
 
@@ -131,6 +135,18 @@ final class BuildStore {
     func stop() {
         loop?.cancel()
         loop = nil
+    }
+
+    /// Stops for good, and waits for a sync under way to end: once it returns, the account's cache can be deleted
+    /// without anything writing it back.
+    func retire() async {
+        isRetired = true
+        let running = loop
+        stop()
+        await running?.value
+        while isSyncing {
+            try? await Task.sleep(for: .milliseconds(50))
+        }
     }
 
     func refreshNow() async {
@@ -160,6 +176,7 @@ final class BuildStore {
     @discardableResult
     func synchronize() async -> SyncOutcome {
         guard !isSyncing else { return .succeeded(hasActiveBuilds: snapshot.hasActiveBuilds) }
+        guard !isRetired else { return .notConfigured }
         isSyncing = true
         syncStartedAt = now()
         defer {
@@ -181,7 +198,9 @@ final class BuildStore {
             }
             let previous = snapshot
             let startedAt = now()
-            snapshot = try await synchronizer.sync(from: previous, now: startedAt)
+            let synced = try await synchronizer.sync(from: previous, now: startedAt)
+            guard !isRetired else { return .notConfigured }
+            snapshot = synced
             applyConfirmedWorkflowStates(syncStartedAt: startedAt)
             onSync?(previous, snapshot)
             lastError = nil

@@ -6,7 +6,7 @@ import Observation
 nonisolated struct AppIconCache: Sendable {
     static let pixels = 128
 
-    var directory: URL = URL.cachesDirectory.appending(path: "AppIcons")
+    var directory: URL = AccountPaths.first.appIcons
     /// Fetches the image from Apple's image servers; nothing of the API key goes with it.
     var download: @Sendable (URL) async -> Data? = { url in
         guard let (data, response) = try? await URLSession.shared.data(from: url),

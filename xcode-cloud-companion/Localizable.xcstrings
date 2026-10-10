@@ -96,6 +96,47 @@
         }
       }
     },
+    "%@ lists the apps of “%@”: its %lld builds were imported there." : {
+      "comment" : "A usage export was imported into another account than the one on screen. First the file name, then the account name.",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%1$@ lists the apps of “%2$@”: its %3$lld build was imported there."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%1$@ lists the apps of “%2$@”: its %3$lld builds were imported there."
+                }
+              }
+            }
+          }
+        },
+        "fr" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%1$@ liste les apps de « %2$@ » : son %3$lld build y a été importé."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%1$@ liste les apps de « %2$@ » : ses %3$lld builds y ont été importés."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "%@ of %@ used" : {
       "localizations" : {
         "en" : {
@@ -689,6 +730,37 @@
         }
       }
     },
+    "Account" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Compte"
+          }
+        }
+      }
+    },
+    "Account %lld" : {
+      "comment" : "Default name of an App Store Connect account in Cumulus; the number tells them apart.",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Compte %lld"
+          }
+        }
+      }
+    },
+    "Accounts" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Comptes"
+          }
+        }
+      }
+    },
     "Action" : {
       "localizations" : {
         "fr" : {
@@ -705,6 +777,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Actions"
+          }
+        }
+      }
+    },
+    "Add Account" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ajouter un compte"
           }
         }
       }
@@ -797,6 +879,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Une app manque ? Elle n’a pas encore de workflow Xcode Cloud, ou la clé n’a pas accès à cette équipe."
+          }
+        }
+      }
+    },
+    "An export goes to the account whose apps it lists, whichever account is shown here." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Un export va au compte dont il liste les apps, quel que soit le compte affiché ici."
           }
         }
       }
@@ -1040,6 +1132,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Apps"
+          }
+        }
+      }
+    },
+    "Apps of “%@”" : {
+      "comment" : "Section title: the apps of one App Store Connect account",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apps de « %@ »"
           }
         }
       }
@@ -2228,6 +2331,17 @@
         }
       }
     },
+    "Follow another team" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Suivre une autre équipe"
+          }
+        }
+      },
+      "comment" : "Settings row leading to a second App Store Connect account (team)."
+    },
     "Follows the language of macOS" : {
       "localizations" : {
         "fr" : {
@@ -2454,12 +2568,33 @@
         }
       }
     },
+    "Issuer ID %@" : {
+      "comment" : "The masked identifier of an App Store Connect team",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Issuer ID %@"
+          }
+        }
+      }
+    },
     "Issues" : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Problèmes"
+          }
+        }
+      }
+    },
+    "Its key leaves the keychain, and its cached builds, imported usage exports, plan and reset date are deleted. The other accounts are not touched." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sa clé quitte le trousseau, et ses builds en cache, ses exports d’utilisation importés, son forfait et sa date de réinitialisation sont effacés. Les autres comptes ne sont pas touchés."
           }
         }
       }
@@ -2982,6 +3117,16 @@
         }
       }
     },
+    "No API key yet" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pas encore de clé API"
+          }
+        }
+      }
+    },
     "No Xcode Cloud app yet." : {
       "comment" : "Keep \"Xcode Cloud\", \"App Store Connect\" and \"TestFlight\" untranslated as product names.",
       "localizations" : {
@@ -3250,6 +3395,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Activée"
+          }
+        }
+      }
+    },
+    "One account per App Store Connect team, each with its own API key and plan. Every account stays up to date and sends its notifications; the menu and the window show one at a time." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Un compte par équipe App Store Connect, chacun avec sa clé API et son forfait. Tous les comptes restent à jour et envoient leurs notifications ; le menu et la fenêtre en affichent un à la fois."
           }
         }
       }
@@ -3741,6 +3896,26 @@
         }
       }
     },
+    "Remove Account" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Supprimer le compte"
+          }
+        }
+      }
+    },
+    "Remove Account…" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Supprimer le compte…"
+          }
+        }
+      }
+    },
     "Remove Key and Data" : {
       "localizations" : {
         "fr" : {
@@ -3778,6 +3953,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Supprimer la clé API et toutes ses données ?"
+          }
+        }
+      }
+    },
+    "Remove the account “%@” and all its data?" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Supprimer le compte « %@ » et toutes ses données ?"
           }
         }
       }
@@ -4196,6 +4381,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Réussi"
+          }
+        }
+      }
+    },
+    "Switch to another App Store Connect account" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Passer à un autre compte App Store Connect"
           }
         }
       }

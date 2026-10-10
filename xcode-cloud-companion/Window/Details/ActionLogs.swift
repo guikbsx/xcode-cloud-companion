@@ -4,7 +4,7 @@ import Observation
 
 /// Unpacked log archives, one folder per action, in the app's caches: capped in size, the least recently opened going first.
 nonisolated struct LogCache: Sendable {
-    var directory: URL = URL.cachesDirectory.appending(path: "Logs")
+    var directory: URL = AccountPaths.first.logs
     var maximumBytes = 500 * 1024 * 1024
 
     /// The unpacked folder of an action, if it is still there; opening it again counts as a use.

@@ -26,24 +26,31 @@ nonisolated struct AppIPCService: IPCService {
     static let recentSync = AppIPCRefresh.recentSync
     static let pollInterval: Duration = .milliseconds(200)
 
-    let sync: any RefreshableSync
+    /// The sync of an account, of the one on screen when no id is given; nil when the app has no such account.
+    let sync: @MainActor @Sendable (_ accountID: String?) -> (any RefreshableSync)?
     var appVersion = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "0"
     var now: @Sendable () -> Date = { Date() }
     var openBuild: @MainActor @Sendable (String) -> Void = { _ in }
     /// Loads a build's details into the cache; false when the build is unknown, still running, or Apple refused.
     var loadBuildDetails: @MainActor @Sendable (String) async -> Bool = { _ in false }
 
-    func ping() async -> IPCResult {
+    func ping(accountID: String?) async -> IPCResult {
+        guard let sync = await sync(accountID) else {
+            return IPCResult(appVersion: appVersion, isSyncing: false, hasCredentials: false)
+        }
         let hasCredentials = await sync.hasCredentials()
         return await IPCResult(appVersion: appVersion, lastSuccessfulSync: sync.lastSuccessfulSync, isSyncing: sync.isSyncing, hasCredentials: hasCredentials)
     }
 
-    func refresh(wait: Bool) async -> IPCResult {
+    func refresh(wait: Bool, accountID: String?) async -> IPCResult {
+        guard let sync = await sync(accountID) else {
+            return IPCResult(accepted: false, reason: IPCRefreshReason.unknownAccount)
+        }
         guard await sync.hasCredentials() else {
             return await IPCResult(lastSuccessfulSync: sync.lastSuccessfulSync, accepted: false, reason: IPCRefreshReason.noCredentials)
         }
         if await sync.isSyncing {
-            if wait { await waitForSyncToEnd() }
+            if wait { await waitForSyncToEnd(sync) }
             return await IPCResult(lastSuccessfulSync: sync.lastSuccessfulSync, accepted: false, reason: IPCRefreshReason.syncing)
         }
         if let last = await sync.lastSuccessfulSync, now().timeIntervalSince(last) < Self.recentSync {
@@ -66,7 +73,7 @@ nonisolated struct AppIPCService: IPCService {
         IPCResult(loaded: await loadBuildDetails(buildRunID))
     }
 
-    private func waitForSyncToEnd() async {
+    private func waitForSyncToEnd(_ sync: any RefreshableSync) async {
         while await sync.isSyncing {
             try? await Task.sleep(for: Self.pollInterval)
         }

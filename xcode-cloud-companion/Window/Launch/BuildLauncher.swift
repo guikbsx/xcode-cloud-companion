@@ -8,17 +8,12 @@ nonisolated enum KeyAccess: String, CaseIterable, Sendable {
     /// "Read + Build". Named for the first write the app had; it covers pausing a workflow too. The stored value is kept as it is.
     case canLaunch
 
-    static let defaultsKey = "keyAccess"
     /// Every write goes through a confirmation, so the buttons show unless the user, or a 403, said the key cannot.
     static let defaultValue = KeyAccess.canLaunch
 
-    static func current(in defaults: UserDefaults = .standard) -> KeyAccess {
-        defaults.string(forKey: defaultsKey).flatMap(KeyAccess.init(rawValue:)) ?? defaultValue
-    }
-
-    /// Back to the default: a new key starts from the same assumption.
-    static func reset(in defaults: UserDefaults = .standard) {
-        defaults.removeObject(forKey: defaultsKey)
+    /// Each account says it for its own key; a new key starts from the default.
+    static func stored(in defaults: UserDefaults, accountID: String) -> KeyAccess {
+        defaults.string(forKey: AccountDefaults.key(AccountDefaults.keyAccess, accountID: accountID)).flatMap(KeyAccess.init(rawValue:)) ?? defaultValue
     }
 }
 

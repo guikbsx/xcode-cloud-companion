@@ -39,27 +39,23 @@ final class SettingsWindowController {
 
     private static let selectedTabKey = "settings.selectedTab"
 
-    private let model: SettingsModel
+    private let accounts: AccountsModel
     private let loginItem: LoginItemModel
-    private let usage: UsageStore
     private let notificationPreferences: NotificationPreferences
     private let notifications: NotificationCoordinator
-    private let buildStore: BuildStore
     private let agents = AgentsSettingsModel()
     private let defaults: UserDefaults
     private var window: NSWindow?
     private var tabController: NSTabViewController?
 
     init(
-        model: SettingsModel, loginItem: LoginItemModel, usage: UsageStore, notificationPreferences: NotificationPreferences,
-        notifications: NotificationCoordinator, buildStore: BuildStore, defaults: UserDefaults = .standard
+        accounts: AccountsModel, loginItem: LoginItemModel, notificationPreferences: NotificationPreferences,
+        notifications: NotificationCoordinator, defaults: UserDefaults = .standard
     ) {
-        self.model = model
+        self.accounts = accounts
         self.loginItem = loginItem
-        self.usage = usage
         self.notificationPreferences = notificationPreferences
         self.notifications = notifications
-        self.buildStore = buildStore
         self.defaults = defaults
     }
 
@@ -70,7 +66,9 @@ final class SettingsWindowController {
         NSApp.activate()
         window.makeKeyAndOrderFront(nil)
         Task {
-            await model.load()
+            for session in accounts.sessions {
+                await session.settings.load()
+            }
             let tab = initialTab()
             tabController?.selectedTabViewItemIndex = tab.rawValue
             // Selecting the tab already shown sends no notification: the title is set here too.
@@ -78,8 +76,9 @@ final class SettingsWindowController {
         }
     }
 
-    /// Configuration while the key or the reset date is missing, otherwise the tab used last.
+    /// Configuration while the key or the reset date of the account on screen is missing, otherwise the tab used last.
     private func initialTab() -> Tab {
+        let model = accounts.selected.settings
         if !model.hasStoredKey || model.resetAnchor == nil {
             return .configuration
         }
@@ -112,9 +111,9 @@ final class SettingsWindowController {
     private func rootView(for tab: Tab) -> some View {
         switch tab {
         case .general: GeneralSettingsView(loginItem: loginItem)
-        case .configuration: ConfigurationSettingsView(model: model)
-        case .usage: UsageSettingsView(usage: usage)
-        case .notifications: NotificationsSettingsView(preferences: notificationPreferences, coordinator: notifications, buildStore: buildStore)
+        case .configuration: ConfigurationSettingsRoot(accounts: accounts)
+        case .usage: UsageSettingsView(accounts: accounts)
+        case .notifications: NotificationsSettingsView(preferences: notificationPreferences, coordinator: notifications, accounts: accounts)
         case .agents: AgentsSettingsView(model: agents)
         }
     }

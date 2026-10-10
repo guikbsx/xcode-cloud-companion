@@ -17,7 +17,20 @@ nonisolated struct MCPTool: Sendable {
     var properties: [String: JSONValue] = [:]
     var required: [String] = []
     var readOnly = true
+    /// Every tool that reads an account's cache takes `account`, to answer for another one than the app shows.
+    var takesAccount = true
     var makeCall: @Sendable (Arguments, Date) throws(InvalidArguments) -> Call
+
+    static let accountArgument = "account"
+    private static let accountProperty: JSONValue = [
+        "type": "string",
+        "description": "An account's name, as list_accounts gives them, when the app follows several. Omit it for the account shown in the app.",
+    ]
+
+    /// The tool's own arguments, and `account` when it takes one.
+    var allProperties: [String: JSONValue] {
+        takesAccount ? properties.merging([Self.accountArgument: Self.accountProperty]) { own, _ in own } : properties
+    }
 
     var definition: JSONValue {
         [
@@ -26,7 +39,7 @@ nonisolated struct MCPTool: Sendable {
             "description": .string(description),
             "inputSchema": [
                 "type": "object",
-                "properties": .object(properties),
+                "properties": .object(allProperties),
                 "required": .array(required.map(JSONValue.string)),
                 "additionalProperties": false,
             ],
@@ -76,10 +89,15 @@ nonisolated struct MCPTool: Sendable {
         }
     }
 
-    func call(arguments: [String: JSONValue], now: Date) throws(InvalidArguments) -> Call {
+    /// The question a call asks, and the account it names, if any.
+    func call(arguments: [String: JSONValue], now: Date) throws(InvalidArguments) -> (call: Call, account: String?) {
         let arguments = Arguments(values: arguments)
-        try arguments.checkNames(properties.keys)
-        return try makeCall(arguments, now)
+        try arguments.checkNames(allProperties.keys)
+        let account = takesAccount ? try arguments.string(Self.accountArgument) : nil
+        if let account, account.trimmingCharacters(in: .whitespaces).isEmpty {
+            throw InvalidArguments(message: "'\(Self.accountArgument)' must be an account's name.")
+        }
+        return (try makeCall(arguments, now), account)
     }
 }
 
@@ -206,6 +224,16 @@ nonisolated enum MCPTools {
                 }
                 return .refresh(wait: try arguments.bool("wait") ?? true, timeout: timeout)
             }
+        ),
+        MCPTool(
+            name: "list_accounts", title: "List accounts",
+            description: """
+            The App Store Connect accounts (teams) the Cumulus app follows, with how fresh each one's data is. \
+            Every other tool answers for the account marked `selected`, the one shown in the app, unless its `account` argument names another. \
+            Most setups have a single account: then there is nothing to choose.
+            """,
+            takesAccount: false,
+            makeCall: { _, _ in .query(.accounts) }
         ),
     ]
 

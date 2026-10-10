@@ -43,7 +43,12 @@ nonisolated struct AppPalette: Codable, Sendable, Equatable {
 }
 
 nonisolated struct AppPaletteStore: Sendable {
-    var key = "appPalette.assignments"
+    var key = AccountDefaults.key(AccountDefaults.palette, accountID: AccountRegistry.firstAccountID)
+
+    /// Each account colours its own apps.
+    static func account(_ id: String) -> AppPaletteStore {
+        AppPaletteStore(key: AccountDefaults.key(AccountDefaults.palette, accountID: id))
+    }
 
     func load(from defaults: UserDefaults = .standard) -> AppPalette {
         defaults.data(forKey: key).flatMap { try? JSONDecoder().decode(AppPalette.self, from: $0) } ?? AppPalette()

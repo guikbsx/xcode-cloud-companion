@@ -8,6 +8,7 @@ struct StatusMenuActions {
     var openSettings: () -> Void = {}
     var openApp: () -> Void = {}
     var openBuild: (String) -> Void = { _ in }
+    var selectAccount: (String) -> Void = { _ in }
     var openDiagnostic: (() -> Void)?
 }
 
@@ -27,6 +28,9 @@ struct StatusMenuState {
     var measurement: MeasurementProgress?
     /// What the synchronizer is doing right now (“Listing builds of …”).
     var activity: String?
+    /// Every account, when there are several: the rest of the state is the selected one's.
+    var accounts: [AccountChoice] = []
+    var selectedAccountID: String?
 
     /// The first synchronization of a key: nothing has been read yet.
     var isFirstSync: Bool { isSyncing && lastSync == nil }
@@ -64,6 +68,15 @@ enum StatusMenuBuilder {
         return title
     }
 
+    /// The row that switches accounts, above everything else; nil while there is one account only.
+    static func accountSwitcher(for state: StatusMenuState, actions: StatusMenuActions) -> NSMenuItem? {
+        guard state.accounts.count > 1 else { return nil }
+        let item = NSMenuItem()
+        item.view = AccountSwitcherControl(accounts: state.accounts, selectedID: state.selectedAccountID, select: actions.selectAccount)
+        return item
+    }
+
+    /// The selected account's menu, below the switcher.
     static func items(for state: StatusMenuState, actions: StatusMenuActions) -> [NSMenuItem] {
         // Without a key there is nothing to show: one way in, one way out. Settings open on Configuration then.
         if state.needsAPIKey {

@@ -241,14 +241,15 @@ struct AgentSkillBundleTests {
         }
         for tool in MCPTools.all {
             #expect(skill.contains("`\(tool.name)`") && contract.contains("`\(tool.name)`"), "\(tool.name) is missing from the skill")
-            for argument in tool.properties.keys {
+            for argument in tool.allProperties.keys {
                 #expect(contract.contains("`\(argument)`"), "argument \(argument) of \(tool.name) is missing from the contract")
             }
         }
         for code in ["NOT_FOUND", "AMBIGUOUS", "NO_CACHE", "USAGE", "INTERNAL", "APP_UNREACHABLE", "TIMEOUT"] {
             #expect(CLIErrorCode(rawValue: code) != nil && contract.contains("`\(code)`"))
         }
-        for key in ["lastSuccessfulSync", "appRunning", "isEstimate", "detailsAvailable", "omittedWarnings", "estimatedMinutes", "billedMinutes"] {
+        #expect(skill.contains("`--account <name>`") && skill.contains("`meta.account`"))
+        for key in ["lastSuccessfulSync", "appRunning", "isEstimate", "account", "selected", "detailsAvailable", "omittedWarnings", "estimatedMinutes", "billedMinutes"] {
             #expect(contract.contains("`\(key)`"))
         }
     }

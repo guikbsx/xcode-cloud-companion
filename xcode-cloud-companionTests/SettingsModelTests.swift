@@ -217,41 +217,54 @@ struct KeyAccessTests {
         defaults.removePersistentDomain(forName: suiteName)
     }
 
+    private let key = AccountDefaults.key(AccountDefaults.keyAccess, accountID: "work")
+
     @Test func withoutAChoiceTheKeyIsTakenToLaunchBuilds() {
         #expect(KeyAccess.defaultValue == .canLaunch)
-        #expect(KeyAccess.current(in: defaults) == .canLaunch)
+        #expect(KeyAccess.stored(in: defaults, accountID: "work") == .canLaunch)
+        #expect(SettingsModel(accountID: "work", store: InMemoryCredentialsStore(), defaults: defaults).keyAccess == .canLaunch)
     }
 
     @Test func aChoiceAlreadyMadeIsKeptIncludingARefusalByApple() {
         // What a 403 writes, and what the picker writes.
-        defaults.set(KeyAccess.readOnly.rawValue, forKey: KeyAccess.defaultsKey)
-        #expect(KeyAccess.current(in: defaults) == .readOnly)
+        let model = SettingsModel(accountID: "work", store: InMemoryCredentialsStore(), defaults: defaults)
+        model.keyAccess = .readOnly
+        #expect(KeyAccess.stored(in: defaults, accountID: "work") == .readOnly)
+        #expect(SettingsModel(accountID: "work", store: InMemoryCredentialsStore(), defaults: defaults).keyAccess == .readOnly)
 
-        defaults.set(KeyAccess.canLaunch.rawValue, forKey: KeyAccess.defaultsKey)
-        #expect(KeyAccess.current(in: defaults) == .canLaunch)
+        model.keyAccess = .canLaunch
+        #expect(KeyAccess.stored(in: defaults, accountID: "work") == .canLaunch)
 
-        defaults.set("somethingElse", forKey: KeyAccess.defaultsKey)
-        #expect(KeyAccess.current(in: defaults) == .canLaunch)
+        defaults.set("somethingElse", forKey: key)
+        #expect(KeyAccess.stored(in: defaults, accountID: "work") == .canLaunch)
+    }
+
+    @Test func oneAccountRefusedByAppleLeavesTheOtherAccountsAccessAlone() {
+        let work = SettingsModel(accountID: "work", store: InMemoryCredentialsStore(), defaults: defaults)
+        work.keyAccess = .readOnly
+
+        #expect(SettingsModel(accountID: "personal", store: InMemoryCredentialsStore(), defaults: defaults).keyAccess == .canLaunch)
     }
 
     @Test func removingTheKeyPutsTheAccessBackToItsDefault() async {
-        defaults.set(KeyAccess.readOnly.rawValue, forKey: KeyAccess.defaultsKey)
+        defaults.set(KeyAccess.readOnly.rawValue, forKey: key)
         let store = InMemoryCredentialsStore(StoredCredentials(issuerID: "issuer", keyID: "KEY", privateKeyPEM: "pem"))
-        let model = SettingsModel(store: store, defaults: defaults)
+        let model = SettingsModel(accountID: "work", store: store, defaults: defaults)
 
         await model.removeKey()
 
-        #expect(defaults.object(forKey: KeyAccess.defaultsKey) == nil)
-        #expect(KeyAccess.current(in: defaults) == .canLaunch)
+        #expect(defaults.object(forKey: key) == nil)
+        #expect(model.keyAccess == .canLaunch)
     }
 
     @Test func aKeychainThatRefusesLeavesTheAccessAlone() async {
-        defaults.set(KeyAccess.readOnly.rawValue, forKey: KeyAccess.defaultsKey)
-        let model = SettingsModel(store: RefusingCredentialsStore(), defaults: defaults)
+        defaults.set(KeyAccess.readOnly.rawValue, forKey: key)
+        let model = SettingsModel(accountID: "work", store: RefusingCredentialsStore(), defaults: defaults)
 
         await model.removeKey()
 
-        #expect(KeyAccess.current(in: defaults) == .readOnly)
+        #expect(model.keyAccess == .readOnly)
+        #expect(KeyAccess.stored(in: defaults, accountID: "work") == .readOnly)
     }
 }
 

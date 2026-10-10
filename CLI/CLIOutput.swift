@@ -56,9 +56,13 @@ nonisolated struct CLIMeta: Equatable, Sendable, Encodable {
     var isEstimate = false
     /// Whether the app answered on its socket: a cache it no longer feeds only gets older.
     var appRunning = false
+    /// The name of the account the answer is about.
+    var account: String?
+    /// For the readable form only: with several accounts, the footer says which one was read.
+    var showsAccount = false
 
     private enum CodingKeys: String, CodingKey {
-        case lastSuccessfulSync, generatedAt, cliVersion, isEstimate, appRunning
+        case lastSuccessfulSync, generatedAt, cliVersion, isEstimate, appRunning, account
     }
 
     func encode(to encoder: any Encoder) throws {
@@ -71,6 +75,7 @@ nonisolated struct CLIMeta: Equatable, Sendable, Encodable {
         if isEstimate {
             try container.encode(true, forKey: .isEstimate)
         }
+        try container.encodeIfPresent(account, forKey: .account)
     }
 }
 

@@ -8,6 +8,8 @@ struct OverviewView: View {
     let usage: UsageStore
     let openSettings: () -> Void
     let openUsagePage: () -> Void
+    /// An export picked by hand: it is read once and goes to the account whose apps it lists.
+    let importExport: (URL) async -> Void
     /// Store names and loaded icons by product name.
     var displayNames: [String: String] = [:]
     var artwork: [String: AppArtwork] = [:]
@@ -38,7 +40,7 @@ struct OverviewView: View {
         .navigationTitle("Overview")
         .fileImporter(isPresented: $isImporting, allowedContentTypes: [.commaSeparatedText]) { result in
             if case .success(let url) = result {
-                Task { await usage.importFile(at: url) }
+                Task { await importExport(url) }
             }
         }
     }

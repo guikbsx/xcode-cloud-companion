@@ -7,7 +7,7 @@ nonisolated struct SharedPlanStore: Sendable {
         var resetAnchor: Date
     }
 
-    var fileURL: URL = SharedContainer.applicationSupport.appending(path: "UsagePlan.json")
+    var fileURL: URL = AccountPaths.first.usagePlan
 
     @concurrent func load() async -> UsagePlan? {
         guard let data = try? Data(contentsOf: fileURL), let file = try? JSONDecoder().decode(File.self, from: data) else { return nil }

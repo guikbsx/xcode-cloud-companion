@@ -6,6 +6,8 @@ nonisolated struct IPCRequest: Codable, Equatable, Sendable {
     struct Params: Codable, Equatable, Sendable {
         var wait: Bool?
         var buildRunID: String?
+        /// The account `ping` and `refresh` are about; the one on screen in the app when absent.
+        var accountID: String?
     }
 
     var id: String
@@ -52,12 +54,15 @@ nonisolated enum IPCRefreshReason {
     static let syncing = "syncing"
     static let recent = "recent"
     static let noCredentials = "noCredentials"
+    /// The account was removed in the app since the command read the list.
+    static let unknownAccount = "unknownAccount"
 }
 
 /// What the app does for the command. Nothing here writes anything at Apple.
 nonisolated protocol IPCService: Sendable {
-    func ping() async -> IPCResult
-    func refresh(wait: Bool) async -> IPCResult
+    func ping(accountID: String?) async -> IPCResult
+    func refresh(wait: Bool, accountID: String?) async -> IPCResult
+    /// A build names itself alone: the app finds the account that holds it.
     func open(buildRunID: String) async -> IPCResult
     /// Fetches a finished build's issues, test results and artifacts into the shared cache, as opening its sheet does.
     func loadDetails(buildRunID: String) async -> IPCResult
@@ -90,11 +95,14 @@ nonisolated struct IPCDispatcher: Sendable {
         guard let request = IPCCodec.decode(IPCRequest.self, from: line) else {
             return IPCResponse(error: IPCFailure(code: IPCFailure.parseError, message: "The request is not a JSON object with an id and a method."))
         }
+        if let accountID = request.params?.accountID, !Account.isValid(id: accountID) {
+            return IPCResponse(id: request.id, error: IPCFailure(code: IPCFailure.invalidParams, message: "'accountID' is not an account id."))
+        }
         switch request.method {
         case IPCMethod.ping:
-            return IPCResponse(id: request.id, result: await service.ping())
+            return IPCResponse(id: request.id, result: await service.ping(accountID: request.params?.accountID))
         case IPCMethod.refresh:
-            return IPCResponse(id: request.id, result: await service.refresh(wait: request.params?.wait ?? false))
+            return IPCResponse(id: request.id, result: await service.refresh(wait: request.params?.wait ?? false, accountID: request.params?.accountID))
         case IPCMethod.open, IPCMethod.loadDetails:
             guard let buildRunID = request.params?.buildRunID, Self.isIdentifier(buildRunID) else {
                 return IPCResponse(id: request.id, error: IPCFailure(code: IPCFailure.invalidParams, message: "'\(request.method)' takes a buildRunID."))

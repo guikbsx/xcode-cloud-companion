@@ -11,6 +11,8 @@ nonisolated struct CLIAppLink: Sendable {
     static let detailsTimeout: TimeInterval = 60
 
     let environment: CLIEnvironment
+    /// The account the command answers for; the app's own selection when nil.
+    var accountID: String?
 
     private var client: IPCClient? {
         environment.socketPath.map(IPCClient.init(path:))
@@ -39,7 +41,7 @@ nonisolated struct CLIAppLink: Sendable {
                 try? await Task.sleep(for: .milliseconds(250))
             }
         }
-        let request = IPCRequest(id: UUID().uuidString, method: IPCMethod.refresh, params: IPCRequest.Params(wait: wait))
+        let request = IPCRequest(id: UUID().uuidString, method: IPCMethod.refresh, params: IPCRequest.Params(wait: wait, accountID: accountID))
         let result: IPCResult
         do {
             result = try await client.send(request, timeout: wait ? timeout ?? Self.defaultWait : 10)
@@ -55,6 +57,12 @@ nonisolated struct CLIAppLink: Sendable {
             throw CLIFailure(
                 code: .noCache, message: "Cumulus has no App Store Connect API key yet.",
                 suggestions: ["Open the Cumulus app and add your key in Settings."]
+            )
+        }
+        if result.reason == IPCRefreshReason.unknownAccount {
+            throw CLIFailure(
+                code: .notFound, message: "Cumulus no longer has this account.",
+                suggestions: ["Run 'cumulus accounts' to list the accounts."]
             )
         }
         let output = RefreshOutput(accepted: result.accepted ?? false, reason: result.reason, outcome: result.outcome, waited: wait, appLaunched: launched)

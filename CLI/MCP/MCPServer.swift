@@ -7,7 +7,8 @@ nonisolated struct MCPServer: Sendable {
     static let maximumLineLength = 4 * 1024 * 1024
 
     static let instructions = """
-    Cumulus answers about Xcode Cloud builds and usage from the cache kept by the Cumulus macOS app; it does not call Apple itself.
+    Cumulus answers about Xcode Cloud builds and usage from the cache kept by the Cumulus macOS app; it does not call Apple itself. \
+    A result is about the App Store Connect account named in meta.account: the one shown in the app, unless `account` names another (list_accounts).
     Every result carries meta.lastSuccessfulSync (how old the data is) and meta.appRunning; call `refresh` when it may be stale.
     Minutes are estimates computed by Cumulus, not official Apple figures, except fields named billed.
     Start with get_status or list_builds, then get_build with a reference such as MyApp#42 to see why a build failed.
@@ -72,12 +73,13 @@ nonisolated struct MCPServer: Sendable {
         default: return Self.failure(id: id, code: ErrorCode.invalidParams, message: "'arguments' must be an object.")
         }
         let call: MCPTool.Call
+        let account: String?
         do {
-            call = try tool.call(arguments: arguments, now: environment.now())
+            (call, account) = try tool.call(arguments: arguments, now: environment.now())
         } catch {
             return Self.failure(id: id, code: ErrorCode.invalidParams, message: error.message)
         }
-        let runner = CLIQueryRunner(environment: environment)
+        let runner = CLIQueryRunner(environment: environment, account: account)
         do throws(CLIFailure) {
             let response = switch call {
             case .query(let query): try await runner.run(query)

@@ -149,13 +149,46 @@ enum CLIFixture {
         )
     }
 
+    static let account = Account(id: AccountRegistry.firstAccountID, name: "Personal")
+
+    /// Where the app keeps an account's caches under the shared folder.
+    static func directory(of account: Account = CLIFixture.account, in environment: CLIEnvironment) -> URL {
+        CLIAccountScope.directory(of: account, in: environment.directory)
+    }
+
+    /// Adds an account next to the first one, with its own builds; `selected` puts it on screen in the app.
+    static func add(_ account: Account, snapshot: BuildSnapshot, selected: Bool = false, to environment: CLIEnvironment) async throws {
+        let store = AccountRegistryStore(fileURL: environment.directory.appending(path: "Accounts.json"))
+        var registry = await store.load() ?? AccountRegistry(first: CLIFixture.account.name)
+        registry.add(account)
+        if selected { registry.select(account.id) }
+        await store.save(registry)
+        try await BuildCacheStore(fileURL: directory(of: account, in: environment).appending(path: "BuildCache.json")).save(snapshot)
+    }
+
+    static let workAccount = Account(id: "work-1", name: "Work")
+
+    /// The usual account, "Personal", and a second one, "Work", with one app and one build of its own.
+    static func environmentWithTwoAccounts(workSelected: Bool = false) async throws -> CLIEnvironment {
+        let environment = try await environment()
+        let work = BuildSnapshot(
+            products: [CIProduct(id: "p-delta", name: "Delta", productType: "APP", appID: "444", appName: "Delta", bundleID: "com.example.delta")],
+            runs: [run("run-d1", product: "p-delta", number: 1, created: "2026-10-10T08:00:00Z")],
+            lastSuccessfulSync: date("2026-10-10T09:00:00Z")
+        )
+        try await add(workAccount, snapshot: work, selected: workSelected, to: environment)
+        return environment
+    }
+
     /// Writes the account to a new temporary folder and returns an environment that reads it.
     static func environment(
         snapshot: BuildSnapshot? = CLIFixture.snapshot, plan: UsagePlan? = CLIFixture.plan, withDetails: Bool = true,
         isTerminal: Bool = false, width: Int = 100
     ) async throws -> CLIEnvironment {
-        let directory = FileManager.default.temporaryDirectory.appending(path: "cumulus-cli-\(UUID().uuidString)")
+        let root = FileManager.default.temporaryDirectory.appending(path: "cumulus-cli-\(UUID().uuidString)")
+        let directory = CLIAccountScope.directory(of: account, in: root)
         try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        await AccountRegistryStore(fileURL: root.appending(path: "Accounts.json")).save(AccountRegistry(first: account.name))
         if let snapshot {
             try await BuildCacheStore(fileURL: directory.appending(path: "BuildCache.json")).save(snapshot)
             try await UsageLedgerStore(fileURL: directory.appending(path: "UsageLedger.json")).save(ledger)
@@ -171,7 +204,7 @@ enum CLIFixture {
             await WorkflowDetailsCache(directory: directory.appending(path: "WorkflowDetails"))
                 .save(WorkflowDetailsFile(fetchedAt: now, workflows: [detailed]), productID: "p-alpha")
         }
-        return CLIEnvironment(version: "1.0", build: "7", directory: directory, now: { now }, calendar: calendar, isTerminal: isTerminal, terminalWidth: width)
+        return CLIEnvironment(version: "1.0", build: "7", directory: root, now: { now }, calendar: calendar, isTerminal: isTerminal, terminalWidth: width)
     }
 
     /// The `data` and `meta` of a JSON answer.

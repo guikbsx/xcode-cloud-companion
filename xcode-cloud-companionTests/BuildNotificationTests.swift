@@ -304,6 +304,53 @@ struct NotificationCoordinatorTests {
         #expect(await center.posted.count == 1)
     }
 
+    @Test func eachAccountHasItsOwnFirstSyncAndItsBannersNameIt() async {
+        let center = MockNotificationCenter(status: .allowed)
+        let coordinator = makeCoordinator(center)
+        let personal = NotificationAccount(id: "personal", name: "Personal")
+        let work = NotificationAccount(id: "work", name: "Work")
+        await coordinator.buildsDidSync(account: personal, previous: .empty, current: running)
+
+        // The other account's first sync says nothing, however long the first one has been watched.
+        await coordinator.buildsDidSync(account: work, previous: running, current: done)
+        #expect(await center.posted.isEmpty)
+
+        await coordinator.buildsDidSync(account: personal, previous: running, current: done)
+        #expect(await center.posted.map(\.subtitle) == ["Personal"])
+    }
+
+    @Test func aSingleAccountPutsNoNameOnItsBanners() async {
+        let center = MockNotificationCenter(status: .allowed)
+        let coordinator = makeCoordinator(center)
+        await coordinator.buildsDidSync(previous: .empty, current: running)
+
+        await coordinator.buildsDidSync(previous: running, current: done)
+
+        #expect(await center.posted.map(\.subtitle) == [nil])
+    }
+
+    @Test func aStuckBuildIsNotReportedAgainBecauseAnotherAccountSynced() async {
+        var runs = (1...3).map { run($0, createdMinutesAgo: 600, finishedMinutesAgo: 500) }
+        var actions = Dictionary(uniqueKeysWithValues: (1...3).map { ("run-\($0)", [action("a\($0)", run: $0, startedMinutesAgo: 600, ranFor: 10)]) })
+        runs.insert(run(42, progress: .running), at: 0)
+        actions["run-42"] = [action("live", run: 42, progress: .running, startedMinutesAgo: 45)]
+        let stuck = snapshot(runs, actions: actions)
+        let center = MockNotificationCenter(status: .allowed)
+        let coordinator = makeCoordinator(center)
+        let personal = NotificationAccount(id: "personal", name: "Personal")
+        let work = NotificationAccount(id: "work", name: "Work")
+        await coordinator.buildsDidSync(account: personal, previous: .empty, current: stuck)
+        await coordinator.buildsDidSync(account: personal, previous: stuck, current: stuck)
+        #expect(await center.posted.count == 1)
+
+        // The other account knows nothing of build 42: that is no reason to forget it was reported.
+        await coordinator.buildsDidSync(account: work, previous: .empty, current: .empty)
+        await coordinator.buildsDidSync(account: work, previous: .empty, current: .empty)
+        await coordinator.buildsDidSync(account: personal, previous: stuck, current: stuck)
+
+        #expect(await center.posted.count == 1)
+    }
+
     @Test func settingsReadThePermissionWithoutAskingForIt() async {
         let center = MockNotificationCenter(status: .denied)
         let coordinator = makeCoordinator(center)

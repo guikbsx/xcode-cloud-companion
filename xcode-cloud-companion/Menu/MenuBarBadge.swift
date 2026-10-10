@@ -25,6 +25,23 @@ nonisolated enum MenuBarBadge: Sendable, Equatable {
         }
     }
 
+    /// One dot for several accounts: a build running anywhere shows first, then a failure anywhere, so neither hides behind
+    /// another account's success.
+    static func status(for snapshots: [BuildSnapshot]) -> MenuBarBadge? {
+        let badges = snapshots.map { status(for: $0) }
+        return [MenuBarBadge.running, .failed, .succeeded, .stopped].first { badges.contains($0) }
+    }
+
+    /// The build status that reads the same, for the words VoiceOver says.
+    var status: BuildStatus {
+        switch self {
+        case .running: .running
+        case .failed: .failed
+        case .succeeded: .succeeded
+        case .stopped: .canceled
+        }
+    }
+
     /// The same colours as the dots of the menu.
     var color: NSColor {
         switch self {

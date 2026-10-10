@@ -47,7 +47,7 @@ struct CLICommandTests {
         #expect(usage.lastImport == CLIFixture.date("2026-10-09T07:00:00Z") && !usage.importIsStale)
         #expect(usage.measurement == UsageOutput.Measurement(isMeasuring: true, pendingBuilds: 1, measuredActions: 1, totalActions: 2, unmeasurableActions: 0))
         #expect(usage.note?.contains("still measuring 1 builds") == true)
-        #expect(response.meta == CLIMeta(lastSuccessfulSync: CLIFixture.date("2026-10-10T09:55:00Z"), generatedAt: CLIFixture.now, cliVersion: "1.0", isEstimate: true))
+        #expect(response.meta == CLIMeta(lastSuccessfulSync: CLIFixture.date("2026-10-10T09:55:00Z"), generatedAt: CLIFixture.now, cliVersion: "1.0", isEstimate: true, account: "Personal"))
     }
 
     @Test func withoutAPlanTheCycleIsLeftOut() async throws {
@@ -245,6 +245,86 @@ struct CLICommandTests {
         }
     }
 
+    // MARK: - Accounts
+
+    private func appNames(_ arguments: [String], environment: CLIEnvironment) async throws -> (names: [String], meta: [String: Any]) {
+        let (data, meta) = try CLIFixture.json(await CumulusCLI.run(arguments: arguments + ["--json"], environment: environment))
+        return ((data as? [[String: Any]] ?? []).compactMap { $0["name"] as? String }.sorted(), meta)
+    }
+
+    @Test func everyCommandAnswersForTheAccountOnScreenOrForTheOneNamed() async throws {
+        let environment = try await CLIFixture.environmentWithTwoAccounts()
+
+        let shown = try await appNames(["apps"], environment: environment)
+        #expect(shown.names == ["Alpha", "Beta", "Gamma Tools"])
+        #expect(shown.meta["account"] as? String == "Personal")
+
+        let named = try await appNames(["apps", "--account", "work"], environment: environment)
+        #expect(named.names == ["Delta"])
+        #expect(named.meta["account"] as? String == "Work" && named.meta["lastSuccessfulSync"] as? String == "2026-10-10T09:00:00Z")
+
+        // A build is looked for in one account: the other account's is not found by accident.
+        #expect(await CumulusCLI.run(arguments: ["build", "Delta#1", "--cached"], environment: environment).exitCode == 5)
+        #expect(await CumulusCLI.run(arguments: ["build", "Delta#1", "--cached", "--account=Work"], environment: environment).exitCode == 0)
+        #expect(await CumulusCLI.run(arguments: ["builds", "--account", "work-1"], environment: environment).stdout.contains("Delta#1"))
+
+        // What the app shows is what the command answers for.
+        let switched = try await appNames(["apps"], environment: try await CLIFixture.environmentWithTwoAccounts(workSelected: true))
+        #expect(switched.names == ["Delta"] && switched.meta["account"] as? String == "Work")
+    }
+
+    @Test func accountsListsThemAndSaysWhichOneIsShown() async throws {
+        let environment = try await CLIFixture.environmentWithTwoAccounts()
+        let (data, meta) = try CLIFixture.json(await CumulusCLI.run(arguments: ["accounts"], environment: environment))
+        let rows = try #require(data as? [[String: Any]])
+
+        // The keys are the contract agents read: a change here is a breaking change.
+        #expect(rows.map { Set($0.keys) } == [["appCount", "lastSuccessfulSync", "name", "selected"], ["appCount", "lastSuccessfulSync", "name", "selected"]])
+        #expect(rows.compactMap { $0["name"] as? String } == ["Personal", "Work"])
+        #expect(rows.compactMap { $0["selected"] as? Bool } == [true, false])
+        #expect(rows.compactMap { $0["appCount"] as? Int } == [3, 1])
+        #expect(meta["account"] as? String == "Personal" && meta["lastSuccessfulSync"] as? String == "2026-10-10T09:55:00Z")
+
+        let table = await CumulusCLI.run(arguments: ["accounts", "--table"], environment: environment)
+        #expect(table.stdout.contains("ACCOUNT") && table.stdout.contains("Work"))
+    }
+
+    @Test func aTableNamesItsAccountOnlyWhenThereAreSeveral() async throws {
+        let several = await CumulusCLI.run(arguments: ["status", "--table", "--account", "Work"], environment: try await CLIFixture.environmentWithTwoAccounts())
+        #expect(several.stdout.contains("Account: Work\n"))
+
+        let alone = await CumulusCLI.run(arguments: ["status", "--table"], environment: try await CLIFixture.environment())
+        #expect(alone.exitCode == 0 && !alone.stdout.contains("Account:"))
+    }
+
+    @Test func anAccountThatIsNotFoundSaysWhichExist() async throws {
+        let environment = try await CLIFixture.environmentWithTwoAccounts()
+
+        let missing = await CumulusCLI.run(arguments: ["status", "--account", "Client", "--json"], environment: environment)
+        #expect(missing.exitCode == 5 && missing.stdout.isEmpty)
+        #expect(missing.stderr.contains("NOT_FOUND") && missing.stderr.contains("Known account: Personal") && missing.stderr.contains("Known account: Work"))
+
+        // Two accounts may wear one name: the id tells them apart.
+        try await CLIFixture.add(Account(id: "work-2", name: "work"), snapshot: BuildSnapshot(), to: environment)
+        let ambiguous = await CumulusCLI.run(arguments: ["status", "--account", "Work", "--json"], environment: environment)
+        #expect(ambiguous.exitCode == 5 && ambiguous.stderr.contains("AMBIGUOUS") && ambiguous.stderr.contains("work-2"))
+        #expect(await CumulusCLI.run(arguments: ["status", "--account", "work-2"], environment: environment).exitCode == 0)
+
+        #expect(await CumulusCLI.run(arguments: ["status", "--account"], environment: environment).exitCode == 2)
+        #expect(await CumulusCLI.run(arguments: ["status", "--account", " "], environment: environment).exitCode == 2)
+        #expect(await CumulusCLI.run(arguments: ["accounts", "--account", "Work"], environment: environment).exitCode == 2)
+    }
+
+    @Test func beforeTheAppEverRanThereIsNoAccountToAnswerFor() async throws {
+        let empty = FileManager.default.temporaryDirectory.appending(path: "cumulus-cli-\(UUID().uuidString)")
+        let environment = CLIEnvironment(version: "1.0", build: "7", directory: empty)
+
+        for arguments in [["status"], ["accounts"], ["apps", "--account", "Work"], ["open", "Alpha#1"]] {
+            let result = await CumulusCLI.run(arguments: arguments + ["--json"], environment: environment)
+            #expect(result.exitCode == 3 && result.stderr.contains("NO_CACHE"), "\(arguments)")
+        }
+    }
+
     // MARK: - The command itself
 
     @Test func intoAPipeTheAnswerIsAJSONEnvelope() async throws {
@@ -254,7 +334,8 @@ struct CLICommandTests {
         let row = try #require((data as? [[String: Any]])?.first)
 
         #expect(result.exitCode == 0 && result.stderr.isEmpty)
-        #expect(Set(meta.keys) == ["appRunning", "cliVersion", "generatedAt", "isEstimate", "lastSuccessfulSync"])
+        #expect(Set(meta.keys) == ["account", "appRunning", "cliVersion", "generatedAt", "isEstimate", "lastSuccessfulSync"])
+        #expect(meta["account"] as? String == "Personal")
         #expect(meta["appRunning"] as? Bool == false)
         #expect(meta["lastSuccessfulSync"] as? String == "2026-10-10T09:55:00Z" && meta["generatedAt"] as? String == "2026-10-10T10:00:00Z")
         #expect(meta["isEstimate"] as? Bool == true && meta["cliVersion"] as? String == "1.0")
@@ -340,6 +421,8 @@ struct CLICommandTests {
             #expect(topic.exitCode == 0 && topic.stdout.contains("USAGE: cumulus \(name)") && topic.stdout.contains("EXAMPLE:"))
         }
         #expect(await CumulusCLI.run(arguments: ["builds", "--help"], environment: environment).stdout.contains("--since <when>"))
+        #expect(await CumulusCLI.run(arguments: ["status", "--help"], environment: environment).stdout.contains("--account <name>"))
+        #expect(!(await CumulusCLI.run(arguments: ["accounts", "--help"], environment: environment).stdout.contains("--account <name>")))
     }
 
     @Test func theCacheInfoReadsTheSharedFolder() async throws {

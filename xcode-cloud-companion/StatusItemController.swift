@@ -1,38 +1,28 @@
 import AppKit
 import Observation
 
-/// Owns the menu bar item: its title follows the usage, and its menu is rebuilt each time it opens.
+/// Owns the menu bar item: its title follows the selected account's usage, and its menu is rebuilt each time it opens.
 final class StatusItemController: NSObject, NSMenuDelegate {
     let statusItem: NSStatusItem
-    private let buildStore: BuildStore
-    private let usageStore: UsageStore
-    private let settings: SettingsModel
-    private let actions: StatusMenuActions
+    private let accounts: AccountsModel
+    private var actions: StatusMenuActions
     private let now: () -> Date
-    private let paletteStore: AppPaletteStore
     private let defaults: UserDefaults
-    private var palette: AppPalette
     private var clock: Task<Void, Never>?
 
     init(
-        buildStore: BuildStore,
-        usageStore: UsageStore,
-        settings: SettingsModel,
+        accounts: AccountsModel,
         actions: StatusMenuActions,
-        paletteStore: AppPaletteStore = AppPaletteStore(),
         defaults: UserDefaults = .standard,
         now: @escaping () -> Date = { Date() }
     ) {
-        self.buildStore = buildStore
-        self.usageStore = usageStore
-        self.settings = settings
+        self.accounts = accounts
         self.actions = actions
         self.now = now
-        self.paletteStore = paletteStore
         self.defaults = defaults
-        palette = paletteStore.load(from: defaults)
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
         super.init()
+        self.actions.selectAccount = { [weak self] in self?.selectAccount($0) }
         statusItem.button?.image = MenuBarIcon.image(badge: nil, measuring: false)
         statusItem.button?.imagePosition = .imageLeading
         statusItem.button?.font = .monospacedDigitSystemFont(ofSize: NSFont.systemFontSize, weight: .regular)
@@ -50,13 +40,18 @@ final class StatusItemController: NSObject, NSMenuDelegate {
     }
 
     var state: StatusMenuState {
-        let date = now()
-        let summary = settings.plan.map {
-            UsageCalculator.summary(snapshot: buildStore.snapshot, ledger: usageStore.ledger, plan: $0, now: date)
-        }
+        Self.state(of: accounts, palette: accounts.selected.paletteStore.load(from: defaults), now: now())
+    }
+
+    /// What the menu shows: the selected account's builds and usage, and every account's name when there are several.
+    static func state(of accounts: AccountsModel, palette: AppPalette, now date: Date) -> StatusMenuState {
+        let session = accounts.selected
+        let buildStore = session.buildStore
+        let settings = session.settings
+        let summary = session.usageSummary(now: date)
         // Without a reset date there is no cycle, but the builds still get measured: over the last 30 days then.
         let measurement = summary?.measurement ?? UsageCalculator.summary(
-            snapshot: buildStore.snapshot, ledger: usageStore.ledger,
+            snapshot: buildStore.snapshot, ledger: session.usageStore.ledger,
             plan: UsagePlan(hours: settings.planHours, resetAnchor: date.addingTimeInterval(-30 * 24 * 3600)), now: date
         ).measurement
         return StatusMenuState(
@@ -71,29 +66,45 @@ final class StatusItemController: NSObject, NSMenuDelegate {
             now: date,
             teamID: settings.issuerID.isEmpty ? nil : settings.issuerID,
             measurement: measurement,
-            activity: buildStore.progress
+            activity: buildStore.progress,
+            accounts: accounts.hasSeveral ? accounts.sessions.map {
+                AccountChoice(id: $0.id, name: $0.name, badge: MenuBarBadge.status(for: $0.buildStore.snapshot))
+            } : [],
+            selectedAccountID: session.id
         )
     }
 
     func menuNeedsUpdate(_ menu: NSMenu) {
         menu.removeAllItems()
-        var current = state
-        refreshPalette(for: current)
-        current.palette = palette
+        let current = refreshedState()
+        if let switcher = StatusMenuBuilder.accountSwitcher(for: current, actions: actions) {
+            menu.addItem(switcher)
+            menu.addItem(.separator())
+        }
+        for item in StatusMenuBuilder.items(for: current, actions: actions) {
+            menu.addItem(item)
+        }
+    }
+
+    /// Picked in the open menu: the switcher stays where it is and shows the new account, everything under it is replaced.
+    private func selectAccount(_ id: String) {
+        accounts.select(id)
+        guard let menu = statusItem.menu, let switcher = menu.items.first?.view as? AccountSwitcherControl else { return }
+        let current = refreshedState()
+        switcher.update(accounts: current.accounts, selectedID: current.selectedAccountID)
+        while menu.numberOfItems > 2 {
+            menu.removeItem(at: menu.numberOfItems - 1)
+        }
         for item in StatusMenuBuilder.items(for: current, actions: actions) {
             menu.addItem(item)
         }
     }
 
     /// Colours follow the apps for as long as they exist; the palette is saved only when it changed.
-    private func refreshPalette(for state: StatusMenuState) {
-        let ranking = AppPalette.ranking(
-            byConsumption: state.summary?.appsByConsumption ?? [],
-            allApps: state.snapshot.products.map(\.name)
-        )
-        if palette.update(ranking: ranking) {
-            paletteStore.save(palette, to: defaults)
-        }
+    private func refreshedState() -> StatusMenuState {
+        var current = state
+        current.palette = accounts.selected.paletteStore.refreshed(for: current.snapshot, summary: current.summary, defaults: defaults)
+        return current
     }
 
     /// Keeps the percentage and the dot next to the icon in step with the data they are computed from.
@@ -137,6 +148,7 @@ final class StatusItemController: NSObject, NSMenuDelegate {
         default: break
         }
         #endif
-        return MenuBarBadge.status(for: buildStore.snapshot)
+        // The dot speaks for every account: a build of an account that is not on screen still shows.
+        return MenuBarBadge.status(for: accounts.sessions.map(\.buildStore.snapshot))
     }
 }

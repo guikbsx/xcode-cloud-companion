@@ -77,7 +77,7 @@ struct MainWindowTests {
     @Test func theControllerShowsTheWindowAndGivesTheDockIconBackOnClose() throws {
         let app = FakeApp()
         let controller = MainWindowController(
-            buildStore: BuildStore(), usageStore: UsageStore(), settings: SettingsModel(), navigation: NavigationModel(),
+            accounts: TestAccounts().model, navigation: NavigationModel(),
             activation: ActivationPolicyCoordinator(app: app, showsInDock: { true }), openSettings: {}
         )
 

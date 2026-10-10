@@ -4,7 +4,7 @@ import SwiftUI
 struct NotificationsSettingsView: View {
     @Bindable var preferences: NotificationPreferences
     let coordinator: NotificationCoordinator
-    let buildStore: BuildStore
+    let accounts: AccountsModel
 
     var body: some View {
         Form {
@@ -63,22 +63,26 @@ struct NotificationsSettingsView: View {
                     .foregroundStyle(.secondary)
                     .frame(maxWidth: .infinity, alignment: .leading)
             }
-            Section("Apps") {
-                if buildStore.snapshot.products.isEmpty {
-                    Text("No Xcode Cloud app yet.")
-                        .foregroundStyle(.secondary)
-                }
-                ForEach(buildStore.snapshot.products) { product in
-                    Toggle(product.displayName, isOn: Binding(
-                        get: { !preferences.isMuted(product.id) },
-                        set: { preferences.setMuted(!$0, productID: product.id) }
-                    ))
+            // Every account notifies, whichever one is on screen: each lists its own apps.
+            ForEach(accounts.sessions) { session in
+                Section(accounts.hasSeveral ? String(localized: "Apps of “\(session.name)”", comment: "Section title: the apps of one App Store Connect account") : String(localized: "Apps")) {
+                    let products = session.buildStore.snapshot.products
+                    if products.isEmpty {
+                        Text("No Xcode Cloud app yet.")
+                            .foregroundStyle(.secondary)
+                    }
+                    ForEach(products) { product in
+                        Toggle(product.displayName, isOn: Binding(
+                            get: { !preferences.isMuted(product.id) },
+                            set: { preferences.setMuted(!$0, productID: product.id) }
+                        ))
+                    }
                 }
             }
         }
         .formStyle(.grouped)
         .task {
-            await buildStore.loadCacheIfNeeded()
+            await accounts.loadCaches()
             await coordinator.refreshAuthorization()
         }
         .onReceive(NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification)) { _ in

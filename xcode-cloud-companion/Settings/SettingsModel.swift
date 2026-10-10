@@ -27,17 +27,24 @@ final class SettingsModel {
 
     var planHours: Int {
         didSet {
-            defaults.set(planHours, forKey: Keys.planHours)
+            defaults.set(planHours, forKey: key(AccountDefaults.planHours))
             mirrorPlan()
         }
     }
 
     var resetAnchor: Date? {
         didSet {
-            defaults.set(resetAnchor, forKey: Keys.resetAnchor)
+            defaults.set(resetAnchor, forKey: key(AccountDefaults.resetAnchor))
             mirrorPlan()
         }
     }
+
+    /// What the key may do: the user says so here, and the first 403 from Apple switches it to read only.
+    var keyAccess: KeyAccess {
+        didSet { defaults.set(keyAccess.rawValue, forKey: key(AccountDefaults.keyAccess)) }
+    }
+
+    let accountID: String
 
     private var importedPrivateKeyPEM: String?
     private let store: any CredentialsStore
@@ -48,6 +55,7 @@ final class SettingsModel {
     private var planMirrorWrite: Task<Void, Never>?
 
     init(
+        accountID: String = AccountRegistry.firstAccountID,
         store: any CredentialsStore = KeychainCredentialsStore(),
         defaults: UserDefaults = .standard,
         planMirror: SharedPlanStore? = nil,
@@ -59,9 +67,15 @@ final class SettingsModel {
         self.makeClient = makeClient
         self.now = now
         self.planMirror = planMirror
-        let storedHours = defaults.integer(forKey: Keys.planHours)
+        self.accountID = accountID
+        let storedHours = defaults.integer(forKey: AccountDefaults.key(AccountDefaults.planHours, accountID: accountID))
         planHours = UsagePlan.availableHours.contains(storedHours) ? storedHours : UsagePlan.defaultHours
-        resetAnchor = defaults.object(forKey: Keys.resetAnchor) as? Date
+        resetAnchor = defaults.object(forKey: AccountDefaults.key(AccountDefaults.resetAnchor, accountID: accountID)) as? Date
+        keyAccess = KeyAccess.stored(in: defaults, accountID: accountID)
+    }
+
+    private func key(_ name: String) -> String {
+        AccountDefaults.key(name, accountID: accountID)
     }
 
     var plan: UsagePlan? {
@@ -152,12 +166,13 @@ final class SettingsModel {
 
     /// Starts over: the key leaves the keychain, then everything read or entered with it goes (builds, imported
     /// usage, plan). If the keychain refuses, nothing else is touched, so the app never half forgets an account.
-    func removeKey() async {
+    @discardableResult
+    func removeKey() async -> Bool {
         do {
             try await store.delete()
         } catch {
             errorMessage = error.message
-            return
+            return false
         }
         issuerID = ""
         keyID = ""
@@ -167,9 +182,11 @@ final class SettingsModel {
         errorMessage = nil
         planHours = UsagePlan.defaultHours
         resetAnchor = nil
-        KeyAccess.reset(in: defaults)
+        keyAccess = .defaultValue
+        AccountDefaults.removeAll(accountID: accountID, from: defaults)
         onCredentialsChange?()
         await onReset?()
+        return true
     }
 
     private func testConnection(with stored: StoredCredentials) async {
@@ -197,10 +214,6 @@ final class SettingsModel {
         return calendar.dateInterval(of: .minute, for: nextMonth)?.start ?? nextMonth
     }
 
-    private enum Keys {
-        static let planHours = "plan.hours"
-        static let resetAnchor = "plan.resetAnchor"
-    }
 }
 
 private extension String {

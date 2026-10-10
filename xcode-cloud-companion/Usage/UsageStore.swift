@@ -2,7 +2,7 @@ import Foundation
 import Observation
 
 nonisolated struct UsageLedgerStore: Sendable {
-    var fileURL: URL = SharedContainer.applicationSupport.appending(path: "UsageLedger.json")
+    var fileURL: URL = AccountPaths.first.usageLedger
 
     @concurrent func load() async -> UsageLedger? {
         guard let data = try? Data(contentsOf: fileURL) else { return nil }
@@ -107,14 +107,32 @@ final class UsageStore {
 
     private func importFile(_ file: UsageExportFile) async {
         do {
-            let export = try await file.read()
-            ledger.merge(export, fileName: file.url.lastPathComponent, modifiedAt: file.modifiedAt, importedAt: now())
-            try? await ledgerStore.save(ledger)
-            lastImportFailed = false
-            lastImportMessage = String(localized: "Imported \(export.builds.count) builds from \(file.url.lastPathComponent).")
+            await record(try await file.read(), from: file)
         } catch {
-            lastImportFailed = true
-            lastImportMessage = "\(file.url.lastPathComponent): \(error.message)"
+            report(error, for: file)
         }
+    }
+
+    func hasImported(_ file: UsageExportFile) -> Bool {
+        ledger.hasImported(fileName: file.url.lastPathComponent, modifiedAt: file.modifiedAt)
+    }
+
+    /// Adds an export already read: with several accounts, it is read once and handed to the account its apps belong to.
+    func record(_ export: UsageExport, from file: UsageExportFile) async {
+        ledger.merge(export, fileName: file.url.lastPathComponent, modifiedAt: file.modifiedAt, importedAt: now())
+        try? await ledgerStore.save(ledger)
+        lastImportFailed = false
+        lastImportMessage = String(localized: "Imported \(export.builds.count) builds from \(file.url.lastPathComponent).")
+    }
+
+    func report(_ error: UsageImportError, for file: UsageExportFile) {
+        lastImportFailed = true
+        lastImportMessage = "\(file.url.lastPathComponent): \(error.message)"
+    }
+
+    /// Says where an export went when it was not into this account.
+    func note(_ message: String) {
+        lastImportFailed = false
+        lastImportMessage = message
     }
 }

@@ -20,6 +20,8 @@ nonisolated enum UsageBreakdown: String, Equatable, Sendable, CaseIterable {
 
 /// A question the cache can answer; the command line and the MCP server both ask through it.
 nonisolated enum CLIQuery: Equatable, Sendable {
+    /// Every account the app follows; the other questions are about one of them.
+    case accounts
     case status
     case apps
     case builds(BuildsQuery)

@@ -19,11 +19,13 @@ nonisolated struct CLIInvocation: Equatable, Sendable {
     var command: CLICommand
     /// Nil lets the output decide: a table on a terminal, JSON into a pipe.
     var format: CLIOutputFormat?
+    /// `--account`: the account to answer for, by name; nil for the one on screen in the app.
+    var account: String?
 }
 
 nonisolated enum CLIParser {
     /// The commands the help lists, in its order.
-    static let commandNames = ["status", "apps", "builds", "build", "workflows", "usage", "refresh", "open", "mcp", "version", "help"]
+    static let commandNames = ["status", "accounts", "apps", "builds", "build", "workflows", "usage", "refresh", "open", "mcp", "version", "help"]
 
     private struct Scan {
         var flags: Set<String> = []
@@ -52,11 +54,14 @@ nonisolated enum CLIParser {
         let command: CLICommand
         switch name {
         case "version":
-            scan = try self.scan(rest, command: name, flags: ["--verbose"])
+            scan = try self.scan(rest, command: name, flags: ["--verbose"], takesAccount: false)
             command = .version(verbose: scan.flags.contains("--verbose"))
         case "_cache-info":
             scan = try self.scan(rest, command: name)
             command = .cacheInfo
+        case "accounts":
+            scan = try self.scan(rest, command: name, takesAccount: false)
+            command = .query(.accounts)
         case "status":
             scan = try self.scan(rest, command: name)
             command = .query(.status)
@@ -118,7 +123,7 @@ nonisolated enum CLIParser {
             }
             command = .open(reference: reference)
         default:
-            scan = try self.scan(rest, command: name, flags: ["--verbose"])
+            scan = try self.scan(rest, command: name, flags: ["--verbose"], takesAccount: false)
             command = .mcp(verbose: scan.flags.contains("--verbose"))
         }
 
@@ -126,7 +131,10 @@ nonisolated enum CLIParser {
             throw usage("Choose one of --json and --table.")
         }
         let format: CLIOutputFormat? = scan.flags.contains("--json") ? .json : scan.flags.contains("--table") ? .table : nil
-        return CLIInvocation(command: command, format: format)
+        if let account = scan.values["--account"], account.trimmingCharacters(in: .whitespaces).isEmpty {
+            throw usage("--account takes an account's name.", "Run 'cumulus accounts' to list the accounts.")
+        }
+        return CLIInvocation(command: command, format: format, account: scan.values["--account"])
     }
 
     private static func usage(_ message: String, _ suggestions: String...) -> CLIFailure {
@@ -134,9 +142,11 @@ nonisolated enum CLIParser {
     }
 
     private static func scan(
-        _ arguments: [String], command: String, flags: Set<String> = [], values: Set<String> = [], positionals: Int = 0
+        _ arguments: [String], command: String, flags: Set<String> = [], values: Set<String> = [], positionals: Int = 0, takesAccount: Bool = true
     ) throws(CLIFailure) -> Scan {
         let flags = flags.union(["--json", "--table"])
+        // Every command that reads an account's cache answers for the one on screen unless another is named.
+        let values = takesAccount ? values.union(["--account"]) : values
         var scan = Scan()
         var index = 0
         var optionsEnded = false

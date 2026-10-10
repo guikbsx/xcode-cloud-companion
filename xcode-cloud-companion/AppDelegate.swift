@@ -4,22 +4,19 @@ import UserNotifications
 
 @main
 final class AppDelegate: NSObject, NSApplicationDelegate {
-    private let settingsModel = SettingsModel(planMirror: SharedPlanStore())
+    /// Unit tests run inside this app: they must not reach App Store Connect with the user's real key, nor move the user's data.
+    private static let isUnderTest = ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil
+    private let accounts = AccountsModel(migration: isUnderTest ? nil : AccountMigration(legacySupport: .applicationSupportDirectory))
     private let loginItemModel = LoginItemModel()
-    private let buildStore = BuildStore()
-    private let usageStore = UsageStore()
     private let notificationPreferences = NotificationPreferences()
     private lazy var notifications = NotificationCoordinator(preferences: notificationPreferences)
     private var notificationResponder: NotificationResponder?
     private lazy var settingsWindowController = SettingsWindowController(
-        model: settingsModel, loginItem: loginItemModel, usage: usageStore, notificationPreferences: notificationPreferences,
-        notifications: notifications, buildStore: buildStore
+        accounts: accounts, loginItem: loginItemModel, notificationPreferences: notificationPreferences, notifications: notifications
     )
     private let navigation = NavigationModel()
     private lazy var mainWindowController = MainWindowController(
-        buildStore: buildStore,
-        usageStore: usageStore,
-        settings: settingsModel,
+        accounts: accounts,
         navigation: navigation,
         activation: ActivationPolicyCoordinator(app: NSApp),
         openSettings: { [weak self] in self?.openSettings() }
@@ -27,12 +24,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var statusItemController: StatusItemController?
     private var ipcServer: IPCSocketServer?
     private var ipcIsListening = false
-    private lazy var ipcDetailsLoader = BuildDetailsLoader(
-        buildStore: buildStore,
-        extrasStore: BuildExtrasStore(client: { [buildStore] in await buildStore.detailClient() })
-    )
     #if DEBUG
-    private lazy var diagnosticWindowController = UsageDiagnosticWindowController(buildStore: buildStore, settings: settingsModel)
+    private lazy var diagnosticWindowController = UsageDiagnosticWindowController(accounts: accounts)
     #endif
 
     static func main() {
@@ -52,26 +45,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             refresh: #selector(refresh),
             openHelp: #selector(openHelp)
         ))
-        statusItemController = StatusItemController(
-            buildStore: buildStore,
-            usageStore: usageStore,
-            settings: settingsModel,
-            actions: menuActions()
-        )
+        statusItemController = StatusItemController(accounts: accounts, actions: menuActions())
+        accounts.onSelectionChange = { [navigation] in navigation.accountDidChange() }
 
-        settingsModel.onCredentialsChange = { [buildStore] in
-            Task { await buildStore.credentialsDidChange() }
-        }
-        settingsModel.onReset = { [usageStore] in
-            await BuildExtrasCache().deleteAll()
-            await WorkflowDetailsCache().deleteAll()
-            await AppIconCache().deleteAll()
-            await LogCache().deleteAll()
-            await usageStore.reset()
-        }
-
-        // Unit tests run inside this app: they must not reach App Store Connect with the user's real key.
-        guard ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] == nil else { return }
+        guard !Self.isUnderTest else { return }
         startNotifications()
         let workspaceCenter = NSWorkspace.shared.notificationCenter
         workspaceCenter.addObserver(self, selector: #selector(systemWillSleep), name: NSWorkspace.willSleepNotification, object: nil)
@@ -79,15 +56,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         let distributedCenter = DistributedNotificationCenter.default()
         distributedCenter.addObserver(self, selector: #selector(screenDidLock), name: Notification.Name("com.apple.screenIsLocked"), object: nil)
         distributedCenter.addObserver(self, selector: #selector(screenDidUnlock), name: Notification.Name("com.apple.screenIsUnlocked"), object: nil)
+        // Started before the window may open: the caches are moved into their account before anything reads them.
+        accounts.start()
         Task {
-            // The caches moved to the app group for the `cumulus` command: they are in place before anything reads them.
-            await CacheMigration().run()
-            buildStore.start()
-            settingsModel.mirrorPlan()
+            await accounts.whenReady()
             await startIPCServer()
-            // The Issuer ID is the team in App Store Connect's addresses: the menu's links need it before Settings ever opens.
-            Task { await settingsModel.load() }
-            Task { await usageStore.start() }
         }
         #if DEBUG
         // Run from Xcode, the app shows its window and its menu bar at once; a Release stays in the menu bar until asked.
@@ -105,14 +78,20 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     /// Lets the `cumulus` command ask for a sync, a build's details or its sheet. A second instance leaves the first one's socket alone.
     private func startIPCServer() async {
         guard ipcServer == nil, let path = SharedContainer.socketPath else { return }
-        let loader = ipcDetailsLoader
+        let accounts = accounts
         let service = AppIPCService(
-            sync: buildStore,
+            sync: { id in
+                guard let id else { return accounts.selected.buildStore }
+                return accounts.session(id: id)?.buildStore
+            },
             openBuild: { [weak self] id in
                 self?.openBuild(id)
                 NSApp.activate()
             },
-            loadBuildDetails: { await loader.load($0) }
+            loadBuildDetails: { id in
+                guard let owner = await accounts.owner(ofBuild: id) else { return false }
+                return await BuildDetailsLoader(buildStore: owner.buildStore, extrasStore: owner.extrasStore).load(id)
+            }
         )
         let dispatcher = IPCDispatcher(service: service)
         let server = IPCSocketServer(path: path) { await dispatcher.reply(to: $0) }
@@ -127,41 +106,54 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         let responder = NotificationResponder { [weak self] url in self?.open(url) }
         UNUserNotificationCenter.current().delegate = responder
         notificationResponder = responder
-        buildStore.onSync = { [weak self] previous, current in
+        // Every account speaks, whichever one is on screen; with several, a banner names its account.
+        accounts.onSync = { [weak self] session, previous, current in
             guard let self else { return }
-            let summary = usageSummary(of: current)
-            Task { await self.notifications.buildsDidSync(previous: previous, current: current, summary: summary) }
-        }
-        #if DEBUG
-        // XCC_NOTIFY=1 posts a sample banner about the newest build after the first sync, to try the permission and the click without waiting for a build.
-        if ProcessInfo.processInfo.environment["XCC_NOTIFY"] != nil {
-            var isPosted = false
-            buildStore.onSync = { [weak self] previous, current in
-                guard let self else { return }
-                let summary = usageSummary(of: current)
-                let notifications = notifications
-                Task {
-                    await notifications.buildsDidSync(previous: previous, current: current, summary: summary)
-                    guard !isPosted, let run = current.runs.first else { return }
-                    isPosted = true
-                    await notifications.deliver([LocalNotification(
-                        id: "sample", title: "Sample notification", body: "Click to open build #\(run.number ?? 0).", url: CumulusURL.build(id: run.id)
-                    )])
-                }
+            let account = NotificationAccount(id: session.id, name: accounts.hasSeveral ? session.name : nil)
+            // The same figure as the menu and the Overview; nil while no reset date is set.
+            let summary = session.usageSummary(now: Date())
+            let notifications = notifications
+            #if DEBUG
+            // XCC_NOTIFY=1 posts a sample banner about the newest build after the first sync, to try the permission and the click without waiting for a build.
+            let postsSample = ProcessInfo.processInfo.environment["XCC_NOTIFY"] != nil && !hasPostedSample
+            if postsSample { hasPostedSample = true }
+            #endif
+            Task {
+                await notifications.buildsDidSync(account: account, previous: previous, current: current, summary: summary)
+                #if DEBUG
+                guard postsSample, let run = current.runs.first else { return }
+                await notifications.deliver([LocalNotification(
+                    id: "sample", title: "Sample notification", subtitle: account.name, body: "Click to open build #\(run.number ?? 0).",
+                    url: CumulusURL.build(id: run.id)
+                )])
+                #endif
             }
         }
-        #endif
     }
 
-    /// The same figure as the menu and the Overview; nil while no reset date is set.
-    private func usageSummary(of snapshot: BuildSnapshot) -> UsageSummary? {
-        settingsModel.plan.map { UsageCalculator.summary(snapshot: snapshot, ledger: usageStore.ledger, plan: $0, now: Date()) }
-    }
+    #if DEBUG
+    private var hasPostedSample = false
+    #endif
 
+    /// Opens what a `cumulus://` address names, in the account it belongs to: a build is looked up in every account.
     private func open(_ url: URL) {
-        guard navigation.open(url) else { return }
-        mainWindowController.show()
-        NSApp.activate()
+        guard let destination = CumulusURL.destination(of: url) else { return }
+        Task {
+            switch destination {
+            case .build(let id):
+                if let owner = await accounts.owner(ofBuild: id) {
+                    accounts.select(owner.id)
+                }
+            case .overview(let accountID):
+                if let accountID {
+                    await accounts.whenReady()
+                    accounts.select(accountID)
+                }
+            }
+            navigation.open(url)
+            mainWindowController.show()
+            NSApp.activate()
+        }
     }
 
     @objc func openSettings() {
@@ -173,19 +165,21 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     @objc private func refresh() {
-        Task {
-            await usageStore.scanWatchedDirectory()
-            await buildStore.refreshNow()
-        }
+        accounts.refreshAll()
     }
 
     @objc private func openHelp() {
         NSWorkspace.shared.open(URL(string: "https://developer.apple.com/documentation/xcode/xcode-cloud")!)
     }
 
+    /// A build of the account on screen opens at once; one of another account brings its account with it.
     func openBuild(_ id: String) {
-        navigation.showBuild(id)
-        mainWindowController.show()
+        guard !accounts.selected.owns(buildRunID: id), let url = CumulusURL.build(id: id) else {
+            navigation.showBuild(id)
+            mainWindowController.show()
+            return
+        }
+        open(url)
     }
 
     func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
@@ -196,16 +190,16 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     func application(_ application: NSApplication, open urls: [URL]) {
-        for url in urls where navigation.open(url) {
-            mainWindowController.show()
+        for url in urls {
+            open(url)
         }
     }
 
     private func menuActions() -> StatusMenuActions {
         var actions = StatusMenuActions(
             refresh: { [weak self] in self?.refresh() },
-            openUsagePage: { [settingsModel] in
-                NSWorkspace.shared.open(AppStoreConnectLinks.xcodeCloudUsage(teamID: settingsModel.issuerID))
+            openUsagePage: { [accounts] in
+                NSWorkspace.shared.open(AppStoreConnectLinks.xcodeCloudUsage(teamID: accounts.selected.settings.issuerID))
             },
             importUsageExport: { [weak self] in self?.importUsageExport() },
             openSettings: { [weak self] in self?.openSettings() },
@@ -224,12 +218,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         panel.allowedContentTypes = [.commaSeparatedText]
         panel.message = String(localized: "Choose a usage export downloaded from App Store Connect › Xcode Cloud › Usage.")
         guard panel.runModal() == .OK, let url = panel.url else { return }
-        Task { await usageStore.importFile(at: url) }
+        Task { await accounts.importUsageExport(at: url) }
     }
 
     #if DEBUG
     private func openUsageDiagnostic() {
-        Task { await buildStore.loadCacheIfNeeded() }
+        Task { await accounts.loadCaches() }
         diagnosticWindowController.show()
     }
     #endif
@@ -237,22 +231,18 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     // MARK: - Sleep
 
     @objc private func systemWillSleep(_ notification: Notification) {
-        buildStore.stop()
-        usageStore.stop()
+        accounts.suspend()
     }
 
     @objc private func screenDidLock(_ notification: Notification) {
-        buildStore.screenLockDidChange(isLocked: true)
+        accounts.screenLockDidChange(isLocked: true)
     }
 
     @objc private func screenDidUnlock(_ notification: Notification) {
-        buildStore.screenLockDidChange(isLocked: false)
+        accounts.screenLockDidChange(isLocked: false)
     }
 
     @objc private func systemDidWake(_ notification: Notification) {
-        buildStore.start()
-        // The Issuer ID is the team in App Store Connect's addresses: the menu's links need it before Settings ever opens.
-        Task { await settingsModel.load() }
-        Task { await usageStore.start() }
+        accounts.resume()
     }
 }

@@ -90,7 +90,7 @@ nonisolated struct BuildSnapshot: Codable, Sendable, Equatable {
 
 /// The cache lives in the app group container, where the `cumulus` command reads it.
 nonisolated struct BuildCacheStore: Sendable {
-    var fileURL: URL = SharedContainer.applicationSupport.appending(path: "BuildCache.json")
+    var fileURL: URL = AccountPaths.first.buildCache
 
     @concurrent func load() async -> BuildSnapshot? {
         guard let data = try? Data(contentsOf: fileURL) else { return nil }

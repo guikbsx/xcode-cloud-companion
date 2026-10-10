@@ -4,13 +4,11 @@ import SwiftUI
 
 /// Debug-only window used to compare the estimate with App Store Connect (XCO-6).
 final class UsageDiagnosticWindowController {
-    private let buildStore: BuildStore
-    private let settings: SettingsModel
+    private let accounts: AccountsModel
     private var window: NSWindow?
 
-    init(buildStore: BuildStore, settings: SettingsModel) {
-        self.buildStore = buildStore
-        self.settings = settings
+    init(accounts: AccountsModel) {
+        self.accounts = accounts
     }
 
     func show() {
@@ -21,7 +19,7 @@ final class UsageDiagnosticWindowController {
     }
 
     private func makeWindow() -> NSWindow {
-        let view = UsageDiagnosticView(buildStore: buildStore, settings: settings)
+        let view = UsageDiagnosticView(accounts: accounts)
         let window = NSWindow(contentViewController: NSHostingController(rootView: view))
         window.title = "Usage Diagnostic"
         window.styleMask = [.titled, .closable, .resizable]
@@ -33,8 +31,10 @@ final class UsageDiagnosticWindowController {
 }
 
 private struct UsageDiagnosticView: View {
-    let buildStore: BuildStore
-    let settings: SettingsModel
+    let accounts: AccountsModel
+
+    private var buildStore: BuildStore { accounts.selected.buildStore }
+    private var settings: SettingsModel { accounts.selected.settings }
 
     private var report: String {
         UsageDiagnostic.report(

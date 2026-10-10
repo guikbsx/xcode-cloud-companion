@@ -1,24 +1,58 @@
 import SwiftUI
 
+/// The window shows one account at a time, the selected one; with several, the toolbar names it and switches.
+struct MainWindowRoot: View {
+    let accounts: AccountsModel
+    let navigation: NavigationModel
+    let pins: PinnedWorkflows
+    let openSettings: () -> Void
+
+    var body: some View {
+        let session = accounts.selected
+        MainWindowView(
+            session: session, navigation: navigation, pins: pins, openSettings: openSettings,
+            importUsageExport: { await accounts.importUsageExport(at: $0) }
+        )
+            // Sheets, tasks and what was typed belong to the account they were opened for.
+            .id(session.id)
+            .toolbar {
+                if accounts.hasSeveral {
+                    ToolbarItem(placement: .navigation) {
+                        Picker("Account", selection: Binding(get: { accounts.selectedID }, set: { accounts.select($0) })) {
+                            ForEach(accounts.sessions) { session in
+                                Text(session.name).tag(session.id)
+                            }
+                        }
+                        .pickerStyle(.menu)
+                        .help("Switch to another App Store Connect account")
+                    }
+                }
+            }
+    }
+}
+
 /// The three columns: sidebar, builds, detail. The columns are filled in by their own tickets; this is the frame.
 struct MainWindowView: View {
-    let buildStore: BuildStore
-    let usageStore: UsageStore
-    let settings: SettingsModel
-    let extrasStore: BuildExtrasStore
-    let workflowStore: WorkflowDetailStore
-    let artifactSaver: ArtifactSaver
-    let launcher: BuildLauncher
-    let icons: AppIconStore
-    let logOpener: LogOpener
-    let workflowTests: WorkflowTestsModel
-    let pauser: WorkflowPauser
+    let session: AccountSession
     @Bindable var navigation: NavigationModel
     @Bindable var pins: PinnedWorkflows
     let openSettings: () -> Void
-    @AppStorage(KeyAccess.defaultsKey) private var keyAccess = KeyAccess.defaultValue.rawValue
+    let importUsageExport: (URL) async -> Void
     @State private var launchTarget: LaunchTarget?
     @State private var pauseTarget: WorkflowPauseTarget?
+
+    private var buildStore: BuildStore { session.buildStore }
+    private var usageStore: UsageStore { session.usageStore }
+    private var settings: SettingsModel { session.settings }
+    private var extrasStore: BuildExtrasStore { session.extrasStore }
+    private var workflowStore: WorkflowDetailStore { session.windowStores.workflowStore }
+    private var artifactSaver: ArtifactSaver { session.windowStores.artifactSaver }
+    private var launcher: BuildLauncher { session.windowStores.launcher }
+    private var icons: AppIconStore { session.windowStores.icons }
+    private var logOpener: LogOpener { session.windowStores.logOpener }
+    private var workflowTests: WorkflowTestsModel { session.windowStores.workflowTests }
+    private var pauser: WorkflowPauser { session.windowStores.pauser }
+    private var palette: AppPalette { session.paletteStore.refreshed(for: buildStore.snapshot, summary: usageSummary) }
 
     var body: some View {
         if buildStore.isConfigured {
@@ -47,11 +81,11 @@ struct MainWindowView: View {
                         buildStore.insertStarted(run)
                         navigation.showBuild(run.id)
                     },
-                    onNotAllowed: { keyAccess = KeyAccess.readOnly.rawValue }
+                    onNotAllowed: { settings.keyAccess = .readOnly }
                 )
             }
             .sheet(item: $pauseTarget) { target in
-                WorkflowPauseSheet(target: target, pauser: pauser, onNotAllowed: { keyAccess = KeyAccess.readOnly.rawValue })
+                WorkflowPauseSheet(target: target, pauser: pauser, onNotAllowed: { settings.keyAccess = .readOnly })
             }
             .task(id: buildStore.snapshot.appIcons) { await icons.load(buildStore.snapshot.appIcons) }
             .task {
@@ -74,15 +108,13 @@ struct MainWindowView: View {
     }
 
     private var usageSummary: UsageSummary? {
-        settings.plan.map {
-            UsageCalculator.summary(snapshot: buildStore.snapshot, ledger: usageStore.ledger, plan: $0, now: Date())
-        }
+        session.usageSummary(now: Date())
     }
 
     private var sidebar: some View {
         let summary = usageSummary
         return SidebarView(
-            content: SidebarContent(snapshot: buildStore.snapshot, pinnedIDs: pins.ids, palette: AppPaletteStore().refreshed(for: buildStore.snapshot, summary: summary)),
+            content: SidebarContent(snapshot: buildStore.snapshot, pinnedIDs: pins.ids, palette: session.paletteStore.refreshed(for: buildStore.snapshot, summary: summary)),
             pins: pins,
             selection: $navigation.sidebarSelection,
             cycle: CycleCard.Content(summary: summary),
@@ -98,14 +130,15 @@ struct MainWindowView: View {
             BuildDetailView(
                 run: run, buildStore: buildStore, extrasStore: extrasStore, artifactSaver: artifactSaver, onRebuild: rebuildAction(for: run),
                 teamID: settings.issuerID.isEmpty ? nil : settings.issuerID,
-                icons: icons, palette: AppPaletteStore().refreshed(for: buildStore.snapshot, summary: usageSummary),
+                icons: icons, palette: palette,
                 openBuild: { navigation.selectedBuildID = $0 }, logOpener: logOpener, tab: $navigation.buildTab
             )
         } else if navigation.sidebarSelection == .overview {
             OverviewView(
-                summary: usageSummary, palette: AppPaletteStore().refreshed(for: buildStore.snapshot, summary: usageSummary), usage: usageStore,
+                summary: usageSummary, palette: palette, usage: usageStore,
                 openSettings: openSettings,
                 openUsagePage: { NSWorkspace.shared.open(AppStoreConnectLinks.xcodeCloudUsage(teamID: settings.issuerID)) },
+                importExport: importUsageExport,
                 displayNames: buildStore.snapshot.displayNames, artwork: icons.artwork(in: buildStore.snapshot, by: \.name),
                 breakdown: { row in
                     settings.plan.map {
@@ -133,7 +166,7 @@ struct MainWindowView: View {
     }
 
     private var canLaunch: Bool {
-        KeyAccess(rawValue: keyAccess) == .canLaunch
+        settings.keyAccess == .canLaunch
     }
 
     /// The workflow of the build on screen, or the one picked in the sidebar.

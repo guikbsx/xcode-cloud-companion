@@ -2,8 +2,11 @@ import SwiftUI
 import UniformTypeIdentifiers
 
 struct UsageSettingsView: View {
-    let usage: UsageStore
+    let accounts: AccountsModel
     @State private var isImporting = false
+
+    /// The billed minutes of the account on screen.
+    private var usage: UsageStore { accounts.selected.usageStore }
 
     var body: some View {
         Form {
@@ -20,6 +23,9 @@ struct UsageSettingsView: View {
                 }
             }
             Section {
+                if accounts.hasSeveral {
+                    LabeledContent("Account", value: accounts.selected.name)
+                }
                 if let lastImport = usage.ledger.lastImport {
                     LabeledContent("Last Export Imported", value: lastImport.formatted(date: .abbreviated, time: .shortened))
                     if let coverage = usage.ledger.lastCoverage {
@@ -35,8 +41,13 @@ struct UsageSettingsView: View {
                         .foregroundStyle(usage.lastImportFailed ? .red : .green)
                 }
             } footer: {
-                HStack {
-                    Spacer()
+                VStack(alignment: .trailing, spacing: 6) {
+                    if accounts.hasSeveral {
+                        Text("An export goes to the account whose apps it lists, whichever account is shown here.")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                    }
                     Button("Import an Export…") { isImporting = true }
                 }
             }
@@ -44,7 +55,7 @@ struct UsageSettingsView: View {
         .formStyle(.grouped)
         .fileImporter(isPresented: $isImporting, allowedContentTypes: [.commaSeparatedText]) { result in
             if case .success(let url) = result {
-                Task { await usage.importFile(at: url) }
+                Task { await accounts.importUsageExport(at: url) }
             }
         }
     }

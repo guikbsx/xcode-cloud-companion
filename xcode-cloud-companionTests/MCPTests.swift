@@ -101,7 +101,7 @@ struct MCPServerTests {
 
     // MARK: - Tools
 
-    @Test func theSevenToolsAreDescribedForAnAgent() async throws {
+    @Test func theEightToolsAreDescribedForAnAgent() async throws {
         let server = try await server()
         let tools = try #require(try await reply(#"{"jsonrpc":"2.0","id":1,"method":"tools/list"}"#, from: server)["result"]?["tools"])
         guard case .array(let list) = tools else {
@@ -109,7 +109,7 @@ struct MCPServerTests {
             return
         }
 
-        #expect(list.compactMap { $0["name"]?.stringValue } == ["get_status", "list_apps", "list_builds", "get_build", "list_workflows", "get_usage", "refresh"])
+        #expect(list.compactMap { $0["name"]?.stringValue } == ["get_status", "list_apps", "list_builds", "get_build", "list_workflows", "get_usage", "refresh", "list_accounts"])
         for tool in list {
             #expect((tool["description"]?.stringValue?.count ?? 0) > 80)
             #expect(tool["inputSchema"]?["type"] == "object" && tool["inputSchema"]?["additionalProperties"] == false)
@@ -117,7 +117,10 @@ struct MCPServerTests {
             #expect(tool["annotations"]?["readOnlyHint"] == .bool(tool["name"] != "refresh"))
         }
         let builds = list[2]["inputSchema"]
-        #expect(Set(builds?["properties"]?.objectValue?.keys ?? [:].keys) == ["app", "failed", "limit", "running", "since"])
+        #expect(Set(builds?["properties"]?.objectValue?.keys ?? [:].keys) == ["account", "app", "failed", "limit", "running", "since"])
+        // Every tool that reads an account takes its name; the one that lists the accounts does not.
+        #expect(list.dropLast().allSatisfy { $0["inputSchema"]?["properties"]?["account"]?["type"] == "string" })
+        #expect(list[7]["inputSchema"]?["properties"] == [:])
         #expect(builds?["properties"]?["limit"] == ["type": "integer", "minimum": 1, "maximum": 100, "default": 10, "description": "How many builds to return."])
         #expect(builds?["required"] == [])
         #expect(list[3]["inputSchema"]?["required"] == ["reference"])
@@ -137,6 +140,33 @@ struct MCPServerTests {
         guard case .array(let builds)? = result["structuredContent"]?["data"] else { return }
         #expect(builds.compactMap { $0["reference"]?.stringValue } == ["Alpha#44", "Alpha#42"])
         #expect(result["structuredContent"]?["meta"]?["lastSuccessfulSync"] == "2026-10-10T09:55:00Z")
+    }
+
+    @Test func aToolAnswersForTheAccountItIsGiven() async throws {
+        let server = try await server(try await CLIFixture.environmentWithTwoAccounts())
+
+        guard case .array(let accounts)? = try await call("list_accounts", on: server)["structuredContent"]?["data"] else {
+            Issue.record("list_accounts returned no list")
+            return
+        }
+        #expect(accounts.compactMap { $0["name"]?.stringValue } == ["Personal", "Work"])
+        #expect(accounts.map { $0["selected"] } == [true, false])
+
+        let shown = try await call("list_apps", on: server)
+        #expect(shown["structuredContent"]?["meta"]?["account"] == "Personal")
+        let named = try await call("list_apps", #"{"account":"Work"}"#, on: server)
+        #expect(named["structuredContent"]?["meta"]?["account"] == "Work")
+        #expect(named["structuredContent"]?["data"]?.compactString.contains("Delta") == true)
+
+        // An account that does not exist is a result the model reads, with the accounts that do.
+        let missing = try await call("get_status", #"{"account":"Client"}"#, on: server)
+        #expect(missing["isError"] == true && missing["content"]?.compactString.contains("Known account: Work") == true)
+
+        // The one tool that is not about an account takes none.
+        let reply = try await reply(#"{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"list_accounts","arguments":{"account":"Work"}}}"#, from: server)
+        #expect(errorCode(reply) == -32602)
+        let wrongType = try await self.reply(#"{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"list_apps","arguments":{"account":3}}}"#, from: server)
+        #expect(errorCode(wrongType) == -32602)
     }
 
     @Test func everyToolRuns() async throws {

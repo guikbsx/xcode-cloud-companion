@@ -8,6 +8,7 @@ actor FakeIPCService: IPCService {
     var refreshDelay: Duration = .zero
     var detailsLoader: @Sendable (String) async -> Bool = { _ in false }
     private(set) var refreshWaits: [Bool] = []
+    private(set) var refreshAccounts: [String?] = []
     private(set) var openedBuilds: [String] = []
     private(set) var detailRequests: [String] = []
 
@@ -20,12 +21,13 @@ actor FakeIPCService: IPCService {
         self.detailsLoader = detailsLoader
     }
 
-    func ping() async -> IPCResult {
+    func ping(accountID: String?) async -> IPCResult {
         IPCResult(appVersion: "1.0", lastSuccessfulSync: CLIFixture.date("2026-10-10T09:55:00Z"), isSyncing: false, hasCredentials: true)
     }
 
-    func refresh(wait: Bool) async -> IPCResult {
+    func refresh(wait: Bool, accountID: String?) async -> IPCResult {
         refreshWaits.append(wait)
+        refreshAccounts.append(accountID)
         try? await Task.sleep(for: refreshDelay)
         return refreshResult
     }
@@ -123,21 +125,21 @@ struct AppIPCServiceTests {
     private let now = CLIFixture.now
 
     private func service(_ sync: FakeSync) -> AppIPCService {
-        AppIPCService(sync: sync, appVersion: "1.0", now: { CLIFixture.now })
+        AppIPCService(sync: { _ in sync }, appVersion: "1.0", now: { CLIFixture.now })
     }
 
     @Test func pingDescribesTheApp() async {
         let sync = FakeSync()
         sync.lastSuccessfulSync = now.addingTimeInterval(-300)
 
-        #expect(await service(sync).ping() == IPCResult(appVersion: "1.0", lastSuccessfulSync: now.addingTimeInterval(-300), isSyncing: false, hasCredentials: true))
+        #expect(await service(sync).ping(accountID: nil) == IPCResult(appVersion: "1.0", lastSuccessfulSync: now.addingTimeInterval(-300), isSyncing: false, hasCredentials: true))
     }
 
     @Test func aStaleCacheIsRefreshedAndWaitedFor() async {
         let sync = FakeSync()
         sync.lastSuccessfulSync = now.addingTimeInterval(-300)
 
-        let result = await service(sync).refresh(wait: true)
+        let result = await service(sync).refresh(wait: true, accountID: nil)
 
         #expect(result == IPCResult(lastSuccessfulSync: now, accepted: true, outcome: "succeeded"))
         #expect(sync.synchronizeCount == 1)
@@ -146,7 +148,7 @@ struct AppIPCServiceTests {
     @Test func withoutWaitingTheSyncStartsAndTheAnswerLeavesAtOnce() async throws {
         let sync = FakeSync()
 
-        let result = await service(sync).refresh(wait: false)
+        let result = await service(sync).refresh(wait: false, accountID: nil)
 
         #expect(result.accepted == true && result.outcome == nil)
         for _ in 0..<50 where sync.synchronizeCount == 0 {
@@ -159,11 +161,11 @@ struct AppIPCServiceTests {
         let sync = FakeSync()
         sync.lastSuccessfulSync = now.addingTimeInterval(-29)
 
-        #expect(await service(sync).refresh(wait: true) == IPCResult(lastSuccessfulSync: now.addingTimeInterval(-29), accepted: false, reason: "recent"))
+        #expect(await service(sync).refresh(wait: true, accountID: nil) == IPCResult(lastSuccessfulSync: now.addingTimeInterval(-29), accepted: false, reason: "recent"))
         #expect(sync.synchronizeCount == 0)
 
         sync.lastSuccessfulSync = now.addingTimeInterval(-31)
-        #expect(await service(sync).refresh(wait: true).accepted == true)
+        #expect(await service(sync).refresh(wait: true, accountID: nil).accepted == true)
     }
 
     @Test func aRunningSyncIsReportedAndWaitingSeesItsEnd() async {
@@ -171,14 +173,14 @@ struct AppIPCServiceTests {
         sync.isSyncing = true
         sync.lastSuccessfulSync = now.addingTimeInterval(-300)
 
-        #expect(await service(sync).refresh(wait: false) == IPCResult(lastSuccessfulSync: now.addingTimeInterval(-300), accepted: false, reason: "syncing"))
+        #expect(await service(sync).refresh(wait: false, accountID: nil) == IPCResult(lastSuccessfulSync: now.addingTimeInterval(-300), accepted: false, reason: "syncing"))
 
         Task {
             try? await Task.sleep(for: .milliseconds(100))
             sync.lastSuccessfulSync = now
             sync.isSyncing = false
         }
-        #expect(await service(sync).refresh(wait: true) == IPCResult(lastSuccessfulSync: now, accepted: false, reason: "syncing"))
+        #expect(await service(sync).refresh(wait: true, accountID: nil) == IPCResult(lastSuccessfulSync: now, accepted: false, reason: "syncing"))
         #expect(sync.synchronizeCount == 0)
     }
 
@@ -186,8 +188,26 @@ struct AppIPCServiceTests {
         let sync = FakeSync()
         sync.credentials = false
 
-        #expect(await service(sync).refresh(wait: true) == IPCResult(accepted: false, reason: "noCredentials"))
+        #expect(await service(sync).refresh(wait: true, accountID: nil) == IPCResult(accepted: false, reason: "noCredentials"))
         #expect(sync.synchronizeCount == 0)
+    }
+
+    @Test func eachAccountIsAskedThroughItsOwnSync() async {
+        let personal = FakeSync()
+        personal.lastSuccessfulSync = now.addingTimeInterval(-300)
+        let work = FakeSync()
+        work.lastSuccessfulSync = now.addingTimeInterval(-600)
+        let service = AppIPCService(
+            sync: { id in id == nil ? personal : ["work": work][id ?? ""] }, appVersion: "1.0", now: { CLIFixture.now }
+        )
+
+        #expect(await service.ping(accountID: "work").lastSuccessfulSync == now.addingTimeInterval(-600))
+        #expect(await service.refresh(wait: true, accountID: "work").accepted == true)
+        #expect(work.synchronizeCount == 1 && personal.synchronizeCount == 0)
+
+        // An account removed in the app since the command listed them.
+        #expect(await service.refresh(wait: true, accountID: "gone") == IPCResult(accepted: false, reason: "unknownAccount"))
+        #expect(await service.ping(accountID: "gone").hasCredentials == false)
     }
 
     @Test func outcomesHaveAStableName() {
@@ -370,6 +390,35 @@ struct CLIRefreshTests {
         await server.stop()
     }
 
+    @Test func refreshAsksForTheAccountOnScreenOrForTheOneNamed() async throws {
+        let service = FakeIPCService()
+        let (server, path) = try await IPCTestSocket.server(service)
+        var environment = try await CLIFixture.environmentWithTwoAccounts()
+        environment.socketPath = path
+
+        let shown = await CumulusCLI.run(arguments: ["refresh"], environment: environment)
+        let named = await CumulusCLI.run(arguments: ["refresh", "--account", "Work"], environment: environment)
+
+        #expect(await service.refreshAccounts == [AccountRegistry.firstAccountID, "work-1"])
+        #expect(try CLIFixture.json(shown).meta["account"] as? String == "Personal")
+        #expect(try CLIFixture.json(named).meta["account"] as? String == "Work")
+        #expect(await CumulusCLI.run(arguments: ["refresh", "--account", "Client"], environment: environment).exitCode == 5)
+
+        // An account removed in the app since the command read the list.
+        await service.set(refreshResult: IPCResult(accepted: false, reason: IPCRefreshReason.unknownAccount))
+        let gone = await CumulusCLI.run(arguments: ["refresh", "--account", "Work", "--json"], environment: environment)
+        #expect(gone.exitCode == 5 && gone.stderr.contains("NOT_FOUND"))
+        await server.stop()
+    }
+
+    @Test func anAccountIdThatIsNotOneIsRefusedBeforeItReachesTheApp() async {
+        let service = FakeIPCService()
+        let reply = await IPCDispatcher(service: service).response(to: Data(#"{"id":"1","method":"refresh","params":{"accountID":"../x"}}"#.utf8))
+
+        #expect(reply.error?.code == IPCFailure.invalidParams)
+        #expect(await service.refreshWaits.isEmpty)
+    }
+
     @Test func aRecentSyncIsNotAFailure() async throws {
         let service = FakeIPCService()
         await service.set(refreshResult: IPCResult(lastSuccessfulSync: CLIFixture.now, accepted: false, reason: "recent"))
@@ -456,7 +505,7 @@ struct CLIRefreshTests {
     @Test func aBuildNobodyOpenedHasItsDetailsFetchedByTheApp() async throws {
         let service = FakeIPCService()
         var environment = try await CLIFixture.environment()
-        let directory = environment.directory
+        let directory = CLIFixture.directory(in: environment)
         await service.set(detailsLoader: { runID in
             await BuildExtrasCache(directory: directory.appending(path: "BuildDetails")).save(BuildExtras(issuesComplete: true, testsComplete: true, artifactsComplete: true), runID: runID)
             return true

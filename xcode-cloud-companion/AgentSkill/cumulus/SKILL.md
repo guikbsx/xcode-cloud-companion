@@ -22,6 +22,7 @@ If none exists, tell the user to install the command from **Cumulus › Settings
 | Command | Answers |
 |---|---|
 | `cumulus status` | Usage of the billing cycle (minutes used, remaining, reset date, projection) and how many builds run now |
+| `cumulus accounts` | The App Store Connect accounts the app follows, when there are several |
 | `cumulus apps` | The account's apps with their latest build and their minutes this cycle |
 | `cumulus builds [--app <app>] [--failed] [--running] [--limit <n>] [--since <when>]` | Recent builds, newest first |
 | `cumulus build <build> [--cached]` | One build: actions, compiler errors and warnings, failed tests, artifacts, TestFlight builds, links |
@@ -34,12 +35,14 @@ If none exists, tell the user to install the command from **Cumulus › Settings
 - `<build>` is `App#42`, a build number alone when only one app has it, or a build run id. `cumulus builds` gives both `reference` and `id`.
 - `--limit` goes from 1 to 100 (default 10). `--since` takes an ISO 8601 date or a span: `7d`, `24h`, `30m`.
 - `--failed` keeps builds that failed or errored, `--running` those pending or running; together, builds in either state.
+- `--account <name>` goes with every command above except `accounts`: it answers for that account instead of the one shown in the app.
 - `cumulus help <command>` prints a command's options.
 
 ## Rules
 
 - **Pass `--json`.** Output is JSON anyway when it is not a terminal, but being explicit costs nothing. Keep each call self-contained: no `jq`, no pipelines; read the JSON directly.
 - **Check freshness.** Every answer has `meta.lastSuccessfulSync` (when the app last synced, or `null`) and `meta.appRunning`. If the data is too old for the question, or the user just pushed, run `cumulus refresh --wait --json` first. It starts the app if needed and returns the fresh status. A sync less than 30 seconds old is not repeated (`reason: "recent"`): that is a success.
+- **One account per answer.** The app may follow several App Store Connect accounts (teams), each with its own apps, builds and plan. An answer is about the account named in `meta.account`: the one shown in the app, unless `--account <name>` names another. Most setups have one account and need nothing. If the app or build the user means is not found, run `cumulus accounts --json` and ask again with `--account`; say which account a figure is about when there are several.
 - **Minutes are estimates.** `estimatedMinutes` is computed by Cumulus from the builds' machines; Apple publishes no usage figure through its API. Only `billedMinutes` come from Apple, when the user imported a usage export. When `meta.isEstimate` is true, say "about" or "estimated", never present the figure as official.
 - **To explain a failure**, run `cumulus build <build> --json` and read, in order: `issues` of type `ERROR` and `TEST_FAILURE`, then `failedTests`, then the `actions` that did not succeed. If `detailsAvailable` is false, follow the `hint`: the app has to be running to fetch a finished build's details, which it does once.
 - **Do not retry a failed command blindly.** Read `error.code` and `error.suggestions` on standard error; see `references/output-contract.md`.
@@ -54,7 +57,7 @@ If none exists, tell the user to install the command from **Cumulus › Settings
 
 ## MCP instead of the command
 
-The same answers are available as MCP tools (`get_status`, `list_apps`, `list_builds`, `get_build`, `list_workflows`, `get_usage`, `refresh`) by running `cumulus mcp`, a stdio server. When those tools are present in the session, use them rather than the shell: they return the same JSON. To register the server:
+The same answers are available as MCP tools (`get_status`, `list_apps`, `list_builds`, `get_build`, `list_workflows`, `get_usage`, `refresh`, `list_accounts`) by running `cumulus mcp`, a stdio server. When those tools are present in the session, use them rather than the shell: they return the same JSON. To register the server:
 
 - Claude Code: `claude mcp add --scope user cumulus -- /Applications/Cumulus.app/Contents/Helpers/cumulus mcp`
 - Codex: `codex mcp add cumulus -- /Applications/Cumulus.app/Contents/Helpers/cumulus mcp`
