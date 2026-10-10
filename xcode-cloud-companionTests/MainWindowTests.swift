@@ -59,6 +59,14 @@ struct MainWindowTests {
         #expect(navigation.selectedBuildID == nil)
     }
 
+    @Test func theAppDeclaresTheCumulusScheme() throws {
+        let types = try #require(Bundle.main.object(forInfoDictionaryKey: "CFBundleURLTypes") as? [[String: Any]])
+
+        let schemes = types.flatMap { $0["CFBundleURLSchemes"] as? [String] ?? [] }
+        #expect(schemes == [CumulusURL.scheme])
+        #expect(Bundle.main.object(forInfoDictionaryKey: "LSUIElement") as? Bool == true)
+    }
+
     @Test func aBuildAddressRoundTrips() throws {
         let url = try #require(CumulusURL.build(id: "abc-123"))
 

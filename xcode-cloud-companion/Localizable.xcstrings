@@ -619,12 +619,12 @@
         }
       }
     },
-    "Apple gave an address this app doesn’t trust, so nothing was opened." : {
+    "Apple gave an address this app doesn’t trust, so nothing was downloaded." : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Apple a donné une adresse à laquelle cette app ne fait pas confiance : rien n’a été ouvert."
+            "value" : "Apple a donné une adresse à laquelle cette app ne fait pas confiance : rien n’a été téléchargé."
           }
         }
       }
@@ -1253,16 +1253,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ne pas démarrer si tous les fichiers modifiés correspondent"
-          }
-        }
-      }
-    },
-    "Download" : {
-      "localizations" : {
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Télécharger"
           }
         }
       }
@@ -2928,6 +2918,16 @@
         }
       }
     },
+    "Save…" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enregistrer…"
+          }
+        }
+      }
+    },
     "Schedule" : {
       "localizations" : {
         "fr" : {
@@ -3004,6 +3004,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Tout afficher"
+          }
+        }
+      }
+    },
+    "Show in Finder" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Afficher dans le Finder"
           }
         }
       }
@@ -3264,12 +3274,12 @@
         }
       }
     },
-    "The download could not start." : {
+    "The download could not be completed." : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Le téléchargement n’a pas pu démarrer."
+            "value" : "Le téléchargement n’a pas pu aboutir."
           }
         }
       }
@@ -3317,6 +3327,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Le trousseau a refusé l’opération : %1$@ (%2$@)"
+          }
+        }
+      }
+    },
+    "The link expired or is invalid (HTTP %lld)." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Le lien a expiré ou n’est pas valide (HTTP %lld)."
           }
         }
       }

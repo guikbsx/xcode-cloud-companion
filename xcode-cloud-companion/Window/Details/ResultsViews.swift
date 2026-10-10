@@ -259,7 +259,7 @@ struct ArtifactsTabView: View {
     let artifacts: [String: [CIArtifact]]
     let actions: [CIBuildAction]
     let state: ExtrasLoadState
-    let opener: ArtifactOpener
+    let saver: ArtifactSaver
     let retry: () -> Void
 
     var body: some View {
@@ -299,14 +299,25 @@ struct ArtifactsTabView: View {
                         .font(.caption).foregroundStyle(.secondary)
                 }
                 Spacer()
-                switch opener.state(of: file.id) {
+                switch saver.state(of: file.id) {
                 case .preparing:
                     ProgressView().controlSize(.small)
+                case .downloading(let fraction):
+                    HStack(spacing: 8) {
+                        if let fraction {
+                            ProgressView(value: fraction).frame(width: 90)
+                        } else {
+                            ProgressView().controlSize(.small)
+                        }
+                        Button("Cancel") { saver.cancel(file.id) }
+                    }
+                case .saved(let url):
+                    Button("Show in Finder") { NSWorkspace.shared.activateFileViewerSelecting([url]) }
                 case .idle, .failed:
-                    Button("Download") { Task { await opener.download(file) } }
+                    Button("Save…") { saver.start(file) }
                 }
             }
-            if case .failed(let message) = opener.state(of: file.id) {
+            if case .failed(let message) = saver.state(of: file.id) {
                 Text(message).font(.caption).foregroundStyle(BuildStatus.errored.tint)
             }
         }

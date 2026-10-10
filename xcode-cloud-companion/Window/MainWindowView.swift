@@ -7,7 +7,7 @@ struct MainWindowView: View {
     let settings: SettingsModel
     let extrasStore: BuildExtrasStore
     let workflowStore: WorkflowDetailStore
-    let artifactOpener: ArtifactOpener
+    let artifactSaver: ArtifactSaver
     let launcher: BuildLauncher
     @Bindable var navigation: NavigationModel
     @Bindable var pins: PinnedWorkflows
@@ -85,7 +85,7 @@ struct MainWindowView: View {
     private var detail: some View {
         if let run = buildStore.snapshot.runs.first(where: { $0.id == navigation.selectedBuildID }) {
             BuildDetailView(
-                run: run, buildStore: buildStore, extrasStore: extrasStore, artifactOpener: artifactOpener, onRebuild: rebuildAction(for: run),
+                run: run, buildStore: buildStore, extrasStore: extrasStore, artifactSaver: artifactSaver, onRebuild: rebuildAction(for: run),
                 teamID: settings.issuerID.isEmpty ? nil : settings.issuerID
             )
         } else if navigation.sidebarSelection == .overview {

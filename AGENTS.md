@@ -51,7 +51,7 @@ Le modèle est CodexBar : un `NSStatusItem` + `NSMenu`, dont certaines lignes so
 - En Debug, `XCC_BADGE=running|failed|succeeded|stopped|none` force la pastille de la barre.
 - `NSMenuItem.badge` n'accepte ni couleur ni style : l'âge des builds et les minutes des apps y sont des textes courts ; les points d'état et le carré de couleur d'une app sont des caractères teintés (« • », « ◉ », « ■ ») en tête du titre attribué : le menu n'affiche **aucune** `NSMenuItem.image` (ni dessinée, ni symbole SF), vérifié le 09/10/2026.
 
-**Écriture : lancer ou relancer un build** (XCO-43, seule requête qui modifie quelque chose chez Apple) : `POST /v1/ciBuildRuns`, **jamais rejouée par l'app**, même après un timeout ou un 5xx. Un échec ambigu relit d'abord `GET /v1/ciWorkflows/{id}/buildRuns?limit=1&sort=-number` (`BuildLauncher`), l'interface ne propose un nouvel essai qu'après. Le corps n'envoie `clean` que s'il vaut `true`, un lancement a une seule source (branche/tag ou PR), une relance aucune. Le réglage « Accès de la clé » (Réglages › Général, `KeyAccess`) est déclaré par l'utilisateur ; un 403 le repasse en lecture seule. Aucun lancement par URL ni par Raccourci.
+**Écriture : lancer ou relancer un build** (XCO-43, seule requête qui modifie quelque chose chez Apple) : `POST /v1/ciBuildRuns`, **jamais rejouée par l'app**, même après un timeout ou un 5xx. Un échec ambigu relit d'abord `GET /v1/ciWorkflows/{id}/buildRuns?limit=1&sort=-number` (`BuildLauncher`), l'interface ne propose un nouvel essai qu'après. Le corps n'envoie `clean` que s'il vaut `true`, un lancement a une seule source (branche/tag ou PR), une relance aucune. Le réglage « Accès de la clé » (Réglages › Général, `KeyAccess`) est déclaré par l'utilisateur ; un 403 le repasse en lecture seule. Aucun lancement par URL ni par Raccourci. Le schéma `cumulus://build/<id>` (lecture seule, `CumulusURL`) est déclaré par `Config/URLScheme.plist`, fusionné à l'Info.plist généré (`INFOPLIST_FILE` + `GENERATE_INFOPLIST_FILE`) : `CFBundleURLTypes` ne se pose pas par `INFOPLIST_KEY_*`.
 
 **Mesure au premier chargement** : les résultats de tests par appareil arrivent par lots de 12 actions, du build le plus récent au plus ancien, un lot par minute (`BuildSynchronizer`). Tant que le cycle en a en attente, `UsageSummary.measurement.isMeasuring` est vrai et le menu n'affiche aucun chiffre qui dépendrait d'eux. Une action refusée trois fois par Apple est abandonnée (`BuildSnapshot.testResultAttempts`) ; un 429 ne coûte aucune tentative.
 
@@ -181,7 +181,7 @@ xcodebuild test -scheme Cumulus -project xcode-cloud-companion.xcodeproj \
 
 - Modifier `project.pbxproj` à la main (préférer Xcode ou ses outils).
 - Ajouter une dépendance externe (SPM) : l'app est volontairement sans dépendances.
-- Changer les entitlements, le sandbox ou le bundle ID.
+- Changer les entitlements, le sandbox ou le bundle ID (accordé le 10/10/2026 pour `ENABLE_USER_SELECTED_FILES = readwrite`, qui sert à enregistrer les artefacts).
 - `git push --force` : à éviter complètement, sauf demande explicite.
 - Supprimer un test existant (préférer `.disabled("…raison…")`).
 

@@ -10,7 +10,7 @@ final class MainWindowController: NSObject, NSWindowDelegate {
     private let settings: SettingsModel
     private let pins = PinnedWorkflows()
     private lazy var workflowStore = WorkflowDetailStore(client: { [buildStore] in await buildStore.detailClient() })
-    private lazy var artifactOpener = ArtifactOpener(client: { [buildStore] in await buildStore.detailClient() })
+    private lazy var artifactSaver = ArtifactSaver(client: { [buildStore] in await buildStore.detailClient() })
     private lazy var launcher = BuildLauncher(client: { [buildStore] in await buildStore.detailClient() })
     private lazy var extrasStore = BuildExtrasStore(client: { [buildStore] in await buildStore.detailClient() })
     private let navigation: NavigationModel
@@ -43,7 +43,7 @@ final class MainWindowController: NSObject, NSWindowDelegate {
 
     private func makeWindow() -> NSWindow {
         let hosting = NSHostingController(rootView: MainWindowView(
-            buildStore: buildStore, usageStore: usageStore, settings: settings, extrasStore: extrasStore, workflowStore: workflowStore, artifactOpener: artifactOpener, launcher: launcher, navigation: navigation, pins: pins, openSettings: openSettings
+            buildStore: buildStore, usageStore: usageStore, settings: settings, extrasStore: extrasStore, workflowStore: workflowStore, artifactSaver: artifactSaver, launcher: launcher, navigation: navigation, pins: pins, openSettings: openSettings
         ))
         let window = NSWindow(contentViewController: hosting)
         window.styleMask = [.titled, .closable, .miniaturizable, .resizable, .fullSizeContentView]

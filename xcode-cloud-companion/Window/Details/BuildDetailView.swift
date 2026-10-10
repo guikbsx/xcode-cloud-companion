@@ -5,7 +5,7 @@ struct BuildDetailView: View {
     let run: CIBuildRun
     let buildStore: BuildStore
     let extrasStore: BuildExtrasStore
-    let artifactOpener: ArtifactOpener
+    let artifactSaver: ArtifactSaver
     var onRebuild: (() -> Void)?
     let teamID: String?
 
@@ -182,7 +182,7 @@ struct BuildDetailView: View {
                 .task(id: run) { await extrasStore.loadIssues(for: run, actions: actions) }
             case .artifacts:
                 ArtifactsTabView(
-                    artifacts: extras?.artifactsByAction ?? [:], actions: actions, state: extrasStore.state(.artifacts, runID: run.id), opener: artifactOpener,
+                    artifacts: extras?.artifactsByAction ?? [:], actions: actions, state: extrasStore.state(.artifacts, runID: run.id), saver: artifactSaver,
                     retry: { Task { await extrasStore.loadArtifacts(for: run, actions: actions) } }
                 )
                 .task(id: run) { await extrasStore.loadArtifacts(for: run, actions: actions) }
