@@ -67,6 +67,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         // The Issuer ID is the team in App Store Connect's addresses: the menu's links need it before Settings ever opens.
         Task { await settingsModel.load() }
         Task { await usageStore.start() }
+        #if DEBUG
+        // Run from Xcode, the app shows its window and its menu bar at once; a Release stays in the menu bar until asked.
+        openMainWindow()
+        #endif
     }
 
     @objc func openSettings() {
