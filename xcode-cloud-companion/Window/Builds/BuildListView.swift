@@ -51,7 +51,19 @@ struct BuildListView: View {
             .onChange(of: navigation.selectedBuildID) { _, id in
                 if let id { withAnimation { proxy.scrollTo(id) } }
             }
-            .safeAreaInset(edge: .top) { filterBar }
+            .safeAreaInset(edge: .top) {
+                VStack(spacing: 0) {
+                    filterBar
+                    if model.isPausedWorkflow {
+                        Label("This workflow is paused: no build starts until it is resumed.", systemImage: "pause.circle.fill")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .padding(.horizontal, 16)
+                            .padding(.bottom, 8)
+                    }
+                }
+            }
             .navigationTitle(model.title)
             .navigationSubtitle(Text("\(model.count) builds"))
         }

@@ -79,6 +79,21 @@ nonisolated struct BuildRunRequest: Equatable, Sendable {
     }
 }
 
+/// A request to pause or resume a workflow. `isEnabled` is the only attribute it carries: nothing else of the workflow can change.
+nonisolated struct WorkflowStateRequest: Equatable, Sendable {
+    let workflowID: String
+    let isEnabled: Bool
+
+    var isWellFormed: Bool {
+        !workflowID.isEmpty && workflowID.count <= 64 && workflowID.allSatisfy { $0.isASCII && ($0.isLetter || $0.isNumber || $0 == "-") }
+    }
+
+    func body() throws -> Data {
+        let data: [String: Any] = ["type": "ciWorkflows", "id": workflowID, "attributes": ["isEnabled": isEnabled]]
+        return try JSONSerialization.data(withJSONObject: ["data": data], options: [.sortedKeys])
+    }
+}
+
 nonisolated struct CIRepositoryAttributes: Decodable, Sendable {
     let ownerName: String?
     let repositoryName: String?
@@ -112,6 +127,24 @@ extension AppStoreConnectClient {
         urlRequest.httpBody = body
         let document: JSONAPISingleDocument<CIBuildRunAttributes> = try await send(urlRequest)
         return JSONAPIDocument(single: document).buildRuns(productID: productID, workflowID: request.workflowID, workflowName: workflowName)[0]
+    }
+
+    /// Pauses or resumes a workflow. One request, never repeated. Returns the state Apple answers with, nil if it says none.
+    func setWorkflowEnabled(_ request: WorkflowStateRequest) async throws(AppStoreConnectError) -> Bool? {
+        guard request.isWellFormed, let body = try? request.body() else { throw .invalidResponse }
+        var urlRequest = URLRequest(url: AppStoreConnectEndpoint.updateWorkflow(id: request.workflowID), timeoutInterval: 30)
+        urlRequest.httpMethod = "PATCH"
+        urlRequest.setValue("application/json", forHTTPHeaderField: "Accept")
+        urlRequest.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        urlRequest.httpBody = body
+        let document: JSONAPISingleDocument<CIWorkflowAttributes> = try await send(urlRequest)
+        return document.data.attributes?.isEnabled
+    }
+
+    /// Whether the workflow is enabled, as Apple has it now.
+    func workflowIsEnabled(workflowID: String) async throws(AppStoreConnectError) -> Bool? {
+        let document: JSONAPISingleDocument<CIWorkflowAttributes> = try await decoded(at: AppStoreConnectEndpoint.workflowState(id: workflowID))
+        return document.data.attributes?.isEnabled
     }
 
     func repositoryID(workflowID: String) async throws(AppStoreConnectError) -> String {

@@ -28,8 +28,8 @@ final class SettingsWindowController {
 
         var size: NSSize {
             switch self {
-            case .general: NSSize(width: 560, height: 500)
-            case .configuration: NSSize(width: 560, height: 680)
+            case .general: NSSize(width: 560, height: 400)
+            case .configuration: NSSize(width: 560, height: 740)
             case .usage: NSSize(width: 560, height: 340)
             case .notifications: NSSize(width: 560, height: 700)
             case .agents: NSSize(width: 560, height: 700)

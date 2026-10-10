@@ -24,6 +24,8 @@ final class BuildStore {
     private var client: AppStoreConnectClient?
     private var consecutiveRateLimits = 0
     private var hasLoadedCache = false
+    /// Workflow states Apple confirmed after a change made here, kept until a sync that began later has read them itself.
+    private var confirmedWorkflowStates: [String: (isEnabled: Bool, at: Date)] = [:]
     private var loop: Task<Void, Never>?
 
     init(
@@ -99,6 +101,25 @@ final class BuildStore {
         }
     }
 
+    /// A workflow was paused or resumed from the app: the lists show Apple's answer at once, and a sync already under way,
+    /// which may have read the list before the change, does not undo it.
+    func setWorkflowEnabled(_ isEnabled: Bool, workflowID: String) async {
+        confirmedWorkflowStates[workflowID] = (isEnabled, now())
+        applyConfirmedWorkflowStates(syncStartedAt: nil)
+        try? await cacheStore.save(snapshot)
+    }
+
+    private func applyConfirmedWorkflowStates(syncStartedAt: Date?) {
+        if let syncStartedAt {
+            confirmedWorkflowStates = confirmedWorkflowStates.filter { $0.value.at >= syncStartedAt }
+        }
+        for index in snapshot.workflows.indices {
+            if let confirmed = confirmedWorkflowStates[snapshot.workflows[index].id] {
+                snapshot.workflows[index].isEnabled = confirmed.isEnabled
+            }
+        }
+    }
+
     /// Reads the budget the client last saw; no request is made.
     func updateRateLimit() async {
         if let limit = await client?.rateLimit() {
@@ -159,7 +180,9 @@ final class BuildStore {
                 Task { @MainActor in self?.progress = text }
             }
             let previous = snapshot
-            snapshot = try await synchronizer.sync(from: previous, now: now())
+            let startedAt = now()
+            snapshot = try await synchronizer.sync(from: previous, now: startedAt)
+            applyConfirmedWorkflowStates(syncStartedAt: startedAt)
             onSync?(previous, snapshot)
             lastError = nil
             consecutiveRateLimits = 0

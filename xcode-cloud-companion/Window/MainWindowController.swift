@@ -27,6 +27,14 @@ final class MainWindowController: NSObject, NSWindowDelegate {
             return buildStore.rateLimit
         }
     )
+    private lazy var pauser = WorkflowPauser(
+        client: { [buildStore] in await buildStore.detailClient() },
+        applied: { [weak self] workflowID, isEnabled in
+            guard let self else { return }
+            await workflowStore.setEnabled(isEnabled, workflowID: workflowID)
+            await buildStore.setWorkflowEnabled(isEnabled, workflowID: workflowID)
+        }
+    )
     private lazy var extrasStore = BuildExtrasStore(client: { [buildStore] in await buildStore.detailClient() })
     private let navigation: NavigationModel
     private let activation: ActivationPolicyCoordinator
@@ -58,7 +66,7 @@ final class MainWindowController: NSObject, NSWindowDelegate {
 
     private func makeWindow() -> NSWindow {
         let hosting = NSHostingController(rootView: MainWindowView(
-            buildStore: buildStore, usageStore: usageStore, settings: settings, extrasStore: extrasStore, workflowStore: workflowStore, artifactSaver: artifactSaver, launcher: launcher, icons: icons, logOpener: logOpener, workflowTests: workflowTests, navigation: navigation, pins: pins, openSettings: openSettings
+            buildStore: buildStore, usageStore: usageStore, settings: settings, extrasStore: extrasStore, workflowStore: workflowStore, artifactSaver: artifactSaver, launcher: launcher, icons: icons, logOpener: logOpener, workflowTests: workflowTests, pauser: pauser, navigation: navigation, pins: pins, openSettings: openSettings
         ))
         let window = NSWindow(contentViewController: hosting)
         window.styleMask = [.titled, .closable, .miniaturizable, .resizable, .fullSizeContentView]

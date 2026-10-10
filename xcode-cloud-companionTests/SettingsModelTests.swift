@@ -207,6 +207,54 @@ struct SettingsModelTests {
     }
 }
 
+@MainActor
+struct KeyAccessTests {
+    private let defaults: UserDefaults
+
+    init() {
+        let suiteName = "KeyAccessTests-\(UUID().uuidString)"
+        defaults = UserDefaults(suiteName: suiteName) ?? .standard
+        defaults.removePersistentDomain(forName: suiteName)
+    }
+
+    @Test func withoutAChoiceTheKeyIsTakenToLaunchBuilds() {
+        #expect(KeyAccess.defaultValue == .canLaunch)
+        #expect(KeyAccess.current(in: defaults) == .canLaunch)
+    }
+
+    @Test func aChoiceAlreadyMadeIsKeptIncludingARefusalByApple() {
+        // What a 403 writes, and what the picker writes.
+        defaults.set(KeyAccess.readOnly.rawValue, forKey: KeyAccess.defaultsKey)
+        #expect(KeyAccess.current(in: defaults) == .readOnly)
+
+        defaults.set(KeyAccess.canLaunch.rawValue, forKey: KeyAccess.defaultsKey)
+        #expect(KeyAccess.current(in: defaults) == .canLaunch)
+
+        defaults.set("somethingElse", forKey: KeyAccess.defaultsKey)
+        #expect(KeyAccess.current(in: defaults) == .canLaunch)
+    }
+
+    @Test func removingTheKeyPutsTheAccessBackToItsDefault() async {
+        defaults.set(KeyAccess.readOnly.rawValue, forKey: KeyAccess.defaultsKey)
+        let store = InMemoryCredentialsStore(StoredCredentials(issuerID: "issuer", keyID: "KEY", privateKeyPEM: "pem"))
+        let model = SettingsModel(store: store, defaults: defaults)
+
+        await model.removeKey()
+
+        #expect(defaults.object(forKey: KeyAccess.defaultsKey) == nil)
+        #expect(KeyAccess.current(in: defaults) == .canLaunch)
+    }
+
+    @Test func aKeychainThatRefusesLeavesTheAccessAlone() async {
+        defaults.set(KeyAccess.readOnly.rawValue, forKey: KeyAccess.defaultsKey)
+        let model = SettingsModel(store: RefusingCredentialsStore(), defaults: defaults)
+
+        await model.removeKey()
+
+        #expect(KeyAccess.current(in: defaults) == .readOnly)
+    }
+}
+
 struct KeychainCredentialsStoreTests {
     @Test func credentialsRoundTripThroughTheKeychain() async throws {
         let store = KeychainCredentialsStore(service: "com.guik.xcode-cloud-companion.tests.\(UUID().uuidString)")

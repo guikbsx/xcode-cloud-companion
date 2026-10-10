@@ -72,6 +72,18 @@ final class WorkflowDetailStore {
         await cache.save(WorkflowDetailsFile(fetchedAt: now(), workflows: tagged), productID: productID)
     }
 
+    /// Records the state Apple just answered with, in memory and in the cached copy, so the sheet shows it at once.
+    func setEnabled(_ isEnabled: Bool, workflowID: String) async {
+        guard var workflow = workflowsByID[workflowID] else { return }
+        workflow.isEnabled = isEnabled
+        workflowsByID[workflowID] = workflow
+        guard let productID = workflow.productID, var stored = await cache.load(productID: productID),
+              let index = stored.workflows.firstIndex(where: { $0.id == workflowID })
+        else { return }
+        stored.workflows[index].isEnabled = isEnabled
+        await cache.save(stored, productID: productID)
+    }
+
     private func merge(_ workflows: [CIWorkflow]) {
         for workflow in workflows {
             workflowsByID[workflow.id] = workflow

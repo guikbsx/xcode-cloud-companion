@@ -96,6 +96,9 @@ nonisolated struct BuildListModel: Equatable, Sendable {
     var groups: [BuildDayGroup]
     var emptyReason: BuildListEmptyReason?
 
+    /// The list is a workflow's, and Apple says that workflow is paused.
+    var isPausedWorkflow = false
+
     var rows: [BuildRowData] { groups.flatMap(\.rows) }
     var count: Int { groups.reduce(0) { $0 + $1.rows.count } }
 
@@ -115,6 +118,7 @@ nonisolated struct BuildListModel: Equatable, Sendable {
             title = products[id]?.displayName ?? String(localized: "All builds")
             scoped = snapshot.runs(forProductID: id)
         case .workflow(let id):
+            isPausedWorkflow = workflows[id]?.isEnabled == false
             title = workflows[id]?.name ?? String(localized: "All builds")
             scoped = snapshot.runs.filter { $0.workflowID == id }
         }

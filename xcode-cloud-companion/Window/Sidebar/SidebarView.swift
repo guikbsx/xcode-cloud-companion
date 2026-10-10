@@ -9,6 +9,8 @@ struct SidebarView: View {
     var budgetText: String?
     /// Loaded app icons by product ID.
     var artwork: [String: AppArtwork] = [:]
+    /// Pauses or resumes a workflow; nil while the key is declared read-only, and the menu then offers nothing.
+    var togglePause: ((SidebarContent.Workflow) -> Void)?
 
     @State private var collapsed: Set<String> = []
 
@@ -81,13 +83,29 @@ struct SidebarView: View {
                 if showsProduct {
                     Text(workflow.productName).foregroundStyle(.secondary).font(.caption)
                 }
+                if workflow.isPaused {
+                    Spacer(minLength: 4)
+                    Image(systemName: "pause.circle.fill").foregroundStyle(.secondary).help("Paused")
+                }
             }
         } icon: {
             Image(systemName: pins.isPinned(workflow.id) ? "pin.fill" : "arrow.triangle.branch")
         }
+        .opacity(workflow.isPaused ? 0.6 : 1)
+        .accessibilityElement(children: .combine)
+        .accessibilityValue(workflow.isPaused ? Text("Paused") : Text(verbatim: ""))
         .tag(SidebarSelection.workflow(workflow.id))
         .contextMenu {
             Button(pins.isPinned(workflow.id) ? "Unpin" : "Pin") { pins.toggle(workflow.id) }
+            if let togglePause, let isEnabled = workflow.isEnabled {
+                Divider()
+                if workflow.isLocked {
+                    // The reason stands where the action would be.
+                    Button("Locked in App Store Connect: can’t be paused here") {}.disabled(true)
+                } else {
+                    Button(isEnabled ? "Pause…" : "Resume…") { togglePause(workflow) }
+                }
+            }
         }
     }
 

@@ -4,6 +4,7 @@ import UniformTypeIdentifiers
 /// The API key and the plan: the two things the app needs before it shows anything.
 struct ConfigurationSettingsView: View {
     @Bindable var model: SettingsModel
+    @AppStorage(KeyAccess.defaultsKey) private var keyAccess = KeyAccess.defaultValue.rawValue
     @State private var isImportingKey = false
     @State private var isConfirmingRemoval = false
     @State private var isDropTargeted = false
@@ -64,7 +65,7 @@ struct ConfigurationSettingsView: View {
                 VStack(alignment: .leading, spacing: 2) {
                     Text("App Store Connect API Key")
                         .font(.headline)
-                    Text("The app reads your Xcode Cloud builds with an API key. It changes nothing on your account, and the key stays in your keychain.")
+                    Text("The app reads your Xcode Cloud builds with an API key. It only launches a build or pauses a workflow when you ask it to, and the key stays in your keychain.")
                         .font(.callout)
                         .foregroundStyle(.secondary)
                 }
@@ -84,7 +85,7 @@ struct ConfigurationSettingsView: View {
                     .controlSize(.small)
             }
             GuideStep(number: 2) {
-                Text("Click **+**, name the key “Cumulus” and give it **Developer** access.")
+                Text("Click **+**, name the key “Cumulus” and give it **App Manager** access to launch builds from Cumulus, or **Developer** access to only read them.")
             }
             GuideStep(number: 3) {
                 Text("Copy the **Issuer ID**, shown above the table of keys, then the **Key ID** on the new key's row.")
@@ -132,6 +133,7 @@ struct ConfigurationSettingsView: View {
                 .font(.caption)
                 .foregroundStyle(.secondary)
             TextField("Issuer ID", text: $model.issuerID, prompt: Text(verbatim: "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"))
+            keyAccessPicker
             if let errorMessage = model.errorMessage {
                 Label(errorMessage, systemImage: "exclamationmark.triangle.fill")
                     .foregroundStyle(.red)
@@ -147,6 +149,21 @@ struct ConfigurationSettingsView: View {
                 }
                 .keyboardShortcut(.defaultAction)
                 .disabled(!model.canSave)
+            }
+        }
+    }
+
+    /// What the key may do. The app assumes it may launch builds; the first refusal from Apple switches it to Read only.
+    private var keyAccessPicker: some View {
+        Picker(selection: $keyAccess) {
+            Text("Read only").tag(KeyAccess.readOnly.rawValue)
+            Text("Read + Build").tag(KeyAccess.canLaunch.rawValue)
+        } label: {
+            VStack(alignment: .leading, spacing: 2) {
+                Text("Key access")
+                Text("Read + Build shows the buttons that launch builds and pause workflows; it needs the App Manager role. If Apple refuses, Cumulus switches to Read only on its own.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
             }
         }
     }
@@ -224,6 +241,7 @@ struct ConfigurationSettingsView: View {
             }
             LabeledContent("Key ID", value: model.keyID)
             LabeledContent("Issuer ID", value: Self.masked(model.issuerID))
+            keyAccessPicker
             // In the section rather than its footer, where a grouped form may not pass clicks through.
             HStack {
                 Button("Remove Key and Data…", role: .destructive) { isConfirmingRemoval = true }

@@ -618,6 +618,16 @@
         }
       }
     },
+    "A change is already in progress." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Une modification est déjà en cours."
+          }
+        }
+      }
+    },
     "A launch is already in progress." : {
       "localizations" : {
         "fr" : {
@@ -644,16 +654,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Clé API"
-          }
-        }
-      }
-    },
-    "API key" : {
-      "localizations" : {
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Clé d’API"
           }
         }
       }
@@ -934,6 +934,16 @@
         }
       }
     },
+    "Apple did not confirm the change, and the workflow’s state could not be read. Check it in App Store Connect before trying again." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apple n’a pas confirmé la modification, et l’état du workflow n’a pas pu être lu. Vérifiez-le dans App Store Connect avant de réessayer."
+          }
+        }
+      }
+    },
     "Apple did not confirm the launch, and the build list shows no new build. Nothing seems to have started; you can try again." : {
       "localizations" : {
         "fr" : {
@@ -980,6 +990,36 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Apple ne publie aucun chiffre de consommation par son API : la jauge a besoin de votre forfait et du jour de sa réinitialisation."
+          }
+        }
+      }
+    },
+    "Apple reports this workflow as still enabled. Nothing changed; you can try again." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apple indique que ce workflow est toujours activé. Rien n’a changé ; vous pouvez réessayer."
+          }
+        }
+      }
+    },
+    "Apple reports this workflow as still paused. Nothing changed; you can try again." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apple indique que ce workflow est toujours en pause. Rien n’a changé ; vous pouvez réessayer."
+          }
+        }
+      }
+    },
+    "Apple’s hourly request limit is reached. Nothing was changed; try again later." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La limite horaire de requêtes d’Apple est atteinte. Rien n’a été modifié ; réessayez plus tard."
           }
         }
       }
@@ -1201,16 +1241,6 @@
         }
       }
     },
-    "Can launch builds" : {
-      "localizations" : {
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Peut lancer des builds"
-          }
-        }
-      }
-    },
     "Cancel" : {
       "localizations" : {
         "fr" : {
@@ -1283,13 +1313,12 @@
         }
       }
     },
-    "Click **+**, name the key “Cumulus” and give it **Developer** access." : {
-      "comment" : "Do not translate the app name. Keep \"App Store Connect\" untranslated.",
+    "Click **+**, name the key “Cumulus” and give it **App Manager** access to launch builds from Cumulus, or **Developer** access to only read them." : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Cliquez sur **+**, nommez la clé « Cumulus » et donnez-lui l’accès **Développeur**."
+            "value" : "Cliquez sur **+**, nommez la clé « Cumulus » et donnez-lui l’accès **App Manager** pour lancer des builds depuis Cumulus, ou l’accès **Développeur** pour seulement les lire."
           }
         }
       }
@@ -1686,16 +1715,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Diffère d’un appareil à l’autre"
-          }
-        }
-      }
-    },
-    "Disabled" : {
-      "localizations" : {
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Désactivé"
           }
         }
       }
@@ -2445,6 +2464,16 @@
         }
       }
     },
+    "Its start conditions apply again: a push, a pull request or a schedule can start builds, and builds can be started by hand. They use compute hours." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ses conditions de démarrage s’appliquent de nouveau : un push, une pull request ou une planification peuvent lancer des builds, et un build peut être lancé à la main. Ils consomment des heures de calcul."
+          }
+        }
+      }
+    },
     "Judged from the pace of the cycle, once it is a day old." : {
       "localizations" : {
         "fr" : {
@@ -2647,16 +2676,6 @@
         }
       }
     },
-    "Launching a build needs a team key with the App Manager role. Choose Read only to hide the launch buttons." : {
-      "localizations" : {
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Lancer un build demande une clé d’équipe au rôle App Manager. Choisissez Lecture seule pour masquer les boutons de lancement."
-          }
-        }
-      }
-    },
     "Line %lld of the usage export can’t be read." : {
       "localizations" : {
         "fr" : {
@@ -2749,6 +2768,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Verrouillé"
+          }
+        }
+      }
+    },
+    "Locked in App Store Connect: can’t be paused here" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verrouillé dans App Store Connect : mise en pause impossible ici"
           }
         }
       }
@@ -3427,6 +3456,46 @@
         }
       }
     },
+    "Pause" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mettre en pause"
+          }
+        }
+      }
+    },
+    "Pause “%@”?" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mettre « %@ » en pause ?"
+          }
+        }
+      }
+    },
+    "Paused" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "En pause"
+          }
+        }
+      }
+    },
+    "Pause…" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mettre en pause…"
+          }
+        }
+      }
+    },
     "Pick another branch or tag." : {
       "localizations" : {
         "fr" : {
@@ -3570,6 +3639,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Quitter Cumulus"
+          }
+        }
+      }
+    },
+    "Read + Build" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lecture + Build"
+          }
+        }
+      }
+    },
+    "Read + Build shows the buttons that launch builds and pause workflows; it needs the App Manager role. If Apple refuses, Cumulus switches to Read only on its own." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lecture + Build affiche les boutons qui lancent des builds et mettent des workflows en pause ; il demande le rôle App Manager. Si Apple refuse, Cumulus repasse de lui-même en Lecture seule."
           }
         }
       }
@@ -3751,6 +3840,36 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Réinitialisation le"
+          }
+        }
+      }
+    },
+    "Resume" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Réactiver"
+          }
+        }
+      }
+    },
+    "Resume “%@”?" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Réactiver « %@ » ?"
+          }
+        }
+      }
+    },
+    "Resume…" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Réactiver…"
           }
         }
       }
@@ -4272,13 +4391,12 @@
         }
       }
     },
-    "The app reads your Xcode Cloud builds with an API key. It changes nothing on your account, and the key stays in your keychain." : {
-      "comment" : "Keep \"Xcode Cloud\", \"App Store Connect\" and \"TestFlight\" untranslated as product names.",
+    "The app reads your Xcode Cloud builds with an API key. It only launches a build or pauses a workflow when you ask it to, and the key stays in your keychain." : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "L’app lit vos builds Xcode Cloud avec une clé API. Elle ne modifie rien sur votre compte, et la clé reste dans votre trousseau."
+            "value" : "L’app lit vos builds Xcode Cloud avec une clé API. Elle ne lance un build ou ne met un workflow en pause que si vous le demandez, et la clé reste dans votre trousseau."
           }
         }
       }
@@ -4510,6 +4628,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Cette semaine"
+          }
+        }
+      }
+    },
+    "This workflow is locked for editing in App Store Connect: it can’t be paused or resumed from here." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ce workflow est verrouillé en modification dans App Store Connect : il ne peut être ni mis en pause ni réactivé d’ici."
+          }
+        }
+      }
+    },
+    "This workflow is paused: no build starts until it is resumed." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ce workflow est en pause : aucun build ne démarre tant qu’il n’est pas réactivé."
           }
         }
       }
@@ -4753,6 +4891,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Où les trouver"
+          }
+        }
+      }
+    },
+    "While it is paused, no build of this workflow starts, neither on its own nor by hand. Nothing else about the workflow changes; you can resume it at any time." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tant qu’il est en pause, aucun build de ce workflow ne démarre, ni tout seul ni à la main. Rien d’autre ne change dans le workflow ; vous pouvez le réactiver à tout moment."
           }
         }
       }

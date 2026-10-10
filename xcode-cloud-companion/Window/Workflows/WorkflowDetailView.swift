@@ -5,6 +5,8 @@ struct WorkflowDetailView: View {
     let model: WorkflowDetailModel
     var tests: WorkflowTestsModel?
     var openBuildTests: (String) -> Void = { _ in }
+    /// Pauses or resumes this workflow; nil while the key is declared read-only.
+    var togglePause: (() -> Void)?
 
     var body: some View {
         ScrollView {
@@ -60,7 +62,7 @@ struct WorkflowDetailView: View {
             HStack(spacing: 6) {
                 if let isEnabled = model.isEnabled {
                     CapsuleTag(
-                        text: isEnabled ? String(localized: "Enabled") : String(localized: "Disabled"),
+                        text: isEnabled ? String(localized: "Enabled") : String(localized: "Paused"),
                         systemImage: isEnabled ? "checkmark" : "pause",
                         tint: isEnabled ? BuildStatus.succeeded.tint : BuildStatus.skipped.tint
                     )
@@ -68,6 +70,14 @@ struct WorkflowDetailView: View {
                 if model.isLocked == true {
                     CapsuleTag(text: String(localized: "Locked"), systemImage: "lock")
                 }
+                if let togglePause, let isEnabled = model.isEnabled, model.isLocked != true {
+                    Button(isEnabled ? "Pause…" : "Resume…", systemImage: isEnabled ? "pause.fill" : "play.fill", action: togglePause)
+                        .controlSize(.small)
+                        .padding(.leading, 6)
+                }
+            }
+            if togglePause != nil, model.isLocked == true {
+                Text(WorkflowPauser.lockedMessage).font(.caption).foregroundStyle(.secondary)
             }
             if let description = model.description {
                 Text(description).foregroundStyle(.secondary).textSelection(.enabled)

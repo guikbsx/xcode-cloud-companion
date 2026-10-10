@@ -12,11 +12,13 @@ struct MainWindowView: View {
     let icons: AppIconStore
     let logOpener: LogOpener
     let workflowTests: WorkflowTestsModel
+    let pauser: WorkflowPauser
     @Bindable var navigation: NavigationModel
     @Bindable var pins: PinnedWorkflows
     let openSettings: () -> Void
-    @AppStorage(KeyAccess.defaultsKey) private var keyAccess = KeyAccess.readOnly.rawValue
+    @AppStorage(KeyAccess.defaultsKey) private var keyAccess = KeyAccess.defaultValue.rawValue
     @State private var launchTarget: LaunchTarget?
+    @State private var pauseTarget: WorkflowPauseTarget?
 
     var body: some View {
         if buildStore.isConfigured {
@@ -47,6 +49,9 @@ struct MainWindowView: View {
                     },
                     onNotAllowed: { keyAccess = KeyAccess.readOnly.rawValue }
                 )
+            }
+            .sheet(item: $pauseTarget) { target in
+                WorkflowPauseSheet(target: target, pauser: pauser, onNotAllowed: { keyAccess = KeyAccess.readOnly.rawValue })
             }
             .task(id: buildStore.snapshot.appIcons) { await icons.load(buildStore.snapshot.appIcons) }
             .task {
@@ -82,7 +87,8 @@ struct MainWindowView: View {
             selection: $navigation.sidebarSelection,
             cycle: CycleCard.Content(summary: summary),
             budgetText: buildStore.rateLimit.map { String(localized: "\($0.remaining) of \($0.limit) requests left this hour") },
-            artwork: icons.artwork(in: buildStore.snapshot, by: \.id)
+            artwork: icons.artwork(in: buildStore.snapshot, by: \.id),
+            togglePause: canLaunch ? { askToTogglePause(workflowID: $0.id) } : nil
         )
     }
 
@@ -117,7 +123,8 @@ struct MainWindowView: View {
                     // The build stays in its workflow's list: only the sheet and its tab change.
                     navigation.buildTab = .tests
                     navigation.selectedBuildID = id
-                }
+                },
+                togglePause: canLaunch ? { askToTogglePause(workflowID: id) } : nil
             )
                 .task(id: id) { await loadWorkflow(id) }
         } else {
@@ -150,6 +157,14 @@ struct MainWindowView: View {
     private func rebuildAction(for run: CIBuildRun) -> (() -> Void)? {
         guard canLaunch, run.executionProgress == .complete, let current = currentWorkflow else { return nil }
         return { launchTarget = LaunchTarget(mode: .rebuild(run, current.workflow), productID: current.productID) }
+    }
+
+    /// Opens the confirmation for the opposite of the workflow's state, as far as it is known.
+    private func askToTogglePause(workflowID: String) {
+        guard let workflow = workflowStore.workflow(id: workflowID) ?? buildStore.snapshot.workflow(id: workflowID),
+              let isEnabled = workflow.isEnabled, workflow.isLockedForEditing != true
+        else { return }
+        pauseTarget = WorkflowPauseTarget(workflow: workflow, enable: !isEnabled)
     }
 
     private func loadWorkflow(_ id: String) async {

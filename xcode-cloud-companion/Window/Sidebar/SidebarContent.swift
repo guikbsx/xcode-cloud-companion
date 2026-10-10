@@ -8,6 +8,11 @@ nonisolated struct SidebarContent: Equatable {
         let productID: String
         let productName: String
         let buildCount: Int
+        /// As Apple last said; nil while the app does not know.
+        var isEnabled: Bool? = nil
+        var isLocked = false
+
+        var isPaused: Bool { isEnabled == false }
     }
 
     struct Product: Identifiable, Equatable {
@@ -36,7 +41,10 @@ nonisolated struct SidebarContent: Equatable {
             let runs = runsByWorkflow[workflow.id] ?? []
             guard let productID = workflow.productID ?? runs.first?.productID, let product = productsByID[productID] else { continue }
             workflowsByProduct[productID, default: []].append(
-                Workflow(id: workflow.id, name: workflow.name, productID: productID, productName: product.displayName, buildCount: runs.count)
+                Workflow(
+                    id: workflow.id, name: workflow.name, productID: productID, productName: product.displayName, buildCount: runs.count,
+                    isEnabled: workflow.isEnabled, isLocked: workflow.isLockedForEditing == true
+                )
             )
         }
 

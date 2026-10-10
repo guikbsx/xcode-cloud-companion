@@ -167,6 +167,7 @@ final class SettingsModel {
         errorMessage = nil
         planHours = UsagePlan.defaultHours
         resetAnchor = nil
+        KeyAccess.reset(in: defaults)
         onCredentialsChange?()
         await onReset?()
     }

@@ -42,7 +42,7 @@ nonisolated enum AppStoreConnectEndpoint {
 
     static func workflows(productID: String) -> URL {
         url(path: "/v1/ciProducts/\(productID)/workflows", query: [
-            "fields[ciWorkflows]": "name,actions",
+            "fields[ciWorkflows]": "name,actions,isEnabled,isLockedForEditing",
             "limit": String(maximumPageSize),
         ])
     }
@@ -114,8 +114,18 @@ nonisolated enum AppStoreConnectEndpoint {
         "limit": String(maximumPageSize),
     ])
 
-    /// The only write the app makes: starting or rebuilding a run.
+    /// The first of the two writes the app makes: starting or rebuilding a run.
     static let createBuildRun: URL = url(path: "/v1/ciBuildRuns", query: [:])
+
+    /// The second write: `PATCH` on a workflow, to pause or resume it. Nothing but `isEnabled` is ever sent there.
+    static func updateWorkflow(id: String) -> URL {
+        url(path: "/v1/ciWorkflows/\(id)", query: [:])
+    }
+
+    /// Whether one workflow is enabled right now, to learn what an unconfirmed change did.
+    static func workflowState(id: String) -> URL {
+        url(path: "/v1/ciWorkflows/\(id)", query: ["fields[ciWorkflows]": "isEnabled"])
+    }
 
     static func workflowRepository(workflowID: String) -> URL {
         url(path: "/v1/ciWorkflows/\(workflowID)/repository", query: [
