@@ -6,7 +6,18 @@
 	objectVersion = 90;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		000000000000000151000000 /* cumulus in Embed Command Line Tool */ = {isa = PBXBuildFile; fileRef = 000000000000000000000122 /* cumulus */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
+		000000000000000170000000 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 000000000000000000000000 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 000000000000000300000000;
+			remoteInfo = cumulus;
+		};
 		000000000000000260000000 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 000000000000000000000000 /* Project object */;
@@ -16,20 +27,88 @@
 		};
 /* End PBXContainerItemProxy section */
 
+/* Begin PBXCopyFilesBuildPhase section */
+		000000000000000150000000 /* Embed Command Line Tool */ = {
+			isa = PBXCopyFilesBuildPhase;
+			dstPath = Contents/Helpers;
+			dstSubfolder = Wrapper;
+			files = (
+				000000000000000151000000 /* cumulus in Embed Command Line Tool */,
+			);
+			name = "Embed Command Line Tool";
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
 		000000000000000000000120 /* Cumulus.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Cumulus.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		000000000000000000000121 /* xcode-cloud-companionTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "xcode-cloud-companionTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
+		000000000000000000000122 /* cumulus */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = cumulus; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		000000000000000000000401 /* Exceptions for "CLI" folder in "xcode-cloud-companion" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				main.swift,
+			);
+			target = 000000000000000100000000 /* xcode-cloud-companion */;
+		};
+		000000000000000000000402 /* Exceptions for "xcode-cloud-companion" folder in "cumulus" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				AppStoreConnect/AppStoreConnectClient.swift,
+				AppStoreConnect/AppStoreConnectCredentials.swift,
+				AppStoreConnect/AppStoreConnectEndpoint.swift,
+				AppStoreConnect/AppStoreConnectError.swift,
+				"AppStoreConnect/AppStoreConnectError+Message.swift",
+				AppStoreConnect/AppStoreConnectLinks.swift,
+				AppStoreConnect/AppStoreConnectToken.swift,
+				AppStoreConnect/BuildLaunch.swift,
+				AppStoreConnect/CIDetailModels.swift,
+				AppStoreConnect/CIModels.swift,
+				AppStoreConnect/JSONAPIDocument.swift,
+				AppStoreConnect/RateLimit.swift,
+				Settings/CredentialsStore.swift,
+				Settings/SharedPlanStore.swift,
+				Settings/UsagePlan.swift,
+				Sync/BuildSnapshot.swift,
+				Sync/BuildSynchronizer.swift,
+				Sync/SharedContainer.swift,
+				Usage/BilledUsage.swift,
+				Usage/DirectoryWatcher.swift,
+				Usage/UsageEstimator.swift,
+				Usage/UsageStore.swift,
+				Usage/UsageSummary.swift,
+				Window/Details/BuildExtrasStore.swift,
+				Window/Workflows/WorkflowDetailStore.swift,
+			);
+			target = 000000000000000300000000 /* cumulus */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		000000000000000000000010 /* xcode-cloud-companion */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				000000000000000000000402 /* Exceptions for "xcode-cloud-companion" folder in "cumulus" target */,
+			);
+			explicitFolders = (
+				AgentSkill,
+			);
 			path = "xcode-cloud-companion";
 			sourceTree = "<group>";
 		};
 		000000000000000000000011 /* xcode-cloud-companionTests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = "xcode-cloud-companionTests";
+			sourceTree = "<group>";
+		};
+		000000000000000000000012 /* CLI */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				000000000000000000000401 /* Exceptions for "CLI" folder in "xcode-cloud-companion" target */,
+			);
+			path = CLI;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -45,6 +124,11 @@
 			files = (
 			);
 		};
+		000000000000000330000000 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			files = (
+			);
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -52,6 +136,7 @@
 			isa = PBXGroup;
 			children = (
 				000000000000000000000010 /* xcode-cloud-companion */,
+				000000000000000000000012 /* CLI */,
 				000000000000000000000011 /* xcode-cloud-companionTests */,
 				000000000000000000000020 /* Products */,
 			);
@@ -62,6 +147,7 @@
 			children = (
 				000000000000000000000120 /* Cumulus.app */,
 				000000000000000000000121 /* xcode-cloud-companionTests.xctest */,
+				000000000000000000000122 /* cumulus */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -76,11 +162,16 @@
 				000000000000000120000000 /* Sources */,
 				000000000000000130000000 /* Frameworks */,
 				000000000000000140000000 /* Resources */,
+				000000000000000150000000 /* Embed Command Line Tool */,
 			);
 			buildRules = (
 			);
+			dependencies = (
+				000000000000000160000000 /* PBXTargetDependency */,
+			);
 			fileSystemSynchronizedGroups = (
 				000000000000000000000010 /* xcode-cloud-companion */,
+				000000000000000000000012 /* CLI */,
 			);
 			name = "xcode-cloud-companion";
 			productName = MyApp;
@@ -108,6 +199,23 @@
 			productReference = 000000000000000000000121 /* xcode-cloud-companionTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
+		000000000000000300000000 /* cumulus */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 000000000000000310000000 /* Build configuration list for PBXNativeTarget "cumulus" */;
+			buildPhases = (
+				000000000000000320000000 /* Sources */,
+				000000000000000330000000 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			fileSystemSynchronizedGroups = (
+				000000000000000000000012 /* CLI */,
+			);
+			name = cumulus;
+			productName = cumulus;
+			productReference = 000000000000000000000122 /* cumulus */;
+			productType = "com.apple.product-type.tool";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -124,6 +232,9 @@
 					000000000000000200000000 = {
 						CreatedOnToolsVersion = 27.1;
 						TestTargetID = 000000000000000100000000;
+					};
+					000000000000000300000000 = {
+						CreatedOnToolsVersion = 27.1;
 					};
 				};
 			};
@@ -144,6 +255,7 @@
 			targets = (
 				000000000000000100000000 /* xcode-cloud-companion */,
 				000000000000000200000000 /* xcode-cloud-companionTests */,
+				000000000000000300000000 /* cumulus */,
 			);
 		};
 /* End PBXProject section */
@@ -172,9 +284,19 @@
 			files = (
 			);
 		};
+		000000000000000320000000 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			files = (
+			);
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
+		000000000000000160000000 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 000000000000000300000000 /* cumulus */;
+			targetProxy = 000000000000000170000000 /* PBXContainerItemProxy */;
+		};
 		000000000000000250000000 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 000000000000000100000000 /* xcode-cloud-companion */;
@@ -312,6 +434,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = logo;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = Config/Cumulus.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 4HYT2U85R2;
@@ -347,6 +470,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = logo;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = Config/Cumulus.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 4HYT2U85R2;
@@ -419,6 +543,58 @@
 			};
 			name = Release;
 		};
+		000000000000000311000000 /* Debug configuration for PBXNativeTarget "cumulus" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = "Config/cumulus-cli.entitlements";
+				CODE_SIGN_STYLE = Automatic;
+				CREATE_INFOPLIST_SECTION_IN_BINARY = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 4HYT2U85R2;
+				ENABLE_APP_SANDBOX = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = cumulus;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.guik.xcode-cloud-companion.cli";
+				PRODUCT_MODULE_NAME = CumulusCLI;
+				PRODUCT_NAME = cumulus;
+				SDKROOT = macosx;
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = macosx;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 6.0;
+			};
+			name = Debug;
+		};
+		000000000000000312000000 /* Release configuration for PBXNativeTarget "cumulus" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = "Config/cumulus-cli.entitlements";
+				CODE_SIGN_STYLE = Automatic;
+				CREATE_INFOPLIST_SECTION_IN_BINARY = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 4HYT2U85R2;
+				ENABLE_APP_SANDBOX = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = cumulus;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.guik.xcode-cloud-companion.cli";
+				PRODUCT_MODULE_NAME = CumulusCLI;
+				PRODUCT_NAME = cumulus;
+				SDKROOT = macosx;
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = macosx;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 6.0;
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -443,6 +619,14 @@
 			buildConfigurations = (
 				000000000000000211000000 /* Debug configuration for PBXNativeTarget "xcode-cloud-companionTests" */,
 				000000000000000212000000 /* Release configuration for PBXNativeTarget "xcode-cloud-companionTests" */,
+			);
+			defaultConfigurationName = Release;
+		};
+		000000000000000310000000 /* Build configuration list for PBXNativeTarget "cumulus" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				000000000000000311000000 /* Debug configuration for PBXNativeTarget "cumulus" */,
+				000000000000000312000000 /* Release configuration for PBXNativeTarget "cumulus" */,
 			);
 			defaultConfigurationName = Release;
 		};

@@ -3,7 +3,7 @@ import UniformTypeIdentifiers
 
 @main
 final class AppDelegate: NSObject, NSApplicationDelegate {
-    private let settingsModel = SettingsModel()
+    private let settingsModel = SettingsModel(planMirror: SharedPlanStore())
     private let loginItemModel = LoginItemModel()
     private let buildStore = BuildStore()
     private let usageStore = UsageStore()
@@ -18,6 +18,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         openSettings: { [weak self] in self?.openSettings() }
     )
     private var statusItemController: StatusItemController?
+    private var ipcServer: IPCSocketServer?
+    private var ipcIsListening = false
+    private lazy var ipcDetailsLoader = BuildDetailsLoader(
+        buildStore: buildStore,
+        extrasStore: BuildExtrasStore(client: { [buildStore] in await buildStore.detailClient() })
+    )
     #if DEBUG
     private lazy var diagnosticWindowController = UsageDiagnosticWindowController(buildStore: buildStore, settings: settingsModel)
     #endif
@@ -63,14 +69,46 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         let distributedCenter = DistributedNotificationCenter.default()
         distributedCenter.addObserver(self, selector: #selector(screenDidLock), name: Notification.Name("com.apple.screenIsLocked"), object: nil)
         distributedCenter.addObserver(self, selector: #selector(screenDidUnlock), name: Notification.Name("com.apple.screenIsUnlocked"), object: nil)
-        buildStore.start()
-        // The Issuer ID is the team in App Store Connect's addresses: the menu's links need it before Settings ever opens.
-        Task { await settingsModel.load() }
-        Task { await usageStore.start() }
+        Task {
+            // The caches moved to the app group for the `cumulus` command: they are in place before anything reads them.
+            await CacheMigration().run()
+            buildStore.start()
+            settingsModel.mirrorPlan()
+            await startIPCServer()
+            // The Issuer ID is the team in App Store Connect's addresses: the menu's links need it before Settings ever opens.
+            Task { await settingsModel.load() }
+            Task { await usageStore.start() }
+        }
         #if DEBUG
         // Run from Xcode, the app shows its window and its menu bar at once; a Release stays in the menu bar until asked.
         openMainWindow()
         #endif
+    }
+
+    func applicationWillTerminate(_ notification: Notification) {
+        // The socket file goes with the instance that answers on it, never with another one's.
+        if ipcIsListening, let path = SharedContainer.socketPath {
+            unlink(path)
+        }
+    }
+
+    /// Lets the `cumulus` command ask for a sync, a build's details or its sheet. A second instance leaves the first one's socket alone.
+    private func startIPCServer() async {
+        guard ipcServer == nil, let path = SharedContainer.socketPath else { return }
+        let loader = ipcDetailsLoader
+        let service = AppIPCService(
+            sync: buildStore,
+            openBuild: { [weak self] id in
+                self?.openBuild(id)
+                NSApp.activate()
+            },
+            loadBuildDetails: { await loader.load($0) }
+        )
+        let dispatcher = IPCDispatcher(service: service)
+        let server = IPCSocketServer(path: path) { await dispatcher.reply(to: $0) }
+        guard (try? await server.start()) != nil else { return }
+        ipcServer = server
+        ipcIsListening = true
     }
 
     @objc func openSettings() {

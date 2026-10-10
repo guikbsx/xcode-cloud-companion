@@ -8,7 +8,7 @@ nonisolated struct WorkflowDetailsFile: Codable, Sendable, Equatable {
 }
 
 nonisolated struct WorkflowDetailsCache: Sendable {
-    var directory: URL = .applicationSupportDirectory.appending(path: "WorkflowDetails")
+    var directory: URL = SharedContainer.applicationSupport.appending(path: "WorkflowDetails")
 
     @concurrent func load(productID: String) async -> WorkflowDetailsFile? {
         guard Self.isSafe(productID), let data = try? Data(contentsOf: directory.appending(path: "\(productID).json")) else { return nil }

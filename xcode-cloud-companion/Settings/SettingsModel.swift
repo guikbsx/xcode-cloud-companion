@@ -26,11 +26,17 @@ final class SettingsModel {
     @ObservationIgnored var onReset: (() async -> Void)?
 
     var planHours: Int {
-        didSet { defaults.set(planHours, forKey: Keys.planHours) }
+        didSet {
+            defaults.set(planHours, forKey: Keys.planHours)
+            mirrorPlan()
+        }
     }
 
     var resetAnchor: Date? {
-        didSet { defaults.set(resetAnchor, forKey: Keys.resetAnchor) }
+        didSet {
+            defaults.set(resetAnchor, forKey: Keys.resetAnchor)
+            mirrorPlan()
+        }
     }
 
     private var importedPrivateKeyPEM: String?
@@ -38,10 +44,13 @@ final class SettingsModel {
     private let defaults: UserDefaults
     private let makeClient: (AppStoreConnectCredentials) -> AppStoreConnectClient
     private let now: () -> Date
+    private let planMirror: SharedPlanStore?
+    private var planMirrorWrite: Task<Void, Never>?
 
     init(
         store: any CredentialsStore = KeychainCredentialsStore(),
         defaults: UserDefaults = .standard,
+        planMirror: SharedPlanStore? = nil,
         makeClient: @escaping (AppStoreConnectCredentials) -> AppStoreConnectClient = { AppStoreConnectClient(credentials: $0) },
         now: @escaping () -> Date = { Date() }
     ) {
@@ -49,6 +58,7 @@ final class SettingsModel {
         self.defaults = defaults
         self.makeClient = makeClient
         self.now = now
+        self.planMirror = planMirror
         let storedHours = defaults.integer(forKey: Keys.planHours)
         planHours = UsagePlan.availableHours.contains(storedHours) ? storedHours : UsagePlan.defaultHours
         resetAnchor = defaults.object(forKey: Keys.resetAnchor) as? Date
@@ -56,6 +66,17 @@ final class SettingsModel {
 
     var plan: UsagePlan? {
         resetAnchor.map { UsagePlan(hours: planHours, resetAnchor: $0) }
+    }
+
+    /// Copies the plan where the `cumulus` command reads it; writes follow one another so the last change wins.
+    func mirrorPlan() {
+        guard let planMirror else { return }
+        let plan = plan
+        let previous = planMirrorWrite
+        planMirrorWrite = Task {
+            await previous?.value
+            await planMirror.save(plan)
+        }
     }
 
     /// The date picker shows the upcoming reset; editing it moves the anchor.

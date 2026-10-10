@@ -2,7 +2,7 @@ import Foundation
 import Observation
 
 nonisolated struct UsageLedgerStore: Sendable {
-    var fileURL: URL = .applicationSupportDirectory.appending(path: "UsageLedger.json")
+    var fileURL: URL = SharedContainer.applicationSupport.appending(path: "UsageLedger.json")
 
     @concurrent func load() async -> UsageLedger? {
         guard let data = try? Data(contentsOf: fileURL) else { return nil }

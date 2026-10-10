@@ -15,9 +15,9 @@ nonisolated struct BuildExtras: Codable, Sendable, Equatable {
     var artifactsComplete = false
 }
 
-/// One file per finished build under Application Support: a build that is `COMPLETE` never changes, so it is asked for once.
+/// One file per finished build in the app group container: a build that is `COMPLETE` never changes, so it is asked for once.
 nonisolated struct BuildExtrasCache: Sendable {
-    var directory: URL = .applicationSupportDirectory.appending(path: "BuildDetails")
+    var directory: URL = SharedContainer.applicationSupport.appending(path: "BuildDetails")
 
     private func fileURL(_ runID: String) -> URL {
         directory.appending(path: "\(runID).json")

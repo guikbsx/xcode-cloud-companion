@@ -1,16 +1,17 @@
 import AppKit
 import SwiftUI
 
-/// The Settings window: three tabs in the toolbar, the way Xcode and Safari lay theirs out.
+/// The Settings window: four tabs in the toolbar, the way Xcode and Safari lay theirs out.
 final class SettingsWindowController {
     private enum Tab: Int, CaseIterable {
-        case general, configuration, usage
+        case general, configuration, usage, agents
 
         var title: String {
             switch self {
             case .general: String(localized: "General", comment: "Settings tab")
             case .configuration: String(localized: "Configuration", comment: "Settings tab")
             case .usage: String(localized: "Usage", comment: "Settings tab")
+            case .agents: String(localized: "Agents", comment: "Settings tab: AI agents that can query the app")
             }
         }
 
@@ -19,6 +20,7 @@ final class SettingsWindowController {
             case .general: "gearshape"
             case .configuration: "slider.horizontal.3"
             case .usage: "chart.bar"
+            case .agents: "terminal"
             }
         }
 
@@ -27,6 +29,7 @@ final class SettingsWindowController {
             case .general: NSSize(width: 560, height: 500)
             case .configuration: NSSize(width: 560, height: 680)
             case .usage: NSSize(width: 560, height: 340)
+            case .agents: NSSize(width: 560, height: 700)
             }
         }
     }
@@ -36,6 +39,7 @@ final class SettingsWindowController {
     private let model: SettingsModel
     private let loginItem: LoginItemModel
     private let usage: UsageStore
+    private let agents = AgentsSettingsModel()
     private let defaults: UserDefaults
     private var window: NSWindow?
     private var tabController: NSTabViewController?
@@ -98,6 +102,7 @@ final class SettingsWindowController {
         case .general: GeneralSettingsView(loginItem: loginItem)
         case .configuration: ConfigurationSettingsView(model: model)
         case .usage: UsageSettingsView(usage: usage)
+        case .agents: AgentsSettingsView(model: agents)
         }
     }
 }

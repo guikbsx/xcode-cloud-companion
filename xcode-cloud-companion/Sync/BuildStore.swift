@@ -173,6 +173,11 @@ final class BuildStore {
         }
     }
 
+    func hasCredentials() async -> Bool {
+        if client != nil { return true }
+        return (try? await credentialsStore.load()) != nil
+    }
+
     /// The client the window's detail views fetch through; nil while no key is stored.
     func detailClient() async -> AppStoreConnectClient? {
         await currentClient()
@@ -187,4 +192,8 @@ final class BuildStore {
         self.client = client
         return client
     }
+}
+
+extension BuildStore: RefreshableSync {
+    var lastSuccessfulSync: Date? { snapshot.lastSuccessfulSync }
 }

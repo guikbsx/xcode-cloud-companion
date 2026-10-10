@@ -1,6 +1,16 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "%@ already holds something named “cumulus”." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ contient déjà un élément nommé « cumulus »."
+          }
+        }
+      }
+    },
     "%@ of %@ used" : {
       "localizations" : {
         "en" : {
@@ -427,6 +437,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ajoutez votre clé d’API App Store Connect pour voir ici vos builds Xcode Cloud."
+          }
+        }
+      }
+    },
+    "Agents" : {
+      "comment" : "Settings tab: AI agents that can query the app",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Agents"
           }
         }
       }
@@ -902,6 +923,16 @@
         }
       }
     },
+    "Claude Code, Codex and Xcode’s agents can ask Cumulus why a build failed, what is running, or how much of the plan is left. They read what the app already knows: nothing is changed on your account, and no build is ever launched." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Claude Code, Codex et les agents d’Xcode peuvent demander à Cumulus pourquoi un build a échoué, ce qui tourne ou ce qu’il reste du forfait. Ils lisent ce que l’app sait déjà : rien n’est modifié sur votre compte, et aucun build n’est jamais lancé."
+          }
+        }
+      }
+    },
     "Clean build" : {
       "localizations" : {
         "fr" : {
@@ -943,6 +974,17 @@
           }
         }
       }
+    },
+    "Command" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Commande"
+          }
+        }
+      },
+      "comment" : "Settings › Agents: section about the cumulus command-line tool"
     },
     "Compute hours" : {
       "comment" : "Label in the diagram of App Store Connect's Xcode Cloud usage page",
@@ -1008,6 +1050,17 @@
           }
         }
       }
+    },
+    "Copied" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Copié"
+          }
+        }
+      },
+      "comment" : "Button label shown for two seconds after copying a snippet"
     },
     "Copy" : {
       "localizations" : {
@@ -1097,6 +1150,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Cumulus"
+          }
+        }
+      }
+    },
+    "Cumulus for AI Agents" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cumulus pour les agents IA"
           }
         }
       }
@@ -1863,6 +1926,47 @@
         }
       }
     },
+    "Install Here" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Installer ici"
+          }
+        }
+      },
+      "comment" : "Confirmation button of the folder panel, when installing the command or the skill"
+    },
+    "Installed in %@." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Installé dans %@."
+          }
+        }
+      }
+    },
+    "Installed in %@. Try “cumulus status” in Terminal." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Installée dans %@. Essayez « cumulus status » dans Terminal."
+          }
+        }
+      }
+    },
+    "Install…" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Installer…"
+          }
+        }
+      }
+    },
     "Issuer ID" : {
       "comment" : "Label in the diagram of App Store Connect's Integrations page",
       "localizations" : {
@@ -2162,6 +2266,17 @@
         }
       }
     },
+    "MCP Server" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Serveur MCP"
+          }
+        }
+      },
+      "comment" : "Settings › Agents: section about the Model Context Protocol server"
+    },
     "Manual rebuild" : {
       "localizations" : {
         "fr" : {
@@ -2219,6 +2334,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Mesure de vos builds"
+          }
+        }
+      }
+    },
+    "Merge this into %@, then restart %@." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Merge this into %1$@, then restart %2$@."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fusionnez ceci dans %1$@, puis relancez %2$@."
           }
         }
       }
@@ -2376,6 +2507,16 @@
         }
       }
     },
+    "No skills folder at %@. Create it first, or choose another folder." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aucun dossier de skills à l’emplacement %@. Créez-le d’abord, ou choisissez un autre dossier."
+          }
+        }
+      }
+    },
     "No test matches these filters." : {
       "localizations" : {
         "fr" : {
@@ -2422,6 +2563,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Normalement rempli tout seul quand vous ajoutez le fichier `.p8` : son nom, `AuthKey_<ID de la clé>.p8`, contient l’ID de la clé. Saisissez-le seulement si le fichier a été renommé."
+          }
+        }
+      }
+    },
+    "Not installed. Choose a folder of your PATH, such as %@." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Non installée. Choisissez un dossier de votre PATH, par exemple %@."
+          }
+        }
+      }
+    },
+    "Not installed. Its skills live in %@." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Non installé. Ses skills se trouvent dans %@."
           }
         }
       }
@@ -2553,6 +2714,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ouvrir dans Xcode"
+          }
+        }
+      }
+    },
+    "Other Folder…" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Autre dossier…"
           }
         }
       }
@@ -2806,6 +2977,17 @@
         }
       }
     },
+    "Remove" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Retirer"
+          }
+        }
+      },
+      "comment" : "Button that removes a link the app installed (the command or the skill)"
+    },
     "Remove Key and Data" : {
       "localizations" : {
         "fr" : {
@@ -2826,12 +3008,44 @@
         }
       }
     },
+    "Remove from Here" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Retirer d’ici"
+          }
+        }
+      },
+      "comment" : "Confirmation button of the folder panel, when removing the command or the skill"
+    },
     "Remove the API key and all its data?" : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Supprimer la clé API et toutes ses données ?"
+          }
+        }
+      }
+    },
+    "Remove…" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Retirer…"
+          }
+        }
+      },
+      "comment" : "Button that removes a link the app installed, after asking for the folder again"
+    },
+    "Repair…" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Réparer…"
           }
         }
       }
@@ -2883,6 +3097,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Lancez le test de connexion pour la vérifier."
+          }
+        }
+      }
+    },
+    "Run this once in Terminal." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "À exécuter une fois dans Terminal."
           }
         }
       }
@@ -3028,6 +3252,17 @@
         }
       }
     },
+    "Skill" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Skill"
+          }
+        }
+      },
+      "comment" : "Settings › Agents: section about the agent skill, a folder of instructions for AI agents. Keep “skill”."
+    },
     "Skipped" : {
       "comment" : "State of a build that Xcode Cloud did not run.",
       "localizations" : {
@@ -3035,6 +3270,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ignoré"
+          }
+        }
+      }
+    },
+    "Something else is already there with that name. Remove it first, or choose another folder." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Un autre élément porte déjà ce nom à cet endroit. Retirez-le d’abord, ou choisissez un autre dossier."
           }
         }
       }
@@ -3341,6 +3586,16 @@
         }
       }
     },
+    "The link in %@ leads to a copy of Cumulus that moved. Repair it to point here." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Le lien dans %@ mène à une copie de Cumulus qui a été déplacée. Réparez-le pour qu’il pointe ici."
+          }
+        }
+      }
+    },
     "The private key can’t be read. Import the .p8 file downloaded from App Store Connect." : {
       "comment" : "Keep \"Xcode Cloud\", \"App Store Connect\" and \"TestFlight\" untranslated as product names.",
       "localizations" : {
@@ -3348,6 +3603,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "La clé privée est illisible. Importez le fichier .p8 téléchargé depuis App Store Connect."
+          }
+        }
+      }
+    },
+    "The skill tells an agent when to use the command and how to read its answers. It follows the app’s updates." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Le skill indique à un agent quand utiliser la commande et comment lire ses réponses. Il suit les mises à jour de l’app."
           }
         }
       }
@@ -3644,6 +3909,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Fenêtre"
+          }
+        }
+      }
+    },
+    "With the server, an agent calls Cumulus as tools instead of a command. Use it or the skill, whichever your agent supports." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Avec le serveur, un agent appelle Cumulus sous forme d’outils plutôt que par une commande. Utilisez-le ou le skill, selon ce que votre agent prend en charge."
           }
         }
       }
