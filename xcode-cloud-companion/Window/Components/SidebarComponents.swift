@@ -74,6 +74,119 @@ struct CycleCard: View {
     }
 }
 
+/// What the app is doing with Apple, above the cycle: one line most of the time, a card while builds are measured.
+struct SyncActivityView: View {
+    let activity: SyncActivity
+    let now: Date
+    /// Named when the card is about another account than the one on screen.
+    var accountName: String?
+
+    var body: some View {
+        switch activity {
+        case .measuring(let progress, let isFirstSync, let step):
+            measuring(progress, isFirstSync: isFirstSync, step: step)
+        case .syncing(let step):
+            line {
+                ProgressView().controlSize(.mini)
+                Text(step ?? String(localized: "Updating…"))
+            }
+            .foregroundStyle(.secondary)
+        case .failed(let message):
+            line {
+                Image(systemName: "exclamationmark.triangle.fill")
+                Text(message)
+            }
+            .foregroundStyle(.orange)
+            .help(message)
+        case .idle(let lastSync):
+            line {
+                Text(Self.updatedText(lastSync: lastSync, now: now))
+            }
+            .foregroundStyle(.tertiary)
+        }
+    }
+
+    /// A sync that ended after the clock was last read happened "now", never "in 35 seconds".
+    nonisolated static func updatedText(lastSync: Date?, now: Date) -> String {
+        guard let lastSync else { return String(localized: "Not updated yet") }
+        return String(localized: "Updated \(UsageFormat.relative(lastSync, now: max(now, lastSync)))")
+    }
+
+    /// One line of a fixed height, whatever it says: the sidebar does not jump when a sync starts or ends.
+    private func line(@ViewBuilder _ content: () -> some View) -> some View {
+        HStack(spacing: 5) {
+            content()
+        }
+        .font(.caption2)
+        .lineLimit(1)
+        .frame(maxWidth: .infinity, minHeight: 14, maxHeight: 14, alignment: .leading)
+        .padding(.horizontal, 4)
+        .accessibilityElement(children: .combine)
+    }
+
+    private func measuring(_ progress: MeasurementProgress, isFirstSync: Bool, step: String?) -> some View {
+        let hasCount = progress.totalActions > 0
+        return VStack(alignment: .leading, spacing: 6) {
+            HStack(spacing: 6) {
+                ProgressView().controlSize(.mini)
+                Text(UsageFormat.dotted([accountName, isFirstSync ? String(localized: "First sync") : String(localized: "Measuring your builds")].compactMap(\.self)))
+                    .fontWeight(.semibold)
+                    .lineLimit(1)
+                Spacer(minLength: 4)
+                if hasCount {
+                    Text("\(progress.measuredActions + progress.unmeasurableActions) / \(progress.totalActions)")
+                        .monospacedDigit()
+                        .foregroundStyle(.secondary)
+                }
+            }
+            .font(.caption)
+            ThinProgressBar(fraction: hasCount ? progress.fractionDone : 0)
+            Group {
+                if hasCount {
+                    Text("Fetching test results · about \(progress.minutesLeft) min left", comment: "Sidebar, while builds are measured: minutes until the usage figures are complete.")
+                } else {
+                    Text(step ?? String(localized: "Listing your apps and their builds…"))
+                }
+            }
+            .font(.caption)
+            .foregroundStyle(.secondary)
+            // No `fixedSize` here: see `CyclePromptCard`.
+            .lineLimit(3)
+        }
+        .padding(.horizontal, 12)
+        .padding(.vertical, 10)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(.background.opacity(0.7), in: .rect(cornerRadius: 10))
+        .overlay(RoundedRectangle(cornerRadius: 10).strokeBorder(.quaternary))
+        .accessibilityElement(children: .combine)
+    }
+}
+
+/// In the cycle's place while the plan has no reset date: without it there is no cycle to draw, and the sidebar says so
+/// instead of showing nothing.
+struct CyclePromptCard: View {
+    let setPlan: () -> Void
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text("Cycle").font(.caption).fontWeight(.semibold)
+            // No `fixedSize(vertical:)` in the sidebar's foot: asked for its smallest size, the window proposes no width,
+            // the text then stands one word a line, and its height becomes the least height of the whole window.
+            Text("Set your plan’s reset date to see how much of it is used.")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+                .lineLimit(3)
+            Button("Set Your Plan…", action: setPlan)
+                .controlSize(.small)
+        }
+        .padding(.horizontal, 12)
+        .padding(.vertical, 10)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(.background.opacity(0.7), in: .rect(cornerRadius: 10))
+        .overlay(RoundedRectangle(cornerRadius: 10).strokeBorder(.quaternary))
+    }
+}
+
 /// The prominent ▶ of the toolbar, in glass.
 struct LaunchButtonLabel: View {
     var title: LocalizedStringKey = "Launch"

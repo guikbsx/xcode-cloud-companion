@@ -53,6 +53,11 @@ nonisolated struct BuildSnapshot: Codable, Sendable, Equatable {
         lastSuccessfulSync = try container.decodeIfPresent(Date.self, forKey: .lastSuccessfulSync)
     }
 
+    /// Something was read at least once, from Apple or from the cache: there is something to show, be it an empty list.
+    var hasContent: Bool {
+        lastSuccessfulSync != nil || !products.isEmpty || !runs.isEmpty
+    }
+
     var hasActiveBuilds: Bool {
         runs.contains { $0.executionProgress != .complete }
     }

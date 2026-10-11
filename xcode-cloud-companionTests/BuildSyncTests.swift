@@ -245,9 +245,12 @@ struct BuildStoreTests {
 }
 
 struct SyncScheduleTests {
-    @Test func refreshesOftenWhileABuildRunsAndRarelyOtherwise() {
-        #expect(SyncSchedule.delay(after: .succeeded(hasActiveBuilds: true)) == .seconds(60))
-        #expect(SyncSchedule.delay(after: .succeeded(hasActiveBuilds: false)) == .seconds(600))
+    @Test func thereAreTwoPacesThirtySecondsWhileABuildRunsAndAMinuteOtherwise() {
+        #expect(SyncSchedule.delay(after: .succeeded(hasActiveBuilds: true)) == .seconds(30))
+        #expect(SyncSchedule.delay(after: .succeeded(hasActiveBuilds: false)) == .seconds(60))
+        // A failure, or no key at all, waits like a quiet minute.
+        #expect(SyncSchedule.delay(after: .failed) == .seconds(60))
+        #expect(SyncSchedule.delay(after: .notConfigured) == .seconds(60))
     }
 
     @Test func rateLimitsBackOffUpToTwoHours() {
@@ -264,50 +267,44 @@ struct SyncPaceTests {
     private let busy = SyncOutcome.succeeded(hasActiveBuilds: true)
     private let calm = SyncOutcome.succeeded(hasActiveBuilds: false)
 
-    @Test func theOpenWindowWatchesRunningBuildsClosely() {
-        #expect(SyncSchedule.delay(after: busy, context: SyncContext(windowIsOpen: true)) == .seconds(30))
-        #expect(SyncSchedule.delay(after: busy) == .seconds(60))
-        #expect(SyncSchedule.delay(after: calm, context: SyncContext(windowIsOpen: true)) == .seconds(300))
-        #expect(SyncSchedule.delay(after: calm) == .seconds(600))
-    }
-
-    @Test func aLockedScreenNeverGoesFasterThanTheSlowPace() {
-        #expect(SyncSchedule.delay(after: busy, context: SyncContext(windowIsOpen: true, screenIsLocked: true)) == .seconds(600))
-    }
-
     @Test func thePaceSlowsAsTheHourlyBudgetRunsDown() {
-        func delay(_ remaining: Int) -> Duration {
-            SyncSchedule.delay(after: busy, context: SyncContext(budget: RateLimit(limit: 3500, remaining: remaining)))
+        func delay(_ outcome: SyncOutcome, _ remaining: Int) -> Duration {
+            SyncSchedule.delay(after: outcome, context: SyncContext(budget: RateLimit(limit: 3500, remaining: remaining)))
         }
 
-        #expect(delay(3000) == .seconds(60))
-        #expect(delay(1500) == .seconds(120))
-        #expect(delay(700) == .seconds(240))
-        #expect(delay(300) == .seconds(480))
-        #expect(delay(40) == .seconds(1200))
+        #expect(delay(busy, 3000) == .seconds(30))
+        #expect(delay(busy, 1500) == .seconds(60))
+        #expect(delay(busy, 700) == .seconds(120))
+        #expect(delay(busy, 300) == .seconds(240))
+        #expect(delay(busy, 40) == .seconds(600))
+        #expect(delay(calm, 3000) == .seconds(60))
+        #expect(delay(calm, 40) == .seconds(1200))
+        #expect(delay(.failed, 40) == .seconds(1200))
     }
 
-    @Test func aRateLimitStillBacksOffWhateverTheContext() {
-        #expect(SyncSchedule.delay(after: .rateLimited(consecutive: 1), context: SyncContext(windowIsOpen: true)) == .seconds(900))
+    @Test func aRateLimitBacksOffWhateverTheBudgetSays() {
+        #expect(SyncSchedule.delay(after: .rateLimited(consecutive: 1), context: SyncContext(budget: RateLimit(limit: 3500, remaining: 3000))) == .seconds(900))
     }
 
-    @Test func aSyncIsDueOnlyOnceItsDelayHasPassedAndFollowsTheContextAsItChanges() {
+    @Test func aSyncIsDueOnlyOnceItsDelayHasPassed() {
         let start = Date(timeIntervalSince1970: 1_791_000_000)
 
-        #expect(!SyncSchedule.isDue(lastRun: start, now: start.addingTimeInterval(40), outcome: busy, context: SyncContext()))
-        #expect(SyncSchedule.isDue(lastRun: start, now: start.addingTimeInterval(40), outcome: busy, context: SyncContext(windowIsOpen: true)))
-        #expect(!SyncSchedule.isDue(lastRun: start, now: start.addingTimeInterval(200), outcome: busy, context: SyncContext(screenIsLocked: true)))
+        #expect(!SyncSchedule.isDue(lastRun: start, now: start.addingTimeInterval(20), outcome: busy, context: SyncContext()))
+        #expect(SyncSchedule.isDue(lastRun: start, now: start.addingTimeInterval(30), outcome: busy, context: SyncContext()))
+        #expect(!SyncSchedule.isDue(lastRun: start, now: start.addingTimeInterval(40), outcome: calm, context: SyncContext()))
+        #expect(SyncSchedule.isDue(lastRun: start, now: start.addingTimeInterval(60), outcome: calm, context: SyncContext()))
     }
 
-    @Test func openingTheWindowAndLockingTheScreenAreRemembered() {
+    @Test func theWindowAndTheLockAreRememberedButChangeNothingOfThePace() {
         let store = BuildStore()
 
         store.windowDidOpen()
         store.screenLockDidChange(isLocked: true)
-        #expect(store.syncContext == SyncContext(windowIsOpen: true, screenIsLocked: true, budget: nil))
+        #expect(store.windowIsOpen && store.screenIsLocked)
+        #expect(store.syncContext == SyncContext())
 
         store.windowDidClose()
         store.screenLockDidChange(isLocked: false)
-        #expect(store.syncContext == SyncContext())
+        #expect(!store.windowIsOpen && !store.screenIsLocked)
     }
 }

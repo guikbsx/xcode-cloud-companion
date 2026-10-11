@@ -9,19 +9,15 @@ nonisolated enum SyncOutcome: Sendable, Equatable {
 
 /// What the pace of the refresh depends on besides the last outcome.
 nonisolated struct SyncContext: Sendable, Equatable {
-    var windowIsOpen = false
-    var screenIsLocked = false
     /// Apple's hourly budget for the key, as of its last response.
     var budget: RateLimit?
 }
 
+/// Two paces, whatever is on screen: a build under way is followed closely, the rest of the time a minute is enough to
+/// catch the next build early. Only the key is protected beyond that: Apple's refusals, and its hourly budget.
 nonisolated enum SyncSchedule {
-    static let whileBuilding: Duration = .seconds(60)
-    /// The window is open and watching a build: closer, but never below what one request per minute of the key costs.
-    static let whileBuildingWithWindow: Duration = .seconds(30)
-    static let idle: Duration = .seconds(10 * 60)
-    static let idleWithWindow: Duration = .seconds(5 * 60)
-    static let afterFailure: Duration = .seconds(5 * 60)
+    static let whileBuilding: Duration = .seconds(30)
+    static let idle: Duration = .seconds(60)
     static let afterRateLimit: Duration = .seconds(15 * 60)
     static let longestWait: Duration = .seconds(2 * 3600)
     /// Fewer requests than this left in the hour: nothing but the slowest pace.
@@ -30,21 +26,12 @@ nonisolated enum SyncSchedule {
     static func delay(after outcome: SyncOutcome, context: SyncContext = SyncContext()) -> Duration {
         switch outcome {
         case .succeeded(let hasActiveBuilds):
-            // A locked screen shows nobody anything: it never goes faster than the slow pace.
-            let base: Duration = if context.screenIsLocked {
-                idle
-            } else if hasActiveBuilds {
-                context.windowIsOpen ? whileBuildingWithWindow : whileBuilding
-            } else {
-                context.windowIsOpen ? idleWithWindow : idle
-            }
-            return min(base * budgetFactor(context.budget), longestWait)
+            return min((hasActiveBuilds ? whileBuilding : idle) * budgetFactor(context.budget), longestWait)
         case .rateLimited(let consecutive):
             return min(afterRateLimit * (1 << min(max(consecutive - 1, 0), 8)), longestWait)
-        case .failed:
-            return afterFailure
-        case .notConfigured:
-            return idle
+        case .failed, .notConfigured:
+            // A failure is tried again at the quiet pace; without a key, nothing is asked anyway.
+            return min(idle * budgetFactor(context.budget), longestWait)
         }
     }
 

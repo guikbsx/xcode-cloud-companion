@@ -10,6 +10,8 @@ final class BuildStore {
     private(set) var syncStartedAt: Date?
     private(set) var lastError: AppStoreConnectError?
     private(set) var isConfigured = false
+    /// False until a first sync has looked for the key: before that, `isConfigured` says nothing yet.
+    private(set) var hasAttemptedSync = false
     /// Apple's hourly request budget as of the last response, shared by the menu, the window and the details.
     private(set) var rateLimit: RateLimit?
     private(set) var windowIsOpen = false
@@ -54,7 +56,7 @@ final class BuildStore {
             await self?.loadCacheIfNeeded()
             guard var outcome = await self?.synchronize() else { return }
             var lastRun = self?.now() ?? Date()
-            // The pace depends on the window, the lock and the budget, which change between two syncs: it is judged every few seconds.
+            // The pace depends on the budget, which changes between two syncs: it is judged every few seconds.
             while !Task.isCancelled {
                 try? await Task.sleep(for: Self.tick)
                 guard let self else { return }
@@ -69,7 +71,7 @@ final class BuildStore {
     static let tick: Duration = .seconds(5)
 
     var syncContext: SyncContext {
-        SyncContext(windowIsOpen: windowIsOpen, screenIsLocked: screenIsLocked, budget: rateLimit)
+        SyncContext(budget: rateLimit)
     }
 
     /// The window shows what is built right now: it asks for fresh data when the last sync is older than 30 seconds.
@@ -178,6 +180,7 @@ final class BuildStore {
         guard !isSyncing else { return .succeeded(hasActiveBuilds: snapshot.hasActiveBuilds) }
         guard !isRetired else { return .notConfigured }
         isSyncing = true
+        hasAttemptedSync = true
         syncStartedAt = now()
         defer {
             isSyncing = false

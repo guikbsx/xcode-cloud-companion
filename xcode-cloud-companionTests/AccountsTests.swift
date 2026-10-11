@@ -336,7 +336,7 @@ struct AccountsModelTests {
         #expect(personal.owns(buildRunID: "run-personal") && !personal.owns(buildRunID: "run-work"))
     }
 
-    @Test func onlyTheAccountOnScreenSyncsAtTheWindowsPace() async throws {
+    @Test func onlyTheAccountOnScreenIsTheOneTheWindowRefreshes() async throws {
         let accounts = TestAccounts()
         let model = accounts.model
         let personal = try await accounts.add("Personal")

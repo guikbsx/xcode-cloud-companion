@@ -1635,6 +1635,16 @@
         }
       }
     },
+    "Couldn’t fetch your builds" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Impossible de récupérer vos builds"
+          }
+        }
+      }
+    },
     "Covers" : {
       "comment" : "Settings, usage tab: the period an imported export covers.",
       "localizations" : {
@@ -1767,6 +1777,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Couper"
+          }
+        }
+      }
+    },
+    "Cycle" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cycle"
           }
         }
       }
@@ -2210,6 +2230,47 @@
         }
       }
     },
+    "Fetching test results · about %lld min left" : {
+      "comment" : "Sidebar, while builds are measured: minutes until the usage figures are complete.",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Fetching test results · about %lld min left"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Fetching test results · about %lld min left"
+                }
+              }
+            }
+          }
+        },
+        "fr" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Résultats de tests en cours de lecture · environ %lld min restante"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Résultats de tests en cours de lecture · environ %lld min restantes"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "Fetching test results, %lld builds at a time · about %lld min left. Figures fill in as they arrive; you can close this menu." : {
       "localizations" : {
         "en" : {
@@ -2266,6 +2327,16 @@
                 }
               }
             }
+          }
+        }
+      }
+    },
+    "Fetching your Xcode Cloud builds" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Récupération de vos builds Xcode Cloud"
           }
         }
       }
@@ -2328,6 +2399,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Terminé"
+          }
+        }
+      }
+    },
+    "First sync" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Première synchro"
           }
         }
       }
@@ -4186,6 +4267,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Saisir votre forfait…"
+          }
+        }
+      }
+    },
+    "Set your plan’s reset date to see how much of it is used." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Indiquez la date de réinitialisation de votre forfait pour voir ce qui en est consommé."
           }
         }
       }

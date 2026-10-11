@@ -16,7 +16,7 @@ nonisolated struct CLIReportBuilder: Sendable {
         data.plan.map { UsageCalculator.summary(snapshot: snapshot, ledger: data.ledger, plan: $0, now: now, calendar: calendar) }
     }
 
-    private static let noPlanHint = "Set the plan and its reset date in Cumulus › Settings › Usage to get the cycle's figures."
+    private static let noPlanHint = "Set the plan and its reset date in Cumulus › Settings › Accounts to get the cycle's figures."
 
     // MARK: - Status and usage
 

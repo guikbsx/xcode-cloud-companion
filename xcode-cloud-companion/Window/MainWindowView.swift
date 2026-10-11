@@ -11,8 +11,8 @@ struct MainWindowRoot: View {
         Group {
             if let session = accounts.selected {
                 MainWindowView(
-                    session: session, navigation: navigation, pins: pins, openSettings: openSettings,
-                    importUsageExport: { await accounts.importUsageExport(at: $0) }
+                    session: session, others: accounts.sessions.filter { $0.id != session.id }, navigation: navigation, pins: pins,
+                    openSettings: openSettings, importUsageExport: { await accounts.importUsageExport(at: $0) }
                 )
                 // Sheets, tasks and what was typed belong to the account they were opened for.
                 .id(session.id)
@@ -39,6 +39,8 @@ struct MainWindowRoot: View {
 /// The three columns: sidebar, builds, detail. The columns are filled in by their own tickets; this is the frame.
 struct MainWindowView: View {
     let session: AccountSession
+    /// The other accounts: what they already hold decides whether the window may wait, and their first fetch shows in the sidebar.
+    var others: [AccountSession] = []
     @Bindable var navigation: NavigationModel
     @Bindable var pins: PinnedWorkflows
     let openSettings: () -> Void
@@ -60,48 +62,65 @@ struct MainWindowView: View {
     private var palette: AppPalette { session.paletteStore.refreshed(for: buildStore.snapshot, summary: usageSummary) }
 
     var body: some View {
-        if buildStore.isConfigured {
-            NavigationSplitView {
-                sidebar
-                    .navigationSplitViewColumnWidth(min: 200, ideal: 240, max: 320)
-            } content: {
-                BuildListView(buildStore: buildStore, navigation: navigation)
-                    .navigationSplitViewColumnWidth(min: 280, ideal: 340, max: 460)
-            } detail: {
-                detail
-            }
-            .toolbar {
-                if let target = launchTargetForToolbar {
-                    ToolbarItem(placement: .primaryAction) {
-                        Button { launchTarget = target } label: { LaunchButtonLabel() }
-                            .buttonStyle(.glassProminent)
-                            .help("Launch this workflow")
-                    }
-                }
-            }
-            .sheet(item: $launchTarget) { target in
-                LaunchSheet(
-                    target: target, launcher: launcher,
-                    onStarted: { run in
-                        buildStore.insertStarted(run)
-                        navigation.showBuild(run.id)
-                    },
-                    onNotAllowed: { settings.keyAccess = .readOnly }
-                )
-            }
-            .sheet(item: $pauseTarget) { target in
-                WorkflowPauseSheet(target: target, pauser: pauser, onNotAllowed: { settings.keyAccess = .readOnly })
-            }
-            .task(id: buildStore.snapshot.appIcons) { await icons.load(buildStore.snapshot.appIcons) }
-            .task {
-                // The detail views spend requests too: the budget shown follows what the client last saw.
-                while !Task.isCancelled {
-                    await buildStore.updateRateLimit()
-                    try? await Task.sleep(for: .seconds(30))
-                }
-            }
-        } else {
+        switch contentState {
+        case .ready:
+            columns
+        case .loading(let step):
+            FirstFetchView(step: step)
+        case .failed(let message, let isRetrying):
+            FirstFetchFailedView(message: message, isRetrying: isRetrying, retry: { Task { await buildStore.refreshNow() } }, openSettings: openSettings)
+        case .notSetUp:
             NotSetUpView(openSettings: openSettings)
+        }
+    }
+
+    private var contentState: WindowContentState {
+        .of(
+            isConfigured: buildStore.isConfigured, hasAttemptedSync: buildStore.hasAttemptedSync, isSyncing: buildStore.isSyncing,
+            hasContent: buildStore.snapshot.hasContent, anotherAccountHasContent: others.contains { $0.buildStore.snapshot.hasContent },
+            errorMessage: buildStore.lastErrorMessage, step: buildStore.progress
+        )
+    }
+
+    private var columns: some View {
+        NavigationSplitView {
+            sidebar
+                .navigationSplitViewColumnWidth(min: 200, ideal: 240, max: 320)
+        } content: {
+            BuildListView(buildStore: buildStore, navigation: navigation)
+                .navigationSplitViewColumnWidth(min: 280, ideal: 340, max: 460)
+        } detail: {
+            detail
+        }
+        .toolbar {
+            if let target = launchTargetForToolbar {
+                ToolbarItem(placement: .primaryAction) {
+                    Button { launchTarget = target } label: { LaunchButtonLabel() }
+                        .buttonStyle(.glassProminent)
+                        .help("Launch this workflow")
+                }
+            }
+        }
+        .sheet(item: $launchTarget) { target in
+            LaunchSheet(
+                target: target, launcher: launcher,
+                onStarted: { run in
+                    buildStore.insertStarted(run)
+                    navigation.showBuild(run.id)
+                },
+                onNotAllowed: { settings.keyAccess = .readOnly }
+            )
+        }
+        .sheet(item: $pauseTarget) { target in
+            WorkflowPauseSheet(target: target, pauser: pauser, onNotAllowed: { settings.keyAccess = .readOnly })
+        }
+        .task(id: buildStore.snapshot.appIcons) { await icons.load(buildStore.snapshot.appIcons) }
+        .task {
+            // The detail views spend requests too: the budget shown follows what the client last saw.
+            while !Task.isCancelled {
+                await buildStore.updateRateLimit()
+                try? await Task.sleep(for: .seconds(30))
+            }
         }
     }
 
@@ -116,6 +135,9 @@ struct MainWindowView: View {
             pins: pins,
             selection: $navigation.sidebarSelection,
             cycle: CycleCard.Content(summary: summary),
+            setPlan: settings.plan == nil ? openSettings : nil,
+            activity: session.activity(now: Date()),
+            backgroundActivity: SyncActivity.background(among: others.map { ($0.name, $0.activity(now: Date())) }),
             budgetText: buildStore.rateLimit.map { String(localized: "\($0.remaining) of \($0.limit) requests left this hour") },
             artwork: icons.artwork(in: buildStore.snapshot, by: \.id),
             togglePause: canLaunch ? { askToTogglePause(workflowID: $0.id) } : nil
@@ -217,6 +239,49 @@ private struct NotSetUpView: View {
         } actions: {
             Button("Configure Cumulus…", action: openSettings)
                 .buttonStyle(.borderedProminent)
+        }
+    }
+}
+
+/// The very first fetch of an account: nothing to show yet, so the window says what it is reading.
+private struct FirstFetchView: View {
+    let step: String?
+
+    var body: some View {
+        ContentUnavailableView {
+            Label {
+                Text("Fetching your Xcode Cloud builds")
+            } icon: {
+                ProgressView()
+                    .controlSize(.large)
+            }
+        } description: {
+            Text(step ?? String(localized: "Listing your apps and their builds…"))
+        }
+    }
+}
+
+/// The first fetch failed: the reason, and the two ways out.
+private struct FirstFetchFailedView: View {
+    let message: String
+    let isRetrying: Bool
+    let retry: () -> Void
+    let openSettings: () -> Void
+
+    var body: some View {
+        ContentUnavailableView {
+            Label("Couldn’t fetch your builds", systemImage: "exclamationmark.icloud")
+        } description: {
+            Text(message)
+        } actions: {
+            Button("Try Again", action: retry)
+                .buttonStyle(.borderedProminent)
+                .disabled(isRetrying)
+            Button("Settings…", action: openSettings)
+            if isRetrying {
+                ProgressView()
+                    .controlSize(.small)
+            }
         }
     }
 }

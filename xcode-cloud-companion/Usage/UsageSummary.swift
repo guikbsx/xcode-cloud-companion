@@ -44,8 +44,10 @@ nonisolated struct GaugeSegment: Sendable, Equatable {
 /// How far the first measurements of the current cycle have got: Apple bills per simulator, so a build only counts
 /// once its test results are in. Builds Apple already billed (usage export) never need measuring.
 nonisolated struct MeasurementProgress: Sendable, Equatable {
-    /// How many test actions one pass of the synchronizer fetches, and about how long a pass takes with the pause between passes.
+    /// How many test actions one pass of the synchronizer fetches.
     static let actionsPerPass = BuildSynchronizer.maxTestResultFetchesPerSync
+    /// The pause between two passes: the pace of the syncs while results are pending (`SyncSchedule.whileBuilding`).
+    static let secondsPerPass = 30
 
     var totalActions = 0
     var measuredActions = 0
@@ -57,8 +59,11 @@ nonisolated struct MeasurementProgress: Sendable, Equatable {
     var pendingActions: Int { totalActions - measuredActions - unmeasurableActions }
     var isMeasuring: Bool { pendingActions > 0 }
     var fractionDone: Double { totalActions > 0 ? Double(measuredActions + unmeasurableActions) / Double(totalActions) : 1 }
-    /// One pass a minute: the whole wait, not counting the pass in flight.
-    var minutesLeft: Int { (pendingActions + Self.actionsPerPass - 1) / Self.actionsPerPass }
+    /// The whole wait in minutes, rounded up, not counting the pass in flight.
+    var minutesLeft: Int {
+        let passes = (pendingActions + Self.actionsPerPass - 1) / Self.actionsPerPass
+        return (passes * Self.secondsPerPass + 59) / 60
+    }
 }
 
 /// Widths of the gauge segments, keeping every non-empty slice visible without overflowing the bar.

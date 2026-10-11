@@ -257,7 +257,7 @@ final class AccountsModel {
         }
     }
 
-    /// Only the account on screen syncs at the window's pace: the others keep the menu's.
+    /// Opening the window refreshes the account it shows, when its last sync is not fresh; the pace itself is the same for all.
     private func applyWindowState() {
         guard isRunning else { return }
         for session in sessions {

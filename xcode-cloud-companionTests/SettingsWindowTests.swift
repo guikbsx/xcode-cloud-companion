@@ -12,7 +12,7 @@ struct SettingsWindowTests {
         func openSystemSettings() {}
     }
 
-    @Test func theWindowGrowsButNeverShrinksBelowTheTabItShows() async throws {
+    @Test func theWindowKeepsTheSizeTheUserGivesItDownToAMinimumAndEachTabOpensAtItsOwn() async throws {
         let accounts = TestAccounts()
         let preferences = NotificationPreferences(defaults: accounts.defaults)
         let controller = SettingsWindowController(
@@ -24,23 +24,35 @@ struct SettingsWindowTests {
         let window = try #require(NSApp.windows.first { $0.contentViewController is NSTabViewController })
         defer { window.close() }
         let tabs = try #require(window.contentViewController as? NSTabViewController)
+        func settle() async throws { try await Task.sleep(for: .milliseconds(700)) }
 
         #expect(window.styleMask.contains(.resizable))
-        // Without an account, Settings open on Accounts, the widest tab.
+        // Without an account, Settings open on Accounts: at its own size, and it may be made smaller than that.
         for _ in 0..<50 where tabs.selectedTabViewItemIndex != 1 {
             try await Task.sleep(for: .milliseconds(20))
         }
-        #expect(tabs.selectedTabViewItemIndex == 1 && window.contentMinSize == NSSize(width: 780, height: 720))
+        try await settle()
+        #expect(tabs.selectedTabViewItemIndex == 1 && window.contentLayoutRect.size == NSSize(width: 780, height: 720))
+        #expect(window.contentMinSize == NSSize(width: 700, height: 460))
 
-        // The user widens the Accounts tab; another tab opens at its own size all the same.
-        window.setContentSize(NSSize(width: 1000, height: 800))
+        // The user drags the window to another size: it stays there, where the tab controller used to bring it back.
+        window.setContentSize(NSSize(width: 900, height: 600))
+        window.delegate?.windowDidEndLiveResize?(Notification(name: NSWindow.didEndLiveResizeNotification, object: window))
+        try await settle()
+        #expect(window.contentLayoutRect.size == NSSize(width: 900, height: 600))
+
+        // Another tab opens at its own size, with its own minimum.
         tabs.selectedTabViewItemIndex = 0
-        #expect(window.contentMinSize == NSSize(width: 560, height: 400))
-        for _ in 0..<100 where window.contentLayoutRect.size != NSSize(width: 560, height: 400) {
-            try await Task.sleep(for: .milliseconds(20))
-        }
+        try await settle()
         #expect(window.contentLayoutRect.size == NSSize(width: 560, height: 400))
+        #expect(window.contentMinSize == NSSize(width: 560, height: 400))
         tabs.selectedTabViewItemIndex = 3
-        #expect(window.contentMinSize == NSSize(width: 560, height: 700))
+        try await settle()
+        #expect(window.contentLayoutRect.size == NSSize(width: 560, height: 700) && window.contentMinSize == NSSize(width: 560, height: 420))
+
+        // Coming back, Accounts opens at its own size again, not at the one it was dragged to.
+        tabs.selectedTabViewItemIndex = 1
+        try await settle()
+        #expect(window.contentLayoutRect.size == NSSize(width: 780, height: 720))
     }
 }

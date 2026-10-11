@@ -56,7 +56,7 @@ struct CLICommandTests {
         guard case .status(let status) = response.report else { return }
 
         #expect(!status.planConfigured && status.usage == nil)
-        #expect(status.hint?.contains("Settings › Usage") == true)
+        #expect(status.hint?.contains("Settings › Accounts") == true)
         #expect(status.runningBuilds == 2)
         #expect(!response.meta.isEstimate)
 

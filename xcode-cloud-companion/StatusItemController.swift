@@ -51,11 +51,7 @@ final class StatusItemController: NSObject, NSMenuDelegate {
         let buildStore = session.buildStore
         let settings = session.settings
         let summary = session.usageSummary(now: date)
-        // Without a reset date there is no cycle, but the builds still get measured: over the last 30 days then.
-        let measurement = summary?.measurement ?? UsageCalculator.summary(
-            snapshot: buildStore.snapshot, ledger: session.usageStore.ledger,
-            plan: UsagePlan(hours: settings.planHours, resetAnchor: date.addingTimeInterval(-30 * 24 * 3600)), now: date
-        ).measurement
+        let measurement = session.measurement(now: date, summary: summary)
         return StatusMenuState(
             needsAPIKey: !buildStore.isConfigured && buildStore.snapshot.lastSuccessfulSync == nil && !buildStore.isSyncing,
             summary: summary,

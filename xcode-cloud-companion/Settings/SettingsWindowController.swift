@@ -25,7 +25,16 @@ final class SettingsWindowController {
             }
         }
 
-        /// What the tab opens at, and the least the window may be resized to while it shows.
+        /// The least the window may be resized to while the tab shows: its forms scroll, so a tall tab can be made
+        /// shorter than it opens, down to a size that still reads.
+        var minimumSize: NSSize {
+            switch self {
+            case .accounts: NSSize(width: 700, height: 460)
+            case .general, .notifications, .agents: NSSize(width: 560, height: min(size.height, 420))
+            }
+        }
+
+        /// What the tab opens at.
         var size: NSSize {
             switch self {
             case .general: NSSize(width: 560, height: 400)
@@ -95,16 +104,16 @@ final class SettingsWindowController {
                     defaults.set(Tab.allCases[index].rawValue, forKey: Self.selectedTabKey)
                 }
             },
-            minimumSize: { Tab.allCases.indices.contains($0) ? Tab.allCases[$0].size : nil }
+            minimumSize: { Tab.allCases.indices.contains($0) ? Tab.allCases[$0].minimumSize : nil },
+            openingSize: { Tab.allCases.indices.contains($0) ? Tab.allCases[$0].size : nil }
         )
         controller.tabStyle = .toolbar
         for tab in Tab.allCases {
-            // Opens at its size, grows with the window, never shrinks below it.
-            let hosting = NSHostingController(rootView: rootView(for: tab).frame(
-                minWidth: tab.size.width, idealWidth: tab.size.width, maxWidth: .infinity,
-                minHeight: tab.size.height, idealHeight: tab.size.height, maxHeight: .infinity
-            ))
-            hosting.sizingOptions = [.preferredContentSize]
+            // The tab controller brings the window to this size when the tab is picked. The size is given once, not
+            // derived from the content: a hosting controller that keeps reporting it pins the window to it.
+            let hosting = NSHostingController(rootView: rootView(for: tab).frame(maxWidth: .infinity, maxHeight: .infinity))
+            hosting.sizingOptions = []
+            hosting.preferredContentSize = tab.size
             let item = NSTabViewItem(viewController: hosting)
             item.label = tab.title
             item.image = NSImage(systemSymbolName: tab.symbol, accessibilityDescription: tab.title)
@@ -114,7 +123,8 @@ final class SettingsWindowController {
 
         let window = NSWindow(contentViewController: controller)
         window.styleMask = [.titled, .closable, .resizable]
-        window.contentMinSize = Tab.allCases[controller.selectedTabViewItemIndex].size
+        window.contentMinSize = Tab.allCases[controller.selectedTabViewItemIndex].minimumSize
+        window.delegate = controller
         window.isReleasedWhenClosed = false
         window.center()
         return window
@@ -131,23 +141,51 @@ final class SettingsWindowController {
     }
 }
 
-/// Remembers the tab the user picked, so the window reopens on it, and keeps the window at least as large as the tab.
-private final class TabsController: NSTabViewController {
+/// Remembers the tab the user picked, so the window reopens on it, and lets the window be resized down to the tab's minimum.
+///
+/// A tab controller keeps its window at the shown tab's `preferredContentSize`, and brings it back there a moment after
+/// any resize. So the size the user gives the window becomes the tab's preferred size, until another tab is picked.
+private final class TabsController: NSTabViewController, NSWindowDelegate {
     private let onSelect: (Int) -> Void
     private let minimumSize: (Int) -> NSSize?
+    private let openingSize: (Int) -> NSSize?
 
-    init(onSelect: @escaping (Int) -> Void, minimumSize: @escaping (Int) -> NSSize?) {
+    init(onSelect: @escaping (Int) -> Void, minimumSize: @escaping (Int) -> NSSize?, openingSize: @escaping (Int) -> NSSize?) {
         self.onSelect = onSelect
         self.minimumSize = minimumSize
+        self.openingSize = openingSize
         super.init(nibName: nil, bundle: nil)
     }
 
-    /// Set before the window takes the new tab's size: a larger minimum left by the previous tab would stand in its way.
+    /// Before the window takes the new tab's size: the tab opens at its own size again, and a larger minimum left by
+    /// the previous tab would stand in the way.
     override func tabView(_ tabView: NSTabView, willSelect tabViewItem: NSTabViewItem?) {
-        if let tabViewItem, let size = minimumSize(tabView.indexOfTabViewItem(tabViewItem)) {
-            view.window?.contentMinSize = size
+        if let tabViewItem {
+            let index = tabView.indexOfTabViewItem(tabViewItem)
+            if let size = minimumSize(index) {
+                view.window?.contentMinSize = size
+            }
+            if let size = openingSize(index) {
+                tabViewItem.viewController?.preferredContentSize = size
+            }
         }
         super.tabView(tabView, willSelect: tabViewItem)
+    }
+
+    /// Only the user's own resizing counts: the controller resizes the window too, from one tab's size to the next.
+    func windowDidResize(_ notification: Notification) {
+        if view.window?.inLiveResize == true {
+            adoptWindowSize()
+        }
+    }
+
+    func windowDidEndLiveResize(_ notification: Notification) {
+        adoptWindowSize()
+    }
+
+    private func adoptWindowSize() {
+        guard tabViewItems.indices.contains(selectedTabViewItemIndex) else { return }
+        tabViewItems[selectedTabViewItemIndex].viewController?.preferredContentSize = view.frame.size
     }
 
     @available(*, unavailable)

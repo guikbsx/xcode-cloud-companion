@@ -6,6 +6,12 @@ struct SidebarView: View {
     @Bindable var pins: PinnedWorkflows
     @Binding var selection: SidebarSelection
     let cycle: CycleCard.Content?
+    /// Opens Settings on the plan; set while the account has no reset date, which is why there is no cycle to show.
+    var setPlan: (() -> Void)?
+    /// What the app is fetching, or how fresh the data is: shown above the cycle.
+    var activity: SyncActivity?
+    /// Another account's first fetch or measure, named, above the line of the account on screen.
+    var backgroundActivity: (name: String, activity: SyncActivity)?
     var budgetText: String?
     /// Loaded app icons by product ID.
     var artwork: [String: AppArtwork] = [:]
@@ -50,8 +56,19 @@ struct SidebarView: View {
         }
         .safeAreaInset(edge: .bottom) {
             VStack(spacing: 6) {
+                if let backgroundActivity {
+                    SyncActivityView(activity: backgroundActivity.activity, now: Date(), accountName: backgroundActivity.name)
+                }
+                if let activity {
+                    // "Updated 2 minutes ago" is only true for a minute: the tick redraws the line, which reads the time then.
+                    TickingView(interval: 60) { _ in
+                        SyncActivityView(activity: activity, now: Date())
+                    }
+                }
                 if let cycle {
                     CycleCard(fractionUsed: cycle.fractionUsed, usedText: cycle.usedText, resetText: cycle.resetText)
+                } else if let setPlan {
+                    CyclePromptCard(setPlan: setPlan)
                 }
                 if let budgetText {
                     Text(budgetText).font(.caption2).foregroundStyle(.tertiary).frame(maxWidth: .infinity, alignment: .leading).padding(.horizontal, 4)

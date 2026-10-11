@@ -68,6 +68,23 @@ final class AccountSession: Identifiable {
         settings.plan.map { UsageCalculator.summary(snapshot: buildStore.snapshot, ledger: usageStore.ledger, plan: $0, now: now) }
     }
 
+    /// How far the builds are measured, for the menu and the window alike. Without a reset date there is no cycle, but
+    /// the builds still get measured: over the last 30 days then.
+    func measurement(now: Date, summary: UsageSummary?) -> MeasurementProgress {
+        summary?.measurement ?? UsageCalculator.summary(
+            snapshot: buildStore.snapshot, ledger: usageStore.ledger,
+            plan: UsagePlan(hours: settings.planHours, resetAnchor: now.addingTimeInterval(-30 * 24 * 3600)), now: now
+        ).measurement
+    }
+
+    /// What the account is fetching right now, or how fresh its builds are.
+    func activity(now: Date) -> SyncActivity {
+        .current(
+            isSyncing: buildStore.isSyncing, activity: buildStore.progress, lastSync: buildStore.snapshot.lastSuccessfulSync,
+            errorMessage: buildStore.lastErrorMessage, measurement: measurement(now: now, summary: usageSummary(now: now))
+        )
+    }
+
     func owns(buildRunID: String) -> Bool {
         buildStore.snapshot.runs.contains { $0.id == buildRunID }
     }

@@ -176,9 +176,12 @@ struct MeasurementProgressTests {
     }
 
     @Test func theWaitIsOneMinutePerBatchOfTwelve() {
-        #expect(MeasurementProgress(totalActions: 40, measuredActions: 4).minutesLeft == 3)
+        // Twelve actions a pass, a pass every 30 seconds: 36 actions are three passes, a minute and a half.
+        #expect(MeasurementProgress(totalActions: 40, measuredActions: 4).minutesLeft == 2)
         #expect(MeasurementProgress(totalActions: 40, measuredActions: 28).minutesLeft == 1)
         #expect(MeasurementProgress(totalActions: 40, measuredActions: 40).minutesLeft == 0)
+        #expect(MeasurementProgress(totalActions: 120, measuredActions: 0).minutesLeft == 5)
+        #expect(Duration.seconds(MeasurementProgress.secondsPerPass) == SyncSchedule.whileBuilding)
     }
 
     @Test func onceEveryBuildIsMeasuredTheStateEnds() {
