@@ -38,6 +38,12 @@ struct BuildDetailTests {
         return BuildDetailModel(run: run, product: product, workflow: workflow, actions: actions, teamID: "team-1", now: now ?? created.addingTimeInterval(1_000))
     }
 
+    @Test func aRunningBuildsSheetIsRedrawnEverySecondAndAFinishedOneEveryMinute() {
+        #expect(BuildDetailView.redrawInterval(for: run(progress: .running)) == 1)
+        #expect(BuildDetailView.redrawInterval(for: run(progress: .pending)) == 1)
+        #expect(BuildDetailView.redrawInterval(for: run()) == 60)
+    }
+
     @Test func theHeaderNamesTheBuildItsStateAndItsReference() {
         let model = model(run())
 

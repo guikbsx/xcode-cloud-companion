@@ -8,10 +8,18 @@ struct BuildListView: View {
     @State private var query = ""
 
     var body: some View {
-        TimelineView(.everyMinute) { context in
-            content(now: context.date)
+        TickingView(interval: 60) { now in
+            content(now: now)
         }
         .searchable(text: $query, prompt: Text("Number, commit or name"))
+    }
+
+    private func card(_ row: BuildRowData, now: Date) -> BuildCard {
+        BuildCard(
+            status: row.status, number: row.numberText, summary: row.summary(now: now), detail: row.detail,
+            duration: row.duration(now: now), isSelected: row.id == navigation.selectedBuildID,
+            runningSince: row.runningSince, spokenDetail: row.spokenDetail
+        )
     }
 
     private func content(now: Date) -> some View {
@@ -29,11 +37,7 @@ struct BuildListView: View {
                                     Button {
                                         navigation.selectedBuildID = row.id
                                     } label: {
-                                        BuildCard(
-                                            status: row.status, number: row.numberText, summary: row.summary(now: now), detail: row.detail,
-                                            duration: row.duration(now: now), isSelected: row.id == navigation.selectedBuildID,
-                                            spokenDetail: row.spokenDetail
-                                        )
+                                        card(row, now: now)
                                     }
                                     .buttonStyle(.plain)
                                 }

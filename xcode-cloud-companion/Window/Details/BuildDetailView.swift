@@ -16,17 +16,23 @@ struct BuildDetailView: View {
     @Binding var tab: BuildTab
 
     var body: some View {
-        TimelineView(.everyMinute) { context in
+        TickingView(interval: Self.redrawInterval(for: run)) { now in
             content(BuildDetailModel(
                 run: run,
                 product: buildStore.snapshot.products.first { $0.id == run.productID },
                 workflow: buildStore.snapshot.workflow(id: run.workflowID),
                 actions: buildStore.snapshot.actionsByRunID[run.id] ?? [],
                 teamID: teamID,
-                now: context.date
+                now: now
             ))
         }
         .task(id: run) { await extrasStore.loadBetaBuilds(for: run) }
+    }
+
+    /// A running build's durations go on every second until a sync says it ended; a finished build only has its
+    /// "2 hours ago" to keep up to date.
+    nonisolated static func redrawInterval(for run: CIBuildRun) -> TimeInterval {
+        run.executionProgress == .complete ? 60 : 1
     }
 
     private func content(_ model: BuildDetailModel) -> some View {

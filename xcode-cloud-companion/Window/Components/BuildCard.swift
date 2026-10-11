@@ -8,6 +8,8 @@ struct BuildCard: View {
     let detail: String
     let duration: String?
     var isSelected = false
+    /// A running build's start: its duration is redrawn every second, the rest of the card is not.
+    var runningSince: Date?
     /// What VoiceOver reads for `detail` when the row shortens it: the app's full name, the workflow, the branch.
     var spokenDetail: String?
 
@@ -27,10 +29,12 @@ struct BuildCard: View {
                     .lineLimit(1)
             }
             Spacer(minLength: 6)
-            if let duration {
-                Text(duration)
-                    .font(.system(.caption, design: .monospaced))
-                    .foregroundStyle(isSelected ? AnyShapeStyle(.white.opacity(0.85)) : AnyShapeStyle(.secondary))
+            if let runningSince {
+                TickingView(interval: 1) { now in
+                    durationText(BuildRowData.clock(max(0, now.timeIntervalSince(runningSince))))
+                }
+            } else if let duration {
+                durationText(duration)
             }
         }
         .padding(.horizontal, 12)
@@ -46,6 +50,12 @@ struct BuildCard: View {
         .accessibilityLabel(Text("\(number), \(status.label), \(summary)"))
         .accessibilityValue(Text(spokenDetail ?? detail))
         .accessibilityAddTraits(isSelected ? .isSelected : [])
+    }
+
+    private func durationText(_ text: String) -> some View {
+        Text(text)
+            .font(.system(.caption, design: .monospaced))
+            .foregroundStyle(isSelected ? AnyShapeStyle(.white.opacity(0.85)) : AnyShapeStyle(.secondary))
     }
 }
 

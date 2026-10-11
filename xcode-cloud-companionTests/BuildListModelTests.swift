@@ -120,6 +120,14 @@ struct BuildListModelTests {
         #expect(BuildRowData.clock(3725) == "1:02:05")
     }
 
+    @Test func onlyARunningBuildsCounterGoesOnAndOnlyUntilItEnds() throws {
+        let running = try #require(model([run(1, created: "2026-10-08T22:00:00Z", finished: false)]).rows.first)
+        let finished = try #require(model([run(2, created: "2026-10-08T22:00:00Z")]).rows.first)
+
+        #expect(running.runningSince == running.startedDate && running.runningSince != nil)
+        #expect(finished.runningSince == nil)
+    }
+
     @Test func theEmptyListSaysWhy() {
         #expect(model([]).emptyReason == .noBuilds)
         #expect(model([run(1, created: "2026-10-08T10:00:00Z")], filter: .running).emptyReason == .nothingMatches)

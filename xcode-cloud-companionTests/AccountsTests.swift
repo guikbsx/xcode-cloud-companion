@@ -434,6 +434,8 @@ struct UsageImportRoutingTests {
             try await BuildCacheStore(fileURL: session.paths.buildCache).save(BuildSnapshot(products: products, lastSuccessfulSync: CLIFixture.now))
         }
         model.select(personal.id)
+        // The start reads the registry from disk: both accounts have to be in it by then.
+        await model.registryIsSaved()
         return (model, personal, work, downloads)
     }
 

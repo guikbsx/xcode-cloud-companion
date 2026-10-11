@@ -49,6 +49,11 @@ nonisolated struct BuildRowData: Identifiable, Equatable, Sendable {
         }
     }
 
+    /// Where a running build's counter starts: it goes on every second until a sync says the build ended.
+    var runningSince: Date? {
+        status == .running && finishedDate == nil ? startedDate : nil
+    }
+
     /// Elapsed time of a running build, total time of a finished one; nothing for a build that never started.
     func duration(now: Date) -> String? {
         guard let startedDate else { return nil }
