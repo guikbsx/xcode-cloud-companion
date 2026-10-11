@@ -17,12 +17,13 @@ nonisolated struct CLIAccountScope: Equatable, Sendable {
         AccountPaths(accountID: account.id, supportRoot: root, cachesRoot: root).support
     }
 
-    /// Without a list of accounts the app never ran: there is no cache either.
+    /// Without a list of accounts the app never ran, and without an account it has no key: there is no cache either.
     static func resolve(_ reference: String?, in root: URL) async throws(CLIFailure) -> CLIAccountScope {
-        guard let registry = await registry(in: root) else { throw CLIFailure.noCache }
+        guard let registry = await registry(in: root), !registry.accounts.isEmpty else { throw CLIFailure.noCache }
         guard let reference else {
+            guard let selected = registry.selected else { throw CLIFailure.noCache }
             return CLIAccountScope(
-                account: registry.selected, isSelected: true, hasSiblings: registry.accounts.count > 1, directory: directory(of: registry.selected, in: root)
+                account: selected, isSelected: true, hasSiblings: registry.accounts.count > 1, directory: directory(of: selected, in: root)
             )
         }
         let matches = registry.accounts(matching: reference)

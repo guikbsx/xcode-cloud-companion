@@ -123,13 +123,13 @@
               "one" : {
                 "stringUnit" : {
                   "state" : "translated",
-                  "value" : "%1$@ liste les apps de « %2$@ » : son %3$lld build y a été importé."
+                  "value" : "%1$@ liste les apps de « %2$@ » : son %3$lld build y a été importé."
                 }
               },
               "other" : {
                 "stringUnit" : {
                   "state" : "translated",
-                  "value" : "%1$@ liste les apps de « %2$@ » : ses %3$lld builds y ont été importés."
+                  "value" : "%1$@ liste les apps de « %2$@ » : ses %3$lld builds y ont été importés."
                 }
               }
             }
@@ -752,6 +752,7 @@
       }
     },
     "Accounts" : {
+      "comment" : "Settings tab: the App Store Connect accounts",
       "localizations" : {
         "fr" : {
           "stringUnit" : {
@@ -781,12 +782,22 @@
         }
       }
     },
-    "Add Account" : {
+    "Add an Account" : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ajouter un compte"
+          }
+        }
+      }
+    },
+    "Add an Account…" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ajouter un compte…"
           }
         }
       }
@@ -883,12 +894,12 @@
         }
       }
     },
-    "An export goes to the account whose apps it lists, whichever account is shown here." : {
+    "An export goes to the account whose apps it lists." : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Un export va au compte dont il liste les apps, quel que soit le compte affiché ici."
+            "value" : "Un export va au compte dont il liste les apps."
           }
         }
       }
@@ -1142,7 +1153,7 @@
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Apps de « %@ »"
+            "value" : "Apps de « %@ »"
           }
         }
       }
@@ -1509,17 +1520,6 @@
         }
       }
     },
-    "Configuration" : {
-      "comment" : "Settings tab",
-      "localizations" : {
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Configuration"
-          }
-        }
-      }
-    },
     "Configure Cumulus…" : {
       "comment" : "Only item of the menu before an API key is set, with Quit. Do not translate the app name.",
       "localizations" : {
@@ -1527,6 +1527,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Configurer Cumulus…"
+          }
+        }
+      }
+    },
+    "Connected" : {
+      "comment" : "State of an account in Settings: its key works.",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Connecté"
           }
         }
       }
@@ -1682,6 +1693,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Cumulus n’est pas encore configuré"
+          }
+        }
+      }
+    },
+    "Cumulus reads your Xcode Cloud builds with an App Store Connect API key." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cumulus lit vos builds Xcode Cloud avec une clé API App Store Connect."
           }
         }
       }
@@ -2331,16 +2352,15 @@
         }
       }
     },
-    "Follow another team" : {
+    "Follow your first team" : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Suivre une autre équipe"
+            "value" : "Suivez votre première équipe"
           }
         }
-      },
-      "comment" : "Settings row leading to a second App Store Connect account (team)."
+      }
     },
     "Follows the language of macOS" : {
       "localizations" : {
@@ -2568,17 +2588,6 @@
         }
       }
     },
-    "Issuer ID %@" : {
-      "comment" : "The masked identifier of an App Store Connect team",
-      "localizations" : {
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Issuer ID %@"
-          }
-        }
-      }
-    },
     "Issues" : {
       "localizations" : {
         "fr" : {
@@ -2646,6 +2655,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Accès de la clé"
+          }
+        }
+      }
+    },
+    "Key refused" : {
+      "comment" : "State of an account in Settings: App Store Connect refused its key.",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Clé refusée"
           }
         }
       }
@@ -3066,6 +3086,16 @@
         }
       }
     },
+    "New Account" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nouveau compte"
+          }
+        }
+      }
+    },
     "New issues" : {
       "localizations" : {
         "fr" : {
@@ -3107,22 +3137,22 @@
         }
       }
     },
+    "No API key" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pas de clé API"
+          }
+        }
+      }
+    },
     "No API key is set up." : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Aucune clé d’API n’est configurée."
-          }
-        }
-      }
-    },
-    "No API key yet" : {
-      "localizations" : {
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Pas encore de clé API"
           }
         }
       }
@@ -3404,7 +3434,7 @@
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Un compte par équipe App Store Connect, chacun avec sa clé API et son forfait. Tous les comptes restent à jour et envoient leurs notifications ; le menu et la fenêtre en affichent un à la fois."
+            "value" : "Un compte par équipe App Store Connect, chacun avec sa clé API et son forfait. Tous les comptes restent à jour et envoient leurs notifications ; le menu et la fenêtre en affichent un à la fois."
           }
         }
       }
@@ -3916,26 +3946,6 @@
         }
       }
     },
-    "Remove Key and Data" : {
-      "localizations" : {
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Supprimer la clé et les données"
-          }
-        }
-      }
-    },
-    "Remove Key and Data…" : {
-      "localizations" : {
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Supprimer la clé et les données…"
-          }
-        }
-      }
-    },
     "Remove from Here" : {
       "comment" : "Confirmation button of the folder panel, when removing the command or the skill",
       "localizations" : {
@@ -3947,22 +3957,12 @@
         }
       }
     },
-    "Remove the API key and all its data?" : {
-      "localizations" : {
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Supprimer la clé API et toutes ses données ?"
-          }
-        }
-      }
-    },
     "Remove the account “%@” and all its data?" : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Supprimer le compte « %@ » et toutes ses données ?"
+            "value" : "Supprimer le compte « %@ » et toutes ses données ?"
           }
         }
       }
@@ -4004,6 +4004,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Requise"
+          }
+        }
+      }
+    },
+    "Reset date missing" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Date de réinitialisation manquante"
           }
         }
       }
@@ -4150,6 +4160,16 @@
         }
       }
     },
+    "Select an account" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choisissez un compte"
+          }
+        }
+      }
+    },
     "Set Your Plan’s Reset Date…" : {
       "localizations" : {
         "fr" : {
@@ -4186,6 +4206,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Réglages…"
+          }
+        }
+      }
+    },
+    "Shortcut: ⌘%lld" : {
+      "comment" : "VoiceOver help of an account in the menu's switcher; the digit selects that account.",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Raccourci : ⌘%lld"
           }
         }
       }
@@ -4381,6 +4412,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Réussi"
+          }
+        }
+      }
+    },
+    "Switch accounts with ⌘1 to ⌘%lld" : {
+      "comment" : "Tooltip of the account switcher in the menu; the digit is the number of accounts, 9 at most.",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Changer de compte avec ⌘1 à ⌘%lld"
           }
         }
       }
@@ -4633,16 +4675,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "La jauge et le pourcentage de la barre des menus apparaissent une fois tous les builds du cycle mesurés."
-          }
-        }
-      }
-    },
-    "The key leaves the keychain, and the cached builds, imported usage exports, plan and reset date are deleted. Exports already in Downloads are not imported again." : {
-      "localizations" : {
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "La clé quitte le trousseau, et les builds en cache, les exports d’utilisation importés, le forfait et la date de réinitialisation sont effacés. Les exports déjà présents dans Téléchargements ne sont pas réimportés."
           }
         }
       }
@@ -4968,17 +5000,6 @@
         }
       }
     },
-    "Usage" : {
-      "comment" : "Settings tab",
-      "localizations" : {
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Utilisation"
-          }
-        }
-      }
-    },
     "Usage by app" : {
       "localizations" : {
         "fr" : {
@@ -5141,12 +5162,12 @@
         }
       }
     },
-    "Without an export, the usage shown is an **estimate** computed from the builds' durations. The plan and its reset date are set in the Configuration tab." : {
+    "Without an export, the usage shown is an estimate computed from the builds’ actions." : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Sans export, l’utilisation affichée est une **estimation** calculée à partir de la durée des builds. Le forfait et sa date de réinitialisation se règlent dans l’onglet Configuration."
+            "value" : "Sans export, l’utilisation affichée est une estimation calculée d’après les actions des builds."
           }
         }
       }

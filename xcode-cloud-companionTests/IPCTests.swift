@@ -208,6 +208,10 @@ struct AppIPCServiceTests {
         // An account removed in the app since the command listed them.
         #expect(await service.refresh(wait: true, accountID: "gone") == IPCResult(accepted: false, reason: "unknownAccount"))
         #expect(await service.ping(accountID: "gone").hasCredentials == false)
+
+        // No account at all: the app has no key to sync with.
+        let empty = AppIPCService(sync: { _ in nil }, appVersion: "1.0", now: { CLIFixture.now })
+        #expect(await empty.refresh(wait: true, accountID: nil) == IPCResult(accepted: false, reason: "noCredentials"))
     }
 
     @Test func outcomesHaveAStableName() {

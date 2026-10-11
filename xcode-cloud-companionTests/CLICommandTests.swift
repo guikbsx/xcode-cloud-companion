@@ -315,6 +315,18 @@ struct CLICommandTests {
         #expect(await CumulusCLI.run(arguments: ["accounts", "--account", "Work"], environment: environment).exitCode == 2)
     }
 
+    @Test func withoutAnyAccountEveryQuerySaysToOpenTheApp() async throws {
+        let environment = try await CLIFixture.environment()
+        await AccountRegistryStore(fileURL: environment.directory.appending(path: "Accounts.json")).save(.empty)
+
+        for arguments in [["status"], ["apps"], ["builds"], ["usage"]] {
+            let result = await CumulusCLI.run(arguments: arguments + ["--json"], environment: environment)
+            #expect(result.exitCode == 3 && result.stderr.contains("NO_CACHE"), "\(arguments)")
+        }
+        let (data, meta) = try CLIFixture.json(await CumulusCLI.run(arguments: ["accounts"], environment: environment))
+        #expect((data as? [Any])?.isEmpty == true && meta["account"] == nil)
+    }
+
     @Test func beforeTheAppEverRanThereIsNoAccountToAnswerFor() async throws {
         let empty = FileManager.default.temporaryDirectory.appending(path: "cumulus-cli-\(UUID().uuidString)")
         let environment = CLIEnvironment(version: "1.0", build: "7", directory: empty)

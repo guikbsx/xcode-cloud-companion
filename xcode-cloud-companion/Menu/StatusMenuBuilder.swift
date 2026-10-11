@@ -6,6 +6,8 @@ struct StatusMenuActions {
     var openUsagePage: () -> Void = {}
     var importUsageExport: () -> Void = {}
     var openSettings: () -> Void = {}
+    /// Settings on the Accounts tab, with a new account's form open.
+    var addAccount: () -> Void = {}
     var openApp: () -> Void = {}
     var openBuild: (String) -> Void = { _ in }
     var selectAccount: (String) -> Void = { _ in }
@@ -14,6 +16,8 @@ struct StatusMenuActions {
 
 struct StatusMenuState {
     var needsAPIKey: Bool
+    /// False until a first account is added: the menu then leads to adding one.
+    var hasAccounts = true
     var summary: UsageSummary?
     var snapshot: BuildSnapshot = .empty
     var palette = AppPalette()
@@ -76,12 +80,27 @@ enum StatusMenuBuilder {
         return item
     }
 
+    /// ⌘1 to ⌘9 while the menu is open: the switcher is a view, which the keyboard cannot reach in a menu, so hidden items
+    /// carry the shortcuts. The menu closes on a shortcut, as on any other.
+    static func accountShortcuts(for state: StatusMenuState, select: @escaping (String) -> Void) -> [NSMenuItem] {
+        guard state.accounts.count > 1 else { return [] }
+        return state.accounts.prefix(AccountSwitcherLayout.shortcutCount).enumerated().map { index, account in
+            let item = NSMenuItem.action(account.name, keyEquivalent: "\(index + 1)") { select(account.id) }
+            item.state = account.id == state.selectedAccountID ? .on : .off
+            item.isHidden = true
+            item.allowsKeyEquivalentWhenHidden = true
+            return item
+        }
+    }
+
     /// The selected account's menu, below the switcher.
     static func items(for state: StatusMenuState, actions: StatusMenuActions) -> [NSMenuItem] {
-        // Without a key there is nothing to show: one way in, one way out. Settings open on Configuration then.
+        // Without a key there is nothing to show: one way in, one way out. Settings open on Accounts then.
         if state.needsAPIKey {
             return [
-                NSMenuItem.action(String(localized: "Configure Cumulus…"), handler: actions.openSettings),
+                state.hasAccounts
+                    ? NSMenuItem.action(String(localized: "Configure Cumulus…"), handler: actions.openSettings)
+                    : NSMenuItem.action(String(localized: "Add an Account…"), handler: actions.addAccount),
                 .separator(),
                 quitItem(),
             ]

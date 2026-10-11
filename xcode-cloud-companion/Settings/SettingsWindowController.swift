@@ -1,16 +1,16 @@
 import AppKit
 import SwiftUI
 
-/// The Settings window: five tabs in the toolbar, the way Xcode and Safari lay theirs out.
+/// The Settings window: four tabs in the toolbar, the way Xcode and Safari lay theirs out.
 final class SettingsWindowController {
-    private enum Tab: Int, CaseIterable {
-        case general, configuration, usage, notifications, agents
+    /// Remembered by name: a tab that goes or comes does not shift the others.
+    private enum Tab: String, CaseIterable {
+        case general, accounts, notifications, agents
 
         var title: String {
             switch self {
             case .general: String(localized: "General", comment: "Settings tab")
-            case .configuration: String(localized: "Configuration", comment: "Settings tab")
-            case .usage: String(localized: "Usage", comment: "Settings tab")
+            case .accounts: String(localized: "Accounts", comment: "Settings tab: the App Store Connect accounts")
             case .notifications: String(localized: "Notifications", comment: "Settings tab")
             case .agents: String(localized: "Agents", comment: "Settings tab: AI agents that can query the app")
             }
@@ -19,8 +19,7 @@ final class SettingsWindowController {
         var symbol: String {
             switch self {
             case .general: "gearshape"
-            case .configuration: "slider.horizontal.3"
-            case .usage: "chart.bar"
+            case .accounts: "person.2"
             case .notifications: "bell"
             case .agents: "terminal"
             }
@@ -29,20 +28,21 @@ final class SettingsWindowController {
         var size: NSSize {
             switch self {
             case .general: NSSize(width: 560, height: 400)
-            case .configuration: NSSize(width: 560, height: 740)
-            case .usage: NSSize(width: 560, height: 340)
+            // The list of accounts on the left, an account's settings on the right.
+            case .accounts: NSSize(width: 780, height: 720)
             case .notifications: NSSize(width: 560, height: 700)
             case .agents: NSSize(width: 560, height: 700)
             }
         }
     }
 
-    private static let selectedTabKey = "settings.selectedTab"
+    private static let selectedTabKey = "settings.selectedTabName"
 
     private let accounts: AccountsModel
     private let loginItem: LoginItemModel
     private let notificationPreferences: NotificationPreferences
     private let notifications: NotificationCoordinator
+    private let accountsTab = AccountsSettingsModel()
     private let agents = AgentsSettingsModel()
     private let defaults: UserDefaults
     private var window: NSWindow?
@@ -59,35 +59,39 @@ final class SettingsWindowController {
         self.defaults = defaults
     }
 
-    func show() {
+    /// `addingAccount` opens the Accounts tab on a new account's form.
+    func show(addingAccount: Bool = false) {
         let window = window ?? makeWindow()
         self.window = window
         loginItem.refresh()
         NSApp.activate()
         window.makeKeyAndOrderFront(nil)
         Task {
+            await accounts.whenReady()
             for session in accounts.sessions {
                 await session.settings.load()
             }
-            let tab = initialTab()
-            tabController?.selectedTabViewItemIndex = tab.rawValue
+            accountsTab.prepare(for: accounts, addingAccount: addingAccount)
+            let tab = addingAccount ? .accounts : initialTab()
+            tabController?.selectedTabViewItemIndex = Tab.allCases.firstIndex(of: tab) ?? 0
             // Selecting the tab already shown sends no notification: the title is set here too.
             tabController?.title = tab.title
         }
     }
 
-    /// Configuration while the key or the reset date of the account on screen is missing, otherwise the tab used last.
+    /// Accounts while there is none, or one lacks its key or its reset date; otherwise the tab used last.
     private func initialTab() -> Tab {
-        let model = accounts.selected.settings
-        if !model.hasStoredKey || model.resetAnchor == nil {
-            return .configuration
+        if accounts.sessions.isEmpty || accounts.sessions.contains(where: { !$0.settings.hasStoredKey || $0.settings.resetAnchor == nil }) {
+            return .accounts
         }
-        return Tab(rawValue: defaults.integer(forKey: Self.selectedTabKey)) ?? .general
+        return defaults.string(forKey: Self.selectedTabKey).flatMap(Tab.init(rawValue:)) ?? .general
     }
 
     private func makeWindow() -> NSWindow {
         let controller = TabsController(onSelect: { [defaults] index in
-            defaults.set(index, forKey: Self.selectedTabKey)
+            if Tab.allCases.indices.contains(index) {
+                defaults.set(Tab.allCases[index].rawValue, forKey: Self.selectedTabKey)
+            }
         })
         controller.tabStyle = .toolbar
         for tab in Tab.allCases {
@@ -111,8 +115,7 @@ final class SettingsWindowController {
     private func rootView(for tab: Tab) -> some View {
         switch tab {
         case .general: GeneralSettingsView(loginItem: loginItem)
-        case .configuration: ConfigurationSettingsRoot(accounts: accounts)
-        case .usage: UsageSettingsView(accounts: accounts)
+        case .accounts: AccountsSettingsView(accounts: accounts, model: accountsTab)
         case .notifications: NotificationsSettingsView(preferences: notificationPreferences, coordinator: notifications, accounts: accounts)
         case .agents: AgentsSettingsView(model: agents)
         }

@@ -63,6 +63,12 @@ struct NotificationsSettingsView: View {
                     .foregroundStyle(.secondary)
                     .frame(maxWidth: .infinity, alignment: .leading)
             }
+            if accounts.sessions.isEmpty {
+                Section("Apps") {
+                    Text("No Xcode Cloud app yet.")
+                        .foregroundStyle(.secondary)
+                }
+            }
             // Every account notifies, whichever one is on screen: each lists its own apps.
             ForEach(accounts.sessions) { session in
                 Section(accounts.hasSeveral ? String(localized: "Apps of “\(session.name)”", comment: "Section title: the apps of one App Store Connect account") : String(localized: "Apps")) {

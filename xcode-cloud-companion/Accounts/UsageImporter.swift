@@ -33,7 +33,7 @@ nonisolated enum UsageImportRouting {
 /// the ones picked by hand. Each is read once and goes to the account whose apps it lists.
 final class UsageImporter {
     private let sessions: () -> [AccountSession]
-    private let selected: () -> AccountSession
+    private let selected: () -> AccountSession?
     private let watchedDirectory: URL?
     private let now: () -> Date
     private var watcher: DirectoryWatcher?
@@ -41,7 +41,7 @@ final class UsageImporter {
 
     init(
         sessions: @escaping () -> [AccountSession],
-        selected: @escaping () -> AccountSession,
+        selected: @escaping () -> AccountSession?,
         watchedDirectory: URL? = .downloadsDirectory,
         now: @escaping () -> Date = { Date() }
     ) {
@@ -69,43 +69,44 @@ final class UsageImporter {
         isScanning = true
         defer { isScanning = false }
         for file in await UsageExportFile.candidates(in: watchedDirectory) where !sessions().contains(where: { $0.usageStore.hasImported(file) }) {
-            guard let export = await read(file) else { continue }
+            guard let export = await read(file, reportingTo: selected()) else { continue }
             if case .account(let id) = destination(of: export), let session = sessions().first(where: { $0.id == id }) {
                 await session.usageStore.record(export, from: file)
             }
         }
     }
 
-    /// An export picked by hand goes to the account its apps belong to, and to the one on screen when they say nothing.
-    func importFile(at url: URL) async {
+    /// An export picked by hand goes to the account its apps belong to, and to the one it was picked from when they say
+    /// nothing: `shown`, otherwise the account on screen.
+    func importFile(at url: URL, shown: AccountSession? = nil) async {
         let modifiedAt = (try? url.resourceValues(forKeys: [.contentModificationDateKey]).contentModificationDate) ?? now()
         let file = UsageExportFile(url: url, modifiedAt: modifiedAt)
-        guard let export = await read(file) else { return }
-        let shown = selected()
-        guard case .account(let id) = destination(of: export), id != shown.id, let owner = sessions().first(where: { $0.id == id }) else {
-            await shown.usageStore.record(export, from: file)
+        let shown = shown ?? selected()
+        guard let export = await read(file, reportingTo: shown) else { return }
+        guard case .account(let id) = destination(of: export, shown: shown), id != shown?.id, let owner = sessions().first(where: { $0.id == id }) else {
+            await shown?.usageStore.record(export, from: file)
             return
         }
         await owner.usageStore.record(export, from: file)
-        shown.usageStore.note(String(
+        shown?.usageStore.note(String(
             localized: "\(url.lastPathComponent) lists the apps of “\(owner.name)”: its \(export.builds.count) builds were imported there.",
             comment: "A usage export was imported into another account than the one on screen. First the file name, then the account name."
         ))
     }
 
-    private func read(_ file: UsageExportFile) async -> UsageExport? {
+    private func read(_ file: UsageExportFile, reportingTo session: AccountSession?) async -> UsageExport? {
         do {
             return try await file.read()
         } catch {
-            selected().usageStore.report(error, for: file)
+            session?.usageStore.report(error, for: file)
             return nil
         }
     }
 
-    private func destination(of export: UsageExport) -> UsageImportRouting.Destination {
+    private func destination(of export: UsageExport, shown: AccountSession? = nil) -> UsageImportRouting.Destination {
         let candidates = sessions().map {
             UsageImportRouting.Candidate(id: $0.id, productNames: Set($0.buildStore.snapshot.products.map(\.name)))
         }
-        return UsageImportRouting.destination(of: export, among: candidates, selectedID: selected().id)
+        return UsageImportRouting.destination(of: export, among: candidates, selectedID: (shown ?? selected())?.id ?? "")
     }
 }

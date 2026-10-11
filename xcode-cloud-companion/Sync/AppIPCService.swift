@@ -44,7 +44,8 @@ nonisolated struct AppIPCService: IPCService {
 
     func refresh(wait: Bool, accountID: String?) async -> IPCResult {
         guard let sync = await sync(accountID) else {
-            return IPCResult(accepted: false, reason: IPCRefreshReason.unknownAccount)
+            // Without any account the app has no key; a named account that is gone was removed since the command listed it.
+            return IPCResult(accepted: false, reason: accountID == nil ? IPCRefreshReason.noCredentials : IPCRefreshReason.unknownAccount)
         }
         guard await sync.hasCredentials() else {
             return await IPCResult(lastSuccessfulSync: sync.lastSuccessfulSync, accepted: false, reason: IPCRefreshReason.noCredentials)

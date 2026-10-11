@@ -25,11 +25,11 @@ nonisolated struct AccountMigration: Sendable {
 }
 
 /// Every account the app follows. All of them sync all the time, each with its own key; one is selected, and it is the
-/// one the menu, the window and the `cumulus` command show.
+/// one the menu, the window and the `cumulus` command show. There is none until a key is added.
 @Observable
 final class AccountsModel {
-    private(set) var sessions: [AccountSession]
-    private(set) var selectedID: String
+    private(set) var sessions: [AccountSession] = []
+    private(set) var selectedID: String?
     /// Why the last removal did not happen (the keychain refused), for Settings to show.
     private(set) var removalError: String?
     /// Called after each successful sync of an account, with its snapshot before and after.
@@ -42,7 +42,7 @@ final class AccountsModel {
     private let makeSession: (Account) -> AccountSession
     @ObservationIgnored private lazy var importer = UsageImporter(
         sessions: { [weak self] in self?.sessions ?? [] },
-        selected: { [unowned self] in selected },
+        selected: { [weak self] in self?.selected },
         watchedDirectory: watchedDirectory
     )
     private let watchedDirectory: URL?
@@ -61,18 +61,13 @@ final class AccountsModel {
         self.registryStore = registryStore
         self.migration = migration
         self.watchedDirectory = watchedDirectory
-        let makeSession = makeSession ?? { AccountSession.live($0, defaults: defaults) }
-        self.makeSession = makeSession
+        self.makeSession = makeSession ?? { AccountSession.live($0, defaults: defaults) }
         // Before the first account reads its plan: what was saved before accounts existed is its own.
         migration?.adoptPreferences(in: defaults)
-        let first = makeSession(Account(id: AccountRegistry.firstAccountID, name: Self.defaultName(among: [])))
-        sessions = [first]
-        selectedID = first.id
-        follow(first)
     }
 
-    var selected: AccountSession {
-        sessions.first { $0.id == selectedID } ?? sessions[0]
+    var selected: AccountSession? {
+        sessions.first { $0.id == selectedID }
     }
 
     /// One account needs no name on screen and no way to switch.
@@ -85,7 +80,7 @@ final class AccountsModel {
     }
 
     var registry: AccountRegistry {
-        AccountRegistry(accounts: sessions.map(\.account), selectedID: selectedID) ?? AccountRegistry(first: selected.name)
+        AccountRegistry(accounts: sessions.map(\.account), selectedID: selectedID)
     }
 
     // MARK: - Life cycle
@@ -105,8 +100,12 @@ final class AccountsModel {
     private func launch() async {
         if let stored = await registryStore.load() {
             adopt(stored)
+            await forgetAccountsThatNeverHadAKey()
         } else {
-            await migration?.moveCaches()
+            if let migration {
+                await migration.moveCaches()
+                await adoptInstallationFromBeforeAccounts()
+            }
             saveRegistry()
         }
         isRunning = true
@@ -121,18 +120,50 @@ final class AccountsModel {
         await importer.start()
     }
 
+    /// Accounts added before the start are already running in memory: they are kept as they are.
     private func adopt(_ registry: AccountRegistry) {
         let known = Dictionary(sessions.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
         sessions = registry.accounts.map { account in
-            guard let session = known[account.id] else {
-                let session = makeSession(account)
-                follow(session)
+            if let session = known[account.id] {
+                session.name = account.name
                 return session
             }
-            session.name = account.name
+            let session = makeSession(account)
+            follow(session)
             return session
         }
         selectedID = registry.selectedID
+    }
+
+    /// The first account of an installation from before accounts existed: its key is in the keychain under the first id,
+    /// and its caches were just moved into its folders. A Mac that never had a key starts with no account.
+    private func adoptInstallationFromBeforeAccounts() async {
+        let session = makeSession(Account(id: AccountRegistry.firstAccountID, name: Self.defaultName(among: [])))
+        await session.settings.load()
+        guard session.settings.hasStoredKey || FileManager.default.fileExists(atPath: session.paths.buildCache.path(percentEncoded: false)) else { return }
+        follow(session)
+        sessions = [session]
+        selectedID = session.id
+    }
+
+    /// An account added without a key, as the first version with accounts did, has nothing to show: it goes. One whose
+    /// keychain could not be read stays, since nothing says its key is gone.
+    private func forgetAccountsThatNeverHadAKey() async {
+        var kept: [AccountSession] = []
+        for session in sessions {
+            await session.settings.load()
+            let neverSynced = !FileManager.default.fileExists(atPath: session.paths.buildCache.path(percentEncoded: false))
+            if !session.settings.hasStoredKey, session.settings.errorMessage == nil, neverSynced, await session.erase() {
+                continue
+            }
+            kept.append(session)
+        }
+        guard kept.count != sessions.count else { return }
+        sessions = kept
+        if selected == nil {
+            selectedID = sessions.first?.id
+        }
+        saveRegistry()
     }
 
     private func follow(_ session: AccountSession) {
@@ -177,8 +208,9 @@ final class AccountsModel {
         }
     }
 
-    func importUsageExport(at url: URL) async {
-        await importer.importFile(at: url)
+    /// `account` is the one the export was picked from, when it was not the account on screen.
+    func importUsageExport(at url: URL, from account: AccountSession? = nil) async {
+        await importer.importFile(at: url, shown: account)
     }
 
     // MARK: - What is on screen
@@ -240,18 +272,26 @@ final class AccountsModel {
 
     // MARK: - Changes
 
-    /// A new account, without a key yet, shown at once so its key can be entered.
+    /// A new account, once Apple accepted its key: nothing exists before. Its key goes into the keychain under the
+    /// account's id. It is shown at once only when it is the first account: Settings never changes what the menu shows.
     @discardableResult
-    func add(name: String? = nil) -> AccountSession {
-        let name = name?.nilIfBlank ?? Self.defaultName(among: sessions.map(\.name))
-        let session = makeSession(Account(id: UUID().uuidString.lowercased(), name: name))
+    func add(
+        name: String, credentials: StoredCredentials, keyAccess: KeyAccess = .defaultValue, productNames: [String] = []
+    ) async throws(CredentialsStoreError) -> AccountSession {
+        let session = makeSession(Account(id: UUID().uuidString.lowercased(), name: name.nilIfBlank ?? Self.defaultName(among: sessions.map(\.name))))
+        try await session.settings.adopt(credentials, productNames: productNames)
+        session.settings.keyAccess = keyAccess
         follow(session)
         sessions.append(session)
         if isRunning {
             run(session)
             Task { await session.usageStore.start() }
         }
-        show(session.id)
+        if selectedID == nil {
+            show(session.id)
+        } else {
+            saveRegistry()
+        }
         return session
     }
 
@@ -261,11 +301,11 @@ final class AccountsModel {
         saveRegistry()
     }
 
-    /// Removes an account with its key, its caches and its billed minutes. The last account stays: its key can be removed instead.
+    /// Removes an account with its key, its caches and its billed minutes; after the last one, the app has no account.
     @discardableResult
     func remove(_ id: String) async -> Bool {
         removalError = nil
-        guard hasSeveral, let session = session(id: id) else { return false }
+        guard let session = session(id: id) else { return false }
         guard await session.erase() else {
             removalError = session.settings.errorMessage
             return false
@@ -273,7 +313,13 @@ final class AccountsModel {
         guard let index = sessions.firstIndex(where: { $0.id == id }) else { return true }
         sessions.remove(at: index)
         if selectedID == id {
-            show(sessions[min(index, sessions.count - 1)].id)
+            if sessions.isEmpty {
+                selectedID = nil
+                onSelectionChange?()
+                saveRegistry()
+            } else {
+                show(sessions[min(index, sessions.count - 1)].id)
+            }
         } else {
             saveRegistry()
         }

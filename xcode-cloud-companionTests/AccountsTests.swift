@@ -1,27 +1,28 @@
 import AppKit
+import SwiftUI
 import Foundation
 import Testing
 @testable import XcodeCloudCompanion
 
 struct AccountRegistryTests {
-    @Test func thereIsAlwaysAnAccountAndOneOfThemIsSelected() throws {
-        #expect(AccountRegistry(accounts: [], selectedID: nil) == nil)
-        #expect(AccountRegistry(accounts: [Account(id: "../x", name: "Bad")], selectedID: nil) == nil)
+    @Test func anAccountIsSelectedAsSoonAsThereIsOne() {
+        #expect(AccountRegistry(accounts: [], selectedID: nil) == .empty && AccountRegistry.empty.selected == nil)
+        #expect(AccountRegistry(accounts: [Account(id: "../x", name: "Bad")], selectedID: "../x") == .empty)
 
-        let registry = try #require(AccountRegistry(
+        let registry = AccountRegistry(
             accounts: [Account(id: "a", name: "Personal"), Account(id: "../x", name: "Bad"), Account(id: "a", name: "Twice"), Account(id: "b", name: "Work")],
             selectedID: "gone"
-        ))
-
+        )
         #expect(registry.accounts.map(\.name) == ["Personal", "Work"])
-        #expect(registry.selected.id == "a")
+        #expect(registry.selected?.id == "a")
+
+        var growing = AccountRegistry.empty
+        growing.add(Account(id: "w", name: "Work"))
+        #expect(growing.selectedID == "w")
     }
 
-    @Test func theLastAccountCannotBeRemovedAndRemovingTheSelectedOneSelectsItsNeighbour() throws {
+    @Test func removingTheSelectedAccountSelectsItsNeighbourAndTheLastOneLeavesNone() throws {
         var registry = AccountRegistry(first: "Personal")
-        let removedAlone = registry.remove(AccountRegistry.firstAccountID)
-        #expect(!removedAlone)
-
         registry.add(Account(id: "work", name: "Work"))
         registry.add(Account(id: "client", name: "Client"))
         registry.select("work")
@@ -31,7 +32,9 @@ struct AccountRegistryTests {
         let removedClient = registry.remove("client")
         #expect(removedClient && registry.selectedID == AccountRegistry.firstAccountID)
         let removedLast = registry.remove(AccountRegistry.firstAccountID)
-        #expect(!removedLast && registry.accounts.count == 1)
+        #expect(removedLast && registry == .empty)
+        let removedNothing = registry.remove("nobody")
+        #expect(!removedNothing)
     }
 
     @Test func anAccountIsFoundByItsNameWhateverTheCaseOrByItsId() {
@@ -45,7 +48,7 @@ struct AccountRegistryTests {
         #expect(registry.accounts(matching: "nobody").isEmpty)
     }
 
-    @Test func theRegistryRoundTripsThroughItsFileAndAnEmptyOneIsNotRead() async throws {
+    @Test func theRegistryRoundTripsThroughItsFile() async throws {
         let file = FileManager.default.temporaryDirectory.appending(path: "accounts-\(UUID().uuidString)/Accounts.json")
         let store = AccountRegistryStore(fileURL: file)
         #expect(await store.load() == nil)
@@ -57,7 +60,7 @@ struct AccountRegistryTests {
         #expect(await store.load() == registry)
 
         try Data(#"{"accounts":[],"selectedID":"work"}"#.utf8).write(to: file)
-        #expect(await store.load() == nil)
+        #expect(await store.load() == .empty)
     }
 
     @Test func twoAccountsShareNoFolder() {
@@ -135,34 +138,61 @@ struct AccountsModelTests {
         FileManager.default.fileExists(atPath: url.path(percentEncoded: false))
     }
 
-    @Test func aFreshInstallHasOneAccountAndShowsNoWayToSwitch() {
-        let model = TestAccounts().model
+    @Test func aFreshInstallHasNoAccountAndAMacWithoutKeyGetsNone() async {
+        let accounts = TestAccounts()
+        let model = accounts.model
+        #expect(model.sessions.isEmpty && model.selected == nil && !model.hasSeveral)
 
-        #expect(model.sessions.map(\.id) == [AccountRegistry.firstAccountID])
-        #expect(model.selected.name == "Account 1")
-        #expect(!model.hasSeveral)
+        // No registry, no key, no cache: the first launch makes no account of its own.
+        let migrated = accounts.makeModel(migration: AccountMigration(
+            supportRoot: accounts.root.appending(path: "Support"), cachesRoot: accounts.root.appending(path: "Caches"), paths: accounts.paths(AccountRegistry.firstAccountID)
+        ))
+        migrated.start()
+        await migrated.whenReady()
+        await migrated.registryIsSaved()
+        #expect(migrated.sessions.isEmpty)
+        #expect(await accounts.registryStore.load() == .empty)
     }
 
-    @Test func anAddedAccountIsShownAtOnceAndSurvivesARestart() async {
+    @Test func theFirstAccountIsShownAtOnceButSettingsNeverChangeTheAccountOnScreen() async throws {
         let accounts = TestAccounts()
         let model = accounts.model
         var changes = 0
         model.onSelectionChange = { changes += 1 }
 
-        let work = model.add()
+        let personal = try await accounts.add("Personal")
+        #expect(model.selected === personal && changes == 1)
+        #expect(personal.settings.hasStoredKey && accounts.credentials[personal.id]?.current == TestAccounts.credentials)
+
+        let work = try await accounts.add("  ")
+        #expect(model.selected === personal && changes == 1 && work.name == "Account 2")
         model.rename(work.id, to: "  Work  ")
         model.rename(work.id, to: "   ")
         await model.registryIsSaved()
-
-        #expect(model.selected === work && work.name == "Work" && changes == 1)
-        #expect(model.hasSeveral)
+        #expect(work.name == "Work" && model.hasSeveral)
 
         let restarted = accounts.makeModel()
         restarted.start()
         await restarted.whenReady()
-        #expect(restarted.sessions.map(\.name) == ["Account 1", "Work"])
-        #expect(restarted.selectedID == work.id)
+        #expect(restarted.sessions.map(\.name) == ["Personal", "Work"])
+        #expect(restarted.selectedID == personal.id)
         restarted.suspend()
+    }
+
+    @Test func aKeychainThatRefusesTheKeyMakesNoAccount() async {
+        let accounts = TestAccounts()
+        let refusing = AccountsModel(registryStore: accounts.registryStore, defaults: accounts.defaults, migration: nil, watchedDirectory: nil) { account in
+            AccountSession(
+                account: account, paths: accounts.paths(account.id),
+                settings: SettingsModel(accountID: account.id, store: RefusingCredentialsStore(saving: false), defaults: accounts.defaults),
+                buildStore: BuildStore(credentialsStore: RefusingCredentialsStore(saving: false)),
+                usageStore: UsageStore(ledgerStore: UsageLedgerStore(fileURL: accounts.paths(account.id).usageLedger), watchedDirectory: nil),
+                extrasStore: BuildExtrasStore(client: { nil }), defaults: accounts.defaults
+            )
+        }
+
+        await #expect(throws: CredentialsStoreError.self) { try await refusing.add(name: "Work", credentials: TestAccounts.credentials) }
+        #expect(refusing.sessions.isEmpty && refusing.selected == nil)
     }
 
     @Test func newAccountsTakeTheFirstNumberNoAccountWears() {
@@ -172,36 +202,33 @@ struct AccountsModelTests {
         #expect(AccountsModel.defaultName(among: ["Account 2"]) == "Account 3")
     }
 
-    @Test func eachAccountKeepsItsOwnPlanKeyAccessAndColours() {
+    @Test func eachAccountKeepsItsOwnPlanKeyAccessAndColours() async throws {
         let accounts = TestAccounts()
-        let model = accounts.model
-        let personal = model.selected
-        let work = model.add(name: "Work")
+        let personal = try await accounts.add("Personal")
+        let work = try await accounts.model.add(name: "Work", credentials: TestAccounts.credentials, keyAccess: .readOnly)
 
         work.settings.planHours = 100
         work.settings.resetAnchor = reset
-        work.settings.keyAccess = .readOnly
         var palette = AppPalette()
         palette.update(ranking: ["Alpha"])
         work.paletteStore.save(palette, to: accounts.defaults)
 
         #expect(personal.settings.planHours == UsagePlan.defaultHours && personal.settings.resetAnchor == nil)
-        #expect(personal.settings.keyAccess == .canLaunch)
+        #expect(personal.settings.keyAccess == .canLaunch && work.settings.keyAccess == .readOnly)
         #expect(personal.paletteStore.load(from: accounts.defaults) == AppPalette())
         #expect(personal.usageSummary(now: reset) == nil && work.usageSummary(now: reset)?.plan.hours == 100)
-
         // Read again from the preferences, as after a restart.
-        let restarted = accounts.makeModel()
-        #expect(restarted.selected.settings.planHours == UsagePlan.defaultHours)
+        #expect(SettingsModel(accountID: work.id, store: InMemoryCredentialsStore(), defaults: accounts.defaults).planHours == 100)
+        #expect(SettingsModel(accountID: personal.id, store: InMemoryCredentialsStore(), defaults: accounts.defaults).planHours == UsagePlan.defaultHours)
     }
 
     @Test func removingAnAccountErasesItsKeyItsFilesAndItsPreferencesAndNothingOfTheOthers() async throws {
         let accounts = TestAccounts()
         let model = accounts.model
-        let personal = model.selected
-        let work = model.add(name: "Work")
+        let personal = try await accounts.add("Personal")
+        let work = try await accounts.add("Work")
+        model.select(work.id)
         for session in [personal, work] {
-            try await accounts.credentials[session.id]?.save(credentials)
             session.settings.resetAnchor = reset
             try await BuildCacheStore(fileURL: session.paths.buildCache).save(snapshot(products: ["Alpha"]))
             try await UsageLedgerStore(fileURL: session.paths.usageLedger).save(UsageLedger())
@@ -217,24 +244,51 @@ struct AccountsModelTests {
         #expect(!exists(work.paths.support) && !exists(work.paths.caches))
         #expect(accounts.defaults.object(forKey: AccountDefaults.key(AccountDefaults.resetAnchor, accountID: work.id)) == nil)
 
-        #expect(accounts.credentials[personal.id]?.current == credentials)
+        #expect(accounts.credentials[personal.id]?.current == TestAccounts.credentials)
         #expect(exists(personal.paths.buildCache) && exists(personal.paths.usageLedger) && exists(personal.paths.logs))
         #expect(await BuildExtrasCache(directory: personal.paths.buildDetails).load(runID: "run-1") != nil)
         #expect(personal.settings.resetAnchor == reset)
         #expect(await accounts.registryStore.load()?.accounts.map(\.id) == [personal.id])
     }
 
-    @Test func theLastAccountStaysAndARemovedAccountNeverSyncsAgain() async {
-        let model = TestAccounts().model
-        #expect(!(await model.remove(model.selected.id)))
-        #expect(model.sessions.count == 1)
+    @Test func theLastAccountGoesTooAndARemovedAccountNeverSyncsAgain() async throws {
+        let accounts = TestAccounts()
+        let model = accounts.model
+        let personal = try await accounts.add("Personal")
+        var changes = 0
+        model.onSelectionChange = { changes += 1 }
 
-        let work = model.add(name: "Work")
-        #expect(await model.remove(work.id))
+        #expect(await model.remove(personal.id))
+        await model.registryIsSaved()
 
-        work.buildStore.start()
-        #expect(await work.buildStore.synchronize() == .notConfigured)
-        #expect(!work.buildStore.isSyncing)
+        #expect(model.sessions.isEmpty && model.selected == nil && changes == 1)
+        #expect(await accounts.registryStore.load() == .empty)
+        personal.buildStore.start()
+        #expect(await personal.buildStore.synchronize() == .notConfigured)
+        #expect(!personal.buildStore.isSyncing)
+    }
+
+    @Test func anAccountThatNeverHadAKeyIsForgottenAtLaunchAndTheOthersStay() async throws {
+        let accounts = TestAccounts()
+        var registry = AccountRegistry.empty
+        registry.add(Account(id: AccountRegistry.firstAccountID, name: "Account 1"))
+        registry.add(Account(id: "empty", name: "Account 2"))
+        registry.add(Account(id: "synced", name: "Synced"))
+        await accounts.registryStore.save(registry)
+        try await accounts.keychain(AccountRegistry.firstAccountID).save(TestAccounts.credentials)
+        // A key lost later, after builds were read, is not a reason to forget the account.
+        try await BuildCacheStore(fileURL: accounts.paths("synced").buildCache).save(snapshot(products: ["Alpha"]))
+        accounts.defaults.set(100, forKey: AccountDefaults.key(AccountDefaults.planHours, accountID: "empty"))
+
+        let model = accounts.makeModel()
+        model.start()
+        await model.whenReady()
+        await model.registryIsSaved()
+        model.suspend()
+
+        #expect(model.sessions.map(\.id) == [AccountRegistry.firstAccountID, "synced"])
+        #expect(await accounts.registryStore.load()?.accounts.map(\.id) == [AccountRegistry.firstAccountID, "synced"])
+        #expect(accounts.defaults.object(forKey: AccountDefaults.key(AccountDefaults.planHours, accountID: "empty")) == nil)
     }
 
     @Test func theCachesOfAnInstallFromBeforeAccountsBecomeTheFirstAccounts() async throws {
@@ -248,7 +302,7 @@ struct AccountsModelTests {
         try FileManager.default.createDirectory(at: caches.appending(path: "Logs/action-1"), withIntermediateDirectories: true)
         accounts.defaults.set(100, forKey: "plan.hours")
         accounts.defaults.set(reset, forKey: "plan.resetAnchor")
-        try await accounts.credentials[AccountRegistry.firstAccountID, default: InMemoryCredentialsStore()].save(credentials)
+        try await accounts.keychain(AccountRegistry.firstAccountID).save(TestAccounts.credentials)
         let paths = accounts.paths(AccountRegistry.firstAccountID)
 
         let model = accounts.makeModel(migration: AccountMigration(supportRoot: support, cachesRoot: caches, paths: paths))
@@ -258,7 +312,7 @@ struct AccountsModelTests {
         model.suspend()
 
         // Nothing is asked again: the plan, the builds and what was read of them are the first account's.
-        let first = model.selected
+        let first = try #require(model.selected)
         #expect(first.id == AccountRegistry.firstAccountID && model.sessions.count == 1)
         #expect(first.settings.plan == UsagePlan(hours: 100, resetAnchor: reset))
         #expect(first.buildStore.snapshot.runs.map(\.id) == ["run-1"])
@@ -271,11 +325,10 @@ struct AccountsModelTests {
     @Test func aBuildIsFoundInTheAccountThatHoldsIt() async throws {
         let accounts = TestAccounts()
         let model = accounts.model
-        let personal = model.selected
-        let work = model.add(name: "Work")
+        let personal = try await accounts.add("Personal")
+        let work = try await accounts.add("Work")
         try await BuildCacheStore(fileURL: personal.paths.buildCache).save(snapshot(products: ["Alpha"], runID: "run-personal"))
         try await BuildCacheStore(fileURL: work.paths.buildCache).save(snapshot(products: ["Beta"], runID: "run-work"))
-        model.select(personal.id)
 
         #expect(await model.owner(ofBuild: "run-work") === work)
         #expect(await model.owner(ofBuild: "run-personal") === personal)
@@ -283,11 +336,13 @@ struct AccountsModelTests {
         #expect(personal.owns(buildRunID: "run-personal") && !personal.owns(buildRunID: "run-work"))
     }
 
-    @Test func onlyTheAccountOnScreenSyncsAtTheWindowsPace() async {
+    @Test func onlyTheAccountOnScreenSyncsAtTheWindowsPace() async throws {
         let accounts = TestAccounts()
         let model = accounts.model
-        let personal = model.selected
-        let work = model.add(name: "Work")
+        let personal = try await accounts.add("Personal")
+        let work = try await accounts.add("Work")
+        model.select(work.id)
+        await model.registryIsSaved()
         model.start()
         await model.whenReady()
         defer { model.suspend() }
@@ -372,8 +427,8 @@ struct UsageImportRoutingTests {
         let downloads = accounts.root.appending(path: "Downloads")
         try FileManager.default.createDirectory(at: downloads, withIntermediateDirectories: true)
         let model = accounts.makeModel(watchedDirectory: downloads)
-        let personal = model.selected
-        let work = model.add(name: "Work")
+        let personal = try await model.add(name: "Personal", credentials: TestAccounts.credentials)
+        let work = try await model.add(name: "Work", credentials: TestAccounts.credentials)
         for (session, product) in [(personal, "Alpha"), (work, "Gamma")] {
             let products = [CIProduct(id: "p-\(product)", name: product, productType: "APP", appID: nil, appName: nil, bundleID: nil)]
             try await BuildCacheStore(fileURL: session.paths.buildCache).save(BuildSnapshot(products: products, lastSuccessfulSync: CLIFixture.now))
@@ -413,6 +468,22 @@ struct UsageImportRoutingTests {
         await model.importUsageExport(at: file)
         #expect(personal.usageStore.ledger.builds.keys.sorted() == ["Delta#390"])
     }
+
+    @Test func anExportPickedFromAnAccountsSettingsGoesToThatAccountWhenItsAppsSayNothing() async throws {
+        let (model, personal, work, downloads) = try await twoAccounts()
+        await model.loadCaches()
+        let file = downloads.appending(path: "export.csv")
+
+        try csv("Delta").write(to: file)
+        await model.importUsageExport(at: file, from: work)
+        #expect(work.usageStore.ledger.builds.keys.sorted() == ["Delta#390"] && personal.usageStore.ledger.builds.isEmpty)
+
+        // Its apps still decide when they name an account.
+        try csv("Alpha").write(to: file)
+        await model.importUsageExport(at: file, from: work)
+        #expect(personal.usageStore.ledger.builds.keys.sorted() == ["Alpha#390"])
+        #expect(work.usageStore.lastImportMessage?.contains("“Personal”") == true)
+    }
 }
 
 @MainActor
@@ -447,6 +518,10 @@ struct AccountSwitcherTests {
         #expect(AccountSwitcherLayout.index(at: width - inset + 1, width: width, count: 3) == nil)
         #expect(AccountSwitcherLayout.index(at: inset + cell + AccountSwitcherLayout.spacing / 2, width: width, count: 3) == nil)
         #expect(AccountSwitcherLayout.index(at: 10, width: width, count: 0) == nil)
+
+        let frames = AccountSwitcherLayout.frames(width: width, count: 3)
+        #expect(frames.map(\.width) == [cell, cell, cell] && frames.first?.minX == inset && frames.last?.maxX == width - inset)
+        #expect(AccountSwitcherLayout.frames(width: 10, count: 3).isEmpty)
     }
 
     @Test func aClickInTheRowSelectsItsAccountAndTheRowThenShowsIt() throws {
@@ -475,11 +550,77 @@ struct AccountSwitcherTests {
         #expect(selected.last == "c")
     }
 
+    @Test func commandAndADigitSelectAnAccountWhileTheMenuIsOpen() throws {
+        let three = [AccountChoice(id: "a", name: "Personal"), AccountChoice(id: "b", name: "Work"), AccountChoice(id: "c", name: "Client")]
+        var selected: [String] = []
+        let items = StatusMenuBuilder.accountShortcuts(for: state(accounts: three), select: { selected.append($0) })
+
+        #expect(items.map(\.keyEquivalent) == ["1", "2", "3"] && items.map(\.title) == ["Personal", "Work", "Client"])
+        #expect(items.allSatisfy { $0.keyEquivalentModifierMask == .command })
+        // They take no room in the menu: the switcher is what shows the accounts.
+        #expect(items.allSatisfy { $0.isHidden && $0.allowsKeyEquivalentWhenHidden })
+        #expect(items.map(\.state) == [.on, .off, .off])
+
+        let menu = NSMenu()
+        menu.autoenablesItems = false
+        items.forEach(menu.addItem)
+        func press(_ digit: String) throws -> Bool {
+            menu.performKeyEquivalent(with: try #require(NSEvent.keyEvent(
+                with: .keyDown, location: .zero, modifierFlags: .command, timestamp: 0, windowNumber: 0, context: nil,
+                characters: digit, charactersIgnoringModifiers: digit, isARepeat: false, keyCode: 0
+            )))
+        }
+        let second = try press("2"), fourth = try press("4")
+        #expect(second && !fourth && selected == ["b"])
+    }
+
+    @Test func oneAccountHasNoShortcutAndNineAccountsAtMostHaveOne() {
+        let one = [AccountChoice(id: "a", name: "Personal")]
+        let twelve = (1...12).map { AccountChoice(id: "id-\($0)", name: "Account \($0)") }
+
+        #expect(StatusMenuBuilder.accountShortcuts(for: state(accounts: one), select: { _ in }).isEmpty)
+        #expect(StatusMenuBuilder.accountShortcuts(for: state(accounts: []), select: { _ in }).isEmpty)
+        #expect(StatusMenuBuilder.accountShortcuts(for: state(accounts: twelve), select: { _ in }).map(\.keyEquivalent) == (1...9).map(String.init))
+    }
+
+    @Test func voiceOverMeetsOneRadioButtonPerAccountAndCanPressIt() async throws {
+        let choices = [AccountChoice(id: "a", name: "Personal", badge: .succeeded), AccountChoice(id: "b", name: "Work", badge: .failed)]
+        var selected: [String] = []
+        let control = AccountSwitcherControl(accounts: choices, selectedID: "a", select: { selected.append($0) })
+        control.frame = NSRect(x: 0, y: 0, width: 320, height: control.frame.height)
+        let elements = { (control.accessibilityChildren() ?? []).compactMap { $0 as? NSAccessibilityElement } }
+
+        #expect(control.accessibilityRole() == .radioGroup && control.accessibilityLabel() == "Account")
+        #expect(elements().count == 2 && elements().allSatisfy { $0.accessibilityRole() == .radioButton })
+        #expect(elements().map { $0.accessibilityValue() as? NSNumber } == [1, 0])
+        // The account that is not on screen says how its builds go; the menu already says it for the other.
+        #expect(elements().map { $0.accessibilityLabel() ?? "" } == ["Personal", "Work, Failed"])
+        #expect(elements().map { $0.accessibilityHelp() ?? "" } == ["Shortcut: ⌘1", "Shortcut: ⌘2"])
+        #expect(elements().map { $0.accessibilityFrameInParentSpace() } == AccountSwitcherLayout.frames(width: 320, count: 2))
+        // The drawing says nothing of its own: VoiceOver would read every account twice.
+        #expect(!(control.accessibilityChildren() ?? []).contains { $0 is NSHostingView<AccountSwitcherView> })
+        #expect(control.toolTip == "Switch accounts with ⌘1 to ⌘2")
+
+        #expect(elements()[1].accessibilityPerformPress())
+        for _ in 0..<50 where selected.isEmpty {
+            try await Task.sleep(for: .milliseconds(10))
+        }
+        #expect(selected == ["b"])
+
+        control.update(accounts: choices, selectedID: "b")
+        #expect(elements().map { $0.accessibilityValue() as? NSNumber } == [0, 1])
+        #expect(elements().map { $0.accessibilityLabel() ?? "" } == ["Personal, Succeeded", "Work"])
+
+        control.update(accounts: [choices[0]], selectedID: "a")
+        #expect(elements().count == 1 && control.toolTip == nil)
+    }
+
     @Test func theMenuShowsTheSelectedAccountAndNamesThemAll() async throws {
         let accounts = TestAccounts()
         let model = accounts.model
-        let personal = model.selected
-        let work = model.add(name: "Work")
+        let personal = try await accounts.add("Personal")
+        let work = try await accounts.add("Work")
+        model.select(work.id)
         let failed = BuildSnapshot(
             products: CLIFixture.products,
             runs: [CLIFixture.run("run-1", product: "p-alpha", number: 1, created: "2026-10-10T09:00:00Z", status: .failed)],
@@ -490,12 +631,24 @@ struct AccountSwitcherTests {
 
         let shown = StatusItemController.state(of: model, palette: AppPalette(), now: now)
         #expect(shown.selectedAccountID == work.id && shown.snapshot.runs.map(\.id) == ["run-1"])
-        #expect(shown.accounts == [AccountChoice(id: personal.id, name: "Account 1"), AccountChoice(id: work.id, name: "Work", badge: .failed)])
+        #expect(shown.accounts == [AccountChoice(id: personal.id, name: "Personal"), AccountChoice(id: work.id, name: "Work", badge: .failed)])
 
         model.select(personal.id)
         let other = StatusItemController.state(of: model, palette: AppPalette(), now: now)
         #expect(other.selectedAccountID == personal.id && other.snapshot.runs.isEmpty)
         #expect(other.accounts.map(\.badge) == [nil, .failed])
+    }
+
+    @Test func withoutAnAccountTheMenuOnlyLeadsToAddingOne() {
+        var added = false
+        let state = StatusItemController.state(of: TestAccounts().model, palette: AppPalette(), now: now)
+        let items = StatusMenuBuilder.items(for: state, actions: StatusMenuActions(addAccount: { added = true }))
+
+        #expect(!state.hasAccounts && state.needsAPIKey)
+        #expect(StatusMenuBuilder.accountSwitcher(for: state, actions: StatusMenuActions()) == nil)
+        #expect(items.map(\.title) == ["Add an Account…", "", "Quit Cumulus"])
+        (items.first?.target as? MenuActionTarget)?.run(items.first)
+        #expect(added)
     }
 
     @Test func theDotOfTheBarSpeaksForEveryAccount() {

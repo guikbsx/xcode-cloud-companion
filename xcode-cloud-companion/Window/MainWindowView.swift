@@ -8,26 +8,31 @@ struct MainWindowRoot: View {
     let openSettings: () -> Void
 
     var body: some View {
-        let session = accounts.selected
-        MainWindowView(
-            session: session, navigation: navigation, pins: pins, openSettings: openSettings,
-            importUsageExport: { await accounts.importUsageExport(at: $0) }
-        )
-            // Sheets, tasks and what was typed belong to the account they were opened for.
-            .id(session.id)
-            .toolbar {
-                if accounts.hasSeveral {
-                    ToolbarItem(placement: .navigation) {
-                        Picker("Account", selection: Binding(get: { accounts.selectedID }, set: { accounts.select($0) })) {
-                            ForEach(accounts.sessions) { session in
-                                Text(session.name).tag(session.id)
-                            }
+        Group {
+            if let session = accounts.selected {
+                MainWindowView(
+                    session: session, navigation: navigation, pins: pins, openSettings: openSettings,
+                    importUsageExport: { await accounts.importUsageExport(at: $0) }
+                )
+                // Sheets, tasks and what was typed belong to the account they were opened for.
+                .id(session.id)
+            } else {
+                NotSetUpView(openSettings: openSettings)
+            }
+        }
+        .toolbar {
+            if accounts.hasSeveral {
+                ToolbarItem(placement: .navigation) {
+                    Picker("Account", selection: Binding(get: { accounts.selectedID }, set: { if let id = $0 { accounts.select(id) } })) {
+                        ForEach(accounts.sessions) { session in
+                            Text(session.name).tag(Optional(session.id))
                         }
-                        .pickerStyle(.menu)
-                        .help("Switch to another App Store Connect account")
                     }
+                    .pickerStyle(.menu)
+                    .help("Switch to another App Store Connect account")
                 }
             }
+        }
     }
 }
 
@@ -96,14 +101,7 @@ struct MainWindowView: View {
                 }
             }
         } else {
-            ContentUnavailableView {
-                Label("Cumulus isn’t set up yet", systemImage: "key")
-            } description: {
-                Text("Add your App Store Connect API key to see your Xcode Cloud builds here.")
-            } actions: {
-                Button("Configure Cumulus…", action: openSettings)
-                    .buttonStyle(.borderedProminent)
-            }
+            NotSetUpView(openSettings: openSettings)
         }
     }
 
@@ -204,5 +202,21 @@ struct MainWindowView: View {
         let snapshot = buildStore.snapshot
         let productID = snapshot.workflow(id: id)?.productID ?? snapshot.runs.first { $0.workflowID == id }?.productID
         if let productID { await workflowStore.load(productID: productID) }
+    }
+}
+
+/// No account, or one whose key is missing: the way to Settings.
+private struct NotSetUpView: View {
+    let openSettings: () -> Void
+
+    var body: some View {
+        ContentUnavailableView {
+            Label("Cumulus isn’t set up yet", systemImage: "key")
+        } description: {
+            Text("Add your App Store Connect API key to see your Xcode Cloud builds here.")
+        } actions: {
+            Button("Configure Cumulus…", action: openSettings)
+                .buttonStyle(.borderedProminent)
+        }
     }
 }

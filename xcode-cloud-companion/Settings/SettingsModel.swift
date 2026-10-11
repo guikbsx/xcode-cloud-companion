@@ -118,13 +118,30 @@ final class SettingsModel {
         }
     }
 
-    func importPrivateKey(from url: URL) {
+    /// A new account's key, already accepted by Apple: it goes into the keychain as it is, and the products the test
+    /// found are shown. The sync is started by whoever runs the account.
+    func adopt(_ credentials: StoredCredentials, productNames: [String]) async throws(CredentialsStoreError) {
+        try await store.save(credentials)
+        issuerID = credentials.issuerID
+        keyID = credentials.keyID
+        importedPrivateKeyPEM = nil
+        keyState = .stored
+        connectionState = .connected(productNames: productNames)
+        errorMessage = nil
+    }
+
+    /// The text of a `.p8` file, when it holds a usable private key.
+    static func readPrivateKey(at url: URL) -> String? {
         let isScoped = url.startAccessingSecurityScopedResource()
         defer { if isScoped { url.stopAccessingSecurityScopedResource() } }
-
         guard let pem = try? String(contentsOf: url, encoding: .utf8),
               (try? AppStoreConnectCredentials(issuerID: "", keyID: "", privateKeyPEM: pem)) != nil
-        else {
+        else { return nil }
+        return pem
+    }
+
+    func importPrivateKey(from url: URL) {
+        guard let pem = Self.readPrivateKey(at: url) else {
             errorMessage = AppStoreConnectError.invalidPrivateKey.message
             return
         }

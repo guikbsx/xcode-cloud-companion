@@ -40,12 +40,14 @@ final class StatusItemController: NSObject, NSMenuDelegate {
     }
 
     var state: StatusMenuState {
-        Self.state(of: accounts, palette: accounts.selected.paletteStore.load(from: defaults), now: now())
+        Self.state(of: accounts, palette: accounts.selected?.paletteStore.load(from: defaults) ?? AppPalette(), now: now())
     }
 
     /// What the menu shows: the selected account's builds and usage, and every account's name when there are several.
     static func state(of accounts: AccountsModel, palette: AppPalette, now date: Date) -> StatusMenuState {
-        let session = accounts.selected
+        guard let session = accounts.selected else {
+            return StatusMenuState(needsAPIKey: true, hasAccounts: false, isSyncing: false, now: date)
+        }
         let buildStore = session.buildStore
         let settings = session.settings
         let summary = session.usageSummary(now: date)
@@ -81,9 +83,16 @@ final class StatusItemController: NSObject, NSMenuDelegate {
             menu.addItem(switcher)
             menu.addItem(.separator())
         }
-        for item in StatusMenuBuilder.items(for: current, actions: actions) {
+        for item in body(for: current) {
             menu.addItem(item)
         }
+    }
+
+    /// Everything under the switcher. A shortcut closes the menu, which is rebuilt when it opens again: unlike a click
+    /// in the switcher, it replaces nothing in place.
+    private func body(for state: StatusMenuState) -> [NSMenuItem] {
+        StatusMenuBuilder.accountShortcuts(for: state, select: { [accounts] in accounts.select($0) })
+            + StatusMenuBuilder.items(for: state, actions: actions)
     }
 
     /// Picked in the open menu: the switcher stays where it is and shows the new account, everything under it is replaced.
@@ -95,7 +104,7 @@ final class StatusItemController: NSObject, NSMenuDelegate {
         while menu.numberOfItems > 2 {
             menu.removeItem(at: menu.numberOfItems - 1)
         }
-        for item in StatusMenuBuilder.items(for: current, actions: actions) {
+        for item in body(for: current) {
             menu.addItem(item)
         }
     }
@@ -103,7 +112,9 @@ final class StatusItemController: NSObject, NSMenuDelegate {
     /// Colours follow the apps for as long as they exist; the palette is saved only when it changed.
     private func refreshedState() -> StatusMenuState {
         var current = state
-        current.palette = accounts.selected.paletteStore.refreshed(for: current.snapshot, summary: current.summary, defaults: defaults)
+        if let session = accounts.selected {
+            current.palette = session.paletteStore.refreshed(for: current.snapshot, summary: current.summary, defaults: defaults)
+        }
         return current
     }
 

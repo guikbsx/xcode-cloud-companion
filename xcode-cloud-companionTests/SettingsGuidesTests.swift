@@ -4,15 +4,15 @@ import Testing
 
 struct SettingsGuidesTests {
     @Test func theIssuerIDShowsOnlyItsEnds() {
-        let masked = ConfigurationSettingsView.masked("69a6de7f-1234-5678-9abc-def012343c1a")
+        let masked = AccountDetailView.masked("69a6de7f-1234-5678-9abc-def012343c1a")
 
         #expect(masked == "69a6de7f-••••-••••-••••-••••••••3c1a")
         #expect(!masked.contains("1234"))
     }
 
     @Test func aShortIdentifierIsHiddenWhole() {
-        #expect(ConfigurationSettingsView.masked("abc") == "•••")
-        #expect(ConfigurationSettingsView.masked("") == "")
+        #expect(AccountDetailView.masked("abc") == "•••")
+        #expect(AccountDetailView.masked("") == "")
     }
 
     private let team = "69a6de7f-1234-5678-9abc-def012343c1a"

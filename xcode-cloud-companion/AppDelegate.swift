@@ -81,7 +81,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         let accounts = accounts
         let service = AppIPCService(
             sync: { id in
-                guard let id else { return accounts.selected.buildStore }
+                guard let id else { return accounts.selected?.buildStore }
                 return accounts.session(id: id)?.buildStore
             },
             openBuild: { [weak self] id in
@@ -174,7 +174,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     /// A build of the account on screen opens at once; one of another account brings its account with it.
     func openBuild(_ id: String) {
-        guard !accounts.selected.owns(buildRunID: id), let url = CumulusURL.build(id: id) else {
+        guard accounts.selected?.owns(buildRunID: id) != true, let url = CumulusURL.build(id: id) else {
             navigation.showBuild(id)
             mainWindowController.show()
             return
@@ -199,10 +199,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         var actions = StatusMenuActions(
             refresh: { [weak self] in self?.refresh() },
             openUsagePage: { [accounts] in
-                NSWorkspace.shared.open(AppStoreConnectLinks.xcodeCloudUsage(teamID: accounts.selected.settings.issuerID))
+                NSWorkspace.shared.open(AppStoreConnectLinks.xcodeCloudUsage(teamID: accounts.selected?.settings.issuerID ?? ""))
             },
             importUsageExport: { [weak self] in self?.importUsageExport() },
             openSettings: { [weak self] in self?.openSettings() },
+            addAccount: { [weak self] in self?.settingsWindowController.show(addingAccount: true) },
             openApp: { [weak self] in self?.openMainWindow() },
             openBuild: { [weak self] in self?.openBuild($0) }
         )

@@ -134,7 +134,7 @@ nonisolated struct CLIQueryRunner: Sendable {
             report: .accounts(outputs),
             meta: CLIMeta(
                 lastSuccessfulSync: selectedSync, generatedAt: environment.now(), cliVersion: environment.version, appRunning: await appRunning,
-                account: registry.selected.name
+                account: registry.selected?.name
             )
         )
     }

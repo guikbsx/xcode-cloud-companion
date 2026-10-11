@@ -101,6 +101,22 @@ final class TestAccounts {
         registryStore = AccountRegistryStore(fileURL: root.appending(path: "Accounts.json"))
     }
 
+    static let credentials = StoredCredentials(issuerID: "issuer", keyID: "KEY", privateKeyPEM: "pem")
+
+    /// An account as Settings add it once Apple accepted its key; the first one is shown at once.
+    @discardableResult
+    func add(_ name: String, credentials: StoredCredentials = TestAccounts.credentials) async throws -> AccountSession {
+        try await model.add(name: name, credentials: credentials)
+    }
+
+    /// An account's keychain, made before the account when a test needs a key already there.
+    func keychain(_ accountID: String) -> InMemoryCredentialsStore {
+        if let store = credentials[accountID] { return store }
+        let store = InMemoryCredentialsStore()
+        credentials[accountID] = store
+        return store
+    }
+
     func paths(_ accountID: String) -> AccountPaths {
         AccountPaths(accountID: accountID, supportRoot: root.appending(path: "Support"), cachesRoot: root.appending(path: "Caches"))
     }
@@ -114,8 +130,7 @@ final class TestAccounts {
 
     private func session(_ account: Account) -> AccountSession {
         let paths = paths(account.id)
-        let store = credentials[account.id] ?? InMemoryCredentialsStore()
-        credentials[account.id] = store
+        let store = keychain(account.id)
         let buildStore = BuildStore(
             credentialsStore: store, cacheStore: BuildCacheStore(fileURL: paths.buildCache),
             makeClient: { [transport] in AppStoreConnectClient(credentials: $0, transport: transport) }

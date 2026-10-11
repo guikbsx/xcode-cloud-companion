@@ -33,8 +33,19 @@ final class UsageDiagnosticWindowController {
 private struct UsageDiagnosticView: View {
     let accounts: AccountsModel
 
-    private var buildStore: BuildStore { accounts.selected.buildStore }
-    private var settings: SettingsModel { accounts.selected.settings }
+    var body: some View {
+        if let session = accounts.selected {
+            DiagnosticReportView(buildStore: session.buildStore, settings: session.settings)
+        } else {
+            Text("No account" as String)
+                .frame(minWidth: 720, minHeight: 480)
+        }
+    }
+}
+
+private struct DiagnosticReportView: View {
+    let buildStore: BuildStore
+    let settings: SettingsModel
 
     private var report: String {
         UsageDiagnostic.report(

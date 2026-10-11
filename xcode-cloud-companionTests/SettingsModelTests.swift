@@ -30,11 +30,20 @@ final class InMemoryCredentialsStore: CredentialsStore {
 
 /// A keychain that holds a key but refuses to delete it.
 final class RefusingCredentialsStore: CredentialsStore {
+    /// False: it refuses to save a key as well.
+    private let saving: Bool
+
+    init(saving: Bool = true) {
+        self.saving = saving
+    }
+
     func load() async throws(CredentialsStoreError) -> StoredCredentials? {
         StoredCredentials(issuerID: "issuer", keyID: "KEY", privateKeyPEM: "pem")
     }
 
-    func save(_ credentials: StoredCredentials) async throws(CredentialsStoreError) {}
+    func save(_ credentials: StoredCredentials) async throws(CredentialsStoreError) {
+        if !saving { throw .keychain(errSecAuthFailed) }
+    }
 
     func delete() async throws(CredentialsStoreError) {
         throw .keychain(errSecAuthFailed)
