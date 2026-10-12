@@ -9,13 +9,19 @@ struct SettingsRootView: View {
     let notificationPreferences: NotificationPreferences
     let notifications: NotificationCoordinator
     let agents: AgentsSettingsModel
+    @State private var columnVisibility = NavigationSplitViewVisibility.all
 
     var body: some View {
-        NavigationSplitView {
+        NavigationSplitView(columnVisibility: $columnVisibility) {
             sidebar
                 .navigationSplitViewColumnWidth(min: 190, ideal: 220, max: 280)
         } detail: {
             detail
+        }
+        .toolbar {
+            ToolbarItem(placement: .navigation) {
+                SidebarToggleButton(visibility: $columnVisibility, hidden: .detailOnly)
+            }
         }
     }
 

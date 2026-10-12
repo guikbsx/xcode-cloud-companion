@@ -48,6 +48,7 @@ struct MainWindowView: View {
     @State private var launchTarget: LaunchTarget?
     @State private var pauseTarget: WorkflowPauseTarget?
     @State private var editTarget: WorkflowEditTarget?
+    @State private var columnVisibility = NavigationSplitViewVisibility.all
 
     private var buildStore: BuildStore { session.buildStore }
     private var usageStore: UsageStore { session.usageStore }
@@ -84,7 +85,7 @@ struct MainWindowView: View {
     }
 
     private var columns: some View {
-        NavigationSplitView {
+        NavigationSplitView(columnVisibility: $columnVisibility) {
             sidebar
                 .navigationSplitViewColumnWidth(min: 200, ideal: 240, max: 320)
         } content: {
@@ -108,6 +109,9 @@ struct MainWindowView: View {
             detail
         }
         .toolbar {
+            ToolbarItem(placement: .navigation) {
+                SidebarToggleButton(visibility: $columnVisibility, hidden: .doubleColumn)
+            }
             if let target = launchTargetForToolbar {
                 ToolbarItem(placement: .primaryAction) {
                     Button { launchTarget = target } label: { LaunchButtonLabel() }

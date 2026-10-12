@@ -1,4 +1,5 @@
 import Foundation
+import SwiftUI
 import Testing
 @testable import XcodeCloudCompanion
 
@@ -82,5 +83,18 @@ struct SettingsNavigationTests {
         await navigation.accountsTab.remove(first.id, from: accounts.model)
         navigation.accountWasRemoved(from: accounts.model)
         #expect(accounts.model.sessions.isEmpty && navigation.pane == .general)
+    }
+
+    @Test func theSidebarButtonHidesTheSidebarAndBringsItBackFromAnyStateWithoutIt() {
+        // Three columns: the sidebar goes, the builds and the sheet stay. Two columns: the pane stays alone.
+        #expect(SidebarToggleButton.next(after: .all, hidden: .doubleColumn) == .doubleColumn)
+        #expect(SidebarToggleButton.next(after: .doubleColumn, hidden: .doubleColumn) == .all)
+        #expect(SidebarToggleButton.next(after: .all, hidden: .detailOnly) == .detailOnly)
+        // Hidden by the menu command or by a drag: the button still brings it back.
+        #expect(SidebarToggleButton.next(after: .detailOnly, hidden: .doubleColumn) == .all)
+        #expect(SidebarToggleButton.next(after: .detailOnly, hidden: .detailOnly) == .all)
+        // `.automatic` compares equal to `.doubleColumn`: the windows start from `.all`, and a first click from it shows everything.
+        #expect(NavigationSplitViewVisibility.automatic == .doubleColumn)
+        #expect(SidebarToggleButton.next(after: .automatic, hidden: .doubleColumn) == .all)
     }
 }

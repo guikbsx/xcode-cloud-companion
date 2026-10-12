@@ -5079,6 +5079,16 @@
         }
       }
     },
+    "Show or hide the sidebar" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Afficher ou masquer la barre latérale"
+          }
+        }
+      }
+    },
     "Showing %lld of %lld. Type to narrow the list." : {
       "localizations" : {
         "en" : {
