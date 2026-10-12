@@ -8,12 +8,8 @@ struct GeneralSettingsView: View {
     @AppStorage(ActivationPolicyCoordinator.showsInDockKey) private var showsInDock = true
 
     var body: some View {
-        Form {
-            Section {
-                identity
-                    .listRowBackground(Color.clear)
-                    .listRowInsets(EdgeInsets(top: 4, leading: 4, bottom: 4, trailing: 4))
-            }
+        // The app's own line goes across the pane, above the columns when there are two.
+        SettingsColumns(header: { identity }) {
             Section("Startup and Window") {
                 Toggle(isOn: $loginItem.opensAtLogin) {
                     VStack(alignment: .leading, spacing: 2) {
@@ -44,6 +40,7 @@ struct GeneralSettingsView: View {
                     }
                 }
             }
+        } trailing: {
             Section("Language") {
                 LabeledContent {
                     Button("Language & Region…") { NSWorkspace.shared.open(Self.languageSettings) }
@@ -57,7 +54,6 @@ struct GeneralSettingsView: View {
                 }
             }
         }
-        .formStyle(.grouped)
         .onReceive(NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification)) { _ in
             loginItem.refresh()
         }

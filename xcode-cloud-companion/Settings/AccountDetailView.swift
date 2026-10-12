@@ -25,27 +25,29 @@ struct AccountDetailView: View {
     var body: some View {
         Group {
             if model.hasStoredKey {
-                Form {
+                SettingsColumns(single: {
                     connectionBanner
                     accountSection
                     planSection
-                    if model.resetAnchor == nil || showsGuides {
-                        PlanGuideSection(issuerID: model.issuerID)
-                    }
+                    planGuide
                     billedMinutes
                     localRepositories
-                    Section {
-                        Button(showsGuides ? "Hide the guides" : "Where to find the key and the reset date?") {
-                            showsGuides.toggle()
-                        }
-                        .buttonStyle(.link)
-                    }
-                    if showsGuides {
-                        KeyGuideSection(issuerID: model.issuerID)
-                    }
+                    guidesToggle
+                    keyGuide
+                    removalSection
+                }) {
+                    // The account and where its apps are cloned; each guide opens under what it explains.
+                    connectionBanner
+                    accountSection
+                    keyGuide
+                    localRepositories
+                    guidesToggle
+                } trailing: {
+                    planSection
+                    planGuide
+                    billedMinutes
                     removalSection
                 }
-                .formStyle(.grouped)
             } else {
                 // No key: nothing of the account can be shown yet, only the way to give it one.
                 KeyEntryColumns(issuerID: model.issuerID) {
@@ -81,6 +83,29 @@ struct AccountDetailView: View {
             if case .success(let url) = result {
                 Task { await accounts.importUsageExport(at: url, from: session) }
             }
+        }
+    }
+
+    @ViewBuilder
+    private var planGuide: some View {
+        if model.resetAnchor == nil || showsGuides {
+            PlanGuideSection(issuerID: model.issuerID)
+        }
+    }
+
+    @ViewBuilder
+    private var keyGuide: some View {
+        if showsGuides {
+            KeyGuideSection(issuerID: model.issuerID)
+        }
+    }
+
+    private var guidesToggle: some View {
+        Section {
+            Button(showsGuides ? "Hide the guides" : "Where to find the key and the reset date?") {
+                showsGuides.toggle()
+            }
+            .buttonStyle(.link)
         }
     }
 

@@ -1925,6 +1925,17 @@
         }
       }
     },
+    "Commit" : {
+      "comment" : "Heading of the card that shows a build's commit",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Commit"
+          }
+        }
+      }
+    },
     "Compare commits" : {
       "localizations" : {
         "fr" : {
@@ -6317,6 +6328,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Utilisation par app"
+          }
+        }
+      }
+    },
+    "Usage export" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Export d’usage"
           }
         }
       }

@@ -7,7 +7,7 @@ struct NotificationsSettingsView: View {
     let accounts: AccountsModel
 
     var body: some View {
-        Form {
+        SettingsColumns {
             permission
             Section("When a build ends") {
                 Toggle(isOn: $preferences.builds.succeeded) {
@@ -39,6 +39,7 @@ struct NotificationsSettingsView: View {
                 .pickerStyle(.segmented)
                 .disabled(!preferences.builds.stuck)
             }
+        } trailing: {
             Section("When an agent starts a build") {
                 Toggle(isOn: $preferences.builds.agentLaunches) {
                     VStack(alignment: .leading, spacing: 2) {
@@ -100,7 +101,6 @@ struct NotificationsSettingsView: View {
                 }
             }
         }
-        .formStyle(.grouped)
         .task {
             await accounts.loadCaches()
             await coordinator.refreshAuthorization()

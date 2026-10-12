@@ -10,34 +10,49 @@ struct CycleRingGroup: View {
     private var isMeasuring: Bool { summary.measurement.isMeasuring }
 
     var body: some View {
-        HStack(alignment: .center, spacing: 22) {
-            CycleRing(segments: isMeasuring ? [] : model.ring, remainingTint: remainingTint) {
-                VStack(spacing: 2) {
-                    Text(isMeasuring ? "—" : UsageFormat.compactPercent(summary.fractionUsed))
-                        .font(.system(size: 26, weight: .bold, design: .rounded).monospacedDigit())
-                        .minimumScaleFactor(0.6)
-                        .lineLimit(1)
-                    Text("of the plan", comment: "Under the percentage at the centre of the cycle's ring. Two or three words.")
-                        .font(.caption2)
-                        .foregroundStyle(.secondary)
-                }
-                .padding(.horizontal, 18)
+        // The ring beside its figures; above them in a column too narrow for both.
+        ViewThatFits(in: .horizontal) {
+            HStack(alignment: .center, spacing: 22) {
+                ring
+                // An ideal width of its own: the sentences wrap, they do not send the ring above them.
+                texts.frame(minWidth: 250, idealWidth: 250, maxWidth: .infinity, alignment: .leading)
             }
-            .frame(width: 120, height: 120)
-            .accessibilityElement(children: .ignore)
-            .accessibilityLabel(isMeasuring ? Text("Measuring usage…") : Text("Cycle used at \(UsageFormat.percent(summary.fractionUsed))"))
-            .accessibilityAddTraits(.isImage)
-            VStack(alignment: .leading, spacing: 8) {
-                if isMeasuring {
-                    measuring
-                } else {
-                    figures
-                }
+            VStack(alignment: .leading, spacing: 14) {
+                ring
+                texts
             }
-            .frame(maxWidth: .infinity, alignment: .leading)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .cumulusGroup()
+    }
+
+    private var ring: some View {
+        CycleRing(segments: isMeasuring ? [] : model.ring, remainingTint: remainingTint) {
+            VStack(spacing: 2) {
+                Text(isMeasuring ? "—" : UsageFormat.compactPercent(summary.fractionUsed))
+                    .font(.system(size: 26, weight: .bold, design: .rounded).monospacedDigit())
+                    .minimumScaleFactor(0.6)
+                    .lineLimit(1)
+                Text("of the plan", comment: "Under the percentage at the centre of the cycle's ring. Two or three words.")
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
+            }
+            .padding(.horizontal, 18)
+        }
+        .frame(width: 120, height: 120)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(isMeasuring ? Text("Measuring usage…") : Text("Cycle used at \(UsageFormat.percent(summary.fractionUsed))"))
+        .accessibilityAddTraits(.isImage)
+    }
+
+    private var texts: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            if isMeasuring {
+                measuring
+            } else {
+                figures
+            }
+        }
     }
 
     @ViewBuilder
@@ -96,7 +111,7 @@ struct CycleRingGroup: View {
             RoundedRectangle(cornerRadius: 2.5).fill(fill).frame(width: 9, height: 9).accessibilityHidden(true)
             Text(name).lineLimit(1)
             Spacer(minLength: 6)
-            Text(value).font(.callout.monospacedDigit()).foregroundStyle(.secondary)
+            Text(value).font(.callout.monospacedDigit()).foregroundStyle(.secondary).lineLimit(1).fixedSize()
         }
         .font(.callout)
         .accessibilityElement(children: .combine)

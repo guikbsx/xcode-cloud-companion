@@ -23,21 +23,18 @@ struct AgentsSettingsView: View {
     private var client: AgentClient { AgentClient(rawValue: clientName) ?? .claudeCode }
 
     var body: some View {
-        Form {
+        SettingsColumns(single: {
             intro
-            Section {
-                Picker("Agent", selection: $clientName) {
-                    ForEach(AgentClient.allCases) { client in
-                        Text(verbatim: client.name).tag(client.rawValue)
-                    }
-                }
-                .pickerStyle(.segmented)
-                .labelsHidden()
-            }
+            clientPicker
             steps(for: client)
             abilities
+        }) {
+            intro
+            abilities
+        } trailing: {
+            clientPicker
+            steps(for: client)
         }
-        .formStyle(.grouped)
         .task { await model.refresh() }
         .onReceive(NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification)) { _ in
             Task { await model.refresh() }
@@ -81,6 +78,18 @@ struct AgentsSettingsView: View {
     }
 
     // MARK: - Sections
+
+    private var clientPicker: some View {
+        Section {
+            Picker("Agent", selection: $clientName) {
+                ForEach(AgentClient.allCases) { client in
+                    Text(verbatim: client.name).tag(client.rawValue)
+                }
+            }
+            .pickerStyle(.segmented)
+            .labelsHidden()
+        }
+    }
 
     private var intro: some View {
         Section {

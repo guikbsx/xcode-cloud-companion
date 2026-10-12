@@ -17,58 +17,75 @@ struct WorkflowDetailView: View {
     var workflowURL: URL?
 
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 18) {
-                if let xcodeWarning {
-                    xcodeBanner(xcodeWarning)
+        DetailScroll { columns in
+            // What the workflow is set to do goes beside what its builds say; with nothing about its builds, it stays under the header.
+            let isSplit = columns == .two && (tests != nil || trends != nil)
+            let configuration = isSplit ? DetailPlacement.side : .main
+            if let xcodeWarning {
+                xcodeBanner(xcodeWarning)
+                    .detailPlacement(.full)
+            }
+            header
+                .accessibilitySortPriority(isSplit ? 1 : 0)
+            if !model.info.isEmpty {
+                LazyVGrid(columns: isSplit ? Self.pairedFacts : Self.flowingFacts, alignment: .leading, spacing: 14) {
+                    ForEach(model.info) { InfoItem(key: $0.title, value: $0.value, help: $0.help) }
                 }
-                header
-                if !model.info.isEmpty {
-                    LazyVGrid(columns: [GridItem(.adaptive(minimum: 170), alignment: .topLeading)], alignment: .leading, spacing: 14) {
-                        ForEach(model.info) { InfoItem(key: $0.title, value: $0.value, help: $0.help) }
-                    }
-                    .cumulusGroup()
-                }
-                if !model.startConditions.isEmpty {
-                    section("Start conditions") {
-                        ForEach(model.startConditions) { condition in
+                .cumulusGroup()
+                .detailPlacement(configuration)
+            }
+            if !model.startConditions.isEmpty {
+                section("Start conditions") {
+                    ForEach(model.startConditions) { condition in
+                        // The value beside its title; under it when it is too long for the line.
+                        ViewThatFits(in: .horizontal) {
                             HStack(alignment: .firstTextBaseline) {
-                                Text(condition.title).fontWeight(.semibold)
+                                Text(condition.title).fontWeight(.semibold).lineLimit(1).fixedSize()
                                 Spacer(minLength: 12)
-                                Text(condition.value).foregroundStyle(.secondary).multilineTextAlignment(.trailing).textSelection(.enabled)
+                                Text(condition.value).foregroundStyle(.secondary).lineLimit(1).fixedSize().textSelection(.enabled)
                             }
-                            .accessibilityElement(children: .combine)
-                        }
-                    }
-                }
-                if !model.actions.isEmpty {
-                    section("Actions") {
-                        ForEach(model.actions) { action in
                             VStack(alignment: .leading, spacing: 2) {
-                                Text(action.name).fontWeight(.semibold)
-                                if !action.facts.isEmpty {
-                                    Text(action.facts).font(.caption).foregroundStyle(.secondary)
-                                }
+                                Text(condition.title).fontWeight(.semibold)
+                                Text(condition.value).foregroundStyle(.secondary).textSelection(.enabled)
                             }
                             .frame(maxWidth: .infinity, alignment: .leading)
-                            .accessibilityElement(children: .combine)
                         }
+                        .accessibilityElement(children: .combine)
                     }
                 }
-                if let tests {
-                    WorkflowTestsSection(workflowID: model.id, model: tests, openBuild: openBuildTests)
-                }
-                if let trends {
-                    WorkflowTrendsSection(trends: trends, openBuild: openBuild)
-                }
+                .detailPlacement(configuration)
             }
-            .padding(24)
-            .frame(maxWidth: 760, alignment: .leading)
-            .frame(maxWidth: .infinity)
+            if !model.actions.isEmpty {
+                section("Actions") {
+                    ForEach(model.actions) { action in
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(action.name).fontWeight(.semibold)
+                            if !action.facts.isEmpty {
+                                Text(action.facts).font(.caption).foregroundStyle(.secondary)
+                            }
+                        }
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .accessibilityElement(children: .combine)
+                    }
+                }
+                .detailPlacement(configuration)
+            }
+            if let tests {
+                WorkflowTestsSection(workflowID: model.id, model: tests, openBuild: openBuildTests)
+                    .accessibilitySortPriority(isSplit ? 1 : 0)
+            }
+            if let trends {
+                WorkflowTrendsSection(trends: trends, openBuild: openBuild)
+                    .accessibilitySortPriority(isSplit ? 1 : 0)
+            }
         }
         .navigationTitle(model.title)
         .navigationSubtitle(model.productName ?? "")
     }
+
+    private static let flowingFacts = [GridItem(.adaptive(minimum: 170), alignment: .topLeading)]
+    /// Two facts per line, in the side column.
+    private static let pairedFacts = [GridItem(.flexible(), alignment: .topLeading), GridItem(.flexible(), alignment: .topLeading)]
 
     private var header: some View {
         VStack(alignment: .leading, spacing: 10) {

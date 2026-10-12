@@ -26,7 +26,8 @@ struct AppBuildsChart: View {
                 .font(.caption)
                 .foregroundStyle(.secondary)
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
+        // Beside another group, the card takes the height of the taller of the two.
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         .cumulusGroup()
     }
 
@@ -92,7 +93,8 @@ struct AppReferencesGroup: View {
                 .accessibilityHint(Text("Lists this reference’s builds"))
             }
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
+        // Beside another group, the card takes the height of the taller of the two.
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         .cumulusGroup()
     }
 }
@@ -145,7 +147,8 @@ struct AppNotesGroup: View {
             }
         }
         .font(.callout)
-        .frame(maxWidth: .infinity, alignment: .leading)
+        // Beside another group, the card takes the height of the taller of the two.
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         .cumulusGroup()
     }
 }

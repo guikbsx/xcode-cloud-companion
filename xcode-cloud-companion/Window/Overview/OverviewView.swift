@@ -23,26 +23,34 @@ struct OverviewView: View {
     @State private var expandedWorkflow: String?
 
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 18) {
-                Text("Overview").font(.system(size: 30, weight: .bold, design: .rounded))
-                if let summary {
-                    let model = OverviewModel(summary: summary, palette: palette, displayNames: displayNames)
-                    CycleRingGroup(summary: summary, model: model, artwork: artwork)
-                    if !summary.measurement.isMeasuring {
-                        details(model)
-                    }
-                } else {
-                    noPlan
+        let model = summary.map { OverviewModel(summary: $0, palette: palette, displayNames: displayNames) }
+        let isMeasuring = summary?.measurement.isMeasuring ?? false
+        return DetailScroll { columns in
+            Text("Overview").font(.system(size: 30, weight: .bold, design: .rounded))
+                .detailPlacement(.full)
+            if let summary, let model {
+                CycleRingGroup(summary: summary, model: model, artwork: artwork)
+                if !isMeasuring {
+                    details(model, columns: columns)
                 }
-                if let forecast, !forecast.entries.isEmpty {
-                    upcoming(forecast)
+            } else {
+                noPlan
+            }
+            if let forecast, !forecast.entries.isEmpty {
+                upcoming(forecast)
+                    .detailPlacement(.side)
+            }
+            // With a column for short facts, the most expensive build and the exports are cards of their own there.
+            if columns == .two {
+                if let costliest = model?.costliestBuild, !isMeasuring {
+                    section("Most expensive build") { costliestLine(costliest, showsTitle: false) }
+                        .detailPlacement(.side)
                 }
+                importCard
+                    .detailPlacement(.side)
+            } else {
                 importLine
             }
-            .padding(24)
-            .frame(maxWidth: 760, alignment: .leading)
-            .frame(maxWidth: .infinity)
         }
         .navigationTitle("Overview")
         .fileImporter(isPresented: $isImporting, allowedContentTypes: [.commaSeparatedText]) { result in
@@ -65,7 +73,7 @@ struct OverviewView: View {
     }
 
     @ViewBuilder
-    private func details(_ model: OverviewModel) -> some View {
+    private func details(_ model: OverviewModel, columns: DetailColumns) -> some View {
         if !model.workflows.isEmpty {
             section("Cost by workflow") {
                 WorkflowBar(segments: model.workflowBar)
@@ -106,18 +114,36 @@ struct OverviewView: View {
                         WorkflowBreakdownView(breakdown: breakdown)
                     }
                 }
-                if let costliest = model.costliestBuild {
+                if columns == .one, let costliest = model.costliestBuild {
                     Divider()
-                    HStack(alignment: .firstTextBaseline) {
-                        Text("Most expensive build").foregroundStyle(.secondary)
-                        Text(UsageFormat.dotted([costliest.product, "#\(costliest.buildNumber)", costliest.workflow].compactMap(\.self))).fontWeight(.semibold)
-                        Spacer()
-                        Text((costliest.isEstimated ? "~" : "") + UsageFormat.minutes(costliest.minutes)).font(.callout.monospacedDigit())
-                    }
-                    .accessibilityElement(children: .combine)
+                    costliestLine(costliest, showsTitle: true)
                 }
             }
         }
+    }
+
+    private func costliestLine(_ costliest: BuildCost, showsTitle: Bool) -> some View {
+        let build = Text(UsageFormat.dotted([costliest.product, "#\(costliest.buildNumber)", costliest.workflow].compactMap(\.self))).fontWeight(.semibold)
+        let minutes = Text((costliest.isEstimated ? "~" : "") + UsageFormat.minutes(costliest.minutes)).font(.callout.monospacedDigit())
+        let title = Text("Most expensive build").foregroundStyle(.secondary)
+        // The title before the build on one line; above it in a column too narrow for both.
+        return ViewThatFits(in: .horizontal) {
+            HStack(alignment: .firstTextBaseline) {
+                if showsTitle { title.lineLimit(1).fixedSize() }
+                build.lineLimit(1).fixedSize()
+                Spacer()
+                minutes.lineLimit(1).fixedSize()
+            }
+            VStack(alignment: .leading, spacing: 2) {
+                if showsTitle { title }
+                HStack(alignment: .firstTextBaseline) {
+                    build.lineLimit(2)
+                    Spacer()
+                    minutes.lineLimit(1).fixedSize()
+                }
+            }
+        }
+        .accessibilityElement(children: .combine)
     }
 
     private func upcoming(_ forecast: ScheduleForecast) -> some View {
@@ -126,15 +152,33 @@ struct OverviewView: View {
                 Button {
                     openWorkflow(entry.workflowID)
                 } label: {
-                    HStack(alignment: .firstTextBaseline, spacing: 8) {
-                        Text(entry.workflowName).fontWeight(.semibold).lineLimit(1)
-                        Text(UsageFormat.dotted([entry.productName, entry.source, Self.frequencyText(entry.frequency)].compactMap(\.self)))
-                            .font(.caption).foregroundStyle(.secondary).lineLimit(1).layoutPriority(-1)
-                        Spacer(minLength: 8)
-                        Text(Self.whenText(entry.nextRun, now: forecast.now)).font(.callout.monospacedDigit()).lineLimit(1)
-                        Text(entry.minutesPerRun.map { String(localized: "~\(UsageFormat.minutes($0)) estimated", comment: "What one scheduled build is expected to cost, from past builds") }
-                            ?? String(localized: "No build yet to estimate from"))
-                            .font(.caption).foregroundStyle(.secondary).lineLimit(1)
+                    let facts = UsageFormat.dotted([entry.productName, entry.source, Self.frequencyText(entry.frequency)].compactMap(\.self))
+                    let when = Self.whenText(entry.nextRun, now: forecast.now)
+                    let cost = entry.minutesPerRun.map { String(localized: "~\(UsageFormat.minutes($0)) estimated", comment: "What one scheduled build is expected to cost, from past builds") }
+                        ?? String(localized: "No build yet to estimate from")
+                    // On one line when it fits; in the side column, what and when first, the rest under them.
+                    ViewThatFits(in: .horizontal) {
+                        HStack(alignment: .firstTextBaseline, spacing: 8) {
+                            Text(entry.workflowName).fontWeight(.semibold).lineLimit(1).fixedSize()
+                            Text(facts).font(.caption).foregroundStyle(.secondary).lineLimit(1).fixedSize()
+                            Spacer(minLength: 8)
+                            Text(when).font(.callout.monospacedDigit()).lineLimit(1).fixedSize()
+                            Text(cost).font(.caption).foregroundStyle(.secondary).lineLimit(1).fixedSize()
+                        }
+                        VStack(alignment: .leading, spacing: 2) {
+                            HStack(alignment: .firstTextBaseline, spacing: 8) {
+                                Text(entry.workflowName).fontWeight(.semibold).lineLimit(1)
+                                Spacer(minLength: 8)
+                                Text(when).font(.callout.monospacedDigit()).lineLimit(1).fixedSize()
+                            }
+                            HStack(alignment: .firstTextBaseline, spacing: 8) {
+                                Text(facts).lineLimit(1)
+                                Spacer(minLength: 8)
+                                Text(cost).lineLimit(1).fixedSize()
+                            }
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                        }
                     }
                     .contentShape(.rect)
                 }
@@ -181,24 +225,54 @@ struct OverviewView: View {
     /// The usage exports, at the foot: when the last one came in, and the two ways to bring one.
     private var importLine: some View {
         VStack(alignment: .leading, spacing: 6) {
-            if let message = usage.lastImportMessage {
-                Label(message, systemImage: usage.lastImportFailed ? "exclamationmark.triangle.fill" : "checkmark.circle.fill")
-                    .foregroundStyle(usage.lastImportFailed ? BuildStatus.failed.tint : BuildStatus.succeeded.tint)
-            }
+            importMessage
             HStack(spacing: 14) {
-                if let lastImport = usage.ledger.lastImport {
-                    Text("Last export imported \(lastImport.formatted(date: .abbreviated, time: .shortened))")
-                        .foregroundStyle(.secondary)
-                } else {
-                    Text("No usage export imported yet.").foregroundStyle(.secondary)
-                }
-                Button("Import an Export…") { isImporting = true }.buttonStyle(.link)
-                Button("Update from App Store Connect", action: openUsagePage).buttonStyle(.link)
+                importStatus
+                importActions
             }
         }
         .font(.callout)
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.horizontal, 4)
+    }
+
+    /// The same, as a card of the side column.
+    private var importCard: some View {
+        section("Usage export") {
+            VStack(alignment: .leading, spacing: 6) {
+                importMessage
+                importStatus
+                ViewThatFits(in: .horizontal) {
+                    HStack(spacing: 14) { importActions }
+                    VStack(alignment: .leading, spacing: 6) { importActions }
+                }
+            }
+            .font(.callout)
+        }
+    }
+
+    @ViewBuilder
+    private var importMessage: some View {
+        if let message = usage.lastImportMessage {
+            Label(message, systemImage: usage.lastImportFailed ? "exclamationmark.triangle.fill" : "checkmark.circle.fill")
+                .foregroundStyle(usage.lastImportFailed ? BuildStatus.failed.tint : BuildStatus.succeeded.tint)
+        }
+    }
+
+    @ViewBuilder
+    private var importStatus: some View {
+        if let lastImport = usage.ledger.lastImport {
+            Text("Last export imported \(lastImport.formatted(date: .abbreviated, time: .shortened))")
+                .foregroundStyle(.secondary)
+        } else {
+            Text("No usage export imported yet.").foregroundStyle(.secondary)
+        }
+    }
+
+    @ViewBuilder
+    private var importActions: some View {
+        Button("Import an Export…") { isImporting = true }.buttonStyle(.link)
+        Button("Update from App Store Connect", action: openUsagePage).buttonStyle(.link)
     }
 
     private func section(_ title: LocalizedStringKey, @ViewBuilder content: () -> some View) -> some View {

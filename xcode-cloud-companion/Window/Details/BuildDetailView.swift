@@ -41,28 +41,35 @@ struct BuildDetailView: View {
     }
 
     private func content(_ model: BuildDetailModel) -> some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 18) {
-                identityCard(model)
-                if !model.frieze.isEmpty {
-                    ActionsFrieze(
-                        steps: model.frieze,
-                        logSteps: Set(model.frieze.filter { ($0.status == .failed || $0.status == .errored) && offersLogs($0.id) }.map(\.id)),
-                        busyLogSteps: Set(model.frieze.filter { logOpener?.state(of: $0.id).isBusy == true }.map(\.id)),
-                        openLogs: { openLogs(of: $0, model: model) }
-                    )
-                    .padding(.horizontal, 8)
-                }
-                if let commit = model.commit {
-                    commitQuote(commit)
-                }
-                RegressionGroup(run: run, buildStore: buildStore, extrasStore: extrasStore, openBuild: openBuild, compareRequest: compareRequest).id(run.id)
-                testFlightGroup
-                tabs(model)
+        DetailScroll { columns in
+            // Read first on two columns as well: who the build is and how it went, then its context.
+            identityCard(model, columns: columns)
+                .accessibilitySortPriority(columns == .two ? 1 : 0)
+            if columns == .one, !model.frieze.isEmpty {
+                frieze(model).padding(.horizontal, 8)
             }
-            .padding(24)
-            .frame(maxWidth: 760, alignment: .leading)
-            .frame(maxWidth: .infinity)
+            if let commit = model.commit {
+                Group {
+                    if columns == .two {
+                        commitCard(commit)
+                    } else {
+                        commitQuote(commit)
+                    }
+                }
+                .detailPlacement(.side)
+            }
+            RegressionGroup(run: run, buildStore: buildStore, extrasStore: extrasStore, openBuild: openBuild, compareRequest: compareRequest).id(run.id)
+                .detailPlacement(.side)
+            testFlightGroup
+                .detailPlacement(.side)
+            if columns == .two, !model.info.isEmpty {
+                facts(model, columns: [GridItem(.flexible(), alignment: .topLeading), GridItem(.flexible(), alignment: .topLeading)])
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .cumulusGroup()
+                    .detailPlacement(.side)
+            }
+            tabs(model)
+                .accessibilitySortPriority(columns == .two ? 1 : 0)
         }
         .toolbar {
             if let onRebuild {
@@ -86,59 +93,122 @@ struct BuildDetailView: View {
         .navigationSubtitle(model.title)
     }
 
-    /// Who the build is: its app, number and state, how long it took, then the facts.
-    private func identityCard(_ model: BuildDetailModel) -> some View {
+    /// Who the build is: its app, number and state, how long it took; then the facts, or its actions when the facts
+    /// have a column of their own.
+    private func identityCard(_ model: BuildDetailModel, columns: DetailColumns) -> some View {
         VStack(alignment: .leading, spacing: 14) {
-            HStack(alignment: .center, spacing: 14) {
-                if let product = buildStore.snapshot.product(id: run.productID) {
-                    AppIconView(
-                        name: product.displayName, swatch: palette.swatch(for: product.name), size: 44,
-                        artwork: icons?.artwork(of: product, in: buildStore.snapshot)
-                    )
+            // On one line when it fits; in a column too narrow for that, the capsules go under the number.
+            ViewThatFits(in: .horizontal) {
+                HStack(alignment: .center, spacing: 14) {
+                    appIcon
+                    VStack(alignment: .leading, spacing: 6) {
+                        HStack(alignment: .firstTextBaseline, spacing: 12) {
+                            number(model)
+                            // A long title is cut, it does not send the capsules under the number.
+                            title(model).frame(minWidth: 40, idealWidth: 40, maxWidth: .infinity, alignment: .leading)
+                        }
+                        HStack(spacing: 6) { capsules(model) }
+                    }
+                    Spacer(minLength: 8)
+                    duration(model)
                 }
-                VStack(alignment: .leading, spacing: 6) {
-                    HStack(alignment: .firstTextBaseline, spacing: 12) {
-                        Text(model.numberText)
-                            .font(.system(size: 34, weight: .bold, design: .rounded).monospacedDigit())
-                        Text(model.title)
-                            .font(.title3)
-                            .foregroundStyle(.secondary)
-                            .lineLimit(1)
-                    }
-                    HStack(spacing: 6) {
-                        CapsuleTag(text: model.statusText, systemImage: model.status.systemImage, tint: model.status.tint)
-                        if let reference = model.reference {
-                            CapsuleTag(text: reference, systemImage: "arrow.triangle.branch")
+                VStack(alignment: .leading, spacing: 10) {
+                    HStack(alignment: .center, spacing: 12) {
+                        appIcon
+                        VStack(alignment: .leading, spacing: 2) {
+                            number(model)
+                            title(model)
                         }
-                        if let sha = model.shortSha {
-                            CapsuleTag(text: sha, isMonospaced: true)
-                        }
+                        Spacer(minLength: 8)
+                        duration(model)
                     }
-                }
-                Spacer(minLength: 8)
-                if let duration = model.clockDuration {
-                    VStack(alignment: .trailing, spacing: 2) {
-                        Text(duration)
-                            .font(.system(size: 22, weight: .bold, design: .rounded).monospacedDigit())
-                        if let age = model.age {
-                            Text(age).font(.caption).foregroundStyle(.secondary)
-                        }
+                    ViewThatFits(in: .horizontal) {
+                        HStack(spacing: 6) { capsules(model) }
+                        VStack(alignment: .leading, spacing: 6) { capsules(model) }
                     }
-                    .accessibilityElement(children: .combine)
-                    .accessibilityLabel(Text(model.status == .running ? "Elapsed" : "Duration"))
-                    .accessibilityValue(Text(UsageFormat.dotted([duration, model.age].compactMap(\.self))))
                 }
             }
             .accessibilityElement(children: .combine)
-            if !model.info.isEmpty {
-                Divider()
-                LazyVGrid(columns: [GridItem(.adaptive(minimum: 150), alignment: .topLeading)], alignment: .leading, spacing: 12) {
-                    ForEach(model.info) { InfoItem(key: $0.title, value: $0.value, help: $0.help) }
+            if columns == .two {
+                if !model.frieze.isEmpty {
+                    Divider()
+                    frieze(model).padding(.top, 4)
                 }
+            } else if !model.info.isEmpty {
+                Divider()
+                facts(model, columns: [GridItem(.adaptive(minimum: 150), alignment: .topLeading)])
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .cumulusGroup()
+    }
+
+    @ViewBuilder
+    private var appIcon: some View {
+        if let product = buildStore.snapshot.product(id: run.productID) {
+            AppIconView(
+                name: product.displayName, swatch: palette.swatch(for: product.name), size: 44,
+                artwork: icons?.artwork(of: product, in: buildStore.snapshot)
+            )
+        }
+    }
+
+    private func number(_ model: BuildDetailModel) -> some View {
+        Text(model.numberText)
+            .font(.system(size: 34, weight: .bold, design: .rounded).monospacedDigit())
+            .lineLimit(1)
+            .fixedSize()
+    }
+
+    private func title(_ model: BuildDetailModel) -> some View {
+        Text(model.title)
+            .font(.title3)
+            .foregroundStyle(.secondary)
+            .lineLimit(1)
+    }
+
+    @ViewBuilder
+    private func capsules(_ model: BuildDetailModel) -> some View {
+        CapsuleTag(text: model.statusText, systemImage: model.status.systemImage, tint: model.status.tint)
+        if let reference = model.reference {
+            CapsuleTag(text: reference, systemImage: "arrow.triangle.branch")
+        }
+        if let sha = model.shortSha {
+            CapsuleTag(text: sha, isMonospaced: true)
+        }
+    }
+
+    @ViewBuilder
+    private func duration(_ model: BuildDetailModel) -> some View {
+        if let duration = model.clockDuration {
+            VStack(alignment: .trailing, spacing: 2) {
+                Text(duration)
+                    .font(.system(size: 22, weight: .bold, design: .rounded).monospacedDigit())
+                    .lineLimit(1)
+                    .fixedSize()
+                if let age = model.age {
+                    Text(age).font(.caption).foregroundStyle(.secondary).lineLimit(1)
+                }
+            }
+            .accessibilityElement(children: .combine)
+            .accessibilityLabel(Text(model.status == .running ? "Elapsed" : "Duration"))
+            .accessibilityValue(Text(UsageFormat.dotted([duration, model.age].compactMap(\.self))))
+        }
+    }
+
+    private func facts(_ model: BuildDetailModel, columns: [GridItem]) -> some View {
+        LazyVGrid(columns: columns, alignment: .leading, spacing: 12) {
+            ForEach(model.info) { InfoItem(key: $0.title, value: $0.value, help: $0.help) }
+        }
+    }
+
+    private func frieze(_ model: BuildDetailModel) -> some View {
+        ActionsFrieze(
+            steps: model.frieze,
+            logSteps: Set(model.frieze.filter { ($0.status == .failed || $0.status == .errored) && offersLogs($0.id) }.map(\.id)),
+            busyLogSteps: Set(model.frieze.filter { logOpener?.state(of: $0.id).isBusy == true }.map(\.id)),
+            openLogs: { openLogs(of: $0, model: model) }
+        )
     }
 
     /// The failed build's earlier success, while the two are not compared yet: what “Compare with #n” would load.
@@ -165,33 +235,75 @@ struct BuildDetailView: View {
                 if let message = commit.message {
                     Text(message).lineLimit(4).textSelection(.enabled)
                 }
-                HStack(spacing: 12) {
-                    if let author = commit.author {
-                        Text(author).foregroundStyle(.secondary)
-                    }
-                    Button {
-                        NSPasteboard.general.clearContents()
-                        NSPasteboard.general.setString(commit.sha, forType: .string)
-                    } label: {
-                        Label(commit.shortSha, systemImage: "doc.on.doc")
-                            .font(.system(.caption, design: .monospaced))
-                    }
-                    .buttonStyle(.borderless)
-                    .help("Copy the commit SHA")
-                    if let url = commit.webURL {
-                        Link("View commit", destination: url)
-                    }
-                    if let reference = comparison {
-                        Button("Compare with \(reference.number.map { "#\($0)" } ?? "#?")") { compareRequest += 1 }
-                            .buttonStyle(.link)
-                            .help("Loads the tests and issues of both builds, one action at a time.")
-                    }
-                }
-                .font(.callout)
+                commitWays(commit)
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.horizontal, 6)
+    }
+
+    /// The same commit as a card of the side column: its ways go under one another when they do not fit on a line.
+    private func commitCard(_ commit: CommitInfo) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("Commit", comment: "Heading of the card that shows a build's commit")
+                .font(.caption2.weight(.semibold))
+                .textCase(.uppercase)
+                .tracking(0.5)
+                .foregroundStyle(.secondary)
+            if let message = commit.message {
+                Text(message).lineLimit(6).textSelection(.enabled)
+            }
+            commitWays(commit)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .cumulusGroup()
+    }
+
+    /// Who wrote the commit and the ways to it: on one line, then under one another as the column narrows.
+    private func commitWays(_ commit: CommitInfo) -> some View {
+        ViewThatFits(in: .horizontal) {
+            HStack(spacing: 12) {
+                commitAuthor(commit)
+                commitLinks(commit)
+            }
+            VStack(alignment: .leading, spacing: 6) {
+                commitAuthor(commit)
+                HStack(spacing: 12) { commitLinks(commit) }
+            }
+            VStack(alignment: .leading, spacing: 6) {
+                commitAuthor(commit)
+                commitLinks(commit)
+            }
+        }
+        .font(.callout)
+    }
+
+    @ViewBuilder
+    private func commitAuthor(_ commit: CommitInfo) -> some View {
+        if let author = commit.author {
+            Text(author).foregroundStyle(.secondary).lineLimit(1)
+        }
+    }
+
+    @ViewBuilder
+    private func commitLinks(_ commit: CommitInfo) -> some View {
+        Button {
+            NSPasteboard.general.clearContents()
+            NSPasteboard.general.setString(commit.sha, forType: .string)
+        } label: {
+            Label(commit.shortSha, systemImage: "doc.on.doc")
+                .font(.system(.caption, design: .monospaced))
+        }
+        .buttonStyle(.borderless)
+        .help("Copy the commit SHA")
+        if let url = commit.webURL {
+            Link("View commit", destination: url)
+        }
+        if let reference = comparison {
+            Button("Compare with \(reference.number.map { "#\($0)" } ?? "#?")") { compareRequest += 1 }
+                .buttonStyle(.link)
+                .help("Loads the tests and issues of both builds, one action at a time.")
+        }
     }
 
     @ViewBuilder
@@ -220,11 +332,23 @@ struct BuildDetailView: View {
 
     private func tabs(_ model: BuildDetailModel) -> some View {
         VStack(alignment: .leading, spacing: 12) {
-            HStack(spacing: 6) {
-                pill(.actions, String(localized: "Actions"), count: model.actions.count)
-                pill(.tests, String(localized: "Tests"), count: model.testFailureCount, countsFailures: true)
-                pill(.problems, String(localized: "Issues"), count: model.issueCount)
-                pill(.artifacts, String(localized: "Artifacts"), count: nil)
+            ViewThatFits(in: .horizontal) {
+                HStack(spacing: 6) {
+                    pill(.actions, String(localized: "Actions"), count: model.actions.count)
+                    pill(.tests, String(localized: "Tests"), count: model.testFailureCount, countsFailures: true)
+                    pill(.problems, String(localized: "Issues"), count: model.issueCount)
+                    pill(.artifacts, String(localized: "Artifacts"), count: nil)
+                }
+                VStack(alignment: .leading, spacing: 6) {
+                    HStack(spacing: 6) {
+                        pill(.actions, String(localized: "Actions"), count: model.actions.count)
+                        pill(.tests, String(localized: "Tests"), count: model.testFailureCount, countsFailures: true)
+                    }
+                    HStack(spacing: 6) {
+                        pill(.problems, String(localized: "Issues"), count: model.issueCount)
+                        pill(.artifacts, String(localized: "Artifacts"), count: nil)
+                    }
+                }
             }
             .accessibilityElement(children: .contain)
             .accessibilityLabel(Text("Details"))
@@ -341,7 +465,7 @@ struct BuildDetailView: View {
         let isSelected = tab == value
         let shown = count.flatMap { $0 > 0 ? $0 : nil }
         let label = HStack(spacing: 6) {
-            Text(title)
+            Text(title).lineLimit(1).fixedSize()
             if let shown {
                 Text(shown, format: .number)
                     .font(.caption2.weight(.bold).monospacedDigit())

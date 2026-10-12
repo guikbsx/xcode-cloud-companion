@@ -99,17 +99,25 @@ struct RegressionGroup: View {
                 Label("Too few requests left this hour to compare. Try again later.", systemImage: "hourglass")
                     .foregroundStyle(.secondary).font(.callout)
             }
-            HStack(spacing: 10) {
-                Button("Compare with \(number)") {
-                    Task { await compare(with: reference) }
-                }
-                Text("Loads the tests and issues of both builds, one action at a time.")
-                    .font(.caption).foregroundStyle(.secondary)
+            // Beside the button when both fit on a line, under it in a narrow column.
+            ViewThatFits(in: .horizontal) {
+                HStack(spacing: 10) { compareControl(reference, number: number) }
+                VStack(alignment: .leading, spacing: 6) { compareControl(reference, number: number) }
             }
         }
     }
 
     @ViewBuilder
+    private func compareControl(_ reference: CIBuildRun, number: String) -> some View {
+        Button("Compare with \(number)") {
+            Task { await compare(with: reference) }
+        }
+        .fixedSize()
+        Text("Loads the tests and issues of both builds, one action at a time.")
+            .font(.caption).foregroundStyle(.secondary)
+    }
+
+        @ViewBuilder
     private func report(_ report: RegressionReport, referenceNumber: String) -> some View {
         if report.isEmpty {
             Text("No failing test and no new issue to tell apart from \(referenceNumber).")

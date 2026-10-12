@@ -196,3 +196,14 @@ struct BuildDetailTests {
         #expect(!FileManager.default.fileExists(atPath: directory.path))
     }
 }
+
+struct ActionsFriezeTests {
+    /// The frieze tries all its steps on one row, then fewer per row, until it fits its column.
+    @Test func theFriezeTriesFewerStepsPerRowUntilItFits() {
+        #expect(ActionsFrieze.rowSizes(for: 0) == [])
+        #expect(ActionsFrieze.rowSizes(for: 1) == [1])
+        #expect(ActionsFrieze.rowSizes(for: 3) == [3, 2, 1])
+        #expect(ActionsFrieze.rowSizes(for: 4) == [4, 2, 1])
+        #expect(ActionsFrieze.rowSizes(for: 6) == [6, 3, 2, 1])
+    }
+}

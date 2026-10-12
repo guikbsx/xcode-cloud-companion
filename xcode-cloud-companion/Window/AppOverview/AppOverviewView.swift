@@ -15,15 +15,28 @@ struct AppOverviewView: View {
     var openReference: (AppReference) -> Void = { _ in }
 
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 14) {
-                header
-                cycleGroup
-                if !model.workflows.isEmpty {
-                    AppWorkflowsTable(model: model, swatch: swatch, showsMinutes: showsMinutes, now: now, openWorkflow: openWorkflow, openBuild: openBuild)
+        // Halves, not a main column and a side one: the table of workflows needs the whole width to stay a table.
+        DetailScroll(spacing: 14, sideWidth: nil, equalHeights: true) { columns in
+            header
+                .detailPlacement(.full)
+            cycleGroup
+            if columns == .two, model.bars.count > 1 {
+                chart.detailPlacement(.side)
+            }
+            if !model.workflows.isEmpty {
+                AppWorkflowsTable(model: model, swatch: swatch, showsMinutes: showsMinutes, now: now, openWorkflow: openWorkflow, openBuild: openBuild)
+                    .detailPlacement(.full)
+            }
+            if columns == .two {
+                if !model.references.isEmpty {
+                    AppReferencesGroup(references: model.references, now: now, openReference: openReference)
                 }
+                if !AppNotesGroup.isEmpty(model) {
+                    AppNotesGroup(model: model, openBuild: openBuild).detailPlacement(.side)
+                }
+            } else {
                 if model.bars.count > 1 {
-                    AppBuildsChart(bars: model.bars, medianQueueWait: model.medianQueueWait, swatch: swatch, openBuild: openBuild)
+                    chart
                 }
                 ViewThatFits(in: .horizontal) {
                     // An ideal width of its own: the two groups go side by side as soon as there is that much room,
@@ -32,11 +45,12 @@ struct AppOverviewView: View {
                     VStack(alignment: .leading, spacing: 14) { footGroups }
                 }
             }
-            .padding(24)
-            .frame(maxWidth: 760, alignment: .leading)
-            .frame(maxWidth: .infinity)
         }
         .navigationTitle(model.displayName)
+    }
+
+    private var chart: some View {
+        AppBuildsChart(bars: model.bars, medianQueueWait: model.medianQueueWait, swatch: swatch, openBuild: openBuild)
     }
 
     @ViewBuilder
@@ -117,7 +131,7 @@ struct AppOverviewView: View {
                     legend(cycle)
                 }
             }
-            .frame(maxWidth: .infinity, alignment: .leading)
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
             .cumulusGroup()
         } else {
             VStack(alignment: .leading, spacing: 8) {
@@ -125,7 +139,7 @@ struct AppOverviewView: View {
                     .font(.headline)
                 Button("Set Your Plan…", action: openSettings)
             }
-            .frame(maxWidth: .infinity, alignment: .leading)
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
             .cumulusGroup()
         }
     }
