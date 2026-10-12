@@ -10,6 +10,46 @@ nonisolated enum ReferenceKey: Hashable, Sendable {
     }
 }
 
+/// A reference of one app: an app's “main” is not another's, and a pull request's number means nothing outside its app.
+nonisolated struct AppReference: Hashable, Sendable {
+    let productID: String
+    let key: ReferenceKey
+}
+
+/// Apple's open pull requests, repository by repository: two repositories may each have a pull request of the same number.
+nonisolated struct OpenPullRequests: Equatable, Sendable, ExpressibleByArrayLiteral {
+    var byRepository: [String: [PullRequestReference]] = [:]
+    /// The repository each workflow builds from.
+    var repositoryByWorkflow: [String: String] = [:]
+
+    init(byRepository: [String: [PullRequestReference]] = [:], repositoryByWorkflow: [String: String] = [:]) {
+        self.byRepository = byRepository
+        self.repositoryByWorkflow = repositoryByWorkflow
+    }
+
+    /// One list, of a repository left unnamed: every workflow is looked up in it.
+    init(arrayLiteral elements: PullRequestReference...) {
+        byRepository = elements.isEmpty ? [:] : ["": elements]
+    }
+
+    var all: [PullRequestReference] {
+        byRepository.keys.sorted().flatMap { byRepository[$0] ?? [] }
+    }
+
+    var isEmpty: Bool {
+        byRepository.values.allSatisfy(\.isEmpty)
+    }
+
+    /// The open pull request of that number in the repository the workflow builds from; in any repository while the
+    /// workflow's own is not known.
+    func pullRequest(_ number: Int, workflowID: String?) -> PullRequestReference? {
+        if let workflowID, let repository = repositoryByWorkflow[workflowID] {
+            return byRepository[repository]?.first { $0.number == number }
+        }
+        return all.first { $0.number == number }
+    }
+}
+
 nonisolated enum ReferenceFilter: CaseIterable, Hashable, Sendable {
     case all, pullRequests, branches
 }
@@ -28,8 +68,11 @@ nonisolated struct ReferenceRow: Identifiable, Equatable, Sendable {
     let webURL: URL?
     /// The Xcode Cloud product name: the key of the app's colour.
     var productKey: String?
+    /// The app the reference belongs to.
+    var productID = ""
 
-    var id: ReferenceKey { key }
+    var reference: AppReference { AppReference(productID: productID, key: key) }
+    var id: AppReference { reference }
 
     /// What follows the state on the card: the workflow, the build, and a pull request's branches.
     var facts: String {
@@ -81,26 +124,27 @@ nonisolated struct ReferencesModel: Equatable, Sendable {
     /// True when the cache holds no reference at all, whatever the filter and the search.
     let hasNothing: Bool
 
+    /// A reference belongs to its app: two apps that both build “main” have a row each.
     /// `openPullRequests` is Apple's list when it could be read: a pull request absent from it is closed and left out.
     /// nil means the list is unknown, and every pull request the builds name is shown.
     init(
-        snapshot: BuildSnapshot, openPullRequests: [PullRequestReference]?, filter: ReferenceFilter = .all, query: String = "",
+        snapshot: BuildSnapshot, openPullRequests: OpenPullRequests?, filter: ReferenceFilter = .all, query: String = "",
         now: Date = Date(), calendar: Calendar = .current, locale: Locale = .autoupdatingCurrent
     ) {
         let products = Dictionary(snapshot.products.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
         let workflows = Dictionary(snapshot.workflows.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
-        let open = openPullRequests.map { Dictionary($0.map { ($0.number, $0) }, uniquingKeysWith: { first, _ in first }) }
-
-        var newest: [ReferenceKey: CIBuildRun] = [:]
+        var newest: [AppReference: CIBuildRun] = [:]
         for run in snapshot.runs {
             guard let key = Self.key(of: run) else { continue }
-            if let known = newest[key], Self.order(known) >= Self.order(run) { continue }
-            newest[key] = run
+            let reference = AppReference(productID: run.productID, key: key)
+            if let known = newest[reference], Self.order(known) >= Self.order(run) { continue }
+            newest[reference] = run
         }
         hasNothing = newest.isEmpty
 
         rows = newest
-            .compactMap { key, run -> ReferenceRow? in
+            .compactMap { reference, run -> ReferenceRow? in
+                let key = reference.key
                 var title: String
                 var subtitle: String?
                 var webURL: URL?
@@ -110,8 +154,8 @@ nonisolated struct ReferencesModel: Equatable, Sendable {
                     title = name
                 case .pullRequest(let number):
                     guard filter != .branches else { return nil }
-                    if let open {
-                        guard let pullRequest = open[number] else { return nil }
+                    if let openPullRequests {
+                        guard let pullRequest = openPullRequests.pullRequest(number, workflowID: run.workflowID) else { return nil }
                         title = pullRequest.label
                         webURL = pullRequest.webURL
                         if let source = pullRequest.sourceBranch, let destination = pullRequest.destinationBranch {
@@ -125,7 +169,7 @@ nonisolated struct ReferencesModel: Equatable, Sendable {
                     key: key, title: title, subtitle: subtitle, lastRun: run, status: BuildStatus(run: run),
                     productName: products[run.productID]?.displayName ?? "?",
                     workflowName: run.workflowName ?? run.workflowID.flatMap { workflows[$0]?.name },
-                    webURL: webURL, productKey: products[run.productID]?.name
+                    webURL: webURL, productKey: products[run.productID]?.name, productID: run.productID
                 )
             }
             .filter { $0.matches(query) }

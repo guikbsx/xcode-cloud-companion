@@ -118,7 +118,7 @@ nonisolated enum BuildListScope: Hashable, Sendable {
     case allBuilds
     case product(String)
     case workflow(String)
-    case reference(ReferenceKey)
+    case reference(AppReference)
 
     init(_ selection: SidebarSelection) {
         switch selection {
@@ -163,12 +163,12 @@ nonisolated struct BuildListModel: Equatable, Sendable {
             isPausedWorkflow = workflows[id]?.isEnabled == false
             title = workflows[id]?.name ?? String(localized: "All builds")
             scoped = allRuns.filter { $0.workflowID == id }
-        case .reference(let key):
-            switch key {
+        case .reference(let reference):
+            switch reference.key {
             case .branchOrTag(let name): title = name
             case .pullRequest(let number): title = String(localized: "PR #\(number)", comment: "A pull request, in a build's line")
             }
-            scoped = allRuns.filter { ReferencesModel.key(of: $0) == key }
+            scoped = allRuns.filter { $0.productID == reference.productID && ReferencesModel.key(of: $0) == reference.key }
         }
 
         let rows = scoped

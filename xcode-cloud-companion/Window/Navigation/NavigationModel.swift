@@ -29,7 +29,7 @@ final class NavigationModel {
     }
     var selectedBuildID: String?
     /// Under “Branches and pull requests”, the reference whose builds the middle column lists; nil shows the references.
-    var referenceScope: ReferenceKey? {
+    var referenceScope: AppReference? {
         didSet {
             if oldValue != referenceScope { selectedBuildID = nil }
         }

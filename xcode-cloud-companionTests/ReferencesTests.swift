@@ -8,18 +8,29 @@ struct ReferencesTests {
 
     private func run(
         _ id: String, number: Int, minutesAgo: Double, branch: String?, pullRequest: (Int, String?)? = nil,
-        status: CICompletionStatus? = .succeeded, progress: CIExecutionProgress = .complete, workflow: String = "Release"
+        status: CICompletionStatus? = .succeeded, progress: CIExecutionProgress = .complete, workflow: String = "Release",
+        product: String = "p", workflowID: String = "w"
     ) -> CIBuildRun {
         let created = now.addingTimeInterval(-minutesAgo * 60)
         return CIBuildRun(
-            id: id, productID: "p", number: number, createdDate: created, startedDate: created.addingTimeInterval(30), finishedDate: progress == .complete ? now : nil,
-            executionProgress: progress, completionStatus: progress == .complete ? status : nil, startReason: nil, workflowID: "w", workflowName: workflow,
+            id: id, productID: product, number: number, createdDate: created, startedDate: created.addingTimeInterval(30), finishedDate: progress == .complete ? now : nil,
+            executionProgress: progress, completionStatus: progress == .complete ? status : nil, startReason: nil, workflowID: workflowID, workflowName: workflow,
             sourceBranchOrTag: branch, isPullRequestBuild: pullRequest != nil, pullRequestNumber: pullRequest?.0, pullRequestTitle: pullRequest?.1
         )
     }
 
     private func snapshot(_ runs: [CIBuildRun]) -> BuildSnapshot {
-        BuildSnapshot(products: [CIProduct(id: "p", name: "Cumulus", productType: "APP", appID: "1", appName: nil, bundleID: nil)], runs: runs, workflows: [])
+        BuildSnapshot(
+            products: [
+                CIProduct(id: "p", name: "Cumulus", productType: "APP", appID: "1", appName: nil, bundleID: nil),
+                CIProduct(id: "q", name: "Hyrox", productType: "APP", appID: "2", appName: nil, bundleID: nil),
+            ],
+            runs: runs, workflows: []
+        )
+    }
+
+    private func reference(_ key: ReferenceKey, of product: String = "p") -> AppReference {
+        AppReference(productID: product, key: key)
     }
 
     private let pullRequest128 = PullRequestReference(
@@ -108,12 +119,64 @@ struct ReferencesTests {
             run("main", number: 4, minutesAgo: 3, branch: "main"),
         ]
 
-        let branch = BuildListModel(snapshot: snapshot(runs), scope: .reference(.branchOrTag("main")), now: now)
-        let pullRequest = BuildListModel(snapshot: snapshot(runs), scope: .reference(.pullRequest(7)), now: now)
+        let branch = BuildListModel(snapshot: snapshot(runs), scope: .reference(reference(.branchOrTag("main"))), now: now)
+        let pullRequest = BuildListModel(snapshot: snapshot(runs), scope: .reference(reference(.pullRequest(7))), now: now)
 
         #expect(branch.rows.map(\.id) == ["main"] && branch.title == "main")
         #expect(pullRequest.rows.map(\.id) == ["pr"] && pullRequest.title == "PR #7")
         #expect(BuildListScope(.references) == .allBuilds && BuildListScope(.workflow("w")) == .workflow("w"))
+    }
+
+    // MARK: - One app at a time
+
+    @Test func twoAppsThatBuildTheSameBranchHaveARowEach() {
+        let runs = [
+            run("cumulus-main", number: 4, minutesAgo: 30, branch: "main"),
+            run("cumulus-old", number: 3, minutesAgo: 90, branch: "main"),
+            run("hyrox-main", number: 395, minutesAgo: 5, branch: "main", status: .failed, product: "q", workflowID: "v"),
+        ]
+
+        let model = ReferencesModel(snapshot: snapshot(runs), openPullRequests: nil)
+
+        #expect(model.rows.map(\.title) == ["main", "main"])
+        #expect(model.rows.map(\.lastRun.id) == ["hyrox-main", "cumulus-main"], "each app's own newest build, newest row first")
+        #expect(model.rows.map(\.productName) == ["Hyrox", "Cumulus"])
+        #expect(model.rows.map(\.status) == [.failed, .succeeded])
+        #expect(Set(model.rows.map(\.id)).count == 2, "two rows the list can tell apart")
+        #expect(model.rows[0].reference == reference(.branchOrTag("main"), of: "q"))
+    }
+
+    @Test func aReferencesListHoldsOneAppsBuildsOnly() {
+        let runs = [
+            run("cumulus-main", number: 4, minutesAgo: 30, branch: "main"),
+            run("hyrox-main", number: 395, minutesAgo: 5, branch: "main", product: "q", workflowID: "v"),
+            run("hyrox-pr", number: 396, minutesAgo: 2, branch: "x", pullRequest: (7, "x"), product: "q", workflowID: "v"),
+            run("cumulus-pr", number: 5, minutesAgo: 1, branch: "y", pullRequest: (7, "y")),
+        ]
+
+        let cumulus = BuildListModel(snapshot: snapshot(runs), scope: .reference(reference(.branchOrTag("main"))), now: now)
+        let hyrox = BuildListModel(snapshot: snapshot(runs), scope: .reference(reference(.branchOrTag("main"), of: "q")), now: now)
+        let hyroxPullRequest = BuildListModel(snapshot: snapshot(runs), scope: .reference(reference(.pullRequest(7), of: "q")), now: now)
+
+        #expect(cumulus.rows.map(\.id) == ["cumulus-main"])
+        #expect(hyrox.rows.map(\.id) == ["hyrox-main"])
+        #expect(hyroxPullRequest.rows.map(\.id) == ["hyrox-pr"], "the other app's pull request of the same number is not in it")
+    }
+
+    @Test func aPullRequestIsLookedUpInItsOwnRepository() {
+        let runs = [
+            run("cumulus-pr", number: 5, minutesAgo: 1, branch: "feature/widget-cycle", pullRequest: (128, "cached")),
+            run("hyrox-pr", number: 396, minutesAgo: 2, branch: "x", pullRequest: (128, "Other 128"), product: "q", workflowID: "v"),
+        ]
+        // Number 128 is open in Cumulus's repository, and closed in Hyrox's.
+        let open = OpenPullRequests(byRepository: ["repo-cumulus": [pullRequest128], "repo-hyrox": []], repositoryByWorkflow: ["w": "repo-cumulus", "v": "repo-hyrox"])
+
+        let model = ReferencesModel(snapshot: snapshot(runs), openPullRequests: open)
+
+        #expect(model.rows.map(\.lastRun.id) == ["cumulus-pr"], "the open one does not keep its namesake of another repository alive")
+        #expect(model.rows[0].title == "#128 Add the cycle widget")
+        #expect(open.pullRequest(128, workflowID: "v") == nil && open.pullRequest(128, workflowID: "w") == pullRequest128)
+        #expect(open.pullRequest(128, workflowID: nil) == pullRequest128, "a build without a workflow is looked up everywhere")
     }
 
     // MARK: - Store
@@ -140,7 +203,8 @@ struct ReferencesTests {
         await store.load(snapshot: snapshot(runs), now: now)
         await store.load(snapshot: snapshot(runs), now: now.addingTimeInterval(60))
 
-        #expect(store.openPullRequests?.map(\.number) == [131, 128])
+        #expect(store.openPullRequests?.all.map(\.number) == [131, 128])
+        #expect(store.openPullRequests?.repositoryByWorkflow == ["w": "repo-1"], "each workflow keeps the repository it builds from")
         #expect(!store.loadFailed)
         #expect(await transport.requests.count == 2, "one repository lookup, one list; nothing a minute later")
 
@@ -176,16 +240,16 @@ struct ReferencesTests {
         #expect(navigation.open(url))
         #expect(navigation.sidebarSelection == .references)
 
-        navigation.referenceScope = .branchOrTag("main")
+        navigation.referenceScope = reference(.branchOrTag("main"))
         navigation.selectedBuildID = "r1"
-        navigation.referenceScope = .pullRequest(7)
+        navigation.referenceScope = reference(.pullRequest(7))
         #expect(navigation.selectedBuildID == nil, "another reference's list: the build of the one before is gone")
 
         navigation.selectedBuildID = "r2"
         navigation.accountDidChange()
         #expect(navigation.sidebarSelection == .references && navigation.referenceScope == nil && navigation.selectedBuildID == nil)
 
-        navigation.referenceScope = .pullRequest(7)
+        navigation.referenceScope = reference(.pullRequest(7))
         navigation.sidebarSelection = .allBuilds
         #expect(navigation.referenceScope == nil, "leaving the view forgets the reference")
     }

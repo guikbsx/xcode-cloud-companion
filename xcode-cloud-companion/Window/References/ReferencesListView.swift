@@ -5,7 +5,7 @@ import SwiftUI
 struct ReferencesListView: View {
     let buildStore: BuildStore
     let store: ReferencesStore
-    let open: (ReferenceKey) -> Void
+    let open: (AppReference) -> Void
     var icons: AppIconStore?
     var palette = AppPalette()
     @State private var filter = ReferenceFilter.all
@@ -40,7 +40,7 @@ struct ReferencesListView: View {
                         ForEach(Array(group.rows.enumerated()), id: \.element.id) { index, row in
                             TimelineRow(status: row.status, isFirst: index == 0, isLast: index == group.rows.count - 1) {
                                 Button {
-                                    open(row.key)
+                                    open(row.reference)
                                 } label: {
                                     BuildCard(reference: row, now: now, swatch: palette.swatch(for: row.productKey ?? row.productName), artwork: artwork[row.lastRun.productID])
                                 }

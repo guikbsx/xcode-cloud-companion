@@ -8,7 +8,7 @@ final class ReferencesStore {
     static let freshness: TimeInterval = 5 * 60
 
     /// nil until the list was read once, or when it could not be: both mean "unknown", not "none".
-    private(set) var openPullRequests: [PullRequestReference]?
+    private(set) var openPullRequests: OpenPullRequests?
     private(set) var isLoading = false
     private(set) var loadFailed = false
     private var loadedAt: Date?
@@ -28,7 +28,7 @@ final class ReferencesStore {
         if let loadedAt, now.timeIntervalSince(loadedAt) < Self.freshness { return }
         let workflowIDs = Set(snapshot.runs.filter { ReferencesModel.key(of: $0)?.isPullRequest == true }.compactMap(\.workflowID))
         guard !workflowIDs.isEmpty else {
-            openPullRequests = []
+            openPullRequests = OpenPullRequests(byRepository: [:])
             loadedAt = now
             return
         }
@@ -49,10 +49,10 @@ final class ReferencesStore {
                 failed = true
             }
         }
-        var found: [PullRequestReference] = []
+        var found: [String: [PullRequestReference]] = [:]
         for repository in repositories.sorted() {
             if let pullRequests = try? await client.pullRequests(repositoryID: repository) {
-                found.append(contentsOf: pullRequests)
+                found[repository] = pullRequests
             } else {
                 failed = true
             }
@@ -61,7 +61,7 @@ final class ReferencesStore {
         loadedAt = now
         // A partial list would hide the pull requests of the repository that failed: the list stays unknown.
         if !failed {
-            openPullRequests = found
+            openPullRequests = OpenPullRequests(byRepository: found, repositoryByWorkflow: repositoriesByWorkflow)
         }
     }
 }

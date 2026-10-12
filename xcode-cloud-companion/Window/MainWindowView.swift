@@ -248,9 +248,9 @@ struct MainWindowView: View {
                 openSettings: openSettings,
                 openWorkflow: { navigation.sidebarSelection = .workflow($0) },
                 openBuild: { navigation.selectedBuildID = $0 },
-                openReference: { key in
+                openReference: { reference in
                     navigation.sidebarSelection = .references
-                    navigation.referenceScope = key
+                    navigation.referenceScope = reference
                 }
             )
             // The conditions that start a workflow come with its own sheet's read: cache first, a request an hour at most.

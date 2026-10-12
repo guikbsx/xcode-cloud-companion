@@ -59,7 +59,7 @@ struct AppBuildsChart: View {
 struct AppReferencesGroup: View {
     let references: [ReferenceRow]
     let now: Date
-    let openReference: (ReferenceKey) -> Void
+    let openReference: (AppReference) -> Void
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -68,7 +68,7 @@ struct AppReferencesGroup: View {
             ForEach(Array(references.enumerated()), id: \.element.id) { index, row in
                 if index > 0 { Divider() }
                 Button {
-                    openReference(row.key)
+                    openReference(row.reference)
                 } label: {
                     HStack(spacing: 8) {
                         StatusDot(status: row.status)

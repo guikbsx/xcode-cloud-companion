@@ -12,7 +12,7 @@ struct AppOverviewView: View {
     var openSettings: () -> Void = {}
     var openWorkflow: (String) -> Void = { _ in }
     var openBuild: (String) -> Void = { _ in }
-    var openReference: (ReferenceKey) -> Void = { _ in }
+    var openReference: (AppReference) -> Void = { _ in }
 
     var body: some View {
         ScrollView {

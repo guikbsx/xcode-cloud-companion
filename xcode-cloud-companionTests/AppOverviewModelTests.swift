@@ -105,7 +105,7 @@ struct AppOverviewModelTests {
         UsageCalculator.summary(snapshot: snapshot, ledger: ledger, plan: plan, now: now ?? self.now, calendar: calendar)
     }
 
-    private func model(summary: UsageSummary?, details: [String: CIWorkflow] = [:], open: [PullRequestReference]? = nil, now: Date? = nil) -> AppOverviewModel? {
+    private func model(summary: UsageSummary?, details: [String: CIWorkflow] = [:], open: OpenPullRequests? = nil, now: Date? = nil) -> AppOverviewModel? {
         AppOverviewModel(productID: "p1", snapshot: snapshot, details: details, summary: summary, openPullRequests: open, now: now ?? self.now, calendar: calendar)
     }
 
@@ -223,6 +223,7 @@ struct AppOverviewModelTests {
 
         #expect(known.references.map(\.title) == ["main", "#212 Ma semaine", "develop"], "the other app's branch is left out")
         #expect(known.references.first?.lastRun.number == 395)
+        #expect(known.references.allSatisfy { $0.reference.productID == "p1" }, "each one opens this app's builds, not another app's")
         #expect(closed.references.map(\.title) == ["main", "develop"], "a pull request Apple no longer lists is closed")
     }
 

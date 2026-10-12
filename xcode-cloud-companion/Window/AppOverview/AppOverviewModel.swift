@@ -108,7 +108,7 @@ nonisolated struct AppOverviewModel: Equatable, Sendable {
     /// `openPullRequests` is Apple's list when it is known; nil shows every pull request the builds name.
     init?(
         productID: String, snapshot: BuildSnapshot, details: [String: CIWorkflow] = [:], summary: UsageSummary?,
-        openPullRequests: [PullRequestReference]? = nil, now: Date, calendar: Calendar = .current
+        openPullRequests: OpenPullRequests? = nil, now: Date, calendar: Calendar = .current
     ) {
         guard let product = snapshot.products.first(where: { $0.id == productID }) else { return nil }
         self.productID = productID
