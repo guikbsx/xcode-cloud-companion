@@ -67,6 +67,12 @@ struct MainWindowTests {
         #expect(Bundle.main.object(forInfoDictionaryKey: "LSUIElement") as? Bool == true)
     }
 
+    /// Without it, every build waits in App Store Connect for an answer about encryption before it can go anywhere.
+    /// The app only signs its API token and talks HTTPS, with the system's own tools.
+    @Test func theAppDeclaresThatItUsesNoNonExemptEncryption() {
+        #expect(Bundle.main.object(forInfoDictionaryKey: "ITSAppUsesNonExemptEncryption") as? Bool == false)
+    }
+
     @Test func aBuildAddressRoundTrips() throws {
         let url = try #require(CumulusURL.build(id: "abc-123"))
 
