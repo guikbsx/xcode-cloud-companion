@@ -13,6 +13,8 @@ nonisolated struct SidebarContent: Equatable {
         var isLocked = false
         /// Builds with an Xcode older than the newest public one Xcode Cloud offers.
         var isOnOlderXcode = false
+        /// How the workflow's newest build went; nil while the cache holds none of its builds.
+        var lastStatus: BuildStatus? = nil
 
         var isPaused: Bool { isEnabled == false }
     }
@@ -22,7 +24,6 @@ nonisolated struct SidebarContent: Equatable {
         /// The name shown: the App Store name when the product is an app that has one.
         let name: String
         let buildCount: Int
-        let lastStatus: BuildStatus?
         let swatch: AppSwatch
         let workflows: [Workflow]
     }
@@ -46,7 +47,8 @@ nonisolated struct SidebarContent: Equatable {
                 Workflow(
                     id: workflow.id, name: workflow.name, productID: productID, productName: product.displayName, buildCount: runs.count,
                     isEnabled: workflow.isEnabled, isLocked: workflow.isLockedForEditing == true,
-                    isOnOlderXcode: XcodeVersionCheck.warning(version: workflow.xcodeVersion, name: nil, among: snapshot.xcodeVersions) != nil
+                    isOnOlderXcode: XcodeVersionCheck.warning(version: workflow.xcodeVersion, name: nil, among: snapshot.xcodeVersions) != nil,
+                    lastStatus: runs.max { Self.order($0) < Self.order($1) }.map(BuildStatus.init(run:))
                 )
             )
         }
@@ -54,12 +56,10 @@ nonisolated struct SidebarContent: Equatable {
         products = snapshot.products
             .map { product in
                 let runs = runsByProduct[product.id] ?? []
-                let latest = runs.max { ($0.createdDate ?? .distantPast) < ($1.createdDate ?? .distantPast) }
                 return Product(
                     id: product.id,
                     name: product.displayName,
                     buildCount: runs.count,
-                    lastStatus: latest.map(BuildStatus.init(run:)),
                     swatch: palette.swatch(for: product.name),
                     workflows: (workflowsByProduct[product.id] ?? []).sorted { $0.name.localizedStandardCompare($1.name) == .orderedAscending }
                 )
@@ -71,6 +71,10 @@ nonisolated struct SidebarContent: Equatable {
 
         let all = Dictionary(products.flatMap(\.workflows).map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
         pinned = pinnedIDs.compactMap { all[$0] }
+    }
+
+    private static func order(_ run: CIBuildRun) -> (Date, Int) {
+        (run.createdDate ?? .distantPast, run.number ?? 0)
     }
 
     private func latestCreation(_ runs: [CIBuildRun]?) -> Date {

@@ -12,8 +12,12 @@ struct BuildDetailView: View {
     var palette = AppPalette()
     var openBuild: (String) -> Void = { _ in }
     var logOpener: LogOpener?
+    /// The imported usage exports: what the build cost, when it can be told.
+    var ledger: UsageLedger?
 
     @Binding var tab: BuildTab
+    /// Bumped by “Compare with #n” beside the commit: the group below starts its comparison.
+    @State private var compareRequest = 0
 
     var body: some View {
         TickingView(interval: Self.redrawInterval(for: run)) { now in
@@ -23,7 +27,8 @@ struct BuildDetailView: View {
                 workflow: buildStore.snapshot.workflow(id: run.workflowID),
                 actions: buildStore.snapshot.actionsByRunID[run.id] ?? [],
                 teamID: teamID,
-                now: now
+                now: now,
+                cost: ledger.flatMap { UsageCalculator.cost(of: run, in: buildStore.snapshot, ledger: $0, now: now) }
             ))
         }
         .task(id: run) { await extrasStore.loadBetaBuilds(for: run) }
@@ -38,7 +43,7 @@ struct BuildDetailView: View {
     private func content(_ model: BuildDetailModel) -> some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 18) {
-                header(model)
+                identityCard(model)
                 if !model.frieze.isEmpty {
                     ActionsFrieze(
                         steps: model.frieze,
@@ -46,18 +51,12 @@ struct BuildDetailView: View {
                         busyLogSteps: Set(model.frieze.filter { logOpener?.state(of: $0.id).isBusy == true }.map(\.id)),
                         openLogs: { openLogs(of: $0, model: model) }
                     )
-                    .cumulusGroup()
-                }
-                if !model.info.isEmpty {
-                    LazyVGrid(columns: [GridItem(.adaptive(minimum: 150), alignment: .topLeading)], alignment: .leading, spacing: 14) {
-                        ForEach(model.info) { InfoItem(key: $0.title, value: $0.value, help: $0.help) }
-                    }
-                    .cumulusGroup()
+                    .padding(.horizontal, 8)
                 }
                 if let commit = model.commit {
-                    commitGroup(commit)
+                    commitQuote(commit)
                 }
-                RegressionGroup(run: run, buildStore: buildStore, extrasStore: extrasStore, openBuild: openBuild).id(run.id)
+                RegressionGroup(run: run, buildStore: buildStore, extrasStore: extrasStore, openBuild: openBuild, compareRequest: compareRequest).id(run.id)
                 testFlightGroup
                 tabs(model)
             }
@@ -87,67 +86,112 @@ struct BuildDetailView: View {
         .navigationSubtitle(model.title)
     }
 
-    private func header(_ model: BuildDetailModel) -> some View {
-        VStack(alignment: .leading, spacing: 10) {
+    /// Who the build is: its app, number and state, how long it took, then the facts.
+    private func identityCard(_ model: BuildDetailModel) -> some View {
+        VStack(alignment: .leading, spacing: 14) {
             HStack(alignment: .center, spacing: 14) {
                 if let product = buildStore.snapshot.product(id: run.productID) {
                     AppIconView(
-                        name: product.displayName, swatch: palette.swatch(for: product.name), lastStatus: model.status, size: 44,
+                        name: product.displayName, swatch: palette.swatch(for: product.name), size: 44,
                         artwork: icons?.artwork(of: product, in: buildStore.snapshot)
                     )
                 }
-                HStack(alignment: .firstTextBaseline, spacing: 12) {
-                    Text(model.numberText)
-                        .font(.system(size: 44, weight: .bold, design: .rounded).monospacedDigit())
-                    Text(model.title)
-                        .font(.title3)
-                        .foregroundStyle(.secondary)
+                VStack(alignment: .leading, spacing: 6) {
+                    HStack(alignment: .firstTextBaseline, spacing: 12) {
+                        Text(model.numberText)
+                            .font(.system(size: 34, weight: .bold, design: .rounded).monospacedDigit())
+                        Text(model.title)
+                            .font(.title3)
+                            .foregroundStyle(.secondary)
+                            .lineLimit(1)
+                    }
+                    HStack(spacing: 6) {
+                        CapsuleTag(text: model.statusText, systemImage: model.status.systemImage, tint: model.status.tint)
+                        if let reference = model.reference {
+                            CapsuleTag(text: reference, systemImage: "arrow.triangle.branch")
+                        }
+                        if let sha = model.shortSha {
+                            CapsuleTag(text: sha, isMonospaced: true)
+                        }
+                    }
+                }
+                Spacer(minLength: 8)
+                if let duration = model.clockDuration {
+                    VStack(alignment: .trailing, spacing: 2) {
+                        Text(duration)
+                            .font(.system(size: 22, weight: .bold, design: .rounded).monospacedDigit())
+                        if let age = model.age {
+                            Text(age).font(.caption).foregroundStyle(.secondary)
+                        }
+                    }
+                    .accessibilityElement(children: .combine)
+                    .accessibilityLabel(Text(model.status == .running ? "Elapsed" : "Duration"))
+                    .accessibilityValue(Text(UsageFormat.dotted([duration, model.age].compactMap(\.self))))
                 }
             }
-            HStack(spacing: 6) {
-                CapsuleTag(text: model.status.label, systemImage: model.status.systemImage, tint: model.status.tint)
-                if let reference = model.reference {
-                    CapsuleTag(text: reference, systemImage: "arrow.triangle.branch")
-                }
-                if let sha = model.shortSha {
-                    CapsuleTag(text: sha, isMonospaced: true)
+            .accessibilityElement(children: .combine)
+            if !model.info.isEmpty {
+                Divider()
+                LazyVGrid(columns: [GridItem(.adaptive(minimum: 150), alignment: .topLeading)], alignment: .leading, spacing: 12) {
+                    ForEach(model.info) { InfoItem(key: $0.title, value: $0.value, help: $0.help) }
                 }
             }
-        }
-        .accessibilityElement(children: .combine)
-    }
-
-    private func commitGroup(_ commit: CommitInfo) -> some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text("Last commit")
-                .font(.caption2.weight(.semibold))
-                .textCase(.uppercase)
-                .tracking(0.5)
-                .foregroundStyle(.secondary)
-            if let message = commit.message {
-                Text(message).lineLimit(4).textSelection(.enabled)
-            }
-            HStack(spacing: 10) {
-                if let author = commit.author {
-                    Text(author).foregroundStyle(.secondary)
-                }
-                Button {
-                    NSPasteboard.general.clearContents()
-                    NSPasteboard.general.setString(commit.sha, forType: .string)
-                } label: {
-                    Label(commit.shortSha, systemImage: "doc.on.doc")
-                        .font(.system(.caption, design: .monospaced))
-                }
-                .buttonStyle(.borderless)
-                .help("Copy the commit SHA")
-                if let url = commit.webURL {
-                    Link("View commit", destination: url)
-                }
-            }
-            .font(.callout)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .cumulusGroup()
+    }
+
+    /// The failed build's earlier success, while the two are not compared yet: what “Compare with #n” would load.
+    private var comparison: CIBuildRun? {
+        let status = BuildStatus(run: run)
+        guard run.executionProgress == .complete, status == .failed || status == .errored,
+              let reference = RegressionReport.reference(for: run, in: buildStore.snapshot)
+        else { return nil }
+        if let extras = extrasStore.extras(for: run.id), let referenceExtras = extrasStore.extras(for: reference.id),
+           RegressionReport.isReady(extras: extras, referenceExtras: referenceExtras) {
+            return nil
+        }
+        return reference
+    }
+
+    /// The commit in its author's words, as a quotation, then the ways to it.
+    private func commitQuote(_ commit: CommitInfo) -> some View {
+        HStack(alignment: .top, spacing: 10) {
+            Image(systemName: "quote.opening")
+                .font(.title3.weight(.bold))
+                .foregroundStyle(CumulusStyle.accent)
+                .accessibilityHidden(true)
+            VStack(alignment: .leading, spacing: 6) {
+                if let message = commit.message {
+                    Text(message).lineLimit(4).textSelection(.enabled)
+                }
+                HStack(spacing: 12) {
+                    if let author = commit.author {
+                        Text(author).foregroundStyle(.secondary)
+                    }
+                    Button {
+                        NSPasteboard.general.clearContents()
+                        NSPasteboard.general.setString(commit.sha, forType: .string)
+                    } label: {
+                        Label(commit.shortSha, systemImage: "doc.on.doc")
+                            .font(.system(.caption, design: .monospaced))
+                    }
+                    .buttonStyle(.borderless)
+                    .help("Copy the commit SHA")
+                    if let url = commit.webURL {
+                        Link("View commit", destination: url)
+                    }
+                    if let reference = comparison {
+                        Button("Compare with \(reference.number.map { "#\($0)" } ?? "#?")") { compareRequest += 1 }
+                            .buttonStyle(.link)
+                            .help("Loads the tests and issues of both builds, one action at a time.")
+                    }
+                }
+                .font(.callout)
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.horizontal, 6)
     }
 
     @ViewBuilder
@@ -176,14 +220,14 @@ struct BuildDetailView: View {
 
     private func tabs(_ model: BuildDetailModel) -> some View {
         VStack(alignment: .leading, spacing: 12) {
-            Picker("Details", selection: $tab) {
-                Text(Self.title(String(localized: "Actions"), count: model.actions.count)).tag(BuildTab.actions)
-                Text(Self.title(String(localized: "Tests"), suffix: model.testFailureCount.flatMap { $0 > 0 ? String(localized: "\($0) failed") : nil })).tag(BuildTab.tests)
-                Text(Self.title(String(localized: "Issues"), count: model.issueCount)).tag(BuildTab.problems)
-                Text("Artifacts").tag(BuildTab.artifacts)
+            HStack(spacing: 6) {
+                pill(.actions, String(localized: "Actions"), count: model.actions.count)
+                pill(.tests, String(localized: "Tests"), count: model.testFailureCount, countsFailures: true)
+                pill(.problems, String(localized: "Issues"), count: model.issueCount)
+                pill(.artifacts, String(localized: "Artifacts"), count: nil)
             }
-            .pickerStyle(.segmented)
-            .labelsHidden()
+            .accessibilityElement(children: .contain)
+            .accessibilityLabel(Text("Details"))
 
             let actions = buildStore.snapshot.actionsByRunID[run.id] ?? []
             let extras = extrasStore.extras(for: run.id)
@@ -291,12 +335,29 @@ struct BuildDetailView: View {
         .cumulusGroup()
     }
 
-    private static func title(_ base: String, suffix: String?) -> String {
-        suffix.map { UsageFormat.dotted([base, $0]) } ?? base
-    }
-
-    private static func title(_ base: String, count: Int?) -> String {
-        guard let count, count > 0 else { return base }
-        return UsageFormat.dotted([base, count.formatted()])
+    /// One tab, as a glass pill with its counter; the one on screen is filled.
+    @ViewBuilder
+    private func pill(_ value: BuildTab, _ title: String, count: Int?, countsFailures: Bool = false) -> some View {
+        let isSelected = tab == value
+        let shown = count.flatMap { $0 > 0 ? $0 : nil }
+        let label = HStack(spacing: 6) {
+            Text(title)
+            if let shown {
+                Text(shown, format: .number)
+                    .font(.caption2.weight(.bold).monospacedDigit())
+                    .padding(.horizontal, 6)
+                    .padding(.vertical, 1)
+                    .foregroundStyle(countsFailures && !isSelected ? AnyShapeStyle(BuildStatus.failed.textTint) : AnyShapeStyle(.tint))
+                    .background(
+                        countsFailures && !isSelected ? AnyShapeStyle(BuildStatus.failed.tint.opacity(0.16)) : AnyShapeStyle(.tint.opacity(0.16)),
+                        in: .capsule
+                    )
+            }
+        }
+        let spoken = shown.map { countsFailures ? String(localized: "\($0) failed") : $0.formatted() } ?? ""
+        Button { tab = value } label: { label }
+            .buttonStyle(PillButtonStyle(isSelected: isSelected))
+            .accessibilityValue(Text(spoken))
+            .accessibilityAddTraits(isSelected ? .isSelected : [])
     }
 }

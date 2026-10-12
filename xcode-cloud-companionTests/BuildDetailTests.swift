@@ -84,19 +84,45 @@ struct BuildDetailTests {
 
         let fields = model(run(), workflow: workflow).info
 
-        #expect(fields.map(\.title) == ["Start condition", "Started", "Queued for", "Duration", "Xcode"])
+        #expect(fields.map(\.title) == ["Start condition", "Started", "Queued for", "Xcode"])
         #expect(fields[0].value == "Branch change")
         #expect(fields[2].value == "32 sec")
-        #expect(fields[3].value == "6 min, 12 sec")
-        #expect(fields[4].help?.contains("Current workflow configuration") == true)
+        #expect(fields[3].help?.contains("Current workflow configuration") == true)
         #expect(model(run(reason: nil)).info.contains { $0.title == "Start condition" } == false)
     }
 
     @Test func aRunningBuildShowsElapsedTimeInsteadOfDuration() {
         let model = model(run(progress: .running), now: created.addingTimeInterval(32 + 125))
 
-        #expect(model.info.last?.title == "Elapsed")
-        #expect(model.info.last?.value == "2 min, 5 sec")
+        #expect(model.clockDuration == "2:05", "beside the number, and no longer among the facts")
+        #expect(!model.info.contains { $0.title == "Elapsed" || $0.title == "Duration" })
+    }
+
+    @Test func theIdentityCardSaysHowItWentHowLongItTookAndWhatItCost() {
+        var workflow = CIWorkflow(id: "w", name: "Public archive", testDestinationCounts: [])
+        workflow.clean = false
+        let commit = CISourceCommit(commitSha: "d4c3b2a1f0e9", message: "Fix the CSV import", authorName: "guik", webURL: nil)
+        let counts = CIIssueCounts(analyzerWarnings: 0, errors: 0, testFailures: 3, warnings: 0)
+        let product = CIProduct(id: "p", name: "realmotivation", productType: "APP", appID: "123", appName: nil, bundleID: nil)
+        let now = created.addingTimeInterval(2 * 3600)
+        func sheet(_ run: CIBuildRun, cost: BuildCost?) -> BuildDetailModel {
+            BuildDetailModel(run: run, product: product, workflow: workflow, actions: [], teamID: nil, now: now, cost: cost)
+        }
+        let estimate = BuildCost(product: "realmotivation", buildNumber: 389, workflow: "Public archive", minutes: 11, isEstimated: true)
+
+        let failed = sheet(run(commit: commit, counts: counts), cost: estimate)
+        #expect(failed.statusText == "Failed · 3 tests" && failed.clockDuration == "6:12" && failed.age == "2 hours ago")
+        #expect(failed.info.map(\.title) == ["Start condition", "Started", "Queued for", "Cost", "Clean build", "Author"])
+        #expect(failed.info[3].value == "~11 min" && failed.info[3].help?.contains("not Apple’s billing") == true)
+        #expect(failed.info[4].value == "No" && failed.info[5].value == "guik")
+
+        var billed = estimate
+        billed.isEstimated = false
+        #expect(sheet(run(), cost: billed).info.first { $0.title == "Cost" }?.value == "11 min")
+        // Unknown is left out, never dashed; a running build has no cost yet.
+        #expect(sheet(run(), cost: nil).info.map(\.title) == ["Start condition", "Started", "Queued for", "Clean build"])
+        #expect(!sheet(run(progress: .running), cost: estimate).info.contains { $0.title == "Cost" })
+        #expect(sheet(run(status: .succeeded, counts: counts), cost: nil).statusText == "Succeeded")
     }
 
     @Test func theCommitIsHiddenWithoutShaAndItsLinkMustBeHTTPS() {

@@ -50,9 +50,9 @@ struct UsageGaugeView: View {
                     estimatedStat.fixedSize(horizontal: true, vertical: false)
                 }
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(paceLine)
+                    Text(summary.paceLine)
                         .foregroundStyle(.secondary)
-                    Text(exportLine)
+                    Text(summary.exportLine)
                         .foregroundStyle(summary.isImportStale ? Color.orange : Color.secondary)
                     if summary.measurement.unmeasurableBuilds > 0 {
                         Text("\(summary.measurement.unmeasurableBuilds) builds not measured, estimated from their duration")
@@ -101,28 +101,31 @@ struct UsageGaugeView: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
     }
+}
 
-    private var paceLine: String {
-        if let exhaustion = summary.exhaustionDate {
-            if exhaustion <= summary.now {
-                return String(localized: "Plan used up · resets \(UsageFormat.moment(summary.resetDate))")
+/// What the cycle's figures say in words: one wording for the menu's gauge and the window's Overview.
+nonisolated extension UsageSummary {
+    var paceLine: String {
+        if let exhaustion = exhaustionDate {
+            if exhaustion <= now {
+                return String(localized: "Plan used up · resets \(UsageFormat.moment(resetDate))")
             }
-            if summary.resetDate.timeIntervalSince(exhaustion) < 24 * 3600 {
+            if resetDate.timeIntervalSince(exhaustion) < 24 * 3600 {
                 return String(localized: "Just lasts until the reset at this pace")
             }
             return String(localized: "Runs out around \(UsageFormat.day(exhaustion)) at this pace")
         }
-        if summary.projectedMinutes != nil {
+        if projectedMinutes != nil {
             return String(localized: "Lasts until the reset at this pace")
         }
         return String(localized: "Too early in the cycle to project a pace")
     }
 
-    private var exportLine: String {
-        guard let lastImport = summary.lastImport else {
+    var exportLine: String {
+        guard let lastImport else {
             return String(localized: "No usage export yet: figures are estimates")
         }
-        return String(localized: "Export \(UsageFormat.relative(lastImport, now: summary.now))")
+        return String(localized: "Export \(UsageFormat.relative(lastImport, now: now))")
     }
 }
 

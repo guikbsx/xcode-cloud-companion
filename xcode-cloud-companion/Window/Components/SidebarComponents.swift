@@ -1,25 +1,14 @@
 import SwiftUI
 
-/// An app's icon, or its initial in its palette colour while it has none, with the state of its last build when known.
+/// An app's icon, or its initial in its palette colour while it has none.
 struct AppIconView: View {
     let name: String
     let swatch: AppSwatch
-    var lastStatus: BuildStatus?
     var size: CGFloat = 22
     var artwork: AppArtwork?
 
     var body: some View {
-        face
-            .overlay(alignment: .bottomTrailing) {
-                if let lastStatus {
-                    Circle()
-                        .fill(lastStatus.tint)
-                        .frame(width: size * 0.46, height: size * 0.46)
-                        .overlay(Circle().strokeBorder(.background, lineWidth: 2))
-                        .offset(x: 3, y: 3)
-                }
-            }
-            .accessibilityHidden(true)
+        face.accessibilityHidden(true)
     }
 
     @ViewBuilder
@@ -41,36 +30,64 @@ struct AppIconView: View {
     }
 }
 
-/// The cycle at the foot of the sidebar: how much of the plan is used, and when it resets.
+/// How a workflow's last build went, as a dot: hollow while it has no build, ringed while one runs.
+struct StatusDot: View {
+    let status: BuildStatus?
+    var size: CGFloat = 8
+
+    var body: some View {
+        Group {
+            if let status {
+                Circle()
+                    .fill(status.tint)
+                    .overlay {
+                        if status == .running {
+                            Circle().stroke(status.tint.opacity(0.28), lineWidth: 3).padding(-3)
+                        }
+                    }
+            } else {
+                Circle().strokeBorder(Color.secondary.opacity(0.6), lineWidth: 1.5)
+            }
+        }
+        .frame(width: size, height: size)
+        .accessibilityHidden(true)
+    }
+}
+
+/// The cycle at the head of the sidebar: a ring for how much of the plan is used, the minutes, and when it resets.
 struct CycleCard: View {
     let fractionUsed: Double
     let usedText: String
     let resetText: String
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            HStack {
-                Text("Cycle · \(UsageFormat.compactPercent(fractionUsed))").fontWeight(.semibold)
-                Spacer()
-                Text(resetText).foregroundStyle(.secondary)
+        HStack(spacing: 12) {
+            ZStack {
+                Circle().stroke(Color.primary.opacity(0.1), lineWidth: 5)
+                Circle()
+                    .trim(from: 0, to: max(0.012, min(max(fractionUsed, 0), 1)))
+                    .stroke(CumulusStyle.accent, style: StrokeStyle(lineWidth: 5, lineCap: .round))
+                    .rotationEffect(.degrees(-90))
+                Text(UsageFormat.compactPercent(fractionUsed))
+                    .font(.caption2.weight(.bold).monospacedDigit())
+                    .minimumScaleFactor(0.7)
+                    .lineLimit(1)
+                    .padding(.horizontal, 7)
             }
-            .font(.caption)
-            Capsule()
-                .fill(Color.primary.opacity(0.08))
-                .frame(height: 6)
-                .overlay(alignment: .leading) {
-                    GeometryReader { proxy in
-                        Capsule().fill(CumulusStyle.accent).frame(width: max(4, proxy.size.width * min(max(fractionUsed, 0), 1)))
-                    }
-                }
-            Text(usedText).font(.caption).foregroundStyle(.secondary)
+            .frame(width: 48, height: 48)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(usedText).font(.caption.weight(.semibold)).lineLimit(2)
+                Text(resetText).font(.caption).foregroundStyle(.secondary).lineLimit(2)
+            }
+            Spacer(minLength: 0)
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 10)
-        .background(.background.opacity(0.7), in: .rect(cornerRadius: 10))
-        .overlay(RoundedRectangle(cornerRadius: 10).strokeBorder(.quaternary))
+        .background(.background.opacity(0.7), in: .rect(cornerRadius: 12))
+        .overlay(RoundedRectangle(cornerRadius: 12).strokeBorder(.quaternary))
         .accessibilityElement(children: .combine)
-        .accessibilityValue(Text(UsageFormat.percent(fractionUsed)))
+        .accessibilityLabel(Text("Cycle"))
+        .accessibilityValue(Text(UsageFormat.dotted([UsageFormat.percent(fractionUsed), usedText, resetText])))
     }
 }
 
@@ -199,11 +216,13 @@ struct LaunchButtonLabel: View {
 #Preview("Barre latérale") {
     VStack(alignment: .leading, spacing: 12) {
         HStack(spacing: 10) {
-            AppIconView(name: "realmotivation", swatch: .blue, lastStatus: .running)
-            AppIconView(name: "second-brain", swatch: .yellow, lastStatus: .succeeded)
-            AppIconView(name: "cycletracker", swatch: .cyan, lastStatus: .failed)
+            AppIconView(name: "realmotivation", swatch: .blue)
+            AppIconView(name: "second-brain", swatch: .yellow)
+            StatusDot(status: .running)
+            StatusDot(status: .failed)
+            StatusDot(status: nil)
         }
-        CycleCard(fractionUsed: 0.02, usedText: "23 min sur 25 h", resetText: "réinit. 7 nov.")
+        CycleCard(fractionUsed: 0.05, usedText: "1 h 13 min sur 25 h", resetText: "Réinit. le 7 nov.")
         Button(action: {}) { LaunchButtonLabel() }.buttonStyle(.glassProminent)
     }
     .padding(20)

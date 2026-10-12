@@ -53,14 +53,14 @@ struct TimelineRow<Content: View>: View {
     VStack(spacing: 0) {
         DayHeader(title: "Aujourd'hui")
         TimelineRow(status: .running, isFirst: true) {
-            BuildCard(status: .running, number: "#390", summary: "En cours · 4 min", detail: "realmotivation · develop", duration: "15:21")
+            BuildCard(appName: "realmotivation", swatch: .blue, title: "Ajoute le suivi des temps de repos", prefix: "#390", status: .running, statusText: "En cours · 4 min", facts: "develop", duration: "15:21")
         }
         DayHeader(title: "Hier")
         TimelineRow(status: .failed) {
-            BuildCard(status: .failed, number: "#389", summary: "Échec · 3 tests", detail: "realmotivation · develop", duration: "6:12", isSelected: true)
+            BuildCard(appName: "realmotivation", swatch: .blue, title: "Corrige l’import CSV", prefix: "#389", status: .failed, statusText: "Échec · 3 tests", facts: "develop", duration: "6:12", isSelected: true)
         }
         TimelineRow(status: .succeeded, isLast: true) {
-            BuildCard(status: .succeeded, number: "#386", summary: "Réussi · TestFlight", detail: "realmotivation · develop", duration: "14:20")
+            BuildCard(appName: "realmotivation", swatch: .blue, title: "Prépare la 1.3", prefix: "#386", status: .succeeded, statusText: "Réussi · TestFlight", facts: "develop", duration: "14:20")
         }
     }
     .frame(width: 372)

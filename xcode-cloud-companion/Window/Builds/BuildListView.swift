@@ -9,6 +9,9 @@ struct BuildListView: View {
     var back: (() -> Void)?
     /// Builds past the cache's window, read on request at the foot of the list.
     var older: OlderBuildsStore?
+    /// The apps' icons and colours: a card names its app by its icon.
+    var icons: AppIconStore?
+    var palette = AppPalette()
     @State private var filter = BuildFilter.all
     @State private var query = ""
 
@@ -19,16 +22,16 @@ struct BuildListView: View {
         .searchable(text: $query, prompt: Text("Number, commit or name"))
     }
 
-    private func card(_ row: BuildRowData, now: Date) -> BuildCard {
+    private func card(_ row: BuildRowData, now: Date, artwork: [String: AppArtwork]) -> BuildCard {
         BuildCard(
-            status: row.status, number: row.numberText, summary: row.summary(now: now), detail: row.detail,
-            duration: row.duration(now: now), isSelected: row.id == navigation.selectedBuildID,
-            runningSince: row.runningSince, spokenDetail: row.spokenDetail
+            row: row, now: now, swatch: palette.swatch(for: row.productKey ?? row.productName), artwork: artwork[row.productID],
+            isSelected: row.id == navigation.selectedBuildID
         )
     }
 
     private func content(now: Date) -> some View {
         let model = BuildListModel(snapshot: buildStore.snapshot, olderRuns: older?.runs ?? [], scope: scope, filter: filter, query: query, now: now)
+        let artwork = icons?.artwork(in: buildStore.snapshot, by: \.id) ?? [:]
         return ScrollViewReader { proxy in
             ScrollView {
                 if let reason = model.emptyReason {
@@ -42,7 +45,7 @@ struct BuildListView: View {
                                     Button {
                                         navigation.selectedBuildID = row.id
                                     } label: {
-                                        card(row, now: now)
+                                        card(row, now: now, artwork: artwork)
                                     }
                                     .buttonStyle(.plain)
                                 }

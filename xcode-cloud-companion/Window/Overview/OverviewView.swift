@@ -27,9 +27,10 @@ struct OverviewView: View {
             VStack(alignment: .leading, spacing: 18) {
                 Text("Overview").font(.system(size: 30, weight: .bold, design: .rounded))
                 if let summary {
-                    UsageGaugeView(summary: summary, palette: palette, displayNames: displayNames).cumulusGroup()
+                    let model = OverviewModel(summary: summary, palette: palette, displayNames: displayNames)
+                    CycleRingGroup(summary: summary, model: model, artwork: artwork)
                     if !summary.measurement.isMeasuring {
-                        details(OverviewModel(summary: summary, palette: palette, displayNames: displayNames))
+                        details(model)
                     }
                 } else {
                     noPlan
@@ -37,7 +38,7 @@ struct OverviewView: View {
                 if let forecast, !forecast.entries.isEmpty {
                     upcoming(forecast)
                 }
-                importGroup
+                importLine
             }
             .padding(24)
             .frame(maxWidth: 760, alignment: .leading)
@@ -65,48 +66,23 @@ struct OverviewView: View {
 
     @ViewBuilder
     private func details(_ model: OverviewModel) -> some View {
-        if !model.apps.isEmpty {
-            section("Minutes by app") {
-                ForEach(model.apps) { app in
-                    HStack(spacing: 10) {
-                        AppIconView(name: app.displayName, swatch: app.swatch, size: 22, artwork: artwork[app.name])
-                        VStack(alignment: .leading, spacing: 4) {
-                            HStack {
-                                Text(app.displayName).fontWeight(.semibold)
-                                Spacer()
-                                Text(Self.minutesText(app)).font(.callout.monospacedDigit())
-                            }
-                            Capsule()
-                                .fill(Color.primary.opacity(0.08))
-                                .frame(height: 6)
-                                .overlay(alignment: .leading) {
-                                    GeometryReader { proxy in
-                                        Capsule().fill(app.swatch.color).frame(width: max(4, proxy.size.width * app.share))
-                                    }
-                                }
-                                .accessibilityHidden(true)
-                        }
-                    }
-                    .accessibilityElement(children: .combine)
-                }
-                if model.hasEstimates {
-                    Text("Figures with a ~ are estimates computed from the builds’ durations, not Apple’s billing. Import an export for exact minutes.")
-                        .font(.caption).foregroundStyle(.secondary)
-                }
-            }
-        }
         if !model.workflows.isEmpty {
             section("Cost by workflow") {
-                ForEach(model.workflows.prefix(8)) { workflow in
+                WorkflowBar(segments: model.workflowBar)
+                ForEach(model.workflows.prefix(OverviewModel.visibleWorkflows)) { workflow in
                     let isExpanded = expandedWorkflow == workflow.id
                     Button {
                         expandedWorkflow = isExpanded ? nil : workflow.id
                     } label: {
-                        HStack(alignment: .firstTextBaseline) {
+                        HStack(alignment: .firstTextBaseline, spacing: 8) {
                             Image(systemName: "chevron.right")
                                 .font(.caption.weight(.semibold))
                                 .foregroundStyle(.secondary)
                                 .rotationEffect(.degrees(isExpanded ? 90 : 0))
+                                .accessibilityHidden(true)
+                            RoundedRectangle(cornerRadius: 2.5)
+                                .fill(workflow.swatch.color.opacity(workflow.shade))
+                                .frame(width: 9, height: 9)
                                 .accessibilityHidden(true)
                             VStack(alignment: .leading, spacing: 2) {
                                 Text(workflow.workflow).fontWeight(.semibold)
@@ -130,14 +106,15 @@ struct OverviewView: View {
                         WorkflowBreakdownView(breakdown: breakdown)
                     }
                 }
-            }
-        }
-        if let costliest = model.costliestBuild {
-            section("Most expensive build") {
-                HStack {
-                    Text(UsageFormat.dotted([costliest.product, "#\(costliest.buildNumber)", costliest.workflow].compactMap(\.self))).fontWeight(.semibold)
-                    Spacer()
-                    Text((costliest.isEstimated ? "~" : "") + UsageFormat.minutes(costliest.minutes)).font(.callout.monospacedDigit())
+                if let costliest = model.costliestBuild {
+                    Divider()
+                    HStack(alignment: .firstTextBaseline) {
+                        Text("Most expensive build").foregroundStyle(.secondary)
+                        Text(UsageFormat.dotted([costliest.product, "#\(costliest.buildNumber)", costliest.workflow].compactMap(\.self))).fontWeight(.semibold)
+                        Spacer()
+                        Text((costliest.isEstimated ? "~" : "") + UsageFormat.minutes(costliest.minutes)).font(.callout.monospacedDigit())
+                    }
+                    .accessibilityElement(children: .combine)
                 }
             }
         }
@@ -149,20 +126,15 @@ struct OverviewView: View {
                 Button {
                     openWorkflow(entry.workflowID)
                 } label: {
-                    HStack(spacing: 10) {
-                        Image(systemName: "calendar.badge.clock").foregroundStyle(.secondary).accessibilityHidden(true)
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text(entry.workflowName).fontWeight(.semibold)
-                            Text(UsageFormat.dotted([entry.productName, entry.source, Self.frequencyText(entry.frequency)].compactMap(\.self)))
-                                .font(.caption).foregroundStyle(.secondary)
-                        }
-                        Spacer()
-                        VStack(alignment: .trailing, spacing: 2) {
-                            Text(Self.whenText(entry.nextRun, now: forecast.now)).font(.callout.monospacedDigit())
-                            Text(entry.minutesPerRun.map { String(localized: "~\(UsageFormat.minutes($0)) estimated", comment: "What one scheduled build is expected to cost, from past builds") }
-                                ?? String(localized: "No build yet to estimate from"))
-                                .font(.caption).foregroundStyle(.secondary)
-                        }
+                    HStack(alignment: .firstTextBaseline, spacing: 8) {
+                        Text(entry.workflowName).fontWeight(.semibold).lineLimit(1)
+                        Text(UsageFormat.dotted([entry.productName, entry.source, Self.frequencyText(entry.frequency)].compactMap(\.self)))
+                            .font(.caption).foregroundStyle(.secondary).lineLimit(1).layoutPriority(-1)
+                        Spacer(minLength: 8)
+                        Text(Self.whenText(entry.nextRun, now: forecast.now)).font(.callout.monospacedDigit()).lineLimit(1)
+                        Text(entry.minutesPerRun.map { String(localized: "~\(UsageFormat.minutes($0)) estimated", comment: "What one scheduled build is expected to cost, from past builds") }
+                            ?? String(localized: "No build yet to estimate from"))
+                            .font(.caption).foregroundStyle(.secondary).lineLimit(1)
                     }
                     .contentShape(.rect)
                 }
@@ -206,24 +178,27 @@ struct OverviewView: View {
         return total + " " + String(localized: "Workflows without a build this cycle are not counted.")
     }
 
-    private var importGroup: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            if let lastImport = usage.ledger.lastImport {
-                LabeledContent("Last export imported", value: lastImport.formatted(date: .abbreviated, time: .shortened))
-            } else {
-                Text("No usage export imported yet.").foregroundStyle(.secondary)
-            }
+    /// The usage exports, at the foot: when the last one came in, and the two ways to bring one.
+    private var importLine: some View {
+        VStack(alignment: .leading, spacing: 6) {
             if let message = usage.lastImportMessage {
                 Label(message, systemImage: usage.lastImportFailed ? "exclamationmark.triangle.fill" : "checkmark.circle.fill")
                     .foregroundStyle(usage.lastImportFailed ? BuildStatus.failed.tint : BuildStatus.succeeded.tint)
             }
-            HStack {
-                Button("Import an Export…") { isImporting = true }
-                Button("Update from App Store Connect", action: openUsagePage)
+            HStack(spacing: 14) {
+                if let lastImport = usage.ledger.lastImport {
+                    Text("Last export imported \(lastImport.formatted(date: .abbreviated, time: .shortened))")
+                        .foregroundStyle(.secondary)
+                } else {
+                    Text("No usage export imported yet.").foregroundStyle(.secondary)
+                }
+                Button("Import an Export…") { isImporting = true }.buttonStyle(.link)
+                Button("Update from App Store Connect", action: openUsagePage).buttonStyle(.link)
             }
         }
+        .font(.callout)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .cumulusGroup()
+        .padding(.horizontal, 4)
     }
 
     private func section(_ title: LocalizedStringKey, @ViewBuilder content: () -> some View) -> some View {
@@ -237,12 +212,5 @@ struct OverviewView: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .cumulusGroup()
-    }
-
-    private static func minutesText(_ app: OverviewModel.AppRow) -> String {
-        if app.estimatedMinutes > 0, app.billedMinutes > 0 {
-            return "\(UsageFormat.minutes(app.billedMinutes)) + ~\(UsageFormat.minutes(app.estimatedMinutes))"
-        }
-        return (app.estimatedMinutes > 0 ? "~" : "") + UsageFormat.minutes(app.totalMinutes)
     }
 }

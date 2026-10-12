@@ -8,6 +8,8 @@ struct RegressionGroup: View {
     let buildStore: BuildStore
     let extrasStore: BuildExtrasStore
     let openBuild: (String) -> Void
+    /// Bumped from outside the group to start the comparison its own button starts.
+    var compareRequest = 0
 
     @State private var isLoading = false
     @State private var budgetIsShort = false
@@ -31,6 +33,11 @@ struct RegressionGroup: View {
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             .cumulusGroup()
+            .onChange(of: compareRequest) {
+                if let reference, !isLoading {
+                    Task { await compare(with: reference) }
+                }
+            }
             .task(id: [run.id, reference?.id]) {
                 // What both builds already have on disk shows at once; nothing is asked of Apple here.
                 await extrasStore.loadCached(run)

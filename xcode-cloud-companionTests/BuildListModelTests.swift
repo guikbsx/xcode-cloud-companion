@@ -97,6 +97,34 @@ struct BuildListModelTests {
         #expect(model(runs, query: "zzz").count == 0)
     }
 
+    @Test func aCardIsNamedAfterItsCommitAndFallsBackOnHowItWent() {
+        var named = run(1, created: "2026-10-08T22:10:00Z", status: .failed, testFailures: 3, sha: "abc1234")
+        named.sourceCommit?.message = "Fix the CSV import\n\nA longer explanation."
+        var blank = run(2, created: "2026-10-08T22:00:00Z", sha: "def5678")
+        blank.sourceCommit?.message = "  \n"
+        let rows = model([named, blank, run(3, created: "2026-10-08T21:00:00Z")]).rows
+
+        #expect(rows.map(\.commitTitle) == ["Fix the CSV import", nil, nil])
+        #expect(rows[0].facts == "Release · main" && rows[0].age(now: now) == "20m")
+
+        let card = BuildCard(row: rows[0], now: now, swatch: .blue, artwork: nil, isSelected: false)
+        #expect(card.title == "Fix the CSV import" && card.prefix == "#1" && card.statusText == "Failed · 3 tests")
+        #expect(card.spokenLabel == "Fix the CSV import, #1, Failed · 3 tests" && card.spokenValue == "Alpha · Release · main")
+
+        // No message from Apple: the card keeps saying how the build went, once.
+        let fallback = BuildCard(row: rows[1], now: now, swatch: .blue, artwork: nil, isSelected: false)
+        #expect(fallback.title == "Succeeded · TestFlight" && fallback.statusText == nil)
+        #expect(String(BuildCard.line(prefix: "#1", statusText: "Failed", facts: "Release · main", tint: nil).characters) == "#1 · Failed · Release · main")
+        #expect(String(BuildCard.line(prefix: "#2", statusText: nil, facts: "Release · main", tint: nil).characters) == "#2 · Release · main")
+    }
+
+    @Test func searchFindsACommitByItsMessage() {
+        var named = run(1, created: "2026-10-08T22:10:00Z", sha: "abc1234")
+        named.sourceCommit?.message = "Fix the CSV import"
+
+        #expect(model([named, run(2, created: "2026-10-08T22:00:00Z")], query: "csv").rows.map(\.number) == [1])
+    }
+
     @Test func rowsSaySoInWords() {
         let list = model([
             run(1, created: "2026-10-08T10:00:00Z", status: .failed, testFailures: 3),

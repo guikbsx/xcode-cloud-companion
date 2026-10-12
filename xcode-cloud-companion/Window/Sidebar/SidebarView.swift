@@ -12,46 +12,62 @@ struct SidebarView: View {
     var activity: SyncActivity?
     /// Another account's first fetch or measure, named, above the line of the account on screen.
     var backgroundActivity: (name: String, activity: SyncActivity)?
+    /// The hour's requests left, in a few words for the foot and in full for its tooltip.
     var budgetText: String?
+    var budgetHelp: String?
     /// Loaded app icons by product ID.
     var artwork: [String: AppArtwork] = [:]
     /// Pauses or resumes a workflow; nil while the key is declared read-only, and the menu then offers nothing.
     var togglePause: ((SidebarContent.Workflow) -> Void)?
 
-    @State private var collapsed: Set<String> = []
-
     var body: some View {
         List(selection: $selection) {
+            Group {
+                if let cycle {
+                    CycleCard(fractionUsed: cycle.fractionUsed, usedText: cycle.usedText, resetText: cycle.resetText)
+                } else if let setPlan {
+                    CyclePromptCard(setPlan: setPlan)
+                }
+            }
+            // Room under the card: the first entry of the list must not sit against it.
+            .padding(.bottom, 12)
+            .listRowInsets(EdgeInsets(top: 2, leading: 0, bottom: 8, trailing: 0))
+            .listRowBackground(Color.clear)
+            .listRowSeparator(.hidden)
+            .selectionDisabled()
+
             Label("Overview", systemImage: "gauge.with.dots.needle.50percent")
                 .tag(SidebarSelection.overview)
-            Label("All builds", systemImage: "clock")
-                .badge(content.runningCount)
-                .badgeProminence(.increased)
-                .tag(SidebarSelection.allBuilds)
+            HStack {
+                Label("All builds", systemImage: "clock")
+                Spacer(minLength: 4)
+                if content.runningCount > 0 {
+                    StatusDot(status: .running)
+                        .padding(.trailing, 4)
+                        .help(Text("Builds running: \(content.runningCount)"))
+                }
+            }
+            .accessibilityElement(children: .combine)
+            .accessibilityValue(content.runningCount > 0 ? Text("Builds running: \(content.runningCount)") : Text(verbatim: ""))
+            .tag(SidebarSelection.allBuilds)
             Label("Branches and pull requests", systemImage: "arrow.triangle.branch")
                 .tag(SidebarSelection.references)
 
             if !content.pinned.isEmpty {
                 Section("Pinned") {
                     ForEach(content.pinned) { workflow in
-                        workflowRow(workflow, showsProduct: true)
+                        workflowRow(workflow, isPinnedRow: true)
                     }
                     .onMove { pins.move(fromOffsets: $0, toOffset: $1) }
                 }
             }
 
             Section("Products") {
+                // Always unfolded: a workflow's state is what the sidebar is read for.
                 ForEach(content.products) { product in
-                    if product.workflows.isEmpty {
-                        productLabel(product)
-                    } else {
-                        DisclosureGroup(isExpanded: expansion(of: product.id)) {
-                            ForEach(product.workflows) { workflow in
-                                workflowRow(workflow, showsProduct: false)
-                            }
-                        } label: {
-                            productLabel(product)
-                        }
+                    productLabel(product)
+                    ForEach(product.workflows) { workflow in
+                        workflowRow(workflow, isPinnedRow: false)
                     }
                 }
             }
@@ -62,62 +78,84 @@ struct SidebarView: View {
                     SyncActivityView(activity: backgroundActivity.activity, now: Date(), accountName: backgroundActivity.name)
                 }
                 if let activity {
-                    // "Updated 2 minutes ago" is only true for a minute: the tick redraws the line, which reads the time then.
-                    TickingView(interval: 60) { _ in
-                        SyncActivityView(activity: activity, now: Date())
-                    }
-                }
-                if let cycle {
-                    CycleCard(fractionUsed: cycle.fractionUsed, usedText: cycle.usedText, resetText: cycle.resetText)
-                } else if let setPlan {
-                    CyclePromptCard(setPlan: setPlan)
-                }
-                if let budgetText {
-                    Text(budgetText).font(.caption2).foregroundStyle(.tertiary).frame(maxWidth: .infinity, alignment: .leading).padding(.horizontal, 4)
+                    footLine(activity)
                 }
             }
             .padding(10)
         }
     }
 
+    /// One line: how fresh the builds are, and the hour's requests when there is room. While builds are measured the
+    /// line is a card of its own, as before.
+    @ViewBuilder
+    private func footLine(_ activity: SyncActivity) -> some View {
+        // "Updated 2 minutes ago" is only true for a minute: the tick redraws the line, which reads the time then.
+        let line = TickingView(interval: 60) { _ in
+            SyncActivityView(activity: activity, now: Date())
+        }
+        if case .measuring = activity {
+            line
+        } else if let budgetText {
+            ViewThatFits(in: .horizontal) {
+                HStack(spacing: 6) {
+                    line.fixedSize(horizontal: true, vertical: false)
+                    Spacer(minLength: 0)
+                    Text(budgetText).font(.caption2).foregroundStyle(.tertiary).lineLimit(1).padding(.trailing, 4)
+                }
+                line
+            }
+            .help(budgetHelp ?? budgetText)
+        } else {
+            line
+        }
+    }
+
     private func productLabel(_ product: SidebarContent.Product) -> some View {
         HStack(spacing: 8) {
-            AppIconView(name: product.name, swatch: product.swatch, lastStatus: product.lastStatus, artwork: artwork[product.id])
-            Text(product.name)
+            AppIconView(name: product.name, swatch: product.swatch, artwork: artwork[product.id])
+            Text(product.name).fontWeight(.semibold).lineLimit(1)
             Spacer(minLength: 4)
             Text(product.buildCount, format: .number)
                 .font(.caption.monospacedDigit())
                 .foregroundStyle(.secondary)
         }
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel(product.lastStatus.map { "\(product.name), \($0.label)" } ?? product.name)
+        .accessibilityLabel(product.name)
         .accessibilityValue(Text("\(product.buildCount) builds"))
         .tag(SidebarSelection.product(product.id))
     }
 
-    private func workflowRow(_ workflow: SidebarContent.Workflow, showsProduct: Bool) -> some View {
-        Label {
-            HStack {
-                Text(workflow.name)
-                if showsProduct {
-                    Text(workflow.productName).foregroundStyle(.secondary).font(.caption)
-                }
-                if workflow.isPaused || workflow.isOnOlderXcode {
-                    Spacer(minLength: 4)
-                }
-                if workflow.isOnOlderXcode {
-                    Image(systemName: "arrow.up.circle").foregroundStyle(BuildStatus.errored.tint).help("Builds with an older Xcode")
-                }
-                if workflow.isPaused {
-                    Image(systemName: "pause.circle.fill").foregroundStyle(.secondary).help("Paused")
-                }
+    /// A workflow carries the state of its last build; under its app it is indented, among the pinned it names its app.
+    private func workflowRow(_ workflow: SidebarContent.Workflow, isPinnedRow: Bool) -> some View {
+        HStack(spacing: 8) {
+            if isPinnedRow {
+                Image(systemName: "pin.fill").font(.caption).foregroundStyle(.secondary).accessibilityHidden(true)
             }
-        } icon: {
-            Image(systemName: pins.isPinned(workflow.id) ? "pin.fill" : "arrow.triangle.branch")
+            StatusDot(status: workflow.lastStatus)
+            Text(workflow.name).lineLimit(1)
+            if isPinnedRow {
+                Text(workflow.productName).foregroundStyle(.secondary).font(.caption).lineLimit(1).layoutPriority(-1)
+            }
+            Spacer(minLength: 4)
+            if workflow.isOnOlderXcode {
+                Image(systemName: "arrow.up.circle").foregroundStyle(BuildStatus.errored.tint).help("Builds with an older Xcode")
+            }
+            if workflow.isPaused {
+                Text("paused", comment: "Beside a workflow of the sidebar that Apple says is paused. Lowercase, very short.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .fixedSize()
+            }
         }
+        .padding(.leading, isPinnedRow ? 0 : 30)
         .opacity(workflow.isPaused ? 0.6 : 1)
-        .accessibilityElement(children: .combine)
-        .accessibilityValue(Text([workflow.isPaused ? String(localized: "Paused") : nil, workflow.isOnOlderXcode ? String(localized: "Builds with an older Xcode") : nil].compactMap(\.self).joined(separator: ", ")))
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(isPinnedRow ? UsageFormat.dotted([workflow.name, workflow.productName]) : workflow.name)
+        .accessibilityValue(Text([
+            workflow.lastStatus?.label ?? String(localized: "No build yet"),
+            workflow.isPaused ? String(localized: "Paused") : nil,
+            workflow.isOnOlderXcode ? String(localized: "Builds with an older Xcode") : nil,
+        ].compactMap(\.self).joined(separator: ", ")))
         .tag(SidebarSelection.workflow(workflow.id))
         .contextMenu {
             Button(pins.isPinned(workflow.id) ? "Unpin" : "Pin") { pins.toggle(workflow.id) }
@@ -131,15 +169,6 @@ struct SidebarView: View {
                 }
             }
         }
-    }
-
-    private func expansion(of productID: String) -> Binding<Bool> {
-        Binding(
-            get: { !collapsed.contains(productID) },
-            set: { isExpanded in
-                if isExpanded { collapsed.remove(productID) } else { collapsed.insert(productID) }
-            }
-        )
     }
 }
 

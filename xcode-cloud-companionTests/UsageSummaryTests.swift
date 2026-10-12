@@ -218,4 +218,35 @@ struct UsageSummaryTests {
         #expect(!OverviewModel(summary: summary, palette: AppPalette()).hasEstimates)
         #expect(OverviewModel(summary: summary, palette: AppPalette()).workflows.allSatisfy { !$0.isEstimated })
     }
+
+    @Test func theRingGivesEachAppItsShareOfThePlanAndTheBarNamesTheOtherWorkflows() {
+        let cycle = DateInterval(start: now.addingTimeInterval(-3 * 86_400), duration: 30 * 86_400)
+        let apps = [AppUsage(product: "Big", billedMinutes: 300, estimatedMinutes: 75), AppUsage(product: "Small", estimatedMinutes: 15), AppUsage(product: "Idle")]
+        // Ten workflows, 100 down to 10 minutes: eight are listed, the last two share the neutral slice.
+        let workflows = (1...10).map { WorkflowUsage(product: $0.isMultiple(of: 2) ? "Big" : "Small", workflow: "W\($0)", billedMinutes: Double(110 - $0 * 10), buildCount: 1) }
+        var summary = UsageSummary(
+            plan: UsagePlan(hours: 25, resetAnchor: cycle.end), cycle: cycle, now: now, billedMinutes: 300, estimatedMinutes: 90, estimatedBuildCount: 2,
+            lastImport: nil, daily: [], buildsLast30Days: 0, byApp: apps, byWorkflow: workflows
+        )
+
+        let overview = OverviewModel(summary: summary, palette: AppPalette())
+
+        // 25 h is 1500 min: 375 min is a quarter of the turn, 15 min a hundredth; an app that used nothing has no arc.
+        #expect(overview.ring.map(\.id) == ["Big", "Small"])
+        #expect(overview.ring[0].start == 0 && abs(overview.ring[0].end - 0.25) < 0.0001)
+        #expect(overview.ring[1].start == overview.ring[0].end && abs(overview.ring[1].end - 0.26) < 0.0001)
+        #expect(overview.apps.map(\.minutesText) == ["\(UsageFormat.minutes(300)) + ~\(UsageFormat.minutes(75))", "~\(UsageFormat.minutes(15))"])
+
+        #expect(overview.workflowBar.count == 9 && overview.workflowBar.last?.id == "others" && overview.workflowBar.last?.swatch == nil)
+        #expect(abs(overview.workflowBar.reduce(0) { $0 + $1.fraction } - 1) < 0.0001)
+        #expect(abs((overview.workflowBar.last?.fraction ?? 0) - 30.0 / 550) < 0.0001)
+        #expect(overview.workflows[0].shade == 1 && overview.workflows[2].shade < 1, "the second workflow of an app is a lighter shade of its colour")
+        #expect(overview.workflows[0].swatch == overview.workflows[2].swatch)
+
+        // Over the plan, the ring is full and never goes round twice.
+        summary.byApp = [AppUsage(product: "Big", billedMinutes: 4000)]
+        summary.billedMinutes = 4000
+        let full = OverviewModel(summary: summary, palette: AppPalette()).ring
+        #expect(full.count == 1 && (full[0].end) > 0.999 && full[0].end <= 1)
+    }
 }

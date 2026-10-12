@@ -32,6 +32,12 @@ nonisolated struct BuildDetailModel: Equatable, Sendable {
     let id: String
     let numberText: String
     let status: BuildStatus
+    /// The state in words, with the failed tests when there are some: “Failed · 3 tests”.
+    let statusText: String
+    /// Total time of a finished build, time elapsed of a running one; nil for a build that never started.
+    let clockDuration: String?
+    /// “2 hours ago”.
+    let age: String?
     let title: String
     /// The app's Store name, for the icon's initial while no icon is loaded.
     let appName: String?
@@ -45,10 +51,16 @@ nonisolated struct BuildDetailModel: Equatable, Sendable {
     let testFailureCount: Int?
     let appStoreConnectURL: URL
 
-    init(run: CIBuildRun, product: CIProduct?, workflow: CIWorkflow?, actions: [CIBuildAction], teamID: String?, now: Date) {
+    init(run: CIBuildRun, product: CIProduct?, workflow: CIWorkflow?, actions: [CIBuildAction], teamID: String?, now: Date, cost: BuildCost? = nil) {
         id = run.id
         numberText = run.number.map { "#\($0)" } ?? "#?"
         status = BuildStatus(run: run)
+        let failedTests = run.issueCounts?.testFailures ?? 0
+        statusText = failedTests > 0 && (status == .failed || status == .errored)
+            ? UsageFormat.dotted([status.label, String(localized: "\(failedTests) tests", comment: "Number of failed tests of a build, in the build list")])
+            : status.label
+        clockDuration = run.startedDate.map { BuildRowData.clock(max(0, (run.finishedDate ?? now).timeIntervalSince($0))) }
+        age = run.createdDate.map { UsageFormat.relative($0, now: max(now, $0)) }
         appName = product?.displayName
         title = UsageFormat.dotted([appName, run.workflowName ?? workflow?.name].compactMap(\.self))
         reference = run.isPullRequestBuild == true
@@ -72,7 +84,7 @@ nonisolated struct BuildDetailModel: Equatable, Sendable {
             )
         }
 
-        info = Self.info(run: run, workflow: workflow, now: now)
+        info = Self.info(run: run, workflow: workflow, cost: cost)
         commit = run.sourceCommit.flatMap { commit in
             commit.commitSha.map { sha in
                 CommitInfo(
@@ -155,7 +167,8 @@ nonisolated struct BuildDetailModel: Equatable, Sendable {
 
     // MARK: - Info
 
-    private static func info(run: CIBuildRun, workflow: CIWorkflow?, now: Date) -> [InfoField] {
+    /// The facts under the header, in reading order. The duration is not one of them: it stands beside the number.
+    private static func info(run: CIBuildRun, workflow: CIWorkflow?, cost: BuildCost?) -> [InfoField] {
         var fields: [InfoField] = []
         if let reason = run.startReason?.nilIfBlank {
             fields.append(InfoField(title: String(localized: "Start condition"), value: startReason(reason)))
@@ -165,9 +178,14 @@ nonisolated struct BuildDetailModel: Equatable, Sendable {
             if let created = run.createdDate, started >= created {
                 fields.append(InfoField(title: String(localized: "Queued for"), value: spoken(started.timeIntervalSince(created))))
             }
+        }
+        if let cost, run.executionProgress == .complete {
             fields.append(InfoField(
-                title: run.finishedDate == nil ? String(localized: "Elapsed") : String(localized: "Duration"),
-                value: spoken(max(0, (run.finishedDate ?? now).timeIntervalSince(started)))
+                title: String(localized: "Cost", comment: "Fact of a build's sheet: the compute minutes the build used"),
+                value: (cost.isEstimated ? "~" : "") + UsageFormat.minutes(cost.minutes),
+                help: cost.isEstimated
+                    ? String(localized: "Estimated from the durations of the build’s actions, not Apple’s billing.")
+                    : String(localized: "Billed minutes, from the imported usage export.")
             ))
         }
         let note = String(localized: "Current workflow configuration: Apple doesn’t record the versions used by each build.")
@@ -176,6 +194,15 @@ nonisolated struct BuildDetailModel: Equatable, Sendable {
         }
         if let macOS = workflow?.macOSVersionName?.nilIfBlank {
             fields.append(InfoField(title: "macOS", value: macOS, help: note))
+        }
+        if let clean = workflow?.clean {
+            fields.append(InfoField(
+                title: String(localized: "Clean build"), value: clean ? String(localized: "Yes") : String(localized: "No"),
+                help: String(localized: "Current workflow configuration: a build started by hand may have asked otherwise.")
+            ))
+        }
+        if let author = run.sourceCommit?.authorName?.nilIfBlank {
+            fields.append(InfoField(title: String(localized: "Author", comment: "Fact of a build's sheet: who wrote the commit"), value: author))
         }
         return fields
     }

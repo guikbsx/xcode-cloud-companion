@@ -297,6 +297,17 @@
         }
       }
     },
+    "%@ used" : {
+      "comment" : "Head of the Overview: the compute time used this cycle",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ utilisées"
+          }
+        }
+      }
+    },
     "%@ · %@" : {
       "comment" : "Joins two parts of a line, such as a build's state and its duration. Keep the middle dot.",
       "localizations" : {
@@ -310,22 +321,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%1$@ · %2$@"
-          }
-        }
-      }
-    },
-    "%@, %@" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "%1$@, %2$@"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%1$@, %2$@"
           }
         }
       }
@@ -650,6 +645,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%lld références"
+          }
+        }
+      }
+    },
+    "%lld req." : {
+      "comment" : "Foot of the sidebar: App Store Connect API requests left this hour. A few characters: the tooltip says it in full.",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld req."
           }
         }
       }
@@ -1382,6 +1388,17 @@
         }
       }
     },
+    "Author" : {
+      "comment" : "Fact of a build's sheet: who wrote the commit",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Auteur"
+          }
+        }
+      }
+    },
     "Auto-cancel" : {
       "localizations" : {
         "fr" : {
@@ -1409,6 +1426,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Minutes facturées"
+          }
+        }
+      }
+    },
+    "Billed minutes, from the imported usage export." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Minutes facturées, d’après l’export d’usage importé."
           }
         }
       }
@@ -1575,6 +1602,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Les builds des 30 derniers jours apparaissent ici dès que Xcode Cloud en a lancé un."
+          }
+        }
+      }
+    },
+    "Builds running: %lld" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Builds en cours : %lld"
           }
         }
       }
@@ -1946,6 +1983,17 @@
         }
       }
     },
+    "Cost" : {
+      "comment" : "Fact of a build's sheet: the compute minutes the build used",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Coût"
+          }
+        }
+      }
+    },
     "Cost by workflow" : {
       "localizations" : {
         "fr" : {
@@ -2102,6 +2150,16 @@
         }
       }
     },
+    "Current workflow configuration: a build started by hand may have asked otherwise." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Configuration actuelle du workflow : un build lancé à la main a pu demander autre chose."
+          }
+        }
+      }
+    },
     "Cut" : {
       "localizations" : {
         "fr" : {
@@ -2122,12 +2180,12 @@
         }
       }
     },
-    "Cycle · %@" : {
+    "Cycle used at %@" : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Cycle · %@"
+            "value" : "Cycle utilisé à %@"
           }
         }
       }
@@ -2363,6 +2421,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Estimé"
+          }
+        }
+      }
+    },
+    "Estimated from the durations of the build’s actions, not Apple’s billing." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Estimé d’après la durée des actions du build, pas d’après la facturation d’Apple."
           }
         }
       }
@@ -3201,22 +3269,12 @@
         }
       }
     },
-    "Last commit" : {
+    "Last export imported %@" : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Dernier commit"
-          }
-        }
-      }
-    },
-    "Last export imported" : {
-      "localizations" : {
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Dernier export importé"
+            "value" : "Dernier export importé le %@"
           }
         }
       }
@@ -3585,16 +3643,6 @@
         }
       }
     },
-    "Minutes by app" : {
-      "localizations" : {
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Minutes par app"
-          }
-        }
-      }
-    },
     "Mixed" : {
       "localizations" : {
         "fr" : {
@@ -3744,6 +3792,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Aucune branche n’a été trouvée pour ce workflow."
+          }
+        }
+      }
+    },
+    "No build yet" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aucun build"
           }
         }
       }
@@ -4592,6 +4650,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Actualiser"
+          }
+        }
+      }
+    },
+    "Remaining" : {
+      "comment" : "Legend of the cycle's ring: the part of the plan not used yet",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Restant"
           }
         }
       }
@@ -6339,6 +6408,45 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "à l’instant"
+          }
+        }
+      }
+    },
+    "of %@ · resets %@, in %@" : {
+      "comment" : "Under the time used: the plan, the reset date, and the time left until it",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "of %1$@ · resets %2$@, in %3$@"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "sur %@ · réinitialisation le %@, dans %@"
+          }
+        }
+      }
+    },
+    "of the plan" : {
+      "comment" : "Under the percentage at the centre of the cycle's ring. Two or three words.",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "du forfait"
+          }
+        }
+      }
+    },
+    "paused" : {
+      "comment" : "Beside a workflow of the sidebar that Apple says is paused. Lowercase, very short.",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "en pause"
           }
         }
       }

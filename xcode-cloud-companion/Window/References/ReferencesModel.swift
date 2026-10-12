@@ -26,8 +26,15 @@ nonisolated struct ReferenceRow: Identifiable, Equatable, Sendable {
     let productName: String
     let workflowName: String?
     let webURL: URL?
+    /// The Xcode Cloud product name: the key of the app's colour.
+    var productKey: String?
 
     var id: ReferenceKey { key }
+
+    /// What follows the state on the card: the workflow, the build, and a pull request's branches.
+    var facts: String {
+        UsageFormat.dotted([workflowName, lastRun.number.map { "#\($0)" }, subtitle].compactMap(\.self))
+    }
 
     /// Where a running build's counter starts; nil once it ended.
     var runningSince: Date? {
@@ -118,7 +125,7 @@ nonisolated struct ReferencesModel: Equatable, Sendable {
                     key: key, title: title, subtitle: subtitle, lastRun: run, status: BuildStatus(run: run),
                     productName: products[run.productID]?.displayName ?? "?",
                     workflowName: run.workflowName ?? run.workflowID.flatMap { workflows[$0]?.name },
-                    webURL: webURL
+                    webURL: webURL, productKey: products[run.productID]?.name
                 )
             }
             .filter { $0.matches(query) }

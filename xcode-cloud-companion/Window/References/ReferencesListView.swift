@@ -6,6 +6,8 @@ struct ReferencesListView: View {
     let buildStore: BuildStore
     let store: ReferencesStore
     let open: (ReferenceKey) -> Void
+    var icons: AppIconStore?
+    var palette = AppPalette()
     @State private var filter = ReferenceFilter.all
     @State private var query = ""
 
@@ -19,6 +21,7 @@ struct ReferencesListView: View {
 
     private func content(now: Date) -> some View {
         let model = ReferencesModel(snapshot: buildStore.snapshot, openPullRequests: store.openPullRequests, filter: filter, query: query, now: now)
+        let artwork = icons?.artwork(in: buildStore.snapshot, by: \.id) ?? [:]
         return ScrollView {
             if model.hasNothing {
                 ContentUnavailableView(
@@ -39,7 +42,7 @@ struct ReferencesListView: View {
                                 Button {
                                     open(row.key)
                                 } label: {
-                                    ReferenceCard(row: row, now: now)
+                                    BuildCard(reference: row, now: now, swatch: palette.swatch(for: row.productKey ?? row.productName), artwork: artwork[row.lastRun.productID])
                                 }
                                 .buttonStyle(.plain)
                                 .contextMenu {
@@ -80,50 +83,16 @@ struct ReferencesListView: View {
     }
 }
 
-/// One reference, drawn like a build's card: its last build's state, its name, where it built, and when.
-struct ReferenceCard: View {
-    let row: ReferenceRow
-    let now: Date
-
-    var body: some View {
-        HStack(spacing: 10) {
-            StatusBadge(status: row.status, size: 28)
-            Image(systemName: row.key.isPullRequest ? "arrow.triangle.pull" : "arrow.triangle.branch")
-                .font(.callout.weight(.semibold))
-                .foregroundStyle(.secondary)
-                .frame(width: 20)
-                .accessibilityHidden(true)
-            VStack(alignment: .leading, spacing: 2) {
-                Text(row.title)
-                    .fontWeight(.semibold)
-                    .lineLimit(1)
-                Text(row.subtitle.map { UsageFormat.dotted([row.detail, $0]) } ?? row.detail)
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                    .lineLimit(1)
-            }
-            Spacer(minLength: 6)
-            if let runningSince = row.runningSince {
-                TickingView(interval: 1) { tick in
-                    trailingText(BuildRowData.clock(max(0, tick.timeIntervalSince(runningSince))))
-                }
-            } else if let age = row.age(now: now) {
-                trailingText(age)
-            }
-        }
-        .padding(.horizontal, 12)
-        .padding(.vertical, 9)
-        .background(.background.opacity(0.85), in: .rect(cornerRadius: CumulusStyle.cardRadius))
-        .overlay(RoundedRectangle(cornerRadius: CumulusStyle.cardRadius).strokeBorder(Color.primary.opacity(0.06)))
-        .accessibilityElement(children: .combine)
-        .accessibilityLabel(Text("\(row.title), \(row.status.label)"))
-        .accessibilityValue(Text(row.spokenDetail))
-    }
-
-    private func trailingText(_ text: String) -> some View {
-        Text(text)
-            .font(.system(.caption, design: .monospaced))
-            .foregroundStyle(.secondary)
+extension BuildCard {
+    /// A reference, on the build list's card: its name for a title, then its last build's state, workflow and number.
+    init(reference row: ReferenceRow, now: Date, swatch: AppSwatch, artwork: AppArtwork?) {
+        self.init(
+            appName: row.productName, swatch: swatch, artwork: artwork,
+            title: row.title, titleSymbol: row.key.isPullRequest ? "arrow.triangle.pull" : "arrow.triangle.branch",
+            status: row.status, statusText: row.status.label, facts: row.facts,
+            age: row.runningSince == nil ? row.age(now: now) : nil, runningSince: row.runningSince,
+            spokenLabel: "\(row.title), \(row.status.label)", spokenValue: row.spokenDetail
+        )
     }
 }
 
@@ -142,7 +111,7 @@ struct ReferenceCard: View {
     let product = CIProduct(id: "a", name: "Cumulus", productType: "APP", appID: "1", appName: nil, bundleID: nil)
     let model = ReferencesModel(snapshot: BuildSnapshot(products: [product], runs: runs, workflows: []), openPullRequests: nil)
     return VStack(spacing: 8) {
-        ForEach(model.rows) { ReferenceCard(row: $0, now: Date()) }
+        ForEach(model.rows) { BuildCard(reference: $0, now: Date(), swatch: .blue, artwork: nil) }
     }
     .padding(16)
     .frame(width: 372)

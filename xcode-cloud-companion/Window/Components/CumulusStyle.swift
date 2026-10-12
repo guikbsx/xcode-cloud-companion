@@ -11,6 +11,9 @@ enum CumulusStyle {
 extension BuildStatus {
     var tint: Color { Color(nsColor: color) }
 
+    /// The state's colour for words: drawn towards the text's own, so "Succeeded" stays readable on a light card.
+    var textTint: Color { tint.mix(with: .primary, by: 0.3) }
+
     /// The shape drawn in the badge: the state never rests on colour alone.
     var systemImage: String {
         switch self {

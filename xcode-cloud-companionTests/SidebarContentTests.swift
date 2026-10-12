@@ -65,14 +65,24 @@ struct SidebarContentTests {
         let gamma = content.products.last
         #expect(gamma?.name == "Gamma")
         #expect(gamma?.workflows.isEmpty == true)
-        #expect(gamma?.lastStatus == nil)
+        #expect(gamma?.buildCount == 0)
     }
 
-    @Test func theLastBuildGivesTheProductItsStatusAndTheRunningOnesAreCounted() {
-        let content = SidebarContent(snapshot: snapshot, pinnedIDs: [], palette: AppPalette())
+    @Test func eachWorkflowCarriesTheStateOfItsLastBuildAndTheRunningOnesAreCounted() {
+        var snapshot = snapshot
+        var idle = workflow("wa-idle", "Idle", product: "a")
+        idle.isEnabled = false
+        snapshot.workflows.append(idle)
 
-        #expect(content.products[0].lastStatus == .running)
-        #expect(content.products[1].lastStatus == .failed)
+        let content = SidebarContent(snapshot: snapshot, pinnedIDs: ["wb"], palette: AppPalette())
+        let alpha = content.products[1].workflows
+
+        // The state belongs to a workflow, not to its app: Main runs, though it succeeded before.
+        #expect(content.products[0].workflows.map(\.lastStatus) == [.running])
+        #expect(alpha.map(\.name) == ["Beta", "Idle", "Release"])
+        #expect(alpha.map(\.lastStatus) == [.failed, nil, .succeeded], "a workflow without a build has no state")
+        #expect(alpha[1].isPaused && !alpha[0].isPaused)
+        #expect(content.pinned.map(\.lastStatus) == [.running])
         #expect(content.runningCount == 1)
     }
 

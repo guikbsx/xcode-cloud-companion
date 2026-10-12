@@ -20,8 +20,26 @@ nonisolated struct BuildRowData: Identifiable, Equatable, Sendable {
     let commitSha: String?
     /// The Xcode Cloud product name, still found by the search when the row shows the Store name.
     var productKey: String?
+    var productID = ""
+    /// What the build built, in its author's words; nil when Apple gave none.
+    var commitMessage: String?
 
     var numberText: String { number.map { "#\($0)" } ?? "#?" }
+
+    /// The first line of the commit's message: what the card is named after, when there is one.
+    var commitTitle: String? {
+        commitMessage?.split(whereSeparator: \.isNewline).first.map { $0.trimmingCharacters(in: .whitespaces) }.flatMap(\.nilIfBlank)
+    }
+
+    /// The workflow and the branch: what follows the state on the card's second line. The app is its icon.
+    var facts: String {
+        UsageFormat.dotted([workflowName, reference].compactMap(\.self))
+    }
+
+    /// How long ago the build was created, in a few characters.
+    func age(now: Date) -> String? {
+        createdDate.map { UsageFormat.age(since: $0, now: now) }
+    }
 
     /// A long Store name is cut like in the menu, so it leaves the workflow and the branch their room.
     var detail: String {
@@ -74,7 +92,7 @@ nonisolated struct BuildRowData: Identifiable, Equatable, Sendable {
         let digits = query.hasPrefix("#") ? String(query.dropFirst()) : query
         if let number, !digits.isEmpty, digits.allSatisfy(\.isNumber), String(number).hasPrefix(digits) { return true }
         if query.count >= 3, let commitSha, commitSha.lowercased().hasPrefix(query) { return true }
-        return [productName, productKey, workflowName, reference].compactMap(\.self).contains { $0.lowercased().contains(query) }
+        return [productName, productKey, workflowName, reference, commitMessage].compactMap(\.self).contains { $0.lowercased().contains(query) }
     }
 }
 
@@ -162,7 +180,8 @@ nonisolated struct BuildListModel: Equatable, Sendable {
                     productName: products[run.productID]?.displayName ?? "?", workflowName: run.workflowName ?? run.workflowID.flatMap { workflows[$0]?.name },
                     reference: Self.reference(of: run), failedTests: run.issueCounts?.testFailures ?? 0,
                     shipsToTestFlight: run.workflowID.flatMap { workflows[$0] }?.shipsToTestFlight ?? false,
-                    commitSha: run.sourceCommit?.commitSha, productKey: products[run.productID]?.name
+                    commitSha: run.sourceCommit?.commitSha, productKey: products[run.productID]?.name,
+                    productID: run.productID, commitMessage: run.sourceCommit?.message
                 )
             }
             .filter { Self.passes($0, filter) && $0.matches(query) }

@@ -90,13 +90,16 @@ struct MainWindowView: View {
         } content: {
             Group {
                 if navigation.sidebarSelection == .references, navigation.referenceScope == nil {
-                    ReferencesListView(buildStore: buildStore, store: session.windowStores.references, open: { navigation.referenceScope = $0 })
+                    ReferencesListView(
+                        buildStore: buildStore, store: session.windowStores.references, open: { navigation.referenceScope = $0 },
+                        icons: icons, palette: palette
+                    )
                 } else {
                     BuildListView(
                         buildStore: buildStore, navigation: navigation,
                         scope: navigation.referenceScope.map(BuildListScope.reference) ?? BuildListScope(navigation.sidebarSelection),
                         back: navigation.referenceScope == nil ? nil : { navigation.referenceScope = nil },
-                        older: session.windowStores.older
+                        older: session.windowStores.older, icons: icons, palette: palette
                     )
                 }
             }
@@ -163,7 +166,10 @@ struct MainWindowView: View {
             setPlan: settings.plan == nil ? openSettings : nil,
             activity: session.activity(now: Date()),
             backgroundActivity: SyncActivity.background(among: others.map { ($0.name, $0.activity(now: Date())) }),
-            budgetText: buildStore.rateLimit.map { String(localized: "\($0.remaining) of \($0.limit) requests left this hour") },
+            budgetText: buildStore.rateLimit.map {
+                String(localized: "\($0.remaining) req.", comment: "Foot of the sidebar: App Store Connect API requests left this hour. A few characters: the tooltip says it in full.")
+            },
+            budgetHelp: buildStore.rateLimit.map { String(localized: "\($0.remaining) of \($0.limit) requests left this hour") },
             artwork: icons.artwork(in: buildStore.snapshot, by: \.id),
             togglePause: canLaunch ? { askToTogglePause(workflowID: $0.id) } : nil
         )
@@ -176,7 +182,7 @@ struct MainWindowView: View {
                 run: run, buildStore: buildStore, extrasStore: extrasStore, artifactSaver: artifactSaver, onRebuild: rebuildAction(for: run),
                 teamID: settings.issuerID.isEmpty ? nil : settings.issuerID,
                 icons: icons, palette: palette,
-                openBuild: { navigation.selectedBuildID = $0 }, logOpener: logOpener, tab: $navigation.buildTab
+                openBuild: { navigation.selectedBuildID = $0 }, logOpener: logOpener, ledger: usageStore.ledger, tab: $navigation.buildTab
             )
             .environment(\.sourceOpening, sourceOpening(for: run))
         } else if navigation.sidebarSelection == .overview {
