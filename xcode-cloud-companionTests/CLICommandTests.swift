@@ -466,6 +466,12 @@ struct CLICommandTests {
         #expect(await CumulusCLI.run(arguments: ["open", "Beta#99"], environment: environment).exitCode == 5)
     }
 
+    /// How many times the reading of its cache `cumulus builds` may take on 500 builds. It takes about four times
+    /// (measured on 12/10/2026: 19 ms against 5 ms); a command ten times slower takes about forty.
+    private static let budgetFactor = 15
+
+    /// The command is timed against the reading of the same cache, in the same breath: a busy Mac slows both, a
+    /// regression of the command slows only one. A wall-clock ceiling failed whenever the machine was loaded.
     @Test func fiveHundredBuildsAreListedWellUnderTheBudget() async throws {
         var snapshot = CLIFixture.snapshot
         for index in 0..<500 {
@@ -477,15 +483,22 @@ struct CLICommandTests {
             ]
         }
         let environment = try await CLIFixture.environment(snapshot: snapshot)
+        let cache = BuildCacheStore(fileURL: CLIFixture.directory(in: environment).appending(path: "BuildCache.json"))
         let clock = ContinuousClock()
 
+        // The best of a few passes each, taken turn by turn: one slow pass says nothing about the code.
         var listed = 0
-        let elapsed = try await clock.measure {
-            listed = try await builds(BuildsQuery(limit: 100), environment: environment).count
+        var reading = Duration.seconds(3600)
+        var command = Duration.seconds(3600)
+        for _ in 0..<5 {
+            reading = min(reading, await clock.measure { _ = await cache.load() })
+            command = min(command, try await clock.measure {
+                listed = try await builds(BuildsQuery(limit: 100), environment: environment).count
+            })
         }
 
         #expect(listed == 100)
-        #expect(elapsed < .milliseconds(200))
+        #expect(command < reading * Self.budgetFactor, "the command took \(command), \(command / reading) times the reading of its cache (\(reading))")
     }
 
     private func builds(_ query: BuildsQuery, environment: CLIEnvironment) async throws -> [BuildOutput] {
