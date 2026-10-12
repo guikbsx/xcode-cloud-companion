@@ -19,19 +19,24 @@ struct DayHeader: View {
 }
 
 /// A row of the chronology: the state's dot on a vertical rail, then the content.
+///
+/// The dot is a symbol so that it can breathe while its build runs.
 struct TimelineRow<Content: View>: View {
     let status: BuildStatus
     var isFirst = false
     var isLast = false
     @ViewBuilder var content: Content
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
         HStack(alignment: .top, spacing: 8) {
             VStack(spacing: 0) {
                 Rectangle().fill(isFirst ? .clear : Color.primary.opacity(0.1)).frame(width: 2, height: 20)
-                Circle()
-                    .fill(status.tint)
+                Image(systemName: "circle.fill")
+                    .resizable()
+                    .foregroundStyle(status.tint)
                     .frame(width: 12, height: 12)
+                    .symbolEffect(.breathe, options: .repeat(.continuous), isActive: breathes)
                     .overlay {
                         if status == .running {
                             Circle().stroke(status.tint.opacity(0.28), lineWidth: 3).padding(-3)
@@ -46,6 +51,10 @@ struct TimelineRow<Content: View>: View {
         }
         .padding(.leading, 14)
         .padding(.trailing, 12)
+    }
+
+    private var breathes: Bool {
+        status == .running && !reduceMotion
     }
 }
 
