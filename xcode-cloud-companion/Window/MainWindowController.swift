@@ -3,20 +3,29 @@ import SwiftUI
 
 /// The main window: an `NSWindow` hosting SwiftUI, like Settings. A SwiftUI `Window` scene cannot be opened from an `NSMenu` item.
 final class MainWindowController: NSObject, NSWindowDelegate {
-    private static let frameName = "MainWindow"
+    static let frameName = "MainWindow"
+    /// What the window opens at the first time, and the least it may be resized to: three columns that still read.
+    static let openingSize = NSSize(width: 1180, height: 740)
+    static let minimumSize = NSSize(width: 900, height: 560)
 
     private let accounts: AccountsModel
     private let pins = PinnedWorkflows()
     private let navigation: NavigationModel
     private let activation: ActivationPolicyCoordinator
     private let openSettings: () -> Void
-    private var window: NSWindow?
+    /// The name the window's frame is saved under; nil neither restores nor saves it.
+    private let frameName: String?
+    private(set) var window: NSWindow?
 
-    init(accounts: AccountsModel, navigation: NavigationModel, activation: ActivationPolicyCoordinator, openSettings: @escaping () -> Void) {
+    init(
+        accounts: AccountsModel, navigation: NavigationModel, activation: ActivationPolicyCoordinator, openSettings: @escaping () -> Void,
+        frameName: String? = MainWindowController.frameName
+    ) {
         self.accounts = accounts
         self.navigation = navigation
         self.activation = activation
         self.openSettings = openSettings
+        self.frameName = frameName
     }
 
     func show() {
@@ -35,17 +44,33 @@ final class MainWindowController: NSObject, NSWindowDelegate {
 
     private func makeWindow() -> NSWindow {
         let hosting = NSHostingController(rootView: MainWindowRoot(accounts: accounts, navigation: navigation, pins: pins, openSettings: openSettings))
+        // The size is the window's own. Left to itself, the hosting controller resizes the window to the least its
+        // content can be, 591 × 190 points, and that tiny frame is then the one saved (seen on 12/10/2026).
+        hosting.sizingOptions = []
         let window = NSWindow(contentViewController: hosting)
         window.styleMask = [.titled, .closable, .miniaturizable, .resizable, .fullSizeContentView]
         window.title = "Cumulus"
         window.isReleasedWhenClosed = false
         window.delegate = self
-        window.contentMinSize = NSSize(width: 900, height: 560)
-        if !window.setFrameUsingName(Self.frameName) {
-            window.setContentSize(NSSize(width: 1180, height: 740))
+        if let frameName, window.setFrameUsingName(frameName) {
+            // A frame saved while the window could still shrink below its minimum opens at the minimum.
+            let saved = window.contentRect(forFrameRect: window.frame).size
+            if saved.width < Self.minimumSize.width || saved.height < Self.minimumSize.height {
+                window.setContentSize(NSSize(width: max(saved.width, Self.minimumSize.width), height: max(saved.height, Self.minimumSize.height)))
+            }
+        } else {
+            window.setContentSize(Self.openingSize)
             window.center()
         }
-        window.setFrameAutosaveName(Self.frameName)
+        if let frameName {
+            window.setFrameAutosaveName(frameName)
+        }
         return window
+    }
+
+    /// The minimum is held here, as for Settings: the SwiftUI content clears a `contentMinSize` set on the window.
+    func windowWillResize(_ sender: NSWindow, to frameSize: NSSize) -> NSSize {
+        let minimum = sender.frameRect(forContentRect: NSRect(origin: .zero, size: Self.minimumSize)).size
+        return NSSize(width: max(frameSize.width, minimum.width), height: max(frameSize.height, minimum.height))
     }
 }

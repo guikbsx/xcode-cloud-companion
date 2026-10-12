@@ -78,11 +78,11 @@ struct MainWindowTests {
         let app = FakeApp()
         let controller = MainWindowController(
             accounts: TestAccounts().model, navigation: NavigationModel(),
-            activation: ActivationPolicyCoordinator(app: app, showsInDock: { true }), openSettings: {}
+            activation: ActivationPolicyCoordinator(app: app, showsInDock: { true }), openSettings: {}, frameName: nil
         )
 
         controller.show()
-        let window = try #require(NSApp.windows.first { $0.title == "Cumulus" })
+        let window = try #require(controller.window)
         #expect(window.isVisible)
         #expect(app.policies == [.regular])
 
