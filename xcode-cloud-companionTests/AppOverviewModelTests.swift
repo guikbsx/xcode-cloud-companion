@@ -292,4 +292,17 @@ struct AppOverviewTextTests {
         let scheduled = AppOverviewText.next(.scheduled(now.addingTimeInterval(3600), minutes: 2), now: now, locale: english)
         #expect(scheduled.detail == "~2 min")
     }
+
+    @Test func theTestFlightPillNeedsABuildNumber() {
+        #expect(AppOverviewText.testFlight(version: nil, date: now, now: now) == nil)
+        #expect(AppOverviewText.testFlight(version: " ", date: now, now: now) == nil)
+        #expect(AppOverviewText.testFlight(version: "386", date: now.addingTimeInterval(-4 * 86_400 - 60), now: now, locale: english) == "TestFlight: build 386 · 4d")
+        #expect(AppOverviewText.testFlight(version: "386", date: nil, now: now, locale: english) == "TestFlight: build 386")
+    }
+
+    @Test func theNoteSaysHowFarTheBilledMinutesGo() {
+        let imported = Date(timeIntervalSince1970: 1_791_676_800)
+        #expect(AppOverviewText.estimateNote(lastImport: nil).contains("~"))
+        #expect(AppOverviewText.estimateNote(lastImport: imported, locale: english).contains(UsageFormat.day(imported, locale: english)))
+    }
 }

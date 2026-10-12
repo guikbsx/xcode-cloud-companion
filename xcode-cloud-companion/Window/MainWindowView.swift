@@ -244,12 +244,18 @@ struct MainWindowView: View {
         } else if case .product(let id) = navigation.sidebarSelection, let model = appOverview(productID: id) {
             AppOverviewView(
                 model: model, swatch: palette.swatch(for: model.productKey), artwork: icons.artwork(in: buildStore.snapshot, by: \.id)[id], now: Date(),
+                testFlight: testFlightText(for: model.testFlightRun),
                 openSettings: openSettings,
                 openWorkflow: { navigation.sidebarSelection = .workflow($0) },
-                openBuild: { navigation.selectedBuildID = $0 }
+                openBuild: { navigation.selectedBuildID = $0 },
+                openReference: { key in
+                    navigation.sidebarSelection = .references
+                    navigation.referenceScope = key
+                }
             )
             // The conditions that start a workflow come with its own sheet's read: cache first, a request an hour at most.
             .task(id: id) { await workflowStore.load(productID: id) }
+            .task(id: model.testFlightRun?.id) { await loadTestFlightBuild(of: model.testFlightRun) }
         } else {
             ContentUnavailableView("Select a build", systemImage: "cloud")
         }
@@ -261,6 +267,21 @@ struct MainWindowView: View {
             productID: productID, snapshot: buildStore.snapshot, details: workflowStore.workflowsByID, summary: usageSummary,
             openPullRequests: session.windowStores.references.openPullRequests, now: Date()
         )
+    }
+
+    /// The build an app last handed to TestFlight, as its own sheet read it; nil until it is known.
+    private func testFlightText(for run: CIBuildRun?) -> String? {
+        guard let run, let build = extrasStore.extras(for: run.id)?.betaBuilds?.first else { return nil }
+        return AppOverviewText.testFlight(version: build.version, date: build.uploadedDate ?? run.finishedDate, now: Date())
+    }
+
+    /// What the disk holds comes back for free; Apple is only asked once per build, and not while the key's budget is nearly spent.
+    private func loadTestFlightBuild(of run: CIBuildRun?) async {
+        guard let run else { return }
+        await extrasStore.loadCached(run)
+        guard extrasStore.extras(for: run.id)?.betaBuilds == nil else { return }
+        if let budget = buildStore.rateLimit, budget.remaining <= SyncSchedule.criticalRemaining { return }
+        await extrasStore.loadBetaBuilds(for: run)
     }
 
     private var canLaunch: Bool {

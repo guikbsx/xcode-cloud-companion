@@ -65,6 +65,21 @@ nonisolated enum AppOverviewText {
         return UsageFormat.dotted([row.xcodeVersion, paused].compactMap(\.self), locale: locale)
     }
 
+    /// “TestFlight: build 386 · 4d”: the last build handed to testers, and when.
+    static func testFlight(version: String?, date: Date?, now: Date, locale: Locale = .autoupdatingCurrent) -> String? {
+        guard let version = version?.nilIfBlank else { return nil }
+        let build = String(localized: "TestFlight: build \(version)", comment: "Beside an app's name: the build number of its last TestFlight build")
+        return UsageFormat.dotted([build, date.map { UsageFormat.age(since: $0, now: now, locale: locale) }].compactMap(\.self), locale: locale)
+    }
+
+    /// How far Apple's own figures go, under the remarks about an app.
+    static func estimateNote(lastImport: Date?, locale: Locale = .autoupdatingCurrent) -> String {
+        guard let lastImport else {
+            return String(localized: "No usage export imported yet: every figure with a ~ is an estimate.", comment: "Under an app's overview, when no billed minutes are known")
+        }
+        return String(localized: "Billed minutes run to \(UsageFormat.day(lastImport, locale: locale)); figures with a ~ are estimates.", comment: "Under an app's overview: the date of the last usage export imported")
+    }
+
     /// A row in one sentence, for VoiceOver: “Public archive, last build Failed, #395, main; success rate 58 %; …”.
     static func spoken(_ row: AppOverviewModel.WorkflowRow, showsMinutes: Bool, now: Date, calendar: Calendar = .current, locale: Locale = .autoupdatingCurrent) -> String {
         var parts = [row.name]

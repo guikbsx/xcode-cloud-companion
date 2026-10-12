@@ -266,6 +266,23 @@
         }
       }
     },
+    "%@ on %@: %@ is available." : {
+      "comment" : "An app's workflow builds with an older Xcode: its version, the workflow's name, then the newest version",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ on %2$@: %3$@ is available."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ sur %@ : %@ est disponible."
+          }
+        }
+      }
+    },
     "%@ over %@: exact minutes, from Apple’s usage export. Apple gives one figure per build, so the split below is modelled from each build’s actions." : {
       "localizations" : {
         "en" : {
@@ -1497,6 +1514,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Minutes facturées"
+          }
+        }
+      }
+    },
+    "Billed minutes run to %@; figures with a ~ are estimates." : {
+      "comment" : "Under an app's overview: the date of the last usage export imported",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Minutes facturées jusqu’au %@ ; les chiffres avec un ~ sont des estimations."
           }
         }
       }
@@ -3530,6 +3558,16 @@
         }
       }
     },
+    "Lists this reference’s builds" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Liste les builds de cette référence"
+          }
+        }
+      }
+    },
     "Load Older Builds" : {
       "localizations" : {
         "fr" : {
@@ -3703,6 +3741,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Durée médiane"
+          }
+        }
+      }
+    },
+    "Median queue wait: %@" : {
+      "comment" : "Beside the chart of an app's last builds: how long a build waits for a machine, as a clock (0:12)",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Attente médiane en file : %@"
           }
         }
       }
@@ -4062,6 +4111,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Aucun export d’utilisation importé pour l’instant."
+          }
+        }
+      }
+    },
+    "No usage export imported yet: every figure with a ~ is an estimate." : {
+      "comment" : "Under an app's overview, when no billed minutes are known",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aucun export d’usage importé : chaque chiffre avec un ~ est une estimation."
           }
         }
       }
@@ -5577,6 +5637,17 @@
         }
       }
     },
+    "TestFlight: build %@" : {
+      "comment" : "Beside an app's name: the build number of its last TestFlight build",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "TestFlight : build %@"
+          }
+        }
+      }
+    },
     "Tests" : {
       "localizations" : {
         "fr" : {
@@ -6476,6 +6547,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Les workflows sans build ce cycle ne sont pas comptés."
+          }
+        }
+      }
+    },
+    "Worth noting" : {
+      "comment" : "Heading of a short list of remarks about an app: an outdated Xcode, its most expensive build",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "À noter"
           }
         }
       }

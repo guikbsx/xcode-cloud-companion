@@ -7,9 +7,12 @@ struct AppOverviewView: View {
     let swatch: AppSwatch
     var artwork: AppArtwork?
     let now: Date
+    /// “TestFlight: build 386 · 4d”, once the build handed to testers is known.
+    var testFlight: String?
     var openSettings: () -> Void = {}
     var openWorkflow: (String) -> Void = { _ in }
     var openBuild: (String) -> Void = { _ in }
+    var openReference: (ReferenceKey) -> Void = { _ in }
 
     var body: some View {
         ScrollView {
@@ -19,6 +22,15 @@ struct AppOverviewView: View {
                 if !model.workflows.isEmpty {
                     AppWorkflowsTable(model: model, swatch: swatch, showsMinutes: showsMinutes, now: now, openWorkflow: openWorkflow, openBuild: openBuild)
                 }
+                if model.bars.count > 1 {
+                    AppBuildsChart(bars: model.bars, medianQueueWait: model.medianQueueWait, swatch: swatch, openBuild: openBuild)
+                }
+                ViewThatFits(in: .horizontal) {
+                    // An ideal width of its own: the two groups go side by side as soon as there is that much room,
+                    // however long a sentence of theirs would run on one line.
+                    HStack(alignment: .top, spacing: 14) { footGroups }.frame(minWidth: 560, idealWidth: 560)
+                    VStack(alignment: .leading, spacing: 14) { footGroups }
+                }
             }
             .padding(24)
             .frame(maxWidth: 760, alignment: .leading)
@@ -27,28 +39,65 @@ struct AppOverviewView: View {
         .navigationTitle(model.displayName)
     }
 
+    @ViewBuilder
+    private var footGroups: some View {
+        if !model.references.isEmpty {
+            AppReferencesGroup(references: model.references, now: now, openReference: openReference)
+        }
+        if !AppNotesGroup.isEmpty(model) {
+            AppNotesGroup(model: model, openBuild: openBuild)
+        }
+    }
+
     /// No figure of minutes without a cycle, nor while the builds it rests on are still being measured.
     private var showsMinutes: Bool {
         model.cycle.map { !$0.isMeasuring } ?? false
     }
 
+    /// The pill sits beside the name when both fit, under it otherwise: the name is never cut to make room.
     private var header: some View {
-        HStack(alignment: .center, spacing: 12) {
-            AppIconView(name: model.displayName, swatch: swatch, size: 40, artwork: artwork)
-            VStack(alignment: .leading, spacing: 2) {
-                Text(model.displayName)
-                    .font(.system(size: 22, weight: .bold, design: .rounded))
-                    .lineLimit(1)
-                Text(UsageFormat.dotted([model.productKey == model.displayName ? nil : model.productKey, model.repository].compactMap(\.self)))
-                    .font(.callout)
-                    .foregroundStyle(.secondary)
-                    .lineLimit(1)
-                    .textSelection(.enabled)
+        ViewThatFits(in: .horizontal) {
+            HStack(alignment: .center, spacing: 12) {
+                icon
+                titles
+                Spacer(minLength: 8)
+                pill
             }
-            Spacer(minLength: 8)
+            HStack(alignment: .top, spacing: 12) {
+                icon
+                VStack(alignment: .leading, spacing: 6) {
+                    titles
+                    pill
+                }
+                Spacer(minLength: 0)
+            }
         }
         .accessibilityElement(children: .combine)
         .accessibilityAddTraits(.isHeader)
+    }
+
+    private var icon: some View {
+        AppIconView(name: model.displayName, swatch: swatch, size: 40, artwork: artwork)
+    }
+
+    private var titles: some View {
+        VStack(alignment: .leading, spacing: 2) {
+            Text(model.displayName)
+                .font(.system(size: 22, weight: .bold, design: .rounded))
+                .lineLimit(1)
+            Text(UsageFormat.dotted([model.productKey == model.displayName ? nil : model.productKey, model.repository].compactMap(\.self)))
+                .font(.callout)
+                .foregroundStyle(.secondary)
+                .lineLimit(1)
+                .textSelection(.enabled)
+        }
+    }
+
+    @ViewBuilder
+    private var pill: some View {
+        if let testFlight {
+            TestFlightPill(text: testFlight)
+        }
     }
 
     @ViewBuilder
