@@ -225,7 +225,7 @@ xcodebuild test -scheme Cumulus -project xcode-cloud-companion.xcodeproj \
 ```
 
 - **Zéro erreur, zéro warning.** Tout code nouveau ou modifié n'en introduit aucun, et un warning rencontré sur du code touché se corrige dans la foulée. Un build incrémental masque les warnings des fichiers non recompilés : faire un `clean build` pour un état des lieux fiable. Seul le message d'outillage `appintentsmetadataprocessor: Metadata extraction skipped` ne compte pas.
-- Le scheme `xcode-cloud-companion` est **partagé** (`xcshareddata/xcschemes/`) et lance la target `xcode-cloud-companionTests` : toute nouvelle target de tests s'y ajoute.
+- Le scheme `Cumulus` est **partagé** (`xcshareddata/xcschemes/`) et lance la target `xcode-cloud-companionTests` : toute nouvelle target de tests s'y ajoute.
 - **Toolchain de référence : la dernière version publique d'Xcode** (Xcode 27.1 RC au 09/10/2026, `/Applications/Xcode-27.1.0-Release.Candidate.app`). Si le Xcode sélectionné est une bêta, valider avec `DEVELOPER_DIR` pointé sur la version publique. N'utiliser aucune API ni syntaxe propre à une bêta.
 - **Compiler l'app au moins une fois en `Release`** (`xcodebuild build -configuration Release`) avant de clore un lot : un `#Preview` qui lit un membre DEBUG-only casse uniquement la Release. Les tests, eux, ne se compilent qu'en Debug (`@testable import` exige la testabilité).
 - Si Xcode est ouvert, `xcodebuild` peut échouer sur `database is locked` : passer `-derivedDataPath` vers un dossier de travail.
