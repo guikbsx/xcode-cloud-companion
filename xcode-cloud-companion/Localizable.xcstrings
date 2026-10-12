@@ -124,6 +124,17 @@
         }
       }
     },
+    "%@ is available" : {
+      "comment" : "Tooltip on a workflow that builds with an older Xcode; the argument is “Xcode 27.1”",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ est disponible"
+          }
+        }
+      }
+    },
     "%@ isn’t in %@. Another branch is checked out there, or the clone is elsewhere: change it in Settings › Accounts." : {
       "localizations" : {
         "en" : {
@@ -233,6 +244,17 @@
         }
       }
     },
+    "%@ of what the account used this cycle" : {
+      "comment" : "An app's share of everything the account used in the cycle",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ de ce que le compte a utilisé ce cycle"
+          }
+        }
+      }
+    },
     "%@ of your Xcode Cloud plan used" : {
       "comment" : "Notification title: a percentage such as 75%.",
       "localizations" : {
@@ -293,6 +315,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%@ par appareil en moyenne"
+          }
+        }
+      }
+    },
+    "%@ this cycle" : {
+      "comment" : "VoiceOver, a workflow's row: its minutes in the cycle",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ ce cycle"
           }
         }
       }
@@ -3300,6 +3333,16 @@
         }
       }
     },
+    "Last build" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dernier build"
+          }
+        }
+      }
+    },
     "Last build: %@" : {
       "localizations" : {
         "fr" : {
@@ -3747,6 +3790,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Nouveaux tests en échec"
+          }
+        }
+      }
+    },
+    "Next" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Prochain"
           }
         }
       }
@@ -4295,6 +4348,16 @@
         }
       }
     },
+    "Open the last build" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ouvrir le dernier build"
+          }
+        }
+      }
+    },
     "Open the last build where it failed" : {
       "localizations" : {
         "fr" : {
@@ -4335,6 +4398,16 @@
         }
       }
     },
+    "Opens this workflow" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ouvre ce workflow"
+          }
+        }
+      }
+    },
     "Other" : {
       "localizations" : {
         "fr" : {
@@ -4351,6 +4424,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Autre dossier…"
+          }
+        }
+      }
+    },
+    "Other apps" : {
+      "comment" : "Legend of an app's cycle bar: what the account's other apps used",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Autres apps"
           }
         }
       }
@@ -5039,6 +5123,16 @@
         }
       }
     },
+    "Set your plan’s reset date to see this app’s share of the cycle." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Saisissez la date de réinitialisation de votre forfait pour voir la part de cette app dans le cycle."
+          }
+        }
+      }
+    },
     "Settings" : {
       "comment" : "Title of the Settings window",
       "localizations" : {
@@ -5322,6 +5416,16 @@
         }
       }
     },
+    "Success" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Réussite"
+          }
+        }
+      }
+    },
     "Success rate" : {
       "localizations" : {
         "fr" : {
@@ -5575,6 +5679,17 @@
         }
       }
     },
+    "The app" : {
+      "comment" : "Last row of the table of an app's workflows: the figures for the app as a whole",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "L’app"
+          }
+        }
+      }
+    },
     "The app reads your Xcode Cloud builds with an API key. It only launches a build or pauses a workflow when you ask it to, and the key stays in your keychain." : {
       "localizations" : {
         "fr" : {
@@ -5795,6 +5910,26 @@
         }
       }
     },
+    "This app used %@ of the plan" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cette app a utilisé %@ du forfait"
+          }
+        }
+      }
+    },
+    "This app’s minutes show once its builds are measured." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Les minutes de cette app s’affichent une fois ses builds mesurés."
+          }
+        }
+      }
+    },
     "This build has no test results." : {
       "localizations" : {
         "fr" : {
@@ -5811,6 +5946,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ce build n’a produit aucun fichier à télécharger."
+          }
+        }
+      }
+    },
+    "This cycle" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ce cycle"
           }
         }
       }
@@ -6315,6 +6460,16 @@
         }
       }
     },
+    "Workflow" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Workflow"
+          }
+        }
+      }
+    },
     "Workflows without a build this cycle are not counted." : {
       "localizations" : {
         "fr" : {
@@ -6531,6 +6686,17 @@
         }
       }
     },
+    "last build %@" : {
+      "comment" : "VoiceOver, a workflow's row: its last build's state, number and branch",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "dernier build %@"
+          }
+        }
+      }
+    },
     "macOS" : {
       "localizations" : {
         "fr" : {
@@ -6547,6 +6713,39 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "macOS a refusé la modification : %@"
+          }
+        }
+      }
+    },
+    "median duration %@" : {
+      "comment" : "VoiceOver, a workflow's row",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "durée médiane %@"
+          }
+        }
+      }
+    },
+    "next: %@" : {
+      "comment" : "VoiceOver, a workflow's row: when it next starts, or what starts it",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "prochain : %@"
+          }
+        }
+      }
+    },
+    "no build yet" : {
+      "comment" : "VoiceOver and table cell: the workflow has never built in what the app knows",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "aucun build"
           }
         }
       }
@@ -6579,6 +6778,17 @@
         }
       }
     },
+    "of the %@ plan" : {
+      "comment" : "After an app's minutes: the size of the plan they are taken from",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "sur %@ de forfait"
+          }
+        }
+      }
+    },
     "of the plan" : {
       "comment" : "Under the percentage at the centre of the cycle's ring. Two or three words.",
       "localizations" : {
@@ -6586,6 +6796,39 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "du forfait"
+          }
+        }
+      }
+    },
+    "on pull request" : {
+      "comment" : "What starts a workflow: a change to a pull request. In a table cell.",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "à la pull request"
+          }
+        }
+      }
+    },
+    "on push" : {
+      "comment" : "What starts a workflow: a change pushed to a branch. Two words, in a table cell.",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "au push"
+          }
+        }
+      }
+    },
+    "on tag" : {
+      "comment" : "What starts a workflow: a new tag. Two words, in a table cell.",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "au tag"
           }
         }
       }
@@ -6617,6 +6860,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "ignorée"
+          }
+        }
+      }
+    },
+    "success rate %@" : {
+      "comment" : "VoiceOver, a workflow's row",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "taux de réussite %@"
           }
         }
       }
@@ -6697,6 +6951,28 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "~%1$@ sur %2$@. Builds estimés d’après leurs actions, pas encore dans un export d’utilisation : %3$lld. La répartition ci-dessous suit le même modèle."
+          }
+        }
+      }
+    },
+    "~%@ to come" : {
+      "comment" : "Total row of an app's workflows: estimated minutes of its scheduled builds until the cycle resets",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "~%@ à venir"
+          }
+        }
+      }
+    },
+    "≈ %@ by the end of the cycle" : {
+      "comment" : "What an app will have used when the cycle resets, at its current pace",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "≈ %@ au terme du cycle"
           }
         }
       }

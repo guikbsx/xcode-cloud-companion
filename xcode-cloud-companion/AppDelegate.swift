@@ -66,6 +66,19 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         #if DEBUG
         // Run from Xcode, the app shows its window and its menu bar at once; a Release stays in the menu bar until asked.
         openMainWindow()
+        // XCC_APP=<product name> opens the window on that app's overview, to look at it without a click.
+        if let name = ProcessInfo.processInfo.environment["XCC_APP"] {
+            Task { [accounts, navigation] in
+                await accounts.whenReady()
+                for _ in 0..<40 {
+                    if let product = accounts.selected?.buildStore.snapshot.products.first(where: { $0.name == name || $0.displayName == name }) {
+                        navigation.sidebarSelection = .product(product.id)
+                        return
+                    }
+                    try? await Task.sleep(for: .milliseconds(250))
+                }
+            }
+        }
         // XCC_SETTINGS=general|notifications|agents|accounts opens Settings on that pane, to look at it without a click.
         if let pane = ProcessInfo.processInfo.environment["XCC_SETTINGS"].flatMap(SettingsNavigationModel.Pane.init(rawValue:)) {
             settingsWindowController.show(pane: pane)

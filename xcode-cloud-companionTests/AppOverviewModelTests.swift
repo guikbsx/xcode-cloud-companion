@@ -250,3 +250,46 @@ struct AppOverviewModelTests {
         #expect(model.costliestBuild == nil)
     }
 }
+
+struct AppOverviewTextTests {
+    private let english = Locale(identifier: "en_US")
+    private let now = Date(timeIntervalSince1970: 1_791_741_600)
+
+    @Test func estimatedMinutesCarryATilde() {
+        #expect(AppOverviewText.minutes(billed: 41, estimated: 0, locale: english) == "41 min")
+        #expect(AppOverviewText.minutes(billed: 0, estimated: 17, locale: english) == "~17 min")
+        #expect(AppOverviewText.minutes(billed: 41, estimated: 6, locale: english) == "41 min + ~6 min")
+        #expect(AppOverviewText.minutes(17, isEstimated: true, locale: english) == "~17 min")
+    }
+
+    @Test func aFigureThatIsUnknownIsADash() {
+        #expect(AppOverviewText.rate(nil) == "—" && AppOverviewText.duration(nil) == "—")
+        #expect(AppOverviewText.rate(0.58, locale: english) == "58%")
+        #expect(AppOverviewText.duration(628, locale: english) == "10 min")
+    }
+
+    @Test func aDriftIsStableOrASignedPercentage() {
+        #expect(AppOverviewText.drift(nil) == nil)
+        #expect(AppOverviewText.drift(.change(0.21), locale: english) == "+21%")
+        #expect(AppOverviewText.drift(.change(-0.4), locale: english) == "-40%")
+    }
+
+    @Test func aBuildIsNamedByItsBranchOrItsPullRequest() {
+        var run = CIBuildRun(
+            id: "r", productID: "p", number: 1, createdDate: now.addingTimeInterval(-3700), startedDate: nil, finishedDate: nil,
+            executionProgress: .complete, completionStatus: .succeeded, startReason: nil, workflowID: nil, workflowName: nil, sourceBranchOrTag: "main"
+        )
+        #expect(AppOverviewText.reference(of: run) == "main")
+        #expect(AppOverviewText.lastBuildDetail(run, now: now, locale: english) == "main · 1h")
+        run.pullRequestNumber = 212
+        #expect(AppOverviewText.reference(of: run) == "#212")
+    }
+
+    @Test func whatComesNextIsADateOrWhatStartsTheWorkflow() {
+        #expect(AppOverviewText.next(nil, now: now).title == "—")
+        let onPush = AppOverviewText.next(.onChange(.branch, source: "main"), now: now)
+        #expect(onPush.title == "on push" && onPush.detail == "main")
+        let scheduled = AppOverviewText.next(.scheduled(now.addingTimeInterval(3600), minutes: 2), now: now, locale: english)
+        #expect(scheduled.detail == "~2 min")
+    }
+}

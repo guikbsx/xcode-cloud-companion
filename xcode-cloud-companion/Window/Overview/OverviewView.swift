@@ -157,7 +157,7 @@ struct OverviewView: View {
     }
 
     /// “today 14:00”, “tomorrow 02:00”, “Monday 06:00”, then the date.
-    static func whenText(_ date: Date, now: Date, calendar: Calendar = .current, locale: Locale = .autoupdatingCurrent) -> String {
+    nonisolated static func whenText(_ date: Date, now: Date, calendar: Calendar = .current, locale: Locale = .autoupdatingCurrent) -> String {
         let style = Date.FormatStyle(locale: locale, calendar: calendar, timeZone: calendar.timeZone)
         let time = date.formatted(style.hour().minute())
         if calendar.isDate(date, inSameDayAs: now) {

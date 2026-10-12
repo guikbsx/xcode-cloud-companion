@@ -241,9 +241,26 @@ struct MainWindowView: View {
                 workflowURL: AppStoreConnectLinks.workflow(appID: product?.appID, workflowID: id, teamID: settings.issuerID.isEmpty ? nil : settings.issuerID)
             )
                 .task(id: id) { await loadWorkflow(id) }
+        } else if case .product(let id) = navigation.sidebarSelection, let model = appOverview(productID: id) {
+            AppOverviewView(
+                model: model, swatch: palette.swatch(for: model.productKey), artwork: icons.artwork(in: buildStore.snapshot, by: \.id)[id], now: Date(),
+                openSettings: openSettings,
+                openWorkflow: { navigation.sidebarSelection = .workflow($0) },
+                openBuild: { navigation.selectedBuildID = $0 }
+            )
+            // The conditions that start a workflow come with its own sheet's read: cache first, a request an hour at most.
+            .task(id: id) { await workflowStore.load(productID: id) }
         } else {
             ContentUnavailableView("Select a build", systemImage: "cloud")
         }
+    }
+
+    /// The app picked in the sidebar, from what the window already holds: no request.
+    private func appOverview(productID: String) -> AppOverviewModel? {
+        AppOverviewModel(
+            productID: productID, snapshot: buildStore.snapshot, details: workflowStore.workflowsByID, summary: usageSummary,
+            openPullRequests: session.windowStores.references.openPullRequests, now: Date()
+        )
     }
 
     private var canLaunch: Bool {
