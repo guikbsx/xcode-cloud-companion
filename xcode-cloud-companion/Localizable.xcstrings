@@ -1284,6 +1284,17 @@
         }
       }
     },
+    "Apple is limiting this key’s requests. Cumulus tries again on its own." : {
+      "comment" : "Tooltip of the refresh button, disabled after a 429.",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apple limite les requêtes de cette clé. Cumulus réessaie tout seul."
+          }
+        }
+      }
+    },
     "Apple publishes no usage figure through its API: the gauge needs your plan and the day it resets." : {
       "localizations" : {
         "fr" : {
@@ -4711,6 +4722,17 @@
         }
       }
     },
+    "Refresh this account’s builds" : {
+      "comment" : "Tooltip of the toolbar's refresh button.",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Actualiser les builds de ce compte"
+          }
+        }
+      }
+    },
     "Remaining" : {
       "comment" : "Legend of the cycle's ring: the part of the plan not used yet",
       "localizations" : {
@@ -5830,6 +5852,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ce n’est pas un export d’utilisation Xcode Cloud : il manque %@."
+          }
+        }
+      }
+    },
+    "This key has few requests left this hour. Cumulus keeps refreshing on its own, more slowly." : {
+      "comment" : "Tooltip of the refresh button, disabled while the hourly budget is nearly spent.",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Il reste peu de requêtes à cette clé pour cette heure. Cumulus continue d’actualiser tout seul, plus lentement."
           }
         }
       }

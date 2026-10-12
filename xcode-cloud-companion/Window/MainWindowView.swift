@@ -88,6 +88,13 @@ struct MainWindowView: View {
         NavigationSplitView(columnVisibility: $columnVisibility) {
             sidebar
                 .navigationSplitViewColumnWidth(min: 200, ideal: 240, max: 320)
+                // Declared on the sidebar, the item sits in the part of the toolbar above it: it refreshes the whole account, not one column.
+                .toolbar {
+                    ToolbarSpacer(.flexible)
+                    ToolbarItem {
+                        RefreshButton(control: refreshControl, refresh: { Task { await buildStore.refreshNow() } })
+                    }
+                }
         } content: {
             Group {
                 if navigation.sidebarSelection == .references, navigation.referenceScope == nil {
@@ -148,6 +155,14 @@ struct MainWindowView: View {
 
     private var usageSummary: UsageSummary? {
         session.usageSummary(now: Date())
+    }
+
+    /// Busy while the account syncs, and while the window reads what it shows by itself.
+    private var refreshControl: RefreshControl {
+        let stores = session.windowStores
+        let isLoading = stores.references.isLoading || !stores.older.loading.isEmpty
+            || navigation.selectedBuildID.map(extrasStore.isLoading) == true
+        return .current(isSyncing: buildStore.isSyncing, isLoading: isLoading, lastError: buildStore.lastError, budget: buildStore.rateLimit)
     }
 
     /// The scheduled workflows: the sync's entry, or the richer one read for the workflow's sheet.
