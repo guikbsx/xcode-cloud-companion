@@ -27,7 +27,7 @@
           "image-name" : "cumulus-glyph.svg",
           "name" : "cumulus-glyph",
           "position" : {
-            "scale" : 1,
+            "scale" : 1.45,
             "translation-in-points" : [
               -4,
               -43.959711469491026
