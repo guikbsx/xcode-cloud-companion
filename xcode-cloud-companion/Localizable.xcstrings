@@ -606,6 +606,23 @@
         }
       }
     },
+    "%lld of %lld in place" : {
+      "comment" : "Settings, Agents: how many of the things an agent needs are installed",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld of %2$lld in place"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld sur %2$lld en place"
+          }
+        }
+      }
+    },
     "%lld of %lld requests left this hour" : {
       "localizations" : {
         "en" : {
@@ -753,6 +770,16 @@
         }
       }
     },
+    "(optional)" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "(facultatif)"
+          }
+        }
+      }
+    },
     "A build was started by `cumulus run` or an MCP tool" : {
       "localizations" : {
         "fr" : {
@@ -799,26 +826,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Une action en cours dure bien plus longtemps que d’habitude"
-          }
-        }
-      }
-    },
-    "API Key" : {
-      "localizations" : {
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Clé API"
-          }
-        }
-      }
-    },
-    "API key saved" : {
-      "localizations" : {
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Clé API enregistrée"
           }
         }
       }
@@ -922,6 +929,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ajoutez votre clé d’API App Store Connect pour voir ici vos builds Xcode Cloud."
+          }
+        }
+      }
+    },
+    "Agent" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Agent"
           }
         }
       }
@@ -1237,12 +1254,12 @@
         }
       }
     },
-    "Apple does not expose the plan or its reset date in the API. Without the right date, the gauge counts the hours over the wrong cycle." : {
+    "Apple does not expose the plan or its reset date in the API. The cycle renews every month on this date: if the gauge does not match App Store Connect, check it again." : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Apple n’expose ni le forfait ni sa date de réinitialisation dans l’API. Sans la bonne date, la jauge compte les heures sur le mauvais cycle."
+            "value" : "Apple ne donne ni le forfait ni sa date de réinitialisation dans l’API. Le cycle se renouvelle chaque mois à cette date : si la jauge ne correspond pas à App Store Connect, vérifiez-la."
           }
         }
       }
@@ -1374,6 +1391,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Artefacts"
+          }
+        }
+      }
+    },
+    "Ask App Store Connect whether this key still works" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Demander à App Store Connect si cette clé fonctionne toujours"
           }
         }
       }
@@ -1636,6 +1663,16 @@
         }
       }
     },
+    "Builds, tests, issues and the plan. Nothing is changed on your App Store Connect account." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Les builds, les tests, les problèmes et le forfait. Rien n’est modifié sur votre compte App Store Connect."
+          }
+        }
+      }
+    },
     "By the end of the cycle, the scheduled builds will cost about %@, based on their past durations." : {
       "localizations" : {
         "fr" : {
@@ -1765,12 +1802,12 @@
         }
       }
     },
-    "Claude Code, Codex and Xcode’s agents can ask Cumulus why a build failed, what is running, or how much of the plan is left. They read what the app already knows: nothing is changed on your account, and no build is ever launched." : {
+    "Claude Code, Codex and Xcode’s agents read what the app already knows: builds, tests, the plan. They start a build only when the key is set to Read + Build, three times an hour per account at most, and you are told each time." : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Claude Code, Codex et les agents d’Xcode peuvent demander à Cumulus pourquoi un build a échoué, ce qui tourne ou ce qu’il reste du forfait. Ils lisent ce que l’app sait déjà : rien n’est modifié sur votre compte, et aucun build n’est jamais lancé."
+            "value" : "Claude Code, Codex et les agents d’Xcode lisent ce que l’app sait déjà : les builds, les tests, le forfait. Ils ne lancent un build que si la clé est en « Lecture + Build », trois fois par heure et par compte au plus, et vous en êtes prévenu à chaque fois."
           }
         }
       }
@@ -1795,12 +1832,12 @@
         }
       }
     },
-    "Click **Download** to get the `AuthKey_ABCDE12345.p8` file. **Apple offers it only once**: keep it somewhere safe, or import it right away below." : {
+    "Click **Download** to get the `AuthKey_ABCDE12345.p8` file. **Apple offers it only once**: keep it somewhere safe, or import it right away." : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Cliquez sur **Télécharger** pour récupérer le fichier `AuthKey_ABCDE12345.p8`. **Apple ne le propose qu’une seule fois** : gardez-le en lieu sûr, ou importez-le tout de suite ci-dessous."
+            "value" : "Cliquez sur **Télécharger** pour récupérer le fichier `AuthKey_ABCDE12345.p8`. **Apple ne le propose qu’une seule fois** : gardez-le en lieu sûr, ou importez-le tout de suite."
           }
         }
       }
@@ -1812,17 +1849,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Fermer"
-          }
-        }
-      }
-    },
-    "Command" : {
-      "comment" : "Settings › Agents: section about the cumulus command-line tool",
-      "localizations" : {
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Commande"
           }
         }
       }
@@ -1889,6 +1915,16 @@
         }
       }
     },
+    "Connect an agent to Cumulus" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Brancher un agent sur Cumulus"
+          }
+        }
+      }
+    },
     "Connected" : {
       "comment" : "State of an account in Settings: its key works.",
       "localizations" : {
@@ -1896,17 +1932,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Connecté"
-          }
-        }
-      }
-    },
-    "Connected to App Store Connect" : {
-      "comment" : "Keep \"Xcode Cloud\", \"App Store Connect\" and \"TestFlight\" untranslated as product names.",
-      "localizations" : {
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Connecté à App Store Connect"
           }
         }
       }
@@ -2052,16 +2077,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Cumulus demande votre autorisation la première fois qu’il a quelque chose à vous dire."
-          }
-        }
-      }
-    },
-    "Cumulus for AI Agents" : {
-      "localizations" : {
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Cumulus pour les agents IA"
           }
         }
       }
@@ -2389,16 +2404,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Saisir la clé"
-          }
-        }
-      }
-    },
-    "Enter the plan" : {
-      "localizations" : {
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Saisir le forfait"
           }
         }
       }
@@ -2882,6 +2887,17 @@
         }
       }
     },
+    "For %@" : {
+      "comment" : "Settings, Agents: title of what to install for the agent picked",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pour %@"
+          }
+        }
+      }
+    },
     "For Apple's exact figures: in **Xcode Cloud › Usage**, click **Export as CSV**. The app picks the file up from Downloads on its own." : {
       "comment" : "Keep \"Xcode Cloud\", \"App Store Connect\" and \"TestFlight\" untranslated as product names.",
       "localizations" : {
@@ -2920,6 +2936,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Modification de référence Git"
+          }
+        }
+      }
+    },
+    "Guide" : {
+      "comment" : "Name of the panel that explains how to create an API key, for VoiceOver",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Guide"
           }
         }
       }
@@ -3067,6 +3094,16 @@
         }
       }
     },
+    "Install the skill in another agent’s skills folder" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Installer le skill dans le dossier de skills d’un autre agent"
+          }
+        }
+      }
+    },
     "Installed in %@." : {
       "localizations" : {
         "fr" : {
@@ -3114,6 +3151,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Problèmes"
+          }
+        }
+      }
+    },
+    "It tells the agent when to use the command and how to read its answers." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Il dit à l’agent quand utiliser la commande et comment lire ses réponses."
           }
         }
       }
@@ -3531,17 +3578,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Journaux"
-          }
-        }
-      }
-    },
-    "MCP Server" : {
-      "comment" : "Settings › Agents: section about the Model Context Protocol server",
-      "localizations" : {
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Serveur MCP"
           }
         }
       }
@@ -4157,6 +4193,16 @@
         }
       }
     },
+    "Only when the account’s key is set to Read + Build, and three builds an hour per account at most. A notification tells you each time; Settings › Notifications can turn it off." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Seulement si la clé du compte est en « Lecture + Build », et trois builds par heure et par compte au plus. Une notification vous prévient à chaque fois ; elle se coupe dans Réglages › Notifications."
+          }
+        }
+      }
+    },
     "Open Cumulus" : {
       "localizations" : {
         "fr" : {
@@ -4567,6 +4613,17 @@
         }
       }
     },
+    "Read" : {
+      "comment" : "Settings, Agents: what an agent can do, first line",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lire"
+          }
+        }
+      }
+    },
     "Read + Build" : {
       "localizations" : {
         "fr" : {
@@ -4819,16 +4876,6 @@
         }
       }
     },
-    "Run the connection test to check it." : {
-      "localizations" : {
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Lancez le test de connexion pour la vérifier."
-          }
-        }
-      }
-    },
     "Run this once in Terminal." : {
       "localizations" : {
         "fr" : {
@@ -4970,6 +5017,17 @@
         }
       }
     },
+    "Settings" : {
+      "comment" : "Title of the Settings window",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Réglages"
+          }
+        }
+      }
+    },
     "Settings…" : {
       "localizations" : {
         "fr" : {
@@ -5057,17 +5115,6 @@
         }
       }
     },
-    "Skill" : {
-      "comment" : "Settings › Agents: section about the agent skill, a folder of instructions for AI agents. Keep “skill”.",
-      "localizations" : {
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Skill"
-          }
-        }
-      }
-    },
     "Skipped" : {
       "comment" : "State of a build that Xcode Cloud did not run.",
       "localizations" : {
@@ -5116,6 +5163,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Stable"
+          }
+        }
+      }
+    },
+    "Start a build" : {
+      "comment" : "Settings, Agents: what an agent can do, second line",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lancer un build"
           }
         }
       }
@@ -5170,13 +5228,12 @@
         }
       }
     },
-    "Startup" : {
-      "comment" : "Settings, general tab: section about opening the app at login.",
+    "Startup and Window" : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Démarrage"
+            "value" : "Démarrage et fenêtre"
           }
         }
       }
@@ -5465,6 +5522,27 @@
         }
       }
     },
+    "The MCP server %@" : {
+      "comment" : "Settings, Agents: last thing to add for an agent; the argument says it is optional",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Le serveur MCP %@"
+          }
+        }
+      }
+    },
+    "The agent then calls Cumulus as tools instead of a command." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "L’agent appelle alors Cumulus comme des outils, plutôt que par une commande."
+          }
+        }
+      }
+    },
     "The app reads your Xcode Cloud builds with an API key. It only launches a build or pauses a workflow when you ask it to, and the key stays in your keychain." : {
       "localizations" : {
         "fr" : {
@@ -5485,13 +5563,13 @@
         }
       }
     },
-    "The cycle renews every month on this date. If the gauge does not match App Store Connect, check it again." : {
-      "comment" : "Keep \"Xcode Cloud\", \"App Store Connect\" and \"TestFlight\" untranslated as product names.",
+    "The command %@" : {
+      "comment" : "Settings, Agents: first thing to install, the argument is the command's name",
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Le cycle se renouvelle chaque mois à cette date. Si la jauge ne correspond pas à App Store Connect, revérifiez-la."
+            "value" : "La commande %@"
           }
         }
       }
@@ -5644,12 +5722,13 @@
         }
       }
     },
-    "The skill tells an agent when to use the command and how to read its answers. It follows the app’s updates." : {
+    "The skill" : {
+      "comment" : "Settings, Agents: second thing to install for an agent that keeps skills",
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Le skill indique à un agent quand utiliser la commande et comment lire ses réponses. Il suit les mises à jour de l’app."
+            "value" : "Le skill"
           }
         }
       }
@@ -5994,6 +6073,34 @@
         }
       }
     },
+    "Version %@" : {
+      "comment" : "The app's version, in Settings",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Version %@"
+          }
+        }
+      }
+    },
+    "Version %@ (%@)" : {
+      "comment" : "The app's version and build number, in Settings",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Version %1$@ (%2$@)"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Version %1$@ (%2$@)"
+          }
+        }
+      }
+    },
     "View" : {
       "localizations" : {
         "fr" : {
@@ -6030,6 +6137,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Avertissement"
+          }
+        }
+      }
+    },
+    "What an agent can do" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ce qu’un agent peut faire"
           }
         }
       }
@@ -6141,16 +6258,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Avec le nombre de tests en échec ou d’erreurs."
-          }
-        }
-      }
-    },
-    "With the server, an agent calls Cumulus as tools instead of a command. Use it or the skill, whichever your agent supports." : {
-      "localizations" : {
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Avec le serveur, un agent appelle Cumulus sous forme d’outils plutôt que par une commande. Utilisez-le ou le skill, selon ce que votre agent prend en charge."
           }
         }
       }

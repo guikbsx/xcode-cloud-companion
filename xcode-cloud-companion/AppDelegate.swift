@@ -66,6 +66,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         #if DEBUG
         // Run from Xcode, the app shows its window and its menu bar at once; a Release stays in the menu bar until asked.
         openMainWindow()
+        // XCC_SETTINGS=general|notifications|agents|accounts opens Settings on that pane, to look at it without a click.
+        if let pane = ProcessInfo.processInfo.environment["XCC_SETTINGS"].flatMap(SettingsNavigationModel.Pane.init(rawValue:)) {
+            settingsWindowController.show(pane: pane)
+        }
         #endif
     }
 

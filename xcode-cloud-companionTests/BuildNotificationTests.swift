@@ -377,4 +377,12 @@ struct NotificationCoordinatorTests {
         reloaded.setMuted(false, productID: "p2")
         #expect(NotificationPreferences(defaults: defaults).builds.mutedProductIDs.isEmpty)
     }
+
+    @Test func aThresholdTheSelectorDoesNotOfferFallsBackOnTheDefault() {
+        // The pane offers the thresholds as a segmented selector: a stored value outside them would select nothing.
+        defaults.set(4, forKey: "notifications.builds.stuckFactor")
+
+        #expect(NotificationPreferences(defaults: defaults).builds.stuckFactor == BuildNotificationRules.defaultStuckFactor)
+        #expect(BuildNotificationRules.stuckFactors == [2, 3, 5] && BuildNotificationRules.stuckFactors.contains(BuildNotificationRules.defaultStuckFactor))
+    }
 }

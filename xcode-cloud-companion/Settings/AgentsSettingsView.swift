@@ -12,16 +12,30 @@ struct AgentsSettingsView: View {
         case removingSkill(URL)
     }
 
+    /// The agent picked last, remembered by its name.
+    static let clientKey = "settings.agents.client"
+
     let model: AgentsSettingsModel
     @State private var picking: Picking?
     @State private var copiedClient: AgentClient?
+    @AppStorage(AgentsSettingsView.clientKey) private var clientName = AgentClient.claudeCode.rawValue
+
+    private var client: AgentClient { AgentClient(rawValue: clientName) ?? .claudeCode }
 
     var body: some View {
         Form {
             intro
-            commandSection
-            skillSection
-            clientsSection
+            Section {
+                Picker("Agent", selection: $clientName) {
+                    ForEach(AgentClient.allCases) { client in
+                        Text(verbatim: client.name).tag(client.rawValue)
+                    }
+                }
+                .pickerStyle(.segmented)
+                .labelsHidden()
+            }
+            steps(for: client)
+            abilities
         }
         .formStyle(.grouped)
         .task { await model.refresh() }
@@ -72,9 +86,9 @@ struct AgentsSettingsView: View {
         Section {
             Label {
                 VStack(alignment: .leading, spacing: 2) {
-                    Text("Cumulus for AI Agents")
+                    Text("Connect an agent to Cumulus")
                         .font(.headline)
-                    Text("Claude Code, Codex and Xcode’s agents can ask Cumulus why a build failed, what is running, or how much of the plan is left. They read what the app already knows: nothing is changed on your account, and no build is ever launched.")
+                    Text("Claude Code, Codex and Xcode’s agents read what the app already knows: builds, tests, the plan. They start a build only when the key is set to Read + Build, three times an hour per account at most, and you are told each time.")
                         .font(.callout)
                         .foregroundStyle(.secondary)
                         .fixedSize(horizontal: false, vertical: true)
@@ -90,30 +104,162 @@ struct AgentsSettingsView: View {
         }
     }
 
-    private var commandSection: some View {
-        Section("Command") {
-            LabeledContent {
-                switch model.commandState {
-                case .installed:
-                    if let directory = model.commandDirectory, model.canChange(directory) {
-                        Button("Remove") { Task { await model.removeCommand() } }
-                    } else {
-                        Button("Remove…") { picking = .removingCommand }
-                    }
-                case .broken:
-                    Button("Repair…") { picking = .command }
-                case .missing, .occupied:
-                    Button("Install…") { picking = .command }
+    /// What to plug in for the agent picked, in order, each with its state and its action.
+    private func steps(for client: AgentClient) -> some View {
+        let checklist = model.checklist(for: client)
+        return Section {
+            step(1, isDone: model.commandState == .installed) {
+                commandRow
+            }
+            ForEach(checklist.skills) { row in
+                step(2, isDone: row.state == .installed) {
+                    skillRow(row)
                 }
-            } label: {
+            }
+            step(client.keepsSkills ? 3 : 2, isDone: nil) {
+                serverRow(client)
+            }
+        } header: {
+            Text("For \(client.name)", comment: "Settings, Agents: title of what to install for the agent picked")
+        } footer: {
+            HStack(spacing: 10) {
+                ProgressView(value: Double(checklist.done), total: Double(checklist.total))
+                    .frame(width: 90)
+                    .accessibilityHidden(true)
+                Text("\(checklist.done) of \(checklist.total) in place", comment: "Settings, Agents: how many of the things an agent needs are installed")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                Spacer()
+                if client.keepsSkills {
+                    Button("Other Folder…") { picking = .skill(nil) }
+                        .help("Install the skill in another agent’s skills folder")
+                }
+            }
+        }
+    }
+
+    /// A numbered step: a tick once it is in place; `isDone` nil is a step whose state the app cannot read.
+    private func step(_ number: Int, isDone: Bool?, @ViewBuilder content: () -> some View) -> some View {
+        HStack(alignment: .top, spacing: 10) {
+            Group {
+                if isDone == true {
+                    Image(systemName: "checkmark")
+                        .font(.caption.weight(.bold))
+                        .foregroundStyle(BuildStatus.succeeded.textTint)
+                        .frame(width: 22, height: 22)
+                        .background(BuildStatus.succeeded.tint.opacity(0.18), in: .circle)
+                } else {
+                    Text(number.formatted())
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(.secondary)
+                        .frame(width: 22, height: 22)
+                        .background(Color.primary.opacity(0.07), in: .circle)
+                }
+            }
+            .accessibilityHidden(true)
+            content()
+        }
+        .accessibilityElement(children: .contain)
+    }
+
+    private var commandRow: some View {
+        LabeledContent {
+            switch model.commandState {
+            case .installed:
+                if let directory = model.commandDirectory, model.canChange(directory) {
+                    Button("Remove") { Task { await model.removeCommand() } }
+                } else {
+                    Button("Remove…") { picking = .removingCommand }
+                }
+            case .broken:
+                Button("Repair…") { picking = .command }
+            case .missing, .occupied:
+                Button("Install…") { picking = .command }
+            }
+        } label: {
+            VStack(alignment: .leading, spacing: 2) {
+                Text("The command \(Text(verbatim: "cumulus").font(.body.monospaced()))", comment: "Settings, Agents: first thing to install, the argument is the command's name")
+                Text(commandCaption)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+        }
+    }
+
+    private func skillRow(_ row: AgentsSettingsModel.SkillRow) -> some View {
+        LabeledContent {
+            switch row.state {
+            case .installed:
+                if model.canChange(row.directory) {
+                    Button("Remove") { Task { await model.removeSkill(in: row.directory) } }
+                } else {
+                    Button("Remove…") { picking = .removingSkill(row.directory) }
+                }
+            case .broken:
+                Button("Repair…") { picking = .skill(row.directory) }
+            case .missing, .occupied:
+                Button("Install…") { picking = .skill(row.directoryExists ? row.directory : nil) }
+                    .disabled(!row.directoryExists)
+            }
+        } label: {
+            VStack(alignment: .leading, spacing: 2) {
+                Text("The skill", comment: "Settings, Agents: second thing to install for an agent that keeps skills")
+                Text(UsageFormat.dotted([skillCaption(row), String(localized: "It tells the agent when to use the command and how to read its answers.")]))
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+        }
+    }
+
+    private func serverRow(_ client: AgentClient) -> some View {
+        let snippet = client.snippet(command: model.locations.command)
+        return VStack(alignment: .leading, spacing: 6) {
+            HStack(alignment: .firstTextBaseline) {
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(verbatim: "cumulus")
-                        .font(.body.monospaced())
-                    Text(commandCaption)
+                    Text("The MCP server \(Text("(optional)").foregroundStyle(.secondary))", comment: "Settings, Agents: last thing to add for an agent; the argument says it is optional")
+                    Text(UsageFormat.dotted([clientCaption(client), String(localized: "The agent then calls Cumulus as tools instead of a command.")]))
                         .font(.caption)
                         .foregroundStyle(.secondary)
                         .fixedSize(horizontal: false, vertical: true)
                 }
+                Spacer()
+                Button(copiedClient == client ? "Copied" : "Copy") { copy(snippet, for: client) }
+            }
+            Text(verbatim: client.compactSnippet(command: model.locations.command))
+                .font(.caption.monospaced())
+                .foregroundStyle(.secondary)
+                .lineLimit(2)
+                .truncationMode(.middle)
+                .textSelection(.enabled)
+                .frame(maxWidth: .infinity, alignment: .leading)
+        }
+    }
+
+    /// What an agent may do once plugged in, said as it is: it reads, and it starts a build only under conditions.
+    private var abilities: some View {
+        Section("What an agent can do") {
+            Label {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Read", comment: "Settings, Agents: what an agent can do, first line")
+                    Text("Builds, tests, issues and the plan. Nothing is changed on your App Store Connect account.")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+            } icon: {
+                Image(systemName: "eye").foregroundStyle(.secondary)
+            }
+            Label {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Start a build", comment: "Settings, Agents: what an agent can do, second line")
+                    Text("Only when the account’s key is set to Read + Build, and three builds an hour per account at most. A notification tells you each time; Settings › Notifications can turn it off.")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+            } icon: {
+                Image(systemName: "play").foregroundStyle(.secondary)
             }
         }
     }
@@ -130,47 +276,6 @@ struct AgentsSettingsView: View {
         }
     }
 
-    private var skillSection: some View {
-        Section {
-            ForEach(model.skills) { row in
-                LabeledContent {
-                    switch row.state {
-                    case .installed:
-                        if model.canChange(row.directory) {
-                            Button("Remove") { Task { await model.removeSkill(in: row.directory) } }
-                        } else {
-                            Button("Remove…") { picking = .removingSkill(row.directory) }
-                        }
-                    case .broken:
-                        Button("Repair…") { picking = .skill(row.directory) }
-                    case .missing, .occupied:
-                        Button("Install…") { picking = .skill(row.directoryExists ? row.directory : nil) }
-                            .disabled(!row.directoryExists)
-                    }
-                } label: {
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text(verbatim: row.name)
-                        Text(skillCaption(row))
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                            .fixedSize(horizontal: false, vertical: true)
-                    }
-                }
-            }
-        } header: {
-            Text("Skill")
-        } footer: {
-            HStack {
-                Text("The skill tells an agent when to use the command and how to read its answers. It follows the app’s updates.")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                    .fixedSize(horizontal: false, vertical: true)
-                Spacer()
-                Button("Other Folder…") { picking = .skill(nil) }
-            }
-        }
-    }
-
     private func skillCaption(_ row: AgentsSettingsModel.SkillRow) -> String {
         let folder = model.locations.abbreviated(row.directory)
         switch row.state {
@@ -184,42 +289,6 @@ struct AgentsSettingsView: View {
             return row.directoryExists
                 ? String(localized: "Not installed. Its skills live in \(folder).")
                 : String(localized: "No skills folder at \(folder). Create it first, or choose another folder.")
-        }
-    }
-
-    private var clientsSection: some View {
-        Section {
-            ForEach(AgentClient.allCases) { client in
-                let snippet = client.snippet(command: model.locations.command)
-                let shown = client.compactSnippet(command: model.locations.command)
-                VStack(alignment: .leading, spacing: 6) {
-                    HStack(alignment: .firstTextBaseline) {
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text(verbatim: client.name)
-                            Text(clientCaption(client))
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
-                                .fixedSize(horizontal: false, vertical: true)
-                        }
-                        Spacer()
-                        Button(copiedClient == client ? "Copied" : "Copy") { copy(snippet, for: client) }
-                    }
-                    Text(verbatim: shown)
-                        .font(.caption.monospaced())
-                        .foregroundStyle(.secondary)
-                        .lineLimit(2)
-                        .truncationMode(.middle)
-                        .textSelection(.enabled)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                }
-            }
-        } header: {
-            Text("MCP Server")
-        } footer: {
-            Text("With the server, an agent calls Cumulus as tools instead of a command. Use it or the skill, whichever your agent supports.")
-                .font(.caption)
-                .foregroundStyle(.secondary)
-                .fixedSize(horizontal: false, vertical: true)
         }
     }
 

@@ -8,34 +8,16 @@ struct NotificationsSettingsView: View {
 
     var body: some View {
         Form {
-            Section {
-                permission
-            } footer: {
-                Text("Notifications follow the app’s own refresh: a build is announced within a minute or so of its end, while Cumulus is running.")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-            }
+            permission
             Section("When a build ends") {
-                Toggle(BuildStatus.succeeded.label, isOn: $preferences.builds.succeeded)
-                Toggle(isOn: $preferences.builds.failed) {
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text(BuildStatus.failed.label)
-                        Text("With the number of test failures or errors.")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                    }
+                Toggle(isOn: $preferences.builds.succeeded) {
+                    state(.succeeded)
                 }
-                Toggle(BuildStatus.canceled.label, isOn: $preferences.builds.canceled)
-            }
-            Section("When an agent starts a build") {
-                Toggle(isOn: $preferences.builds.agentLaunches) {
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text("A build was started by `cumulus run` or an MCP tool")
-                        Text("Agents may start three builds an hour per account; each one uses compute hours.")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                    }
+                Toggle(isOn: $preferences.builds.failed) {
+                    state(.failed, detail: "With the number of test failures or errors.")
+                }
+                Toggle(isOn: $preferences.builds.canceled) {
+                    state(.canceled)
                 }
             }
             Section("When a build seems stuck") {
@@ -49,10 +31,23 @@ struct NotificationsSettingsView: View {
                 }
                 Picker("Threshold", selection: $preferences.builds.stuckFactor) {
                     ForEach(BuildNotificationRules.stuckFactors, id: \.self) { factor in
-                        Text("\(factor)× the usual duration").tag(factor)
+                        Text(verbatim: "\(factor)×")
+                            .accessibilityLabel(Text("\(factor)× the usual duration"))
+                            .tag(factor)
                     }
                 }
+                .pickerStyle(.segmented)
                 .disabled(!preferences.builds.stuck)
+            }
+            Section("When an agent starts a build") {
+                Toggle(isOn: $preferences.builds.agentLaunches) {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("A build was started by `cumulus run` or an MCP tool")
+                        Text("Agents may start three builds an hour per account; each one uses compute hours.")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                }
             }
             Section {
                 Toggle("\(UsageFormat.percent(0.75)) of the plan used", isOn: $preferences.usage.threshold75)
@@ -82,16 +77,25 @@ struct NotificationsSettingsView: View {
             // Every account notifies, whichever one is on screen: each lists its own apps.
             ForEach(accounts.sessions) { session in
                 Section(accounts.hasSeveral ? String(localized: "Apps of “\(session.name)”", comment: "Section title: the apps of one App Store Connect account") : String(localized: "Apps")) {
-                    let products = session.buildStore.snapshot.products
-                    if products.isEmpty {
+                    let snapshot = session.buildStore.snapshot
+                    let palette = session.paletteStore.load()
+                    if snapshot.products.isEmpty {
                         Text("No Xcode Cloud app yet.")
                             .foregroundStyle(.secondary)
                     }
-                    ForEach(products) { product in
-                        Toggle(product.displayName, isOn: Binding(
+                    ForEach(snapshot.products) { product in
+                        Toggle(isOn: Binding(
                             get: { !preferences.isMuted(product.id) },
                             set: { preferences.setMuted(!$0, productID: product.id) }
-                        ))
+                        )) {
+                            HStack(spacing: 8) {
+                                AppIconView(
+                                    name: product.displayName, swatch: palette.swatch(for: product.name), size: 20,
+                                    artwork: session.windowStores.icons.artwork(of: product, in: snapshot)
+                                )
+                                Text(product.displayName)
+                            }
+                        }
                     }
                 }
             }
@@ -106,27 +110,72 @@ struct NotificationsSettingsView: View {
         }
     }
 
+    /// A state of a build as the build list draws it: its glyph in its colour, then its name.
+    private func state(_ status: BuildStatus, detail: LocalizedStringKey? = nil) -> some View {
+        HStack(spacing: 8) {
+            StatusBadge(status: status, size: 20)
+                .accessibilityHidden(true)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(status.label)
+                if let detail {
+                    Text(detail)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+            }
+        }
+    }
+
+    /// Whether macOS lets the banners through, as a band at the head of the pane: green when it does, with the way to
+    /// change it otherwise. Nothing is asked for here on its own.
     @ViewBuilder
     private var permission: some View {
+        let delay = Text("Notifications follow the app’s own refresh: a build is announced within a minute or so of its end, while Cumulus is running.")
+            .font(.caption)
+            .foregroundStyle(.secondary)
         switch coordinator.authorization {
         case .allowed:
-            Label("Notifications are allowed.", systemImage: "checkmark.circle.fill")
-                .foregroundStyle(.green)
+            Section {
+                Label {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Notifications are allowed.").fontWeight(.semibold)
+                        delay
+                    }
+                } icon: {
+                    Image(systemName: "checkmark.circle.fill").foregroundStyle(.green)
+                }
+                .listRowBackground(Color.green.opacity(0.12))
+            }
         case .denied:
-            LabeledContent {
-                Button("Open Notification Settings…") { NSWorkspace.shared.open(Self.notificationSettings) }
-            } label: {
-                Text("Notifications are turned off for Cumulus in System Settings.")
-                    .foregroundStyle(.secondary)
+            Section {
+                LabeledContent {
+                    Button("Open Notification Settings…") { NSWorkspace.shared.open(Self.notificationSettings) }
+                } label: {
+                    Label {
+                        Text("Notifications are turned off for Cumulus in System Settings.")
+                    } icon: {
+                        Image(systemName: "bell.slash.fill").foregroundStyle(.orange)
+                    }
+                }
+                .listRowBackground(Color.orange.opacity(0.12))
+            } footer: {
+                delay.frame(maxWidth: .infinity, alignment: .leading)
             }
         case .notDetermined:
-            LabeledContent {
-                Button("Allow Notifications…") {
-                    Task { await coordinator.requestAuthorization() }
+            Section {
+                LabeledContent {
+                    Button("Allow Notifications…") {
+                        Task { await coordinator.requestAuthorization() }
+                    }
+                } label: {
+                    Label {
+                        Text("Cumulus asks for your permission the first time it has something to tell you.")
+                    } icon: {
+                        Image(systemName: "bell.badge").foregroundStyle(.secondary)
+                    }
                 }
-            } label: {
-                Text("Cumulus asks for your permission the first time it has something to tell you.")
-                    .foregroundStyle(.secondary)
+            } footer: {
+                delay.frame(maxWidth: .infinity, alignment: .leading)
             }
         }
     }

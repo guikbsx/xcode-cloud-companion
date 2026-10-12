@@ -164,3 +164,30 @@ final class AgentsSettingsModel {
         return FileManager.default.fileExists(atPath: directory.path(percentEncoded: false), isDirectory: &isDirectory) && isDirectory.boolValue
     }
 }
+
+extension AgentClient {
+    /// Whether the agent keeps skills in a folder of the home: Claude Code and Codex do, the others only speak MCP.
+    var keepsSkills: Bool {
+        AgentSkillHost.known.contains { $0.name == name }
+    }
+}
+
+extension AgentsSettingsModel {
+    /// What there is to plug in for one agent, and how much of it is in place. The MCP server is added by hand in the
+    /// agent's own configuration: nothing of it can be read from here, so it is not counted.
+    struct Checklist: Equatable {
+        /// The agent's own skills folder, then the folders the user added; empty for an agent without skills.
+        let skills: [SkillRow]
+        let done: Int
+        let total: Int
+    }
+
+    func checklist(for client: AgentClient) -> Checklist {
+        let known = Set(AgentSkillHost.known.map(\.name))
+        let rows = client.keepsSkills ? skills.filter { $0.name == client.name || !known.contains($0.name) } : []
+        let commandDone = commandState == .installed ? 1 : 0
+        let skillDone = rows.contains { $0.state == .installed } ? 1 : 0
+        return Checklist(skills: rows, done: commandDone + (client.keepsSkills ? skillDone : 0), total: client.keepsSkills ? 2 : 1)
+    }
+}
+

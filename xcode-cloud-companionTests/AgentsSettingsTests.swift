@@ -157,6 +157,25 @@ struct AgentsSettingsModelTests {
         #expect(model.skills.allSatisfy { $0.state == .missing })
     }
 
+    @Test func eachAgentListsWhatItNeedsAndTheMCPServerIsNeverCounted() async throws {
+        let (model, locations, bin, _) = try setUp()
+        await model.refresh()
+
+        #expect(AgentClient.allCases.map(\.keepsSkills) == [true, true, false, false], "Claude Code and Codex keep skills; Xcode and Claude Desktop only speak MCP")
+        #expect(model.checklist(for: .claudeCode).skills.map(\.name) == ["Claude Code"])
+        #expect(model.checklist(for: .codex).skills.map(\.name) == ["Codex"])
+        #expect(model.checklist(for: .claudeCode).done == 0 && model.checklist(for: .claudeCode).total == 2)
+        #expect(model.checklist(for: .xcode) == AgentsSettingsModel.Checklist(skills: [], done: 0, total: 1))
+
+        // The command is the same link for every agent.
+        await model.installCommand(in: bin)
+        #expect(AgentClient.allCases.map { model.checklist(for: $0).done } == [1, 1, 1, 1])
+        #expect(model.checklist(for: .claudeDesktop).done == model.checklist(for: .claudeDesktop).total, "nothing more to count: the MCP entry is added by hand")
+
+        await model.installSkill(in: locations.home.appending(path: ".claude/skills", directoryHint: .isDirectory))
+        #expect(model.checklist(for: .claudeCode).done == 2 && model.checklist(for: .codex).done == 1)
+    }
+
     @Test func theCommandIsInstalledFoundAgainAndRemoved() async throws {
         let (model, locations, bin, defaults) = try setUp()
 

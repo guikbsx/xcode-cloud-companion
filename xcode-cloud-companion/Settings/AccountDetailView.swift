@@ -23,63 +23,59 @@ struct AccountDetailView: View {
     private var showsKeyGuide: Bool { !model.hasStoredKey || showsGuides }
 
     var body: some View {
-        Form {
-            Section {
-                TextField("Name", text: $name, prompt: Text(AccountsModel.defaultName(among: [])))
-                    .focused($nameIsFocused)
-                    .onSubmit(renameIfNeeded)
-                    .onChange(of: nameIsFocused) { _, isFocused in
-                        if !isFocused { renameIfNeeded() }
+        Group {
+            if model.hasStoredKey {
+                Form {
+                    connectionBanner
+                    accountSection
+                    planSection
+                    if model.resetAnchor == nil || showsGuides {
+                        PlanGuideSection(issuerID: model.issuerID)
                     }
-            }
-            if model.hasStoredKey {
-                connectedHeader
-            } else {
-                KeyIntroSection()
-            }
-            if showsKeyGuide {
-                KeyGuideSection(issuerID: model.issuerID)
-            }
-            if model.hasStoredKey {
-                storedKey
-                foundApps
-                localRepositories
-            } else {
-                KeyEntrySection(
-                    keyID: $model.keyID, issuerID: $model.issuerID, keyAccess: $model.keyAccess,
-                    fileName: { if case .imported(let fileName) = model.keyState { fileName } else { nil } }(),
-                    errorMessage: model.errorMessage,
-                    refusal: { if case .failed(let message) = model.connectionState { message } else { nil } }(),
-                    isTesting: model.connectionState == .testing, canSave: model.canSave,
-                    importKey: model.importPrivateKey(from:), save: { Task { await model.saveAndTestConnection() } }
-                )
-            }
-            planIntro
-            if showsKeyGuide {
-                PlanGuideSection(issuerID: model.issuerID)
-            }
-            planInput
-            billedMinutes
-            if model.hasStoredKey {
-                Section {
-                    Button(showsGuides ? "Hide the guides" : "Where to find the key and the reset date?") {
-                        showsGuides.toggle()
+                    billedMinutes
+                    localRepositories
+                    Section {
+                        Button(showsGuides ? "Hide the guides" : "Where to find the key and the reset date?") {
+                            showsGuides.toggle()
+                        }
+                        .buttonStyle(.link)
                     }
-                    .buttonStyle(.link)
+                    if showsGuides {
+                        KeyGuideSection(issuerID: model.issuerID)
+                    }
+                    removalSection
                 }
-            }
-            Section {
-                // In the section rather than its footer, where a grouped form may not pass clicks through.
-                Button("Remove Account…", role: .destructive, action: requestRemoval)
-                if let removalError = accounts.removalError {
-                    Label(removalError, systemImage: "exclamationmark.triangle.fill")
-                        .foregroundStyle(.red)
+                .formStyle(.grouped)
+            } else {
+                // No key: nothing of the account can be shown yet, only the way to give it one.
+                KeyEntryColumns(issuerID: model.issuerID) {
+                    Section("Account") { nameField }
+                    KeyIntroSection()
+                    KeyEntrySection(
+                        keyID: $model.keyID, issuerID: $model.issuerID, keyAccess: $model.keyAccess,
+                        fileName: { if case .imported(let fileName) = model.keyState { fileName } else { nil } }(),
+                        errorMessage: model.errorMessage,
+                        refusal: { if case .failed(let message) = model.connectionState { message } else { nil } }(),
+                        isTesting: model.connectionState == .testing, canSave: model.canSave,
+                        importKey: model.importPrivateKey(from:), save: { Task { await model.saveAndTestConnection() } }
+                    )
+                    removalSection
                 }
-            } footer: {
-                Text("Its key leaves the keychain, and its cached builds, imported usage exports, plan and reset date are deleted. The other accounts are not touched.")
             }
         }
-        .formStyle(.grouped)
+        .navigationTitle(session.name)
+        .navigationSubtitle(Self.stateText(health: session.health, connection: model.connectionState))
+        .toolbar {
+            if model.hasStoredKey {
+                ToolbarItem {
+                    Button("Test Connection") {
+                        Task { await model.testConnection() }
+                    }
+                    .disabled(model.connectionState == .testing)
+                    .help("Ask App Store Connect whether this key still works")
+                }
+            }
+        }
         .task { await model.load() }
         .fileImporter(isPresented: $isImportingExport, allowedContentTypes: [.commaSeparatedText]) { result in
             if case .success(let url) = result {
@@ -131,49 +127,61 @@ struct AccountDetailView: View {
         name = session.name
     }
 
-    // MARK: - Key, once set
-
-    private var connectedHeader: some View {
+    private var removalSection: some View {
         Section {
-            Label {
-                VStack(alignment: .leading, spacing: 2) {
-                    switch model.connectionState {
-                    case .connected(let names):
-                        Text("Connected to App Store Connect")
-                            .font(.headline)
-                        Text("\(names.count) Xcode Cloud apps found", comment: "Number of Xcode Cloud apps the key gives access to")
-                            .font(.callout)
-                            .foregroundStyle(.secondary)
-                    case .testing:
-                        Text("Contacting App Store Connect…")
-                            .font(.headline)
-                    case .failed(let message):
-                        Text("App Store Connect refuses this key.")
-                            .font(.headline)
-                        Text(message)
-                            .font(.callout)
-                            .foregroundStyle(.secondary)
-                    case .idle:
-                        Text("API key saved")
-                            .font(.headline)
-                        Text("Run the connection test to check it.")
-                            .font(.callout)
-                            .foregroundStyle(.secondary)
-                    }
-                }
-            } icon: {
-                switch model.connectionState {
-                case .connected: Image(systemName: "checkmark.circle.fill").foregroundStyle(.green)
-                case .failed: Image(systemName: "xmark.octagon.fill").foregroundStyle(.red)
-                case .testing: ProgressView().controlSize(.small)
-                case .idle: Image(systemName: "key.fill").foregroundStyle(Color.accentColor)
-                }
+            // In the section rather than its footer, where a grouped form may not pass clicks through.
+            Button("Remove Account…", role: .destructive, action: requestRemoval)
+            if let removalError = accounts.removalError {
+                Label(removalError, systemImage: "exclamationmark.triangle.fill")
+                    .foregroundStyle(.red)
             }
+        } footer: {
+            Text("Its key leaves the keychain, and its cached builds, imported usage exports, plan and reset date are deleted. The other accounts are not touched.")
         }
     }
 
-    private var storedKey: some View {
+    // MARK: - Account
+
+    private var nameField: some View {
+        TextField("Name", text: $name, prompt: Text(AccountsModel.defaultName(among: [])))
+            .focused($nameIsFocused)
+            .onSubmit(renameIfNeeded)
+            .onChange(of: nameIsFocused) { _, isFocused in
+                if !isFocused { renameIfNeeded() }
+            }
+    }
+
+    /// The window's subtitle says how the account stands; a banner only speaks up for a refusal or a test under way.
+    @ViewBuilder
+    private var connectionBanner: some View {
+        switch model.connectionState {
+        case .failed(let message):
+            Section {
+                Label {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("App Store Connect refuses this key.").font(.headline)
+                        Text(message).font(.callout).foregroundStyle(.secondary)
+                    }
+                } icon: {
+                    Image(systemName: "xmark.octagon.fill").foregroundStyle(.red)
+                }
+            }
+        case .testing:
+            Section {
+                Label {
+                    Text("Contacting App Store Connect…")
+                } icon: {
+                    ProgressView().controlSize(.small)
+                }
+            }
+        case .idle, .connected:
+            EmptyView()
+        }
+    }
+
+    private var accountSection: some View {
         Section {
+            nameField
             LabeledContent("Private Key") {
                 Label("In the keychain", systemImage: "lock.fill")
                     .foregroundStyle(.secondary)
@@ -181,30 +189,21 @@ struct AccountDetailView: View {
             LabeledContent("Key ID", value: model.keyID)
             LabeledContent("Issuer ID", value: Self.masked(model.issuerID))
             KeyAccessPicker(keyAccess: $model.keyAccess)
-            HStack {
-                Spacer()
-                Button("Test Connection") {
-                    Task { await model.testConnection() }
+            if case .connected(let names) = model.connectionState {
+                LabeledContent("Xcode Cloud Apps") {
+                    Text(names.isEmpty ? String(localized: "No Xcode Cloud app yet.") : names.formatted(.list(type: .and)))
+                        .foregroundStyle(.secondary)
+                        .multilineTextAlignment(.trailing)
                 }
-                .disabled(model.connectionState == .testing)
             }
             if let errorMessage = model.errorMessage {
                 Label(errorMessage, systemImage: "exclamationmark.triangle.fill")
                     .foregroundStyle(.red)
             }
         } header: {
-            Text("API Key")
-        }
-    }
-
-    @ViewBuilder
-    private var foundApps: some View {
-        if case .connected(let names) = model.connectionState {
-            Section {
-                Text(names.isEmpty ? String(localized: "No Xcode Cloud app yet.") : names.formatted(.list(type: .and)))
-            } header: {
-                Text("Xcode Cloud Apps")
-            } footer: {
+            Text("Account")
+        } footer: {
+            if case .connected = model.connectionState {
                 Text("An app is missing? It has no Xcode Cloud workflow yet, or the key has no access to this team.")
             }
         }
@@ -245,24 +244,7 @@ struct AccountDetailView: View {
 
     // MARK: - Plan
 
-    private var planIntro: some View {
-        Section {
-            Label {
-                VStack(alignment: .leading, spacing: 2) {
-                    Text("Xcode Cloud Plan")
-                        .font(.headline)
-                    Text("Apple does not expose the plan or its reset date in the API. Without the right date, the gauge counts the hours over the wrong cycle.")
-                        .font(.callout)
-                        .foregroundStyle(.secondary)
-                }
-            } icon: {
-                Image(systemName: "calendar.badge.clock")
-                    .foregroundStyle(.orange)
-            }
-        }
-    }
-
-    private var planInput: some View {
+    private var planSection: some View {
         Section {
             Picker("Compute hours per month", selection: $model.planHours) {
                 ForEach(UsagePlan.availableHours, id: \.self) { hours in
@@ -277,9 +259,20 @@ struct AccountDetailView: View {
                     .foregroundStyle(.orange)
             }
         } header: {
-            Text("Enter the plan")
+            Text("Xcode Cloud Plan")
         } footer: {
-            Text("The cycle renews every month on this date. If the gauge does not match App Store Connect, check it again.")
+            Text("Apple does not expose the plan or its reset date in the API. The cycle renews every month on this date: if the gauge does not match App Store Connect, check it again.")
+        }
+    }
+
+    /// Under the account's name in the window's title: what it needs, or how many apps its key reaches.
+    static func stateText(health: AccountHealth, connection: SettingsModel.ConnectionState) -> String {
+        switch connection {
+        case .testing: return String(localized: "Contacting App Store Connect…")
+        case .connected(let names) where health == .connected:
+            return UsageFormat.dotted([health.label, String(localized: "\(names.count) Xcode Cloud apps found", comment: "Number of Xcode Cloud apps the key gives access to")])
+        case .failed: return AccountHealth.keyRefused.label
+        default: return health.label
         }
     }
 
@@ -297,7 +290,7 @@ struct NewAccountView: View {
     let cancel: () -> Void
 
     var body: some View {
-        Form {
+        KeyEntryColumns(issuerID: form.issuerID) {
             Section {
                 TextField("Name", text: $form.name, prompt: Text(AccountsModel.defaultName(among: [])))
             } header: {
@@ -306,7 +299,6 @@ struct NewAccountView: View {
                 Text("One account per App Store Connect team, each with its own API key and plan. Every account stays up to date and sends its notifications; the menu and the window show one at a time.")
             }
             KeyIntroSection()
-            KeyGuideSection(issuerID: form.issuerID)
             KeyEntrySection(
                 keyID: $form.keyID, issuerID: $form.issuerID, keyAccess: $form.keyAccess,
                 fileName: form.keyFileName, errorMessage: form.errorMessage, refusal: form.refusal,
@@ -314,7 +306,65 @@ struct NewAccountView: View {
                 importKey: form.importPrivateKey(from:), save: save, cancel: cancel
             )
         }
-        .formStyle(.grouped)
+    }
+}
+
+/// Entering a key: the form on the left, the way to create the key on the right, in view while the form scrolls. In a
+/// narrow window the guide goes under the form.
+struct KeyEntryColumns<Sections: View>: View {
+    /// Below this width of the pane there is no room for two columns.
+    static var sideBySideWidth: CGFloat { 640 }
+
+    let issuerID: String
+    @ViewBuilder var sections: Sections
+
+    var body: some View {
+        GeometryReader { proxy in
+            if proxy.size.width >= Self.sideBySideWidth {
+                HStack(alignment: .top, spacing: 0) {
+                    Form { sections }
+                        .formStyle(.grouped)
+                    KeyGuidePanel(issuerID: issuerID)
+                        .frame(width: min(300, proxy.size.width * 0.4))
+                        .padding(.vertical, 20)
+                        .padding(.trailing, 20)
+                }
+            } else {
+                Form {
+                    sections
+                    KeyGuideSection(issuerID: issuerID)
+                }
+                .formStyle(.grouped)
+            }
+        }
+    }
+}
+
+/// The four steps that create a key, beside the form that takes it.
+private struct KeyGuidePanel: View {
+    let issuerID: String
+
+    var body: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 14) {
+                Text("Create the key in 4 steps")
+                    .font(.caption.weight(.semibold))
+                    .textCase(.uppercase)
+                    .tracking(0.5)
+                    .foregroundStyle(.secondary)
+                KeyGuideSteps(issuerID: issuerID)
+                Text("Only the Account Holder or an Admin of the team can create a team key.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+            .font(.callout)
+            .padding(16)
+            .frame(maxWidth: .infinity, alignment: .leading)
+        }
+        .background(Color.accentColor.opacity(0.07), in: .rect(cornerRadius: 12))
+        .overlay(RoundedRectangle(cornerRadius: 12).strokeBorder(Color.accentColor.opacity(0.18)))
+        .accessibilityElement(children: .contain)
+        .accessibilityLabel(Text("Guide", comment: "Name of the panel that explains how to create an API key, for VoiceOver"))
     }
 }
 
@@ -343,29 +393,38 @@ private struct KeyGuideSection: View {
 
     var body: some View {
         Section {
-            GuideStep(number: 1) {
-                Text("In App Store Connect, open **Users and Access › Integrations › App Store Connect API**, **Team Keys** tab.")
-                Link("Open in App Store Connect ↗", destination: AppStoreConnectLinks.integrations(teamID: issuerID))
-                    .buttonStyle(.borderedProminent)
-                    .controlSize(.small)
-            }
-            GuideStep(number: 2) {
-                Text("Click **+**, name the key “Cumulus” and give it **App Manager** access to launch builds from Cumulus, or **Developer** access to only read them.")
-            }
-            GuideStep(number: 3) {
-                Text("Copy the **Issuer ID**, shown above the table of keys, then the **Key ID** on the new key's row.")
-                APIKeySchema()
-                Text("Diagram of the App Store Connect page: the two values to copy are highlighted.")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-            }
-            GuideStep(number: 4) {
-                Text("Click **Download** to get the `AuthKey_ABCDE12345.p8` file. **Apple offers it only once**: keep it somewhere safe, or import it right away below.")
-            }
+            KeyGuideSteps(issuerID: issuerID)
         } header: {
             Text("Create the key in 4 steps")
         } footer: {
             Text("Only the Account Holder or an Admin of the team can create a team key.")
+        }
+    }
+}
+
+/// Where the key comes from, step by step: in a form's section they are its rows, in the panel a column.
+private struct KeyGuideSteps: View {
+    let issuerID: String
+
+    var body: some View {
+        GuideStep(number: 1) {
+            Text("In App Store Connect, open **Users and Access › Integrations › App Store Connect API**, **Team Keys** tab.")
+            Link("Open in App Store Connect ↗", destination: AppStoreConnectLinks.integrations(teamID: issuerID))
+                .buttonStyle(.borderedProminent)
+                .controlSize(.small)
+        }
+        GuideStep(number: 2) {
+            Text("Click **+**, name the key “Cumulus” and give it **App Manager** access to launch builds from Cumulus, or **Developer** access to only read them.")
+        }
+        GuideStep(number: 3) {
+            Text("Copy the **Issuer ID**, shown above the table of keys, then the **Key ID** on the new key's row.")
+            APIKeySchema()
+            Text("Diagram of the App Store Connect page: the two values to copy are highlighted.")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+        }
+        GuideStep(number: 4) {
+            Text("Click **Download** to get the `AuthKey_ABCDE12345.p8` file. **Apple offers it only once**: keep it somewhere safe, or import it right away.")
         }
     }
 }
