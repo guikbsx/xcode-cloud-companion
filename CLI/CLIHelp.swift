@@ -30,6 +30,8 @@ nonisolated enum CLIHelp {
                 ("--running", "Only builds pending or running"),
                 ("--limit <n>", "How many builds, 1 to 100 (default 10)"),
                 ("--since <when>", "Created since an ISO 8601 date, or a span: 7d, 24h, 30m"),
+                ("--branch <name>", "Only the builds of this branch or tag (not its pull requests)"),
+                ("--pr <number>", "Only the builds of this pull request"),
             ],
             example: "cumulus builds --app MyApp --failed --since 7d"
         ),
@@ -64,6 +66,22 @@ nonisolated enum CLIHelp {
             ],
             example: "cumulus refresh --wait",
             notes: ["Starts Cumulus when it is not running. A sync less than 30 seconds old is not asked again."]
+        ),
+        Topic(
+            name: "run", summary: "Start a build of a workflow, through the Cumulus app", usage: "cumulus run <workflow> [--branch <name> | --tag <name> | --pr <number>] [--clean] [--yes]",
+            options: [
+                ("<workflow>", "Its name, or App/Workflow when two apps share a name"),
+                ("--branch <name>", "Build this branch (default: the branch of the workflow’s last build)"),
+                ("--tag <name>", "Build this tag"),
+                ("--pr <number>", "Build this pull request"),
+                ("--clean", "Ask Xcode Cloud for a clean build"),
+                ("--yes", "Don’t ask for confirmation at the terminal"),
+            ],
+            example: "cumulus run Release --branch main",
+            notes: [
+                "Uses compute hours of the plan. The key must be set to “Read + Build” in Cumulus › Settings › Accounts.",
+                "Cumulus allows three launches by agents an hour per account. The request is never repeated on its own.",
+            ]
         ),
         Topic(name: "open", summary: "Open a build in the Cumulus app", usage: "cumulus open <build>", example: "cumulus open MyApp#42"),
         Topic(

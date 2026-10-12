@@ -14,6 +14,10 @@ nonisolated enum CLIExitCode {
     static let appUnreachable: Int32 = 4
     static let notFound: Int32 = 5
     static let timedOut: Int32 = 6
+    /// `run`: the key is read-only, or Apple refused the write.
+    static let notAllowed: Int32 = 7
+    /// `run`: the app's cap on launches by agents, or Apple's hourly limit.
+    static let rateLimited: Int32 = 8
 }
 
 /// Everything a command reads from the outside, so tests run it against a temporary folder and a fixed clock.
@@ -34,6 +38,8 @@ nonisolated struct CLIEnvironment: Sendable {
     var launchApp: @Sendable () async -> Bool = { false }
     /// How long a freshly started app is given to answer on its socket.
     var launchPatience: TimeInterval = 15
+    /// Asks the person at the terminal a yes-or-no question; false when nobody answers.
+    var confirm: @Sendable (String) -> Bool = { _ in false }
 
     static var live: CLIEnvironment {
         let info = Bundle.main.infoDictionary ?? [:]
@@ -45,7 +51,12 @@ nonisolated struct CLIEnvironment: Sendable {
             terminalWidth: liveTerminalWidth(),
             openURL: CLISystem.open,
             socketPath: SharedContainer.socketPath,
-            launchApp: { CLISystem.run("/usr/bin/open", ["-g", "-b", CLISystem.appBundleIdentifier]) }
+            launchApp: { CLISystem.run("/usr/bin/open", ["-g", "-b", CLISystem.appBundleIdentifier]) },
+            confirm: { question in
+                print(question, terminator: " ")
+                guard let answer = readLine()?.trimmingCharacters(in: .whitespaces).lowercased() else { return false }
+                return ["y", "yes", "o", "oui"].contains(answer)
+            }
         )
     }
 

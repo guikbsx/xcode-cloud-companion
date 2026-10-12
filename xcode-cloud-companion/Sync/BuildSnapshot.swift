@@ -13,6 +13,9 @@ nonisolated struct BuildSnapshot: Codable, Sendable, Equatable {
     /// Icons by app ID (`CIProduct.appID`), and when Apple was last asked for them.
     var appIcons: [String: CIAppIcon] = [:]
     var appIconsCheckedAt: Date?
+    /// The Xcode versions Xcode Cloud offers, and when Apple was last asked for them.
+    var xcodeVersions: [CIXcodeVersion] = []
+    var xcodeVersionsCheckedAt: Date?
     var lastSuccessfulSync: Date?
 
     static let empty = BuildSnapshot()
@@ -26,6 +29,8 @@ nonisolated struct BuildSnapshot: Codable, Sendable, Equatable {
         workflows: [CIWorkflow] = [],
         appIcons: [String: CIAppIcon] = [:],
         appIconsCheckedAt: Date? = nil,
+        xcodeVersions: [CIXcodeVersion] = [],
+        xcodeVersionsCheckedAt: Date? = nil,
         lastSuccessfulSync: Date? = nil
     ) {
         self.products = products
@@ -34,6 +39,8 @@ nonisolated struct BuildSnapshot: Codable, Sendable, Equatable {
         self.testDevicesByActionID = testDevicesByActionID
         self.testResultAttempts = testResultAttempts
         self.workflows = workflows
+        self.xcodeVersions = xcodeVersions
+        self.xcodeVersionsCheckedAt = xcodeVersionsCheckedAt
         self.appIcons = appIcons
         self.appIconsCheckedAt = appIconsCheckedAt
         self.lastSuccessfulSync = lastSuccessfulSync
@@ -50,6 +57,8 @@ nonisolated struct BuildSnapshot: Codable, Sendable, Equatable {
         workflows = try container.decodeIfPresent([CIWorkflow].self, forKey: .workflows) ?? []
         appIcons = try container.decodeIfPresent([String: CIAppIcon].self, forKey: .appIcons) ?? [:]
         appIconsCheckedAt = try container.decodeIfPresent(Date.self, forKey: .appIconsCheckedAt)
+        xcodeVersions = try container.decodeIfPresent([CIXcodeVersion].self, forKey: .xcodeVersions) ?? []
+        xcodeVersionsCheckedAt = try container.decodeIfPresent(Date.self, forKey: .xcodeVersionsCheckedAt)
         lastSuccessfulSync = try container.decodeIfPresent(Date.self, forKey: .lastSuccessfulSync)
     }
 

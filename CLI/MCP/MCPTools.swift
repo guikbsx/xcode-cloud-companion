@@ -5,6 +5,7 @@ nonisolated struct MCPTool: Sendable {
     enum Call: Equatable, Sendable {
         case query(CLIQuery)
         case refresh(wait: Bool, timeout: TimeInterval?)
+        case launch(LaunchCommand)
     }
 
     struct InvalidArguments: Error, Equatable, Sendable {
@@ -17,6 +18,8 @@ nonisolated struct MCPTool: Sendable {
     var properties: [String: JSONValue] = [:]
     var required: [String] = []
     var readOnly = true
+    /// False for the one tool that starts a build: calling it twice starts two.
+    var idempotent = true
     /// Every tool that reads an account's cache takes `account`, to answer for another one than the app shows.
     var takesAccount = true
     var makeCall: @Sendable (Arguments, Date) throws(InvalidArguments) -> Call
@@ -47,7 +50,7 @@ nonisolated struct MCPTool: Sendable {
                 "title": .string(title),
                 "readOnlyHint": .bool(readOnly),
                 "destructiveHint": false,
-                "idempotentHint": true,
+                "idempotentHint": .bool(idempotent),
                 "openWorldHint": false,
             ],
         ]
@@ -137,11 +140,21 @@ nonisolated enum MCPTools {
                 "running": ["type": "boolean", "description": "Only builds pending or running. With `failed`, builds in either state."],
                 "limit": ["type": "integer", "minimum": 1, "maximum": 100, "default": 10, "description": "How many builds to return."],
                 "since": ["type": "string", "description": "Only builds created since an ISO 8601 date, or within a span such as 7d, 24h or 30m."],
+                "branch": ["type": "string", "description": "Only the builds of this branch or tag, by name. A pull request's builds are not its branch's: use `pull_request` for those."],
+                "pull_request": ["type": "integer", "minimum": 1, "description": "Only the builds of this pull request, by number."],
             ],
             makeCall: { arguments, now throws(MCPTool.InvalidArguments) in
                 var query = BuildsQuery(
                     app: try arguments.string("app"), failed: try arguments.bool("failed") ?? false, running: try arguments.bool("running") ?? false
                 )
+                query.branch = try arguments.string("branch")
+                if let number = try arguments.number("pull_request") {
+                    guard number == number.rounded(), number >= 1 else { throw MCPTool.InvalidArguments(message: "'pull_request' must be a positive integer.") }
+                    query.pullRequest = Int(number)
+                }
+                if query.branch != nil, query.pullRequest != nil {
+                    throw MCPTool.InvalidArguments(message: "Pass 'branch' or 'pull_request', not both.")
+                }
                 if let limit = try arguments.number("limit") {
                     guard limit == limit.rounded(), (1...Double(BuildsQuery.maximumLimit)).contains(limit) else {
                         throw MCPTool.InvalidArguments(message: "'limit' must be an integer from 1 to \(BuildsQuery.maximumLimit).")
@@ -223,6 +236,39 @@ nonisolated enum MCPTools {
                     throw MCPTool.InvalidArguments(message: "'timeoutSeconds' must be between 1 and 3600.")
                 }
                 return .refresh(wait: try arguments.bool("wait") ?? true, timeout: timeout)
+            }
+        ),
+        MCPTool(
+            name: "start_build", title: "Start a build",
+            description: """
+            Starts an Xcode Cloud build of a workflow on a branch, a tag or a pull request, through the Cumulus app, and returns the new build's reference. \
+            It spends compute hours of the user's plan: call it only when the user asked for a build, and never retry on your own. \
+            Cumulus allows three such launches an hour per account, and the key must be set to "Read + Build" in the app. \
+            Without a source, the branch of the workflow's last build.
+            """,
+            properties: [
+                "workflow": ["type": "string", "description": "The workflow's name, or App/Workflow when two apps share a name (see list_workflows)."],
+                "branch": ["type": "string", "description": "The branch to build."],
+                "tag": ["type": "string", "description": "The tag to build."],
+                "pull_request": ["type": "integer", "minimum": 1, "description": "The number of the open pull request to build."],
+                "clean": ["type": "boolean", "default": false, "description": "Ask Xcode Cloud for a clean build."],
+            ],
+            required: ["workflow"],
+            readOnly: false,
+            idempotent: false,
+            makeCall: { arguments, _ throws(MCPTool.InvalidArguments) in
+                guard let workflow = try arguments.string("workflow"), !workflow.trimmingCharacters(in: .whitespaces).isEmpty else {
+                    throw MCPTool.InvalidArguments(message: "'workflow' is required.")
+                }
+                var launch = LaunchCommand(workflow: workflow, branch: try arguments.string("branch"), tag: try arguments.string("tag"), clean: try arguments.bool("clean") ?? false, yes: true)
+                if let number = try arguments.number("pull_request") {
+                    guard number == number.rounded(), number >= 1 else { throw MCPTool.InvalidArguments(message: "'pull_request' must be a positive integer.") }
+                    launch.pullRequest = Int(number)
+                }
+                guard [launch.branch != nil, launch.tag != nil, launch.pullRequest != nil].filter({ $0 }).count <= 1 else {
+                    throw MCPTool.InvalidArguments(message: "Pass one of 'branch', 'tag' and 'pull_request'.")
+                }
+                return .launch(launch)
             }
         ),
         MCPTool(

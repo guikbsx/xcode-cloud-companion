@@ -84,6 +84,7 @@ nonisolated struct MCPServer: Sendable {
             let response = switch call {
             case .query(let query): try await runner.run(query)
             case .refresh(let wait, let timeout): try await runner.refresh(wait: wait, timeout: timeout)
+            case .launch(let command): try await runner.launch(runner.prepareLaunch(command))
             }
             let structured = JSONValue(data: response.jsonData) ?? .null
             return Self.success(id: id, [

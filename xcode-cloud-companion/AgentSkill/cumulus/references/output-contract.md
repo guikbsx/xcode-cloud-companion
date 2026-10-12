@@ -41,7 +41,10 @@ On standard error, with a non-zero exit code:
 | 3 | `NO_CACHE` | The app never synced, or has no API key | Ask the user to open Cumulus and add their App Store Connect API key |
 | 4 | `APP_UNREACHABLE` | `refresh` could not reach or start the app | Ask the user to open Cumulus |
 | 5 | `NOT_FOUND`, `AMBIGUOUS` | No app, build or account matches, or several do | `suggestions` lists what exists or the candidates; pick one and retry |
-| 6 | `TIMEOUT` | `refresh --wait` waited past `--timeout` | The sync goes on in the app; run `cumulus status` later |
+| 6 | `TIMEOUT` | `refresh --wait` waited past `--timeout`, or `run` got no answer | The sync goes on in the app; run `cumulus status` later. After `run`, check `cumulus builds --limit 1` before anything else |
+| 7 | `NOT_ALLOWED` | `run`: the key is read-only in the app, or Apple answered 403 | Ask the user to set the key to “Read + Build” in Cumulus › Settings › Accounts; do not retry |
+| 8 | `RATE_LIMITED` | `run`: three launches by agents already this hour, or Apple's hourly limit | Ask the user to start the build from the app, or wait |
+| 1 | `REFUSED` | `run`: Apple refused the build; its words are in `message` | Report them; do not retry |
 
 Through MCP, the same `error` object comes back as the text of a result with `isError: true`.
 
@@ -96,7 +99,7 @@ While `measurement.isMeasuring` is true, the app is still reading the test resul
 
 ## `workflows`
 
-`data` is an array of: `id`, `name`, `app`, `productID`, `isEnabled`, `description`, `testDestinations`, `actions`, `repository`, `xcodeVersion`, `macOSVersion`, `lastBuild`, `cycle` (`buildCount`, `billedMinutes`, `estimatedMinutes`, `totalMinutes`, `averageMinutes`).
+`data` is an array of: `id`, `name`, `app`, `productID`, `isEnabled`, `description`, `testDestinations`, `actions`, `repository`, `xcodeVersion`, `macOSVersion`, `lastBuild`, `cycle` (`buildCount`, `billedMinutes`, `estimatedMinutes`, `totalMinutes`, `averageMinutes`), `trends` (`sampleSize`, `medianDurationMinutes`, `medianQueueWaitMinutes`, `successRate` from 0 to 1; over the newest 30 finished builds of the cache, canceled and skipped ones left out; absent without a finished build), `nextScheduledRun` (ISO 8601; only for an enabled workflow with a schedule; `cycle.averageMinutes` says what one run is expected to cost), `latestXcodeVersion` (the newest public Xcode that Xcode Cloud offers, to compare with `xcodeVersion`; absent until the app read the list).
 
 `isEnabled`, `description`, `actions`, `repository` and the versions are only known for workflows the user opened in the app.
 
@@ -114,6 +117,12 @@ While `measurement.isMeasuring` is true, the app is still reading the test resul
 
 `accepted: false` with `reason: "recent"` or `"syncing"` is not a failure: the data is fresh, or about to be.
 
+## `run`
+
+`data`: `buildRunID`, `number`, `reference` (`App#42`, what `cumulus build` takes), `app`, `workflow`, `source` (`kind`: `branch`, `tag` or `pullRequest`; `name`; `pullRequestNumber`), `clean`, `appLaunched`.
+
+Errors on standard error: `NOT_ALLOWED` (exit 7: the key is read-only in the app, or Apple answered 403), `RATE_LIMITED` (exit 8: the app's cap of three launches by agents an hour per account, or Apple's hourly limit), `REFUSED` (exit 1: Apple refused, its words in `message`; a paused workflow, a source no manual condition covers), `NOT_FOUND` (no such workflow, branch, tag or open pull request), `USAGE` (no source given and no earlier build to take the branch from). Never retry `run` on your own after any of these.
+
 ## MCP tools
 
 `cumulus mcp` serves the same answers over the Model Context Protocol (stdio). Each tool returns the JSON above as text and as `structuredContent`.
@@ -124,9 +133,10 @@ Every tool except `list_accounts` also takes `account`, an account's name: the s
 |---|---|---|
 | `get_status` | - | `status` |
 | `list_apps` | - | `apps` |
-| `list_builds` | `app`, `failed`, `running`, `limit`, `since` | `builds` |
+| `list_builds` | `app`, `failed`, `running`, `limit`, `since`, `branch`, `pull_request` | `builds` |
 | `get_build` | `reference` (required), `fetchDetails` (default true) | `build` |
 | `list_workflows` | `app` | `workflows` |
 | `get_usage` | `breakdown`: `summary`, `byApp`, `byWorkflow`, `daily` | `usage` |
 | `refresh` | `wait` (default true), `timeoutSeconds` (default 120) | `refresh` |
+| `start_build` | `workflow` (required), `branch`, `tag`, `pull_request`, `clean` | `run` |
 | `list_accounts` | - | `accounts` |

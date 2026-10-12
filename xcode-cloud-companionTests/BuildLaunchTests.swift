@@ -57,6 +57,85 @@ struct BuildLaunchTests {
         #expect(references.map(\.kind) == [.branch, .branch, .tag])
     }
 
+    @Test func openPullRequestsAreListedNewestFirstWithASafeAddress() async throws {
+        let transport = MockTransport { _ in MockTransport.Reply(status: 200, body: (try? Fixture.data("scmPullRequests")) ?? Data(), headers: [:]) }
+        let client = AppStoreConnectClient(credentials: .sample(), transport: transport)
+
+        let pullRequests = try await client.pullRequests(repositoryID: "repo-1")
+
+        #expect(pullRequests.map(\.number) == [131, 128])
+        #expect(pullRequests.map(\.label) == ["#131 Fix the CSV import", "#128 Add the cycle widget"])
+        #expect(pullRequests.map(\.isCrossRepository) == [false, true])
+        #expect(pullRequests[0].webURL == nil, "an http address is not opened")
+        #expect(pullRequests[1].webURL?.host() == "github.com")
+        #expect(pullRequests[1].sourceBranch == "feature/widget-cycle" && pullRequests[1].destinationBranch == "main")
+    }
+
+    @Test func theChoicesSplitBranchesFromTagsAndRememberWhichKindANameIs() {
+        let references = [
+            GitReference(id: "b1", name: "main", kind: .branch), GitReference(id: "t1", name: "v1.0", kind: .tag),
+            GitReference(id: "b2", name: "release", kind: .branch), GitReference(id: "t2", name: "release", kind: .tag),
+        ]
+
+        let choices = LaunchChoices(references: references, pullRequests: nil)
+
+        #expect(choices.branches.map(\.id) == ["b1", "b2"] && choices.tags.map(\.id) == ["t1", "t2"])
+        #expect(choices.kind(of: "v1.0") == .tag)
+        #expect(choices.kind(of: "release") == .branch, "a name both carry is taken as the branch")
+        #expect(choices.kind(of: "unknown") == .branch && choices.kind(of: nil) == .branch)
+    }
+
+    @Test func aLongListIsNarrowedByTypingAndCapped() {
+        let names = (1...100).map { "feature/\($0)" } + ["main"]
+
+        let all = LaunchChoices.matching(names, query: "", name: { $0 })
+        let some = LaunchChoices.matching(names, query: "  MAIN ", name: { $0 })
+        let tens = LaunchChoices.matching(names, query: "feature/1", name: { $0 })
+
+        #expect(all.shown.count == LaunchChoices.menuLimit && all.total == 101)
+        #expect(some.shown == ["main"] && some.total == 1)
+        #expect(tens.total == 12 && tens.shown.first == "feature/1")
+    }
+
+    @Test func theLastRunOnASourceComesFromTheCacheAndKeepsBranchesApartFromPullRequests() {
+        func run(_ id: String, created: TimeInterval, branch: String?, pullRequest: Int? = nil) -> CIBuildRun {
+            CIBuildRun(
+                id: id, productID: "p", number: nil, createdDate: Date(timeIntervalSince1970: created), startedDate: nil, finishedDate: nil,
+                executionProgress: .complete, completionStatus: .succeeded, startReason: nil, workflowID: "w", workflowName: nil, sourceBranchOrTag: branch,
+                isPullRequestBuild: pullRequest != nil, pullRequestNumber: pullRequest
+            )
+        }
+        let runs = [
+            run("old-main", created: 100, branch: "main"),
+            run("new-main", created: 300, branch: "main"),
+            run("pr-on-main", created: 400, branch: "main", pullRequest: 128),
+            run("develop", created: 500, branch: "develop"),
+        ]
+
+        #expect(LaunchSourceHistory.lastRun(onBranchOrTag: "main", in: runs)?.id == "new-main")
+        #expect(LaunchSourceHistory.lastRun(onPullRequest: 128, in: runs)?.id == "pr-on-main")
+        #expect(LaunchSourceHistory.lastRun(onBranchOrTag: "v1.0", in: runs) == nil)
+        #expect(LaunchSourceHistory.lastRun(onPullRequest: 7, in: runs) == nil)
+    }
+
+    @Test func theLauncherStillOffersBranchesWhenThePullRequestsCannotBeRead() async throws {
+        let transport = MockTransport { request in
+            let path = request.url?.path() ?? ""
+            if path.hasSuffix("/pullRequests") { return MockTransport.Reply(status: 500, body: Data(), headers: [:]) }
+            if path.hasSuffix("/gitReferences") { return MockTransport.Reply(status: 200, body: (try? Fixture.data("scmGitReferences")) ?? Data(), headers: [:]) }
+            return MockTransport.Reply(status: 200, body: Data(#"{"data":{"type":"scmRepositories","id":"repo-1","attributes":{"ownerName":"guik","repositoryName":"cumulus"}}}"#.utf8), headers: [:])
+        }
+        let client = AppStoreConnectClient(credentials: .sample(), transport: transport)
+        let launcher = BuildLauncher(client: { client })
+
+        let choices = try #require(await launcher.choices(for: "wf-1"))
+        _ = await launcher.choices(for: "wf-1")
+
+        #expect(choices.branches.map(\.name) == ["develop", "main"] && choices.tags.map(\.name) == ["v1.0"])
+        #expect(choices.pullRequests == nil, "unread is not the same as none")
+        #expect(await transport.requests.count == 3, "a second opening of the sheet asks nothing more")
+    }
+
     // MARK: - Launcher
 
     private final class Log: Sendable {

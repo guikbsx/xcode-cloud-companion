@@ -132,6 +132,11 @@ actor AppStoreConnectClient {
     }
 
     /// App icons by app ID, in one request: every app with whichever build Apple includes, or the newest builds of the account.
+    func xcodeVersions() async throws(AppStoreConnectError) -> [CIXcodeVersion] {
+        let pages = try await collectPages(from: AppStoreConnectEndpoint.xcodeVersions, of: CIXcodeVersionAttributes.self, maxPages: 2)
+        return pages.flatMap(\.xcodeVersions)
+    }
+
     func appIcons(fromNewestBuilds: Bool) async throws(AppStoreConnectError) -> [String: CIAppIcon] {
         if fromNewestBuilds {
             let page: JSONAPIDocument<CIBuildIconAttributes> = try await document(at: AppStoreConnectEndpoint.latestBuildIcons)

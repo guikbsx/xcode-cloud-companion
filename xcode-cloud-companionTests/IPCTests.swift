@@ -11,6 +11,17 @@ actor FakeIPCService: IPCService {
     private(set) var refreshAccounts: [String?] = []
     private(set) var openedBuilds: [String] = []
     private(set) var detailRequests: [String] = []
+    var launchResult = IPCResult(launched: true, buildRunID: "run-new", buildNumber: 46)
+    private(set) var launches: [IPCLaunchRequest] = []
+
+    func set(launchResult: IPCResult) {
+        self.launchResult = launchResult
+    }
+
+    func launch(_ request: IPCLaunchRequest) async -> IPCResult {
+        launches.append(request)
+        return launchResult
+    }
 
     func set(refreshResult: IPCResult, delay: Duration = .zero) {
         self.refreshResult = refreshResult
@@ -111,7 +122,7 @@ struct IPCProtocolTests {
     }
 
     @Test func whatIsNotUnderstoodIsRefusedByName() async {
-        #expect(await response(#"{"id":"1","method":"launch"}"#).error == IPCFailure(code: "METHOD_NOT_FOUND", message: "Unknown method 'launch'."))
+        #expect(await response(#"{"id":"1","method":"cancel"}"#).error == IPCFailure(code: "METHOD_NOT_FOUND", message: "Unknown method 'cancel'."))
         #expect(await response(#"{"id":"1","method":"launch"}"#).id == "1")
         #expect(await response("not json").error?.code == "PARSE_ERROR")
         #expect(await response(#"{"method":"ping"}"#).error?.code == "PARSE_ERROR")

@@ -1,0 +1,6 @@
+{
+  "data": [
+    { "type": "ciMacOsVersions", "id": "mac-27-1", "attributes": { "name": "macOS Tahoe 27.1", "version": "27.1" } },
+    { "type": "ciMacOsVersions", "id": "mac-27-0", "attributes": { "name": "macOS Tahoe 27.0", "version": "27.0" } }
+  ]
+}

@@ -5,12 +5,23 @@ struct WorkflowDetailView: View {
     let model: WorkflowDetailModel
     var tests: WorkflowTestsModel?
     var openBuildTests: (String) -> Void = { _ in }
+    /// How the workflow's builds go over time, from the cache; nil leaves the section out.
+    var trends: WorkflowTrends?
+    var openBuild: (String) -> Void = { _ in }
     /// Pauses or resumes this workflow; nil while the key is declared read-only.
     var togglePause: (() -> Void)?
+    /// Set when the workflow builds with an Xcode older than the newest public one.
+    var xcodeWarning: XcodeVersionCheck.Warning?
+    /// Opens the sheet that changes the workflow; nil shows the way to App Store Connect instead.
+    var editWorkflow: (() -> Void)?
+    var workflowURL: URL?
 
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 18) {
+                if let xcodeWarning {
+                    xcodeBanner(xcodeWarning)
+                }
                 header
                 if !model.info.isEmpty {
                     LazyVGrid(columns: [GridItem(.adaptive(minimum: 170), alignment: .topLeading)], alignment: .leading, spacing: 14) {
@@ -47,6 +58,9 @@ struct WorkflowDetailView: View {
                 if let tests {
                     WorkflowTestsSection(workflowID: model.id, model: tests, openBuild: openBuildTests)
                 }
+                if let trends {
+                    WorkflowTrendsSection(trends: trends, openBuild: openBuild)
+                }
             }
             .padding(24)
             .frame(maxWidth: 760, alignment: .leading)
@@ -75,6 +89,10 @@ struct WorkflowDetailView: View {
                         .controlSize(.small)
                         .padding(.leading, 6)
                 }
+                if let editWorkflow {
+                    Button("Change…", systemImage: "pencil", action: editWorkflow)
+                        .controlSize(.small)
+                }
             }
             if togglePause != nil, model.isLocked == true {
                 Text(WorkflowPauser.lockedMessage).font(.caption).foregroundStyle(.secondary)
@@ -83,6 +101,23 @@ struct WorkflowDetailView: View {
                 Text(description).foregroundStyle(.secondary).textSelection(.enabled)
             }
         }
+    }
+
+    private func xcodeBanner(_ warning: XcodeVersionCheck.Warning) -> some View {
+        HStack(spacing: 10) {
+            Image(systemName: "exclamationmark.triangle.fill").foregroundStyle(BuildStatus.errored.tint).accessibilityHidden(true)
+            Text("This workflow stays on \(warning.current). \(warning.latest) is available on Xcode Cloud.")
+                .font(.callout)
+                .frame(maxWidth: .infinity, alignment: .leading)
+            if let editWorkflow {
+                Button("Change…", action: editWorkflow).controlSize(.small)
+            } else if let workflowURL {
+                Button("Open in App Store Connect") { NSWorkspace.shared.open(workflowURL) }.controlSize(.small)
+            }
+        }
+        .padding(12)
+        .background(BuildStatus.errored.tint.opacity(0.12), in: .rect(cornerRadius: CumulusStyle.cardRadius))
+        .accessibilityElement(children: .combine)
     }
 
     private func section(_ title: LocalizedStringKey, @ViewBuilder content: () -> some View) -> some View {

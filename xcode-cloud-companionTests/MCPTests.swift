@@ -91,8 +91,11 @@ struct MCPServerTests {
         #expect(try await code("list_builds", #"{"limit":0}"#) == -32602)
         #expect(try await code("list_builds", #"{"limit":2.5}"#) == -32602)
         #expect(try await code("list_builds", #"{"failed":"yes"}"#) == -32602)
+        #expect(try await code("list_builds", #"{"pull_request":0}"#) == -32602)
+        #expect(try await code("list_builds", #"{"pull_request":1.5}"#) == -32602)
+        #expect(try await code("list_builds", #"{"branch":"main","pull_request":12}"#) == -32602)
         #expect(try await code("list_builds", #"{"since":"yesterday"}"#) == -32602)
-        #expect(try await code("list_builds", #"{"branch":"main"}"#) == -32602)
+        #expect(try await code("list_builds", #"{"tag":"v1.0"}"#) == -32602)
         #expect(try await code("get_build", "{}") == -32602)
         #expect(try await code("get_usage", #"{"breakdown":"weekly"}"#) == -32602)
         #expect(try await code("refresh", #"{"timeoutSeconds":0}"#) == -32602)
@@ -109,18 +112,19 @@ struct MCPServerTests {
             return
         }
 
-        #expect(list.compactMap { $0["name"]?.stringValue } == ["get_status", "list_apps", "list_builds", "get_build", "list_workflows", "get_usage", "refresh", "list_accounts"])
+        #expect(list.compactMap { $0["name"]?.stringValue } == ["get_status", "list_apps", "list_builds", "get_build", "list_workflows", "get_usage", "refresh", "start_build", "list_accounts"])
         for tool in list {
             #expect((tool["description"]?.stringValue?.count ?? 0) > 80)
             #expect(tool["inputSchema"]?["type"] == "object" && tool["inputSchema"]?["additionalProperties"] == false)
-            #expect(tool["annotations"]?["destructiveHint"] == false && tool["annotations"]?["idempotentHint"] == true)
-            #expect(tool["annotations"]?["readOnlyHint"] == .bool(tool["name"] != "refresh"))
+            #expect(tool["annotations"]?["destructiveHint"] == false && tool["annotations"]?["idempotentHint"] == .bool(tool["name"] != "start_build"))
+            #expect(tool["annotations"]?["readOnlyHint"] == .bool(tool["name"] != "refresh" && tool["name"] != "start_build"))
         }
         let builds = list[2]["inputSchema"]
-        #expect(Set(builds?["properties"]?.objectValue?.keys ?? [:].keys) == ["account", "app", "failed", "limit", "running", "since"])
+        #expect(Set(builds?["properties"]?.objectValue?.keys ?? [:].keys) == ["account", "app", "branch", "failed", "limit", "pull_request", "running", "since"])
         // Every tool that reads an account takes its name; the one that lists the accounts does not.
         #expect(list.dropLast().allSatisfy { $0["inputSchema"]?["properties"]?["account"]?["type"] == "string" })
-        #expect(list[7]["inputSchema"]?["properties"] == [:])
+        #expect(list[8]["inputSchema"]?["properties"] == [:])
+        #expect(list[7]["inputSchema"]?["required"] == ["workflow"])
         #expect(builds?["properties"]?["limit"] == ["type": "integer", "minimum": 1, "maximum": 100, "default": 10, "description": "How many builds to return."])
         #expect(builds?["required"] == [])
         #expect(list[3]["inputSchema"]?["required"] == ["reference"])
@@ -202,6 +206,25 @@ struct MCPServerTests {
         #expect(waited["structuredContent"]?["data"]?["status"]?["appCount"] == 3)
         _ = try await call("refresh", #"{"wait":false,"timeoutSeconds":5}"#, on: server)
         #expect(await service.refreshWaits == [true, false])
+        await socket.stop()
+    }
+
+    @Test func startBuildGoesThroughTheAppAndAnswersWithTheReference() async throws {
+        let service = FakeIPCService()
+        let (socket, path) = try await IPCTestSocket.server(service)
+        var environment = try await CLIFixture.environment()
+        environment.socketPath = path
+        let server = try await server(environment)
+
+        let started = try await call("start_build", #"{"workflow":"CI","pull_request":12}"#, on: server)
+        #expect(started["isError"] == false && started["structuredContent"]?["data"]?["reference"] == "Alpha#46")
+        #expect(await service.launches == [IPCLaunchRequest(workflowID: "w-ci", source: .pullRequest(12), clean: false, accountID: "default")])
+        #expect(errorCode(try await reply(#"{"jsonrpc":"2.0","id":2,"method":"tools/call","params":{"name":"start_build","arguments":{}}}"#, from: server)) == -32602)
+        #expect(errorCode(try await reply(#"{"jsonrpc":"2.0","id":3,"method":"tools/call","params":{"name":"start_build","arguments":{"workflow":"CI","branch":"main","tag":"v1"}}}"#, from: server)) == -32602)
+
+        await service.set(launchResult: IPCResult(reason: IPCLaunchReason.notAllowed, launched: false))
+        let refused = try await call("start_build", #"{"workflow":"CI"}"#, on: server)
+        #expect(refused["isError"] == true && (refused["content"]?.compactString ?? "").contains("NOT_ALLOWED"))
         await socket.stop()
     }
 

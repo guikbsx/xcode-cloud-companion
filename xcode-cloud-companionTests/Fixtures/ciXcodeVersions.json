@@ -1,0 +1,9 @@
+{
+  "data": [
+    { "type": "ciXcodeVersions", "id": "xc-26-4", "attributes": { "name": "Xcode 26.4", "version": "26.4" } },
+    { "type": "ciXcodeVersions", "id": "xc-27-1", "attributes": { "name": "Xcode 27.1", "version": "27.1" } },
+    { "type": "ciXcodeVersions", "id": "xc-27-2b", "attributes": { "name": "Xcode 27.2 beta 2", "version": "27.2" } },
+    { "type": "ciXcodeVersions", "id": "xc-27-0", "attributes": { "name": "Xcode 27.0", "version": "27.0" } },
+    { "type": "ciXcodeVersions", "id": "xc-27-1-rc", "attributes": { "name": "Xcode 27.1.1 Release Candidate", "version": "27.1.1" } }
+  ]
+}

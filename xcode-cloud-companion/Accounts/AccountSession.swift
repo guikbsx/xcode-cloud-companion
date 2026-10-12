@@ -13,6 +13,8 @@ final class AccountSession: Identifiable {
     /// A build's issues, tests and artifacts: the window and the `cumulus` command load them through the same store.
     let extrasStore: BuildExtrasStore
     let paletteStore: AppPaletteStore
+    /// Where the apps' repositories are cloned on this Mac, to open a build's files in Xcode.
+    let localRepositories: LocalRepositories
     /// Made when the window first shows the account.
     @ObservationIgnored private(set) lazy var windowStores = AccountWindowStores(buildStore: buildStore, extrasStore: extrasStore, paths: paths)
     private let defaults: UserDefaults
@@ -30,6 +32,7 @@ final class AccountSession: Identifiable {
         self.extrasStore = extrasStore
         self.defaults = defaults
         paletteStore = .account(account.id)
+        localRepositories = LocalRepositories(accountID: account.id, defaults: defaults)
 
         settings.onCredentialsChange = { [buildStore] in
             Task { await buildStore.credentialsDidChange() }

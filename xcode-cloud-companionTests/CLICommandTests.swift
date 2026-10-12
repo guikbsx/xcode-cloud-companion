@@ -116,6 +116,9 @@ struct CLICommandTests {
         #expect(ci.isEnabled == true && ci.description == "Runs on every pull request" && ci.xcodeVersion == "Xcode 27.1" && ci.repository == "example/alpha")
         #expect(ci.lastBuild?.reference == "Alpha#45")
         #expect(ci.cycle?.buildCount == 4 && ci.cycle?.billedMinutes == 15)
+        let trends = try #require(ci.trends)
+        #expect(trends.sampleSize > 0 && trends.medianQueueWaitMinutes == 1, "every fixture build waited a minute for its machine")
+        #expect((0...1).contains(trends.successRate ?? -1) && (trends.medianDurationMinutes ?? 0) > 0)
         #expect(all[1].isEnabled == nil && all[1].lastBuild?.reference == "Beta#10")
     }
 
@@ -137,6 +140,15 @@ struct CLICommandTests {
         #expect(try await builds(BuildsQuery(app: "beta", limit: 100)).map(\.number) == [10, 9, 8, 7])
         #expect(try await builds(BuildsQuery(app: "com.example.gamma")).map(\.app) == ["Gamma Tools", "Gamma Tools"])
         #expect(try await builds(BuildsQuery(app: "p-alpha", failed: true)).map(\.number) == [44, 42])
+        #expect(try CLIParser.parse(["builds", "--pr", "#12"]).command == .query(.builds(BuildsQuery(pullRequest: 12))))
+        #expect(try CLIParser.parse(["builds", "--branch", "main"]).command == .query(.builds(BuildsQuery(branch: "main"))))
+        #expect(throws: CLIFailure.self) { try CLIParser.parse(["builds", "--pr", "x"]) }
+        #expect(throws: CLIFailure.self) { try CLIParser.parse(["builds", "--branch", "main", "--pr", "1"]) }
+        #expect(try await builds(BuildsQuery(branch: "v1.1")).map(\.reference) == ["Beta#8"])
+        #expect(try await builds(BuildsQuery(branch: "fix/login")).isEmpty, "a pull request's build is not its branch's")
+        #expect(try await builds(BuildsQuery(pullRequest: 12)).map(\.reference) == ["Alpha#44"])
+        let main = try await builds(BuildsQuery(limit: 100, branch: "MAIN"))
+        #expect(!main.isEmpty && main.allSatisfy { $0.source?.name == "main" && $0.source?.pullRequestNumber == nil }, "the branch name is matched whatever its case")
         #expect(try await builds(BuildsQuery(limit: 100, since: CLIFixture.date("2026-10-09T00:00:00Z"))).map(\.reference) == ["Gamma Tools#8", "Alpha#45", "Alpha#44", "Beta#10"])
     }
 
@@ -371,7 +383,7 @@ struct CLICommandTests {
         #expect(try await keys("status") == ["appCount", "planConfigured", "runningBuilds", "usage"])
         #expect(try await keys("apps") == ["bundleID", "cycle", "id", "latestBuild", "name", "runningBuilds", "storeName", "type"])
         #expect(try await keys("workflows", "--app", "Alpha") == [
-            "app", "cycle", "description", "id", "isEnabled", "lastBuild", "name", "productID", "repository", "testDestinations", "xcodeVersion",
+            "app", "cycle", "description", "id", "isEnabled", "lastBuild", "name", "productID", "repository", "testDestinations", "trends", "xcodeVersion",
         ])
         #expect(try await keys("usage", "--daily") == ["costliestBuild", "daily", "planConfigured", "summary"])
         #expect(try await keys("build", "Alpha#44") == [

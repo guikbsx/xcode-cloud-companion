@@ -12,7 +12,19 @@ nonisolated enum CLICommand: Equatable, Sendable {
     case query(CLIQuery)
     case open(reference: String)
     case refresh(wait: Bool, timeout: TimeInterval?)
+    case launch(LaunchCommand)
     case mcp(verbose: Bool)
+}
+
+/// `cumulus run`: a workflow by name and at most one source; without one, the branch of the workflow's last build.
+nonisolated struct LaunchCommand: Equatable, Sendable {
+    var workflow: String
+    var branch: String?
+    var tag: String?
+    var pullRequest: Int?
+    var clean = false
+    /// `--yes`: no question at the terminal. In a pipe or over MCP there is nobody to ask: the agent decided.
+    var yes = false
 }
 
 nonisolated struct CLIInvocation: Equatable, Sendable {
@@ -25,7 +37,7 @@ nonisolated struct CLIInvocation: Equatable, Sendable {
 
 nonisolated enum CLIParser {
     /// The commands the help lists, in its order.
-    static let commandNames = ["status", "accounts", "apps", "builds", "build", "workflows", "usage", "refresh", "open", "mcp", "version", "help"]
+    static let commandNames = ["status", "accounts", "apps", "builds", "build", "workflows", "usage", "refresh", "run", "open", "mcp", "version", "help"]
 
     private struct Scan {
         var flags: Set<String> = []
@@ -69,8 +81,18 @@ nonisolated enum CLIParser {
             scan = try self.scan(rest, command: name)
             command = .query(.apps)
         case "builds":
-            scan = try self.scan(rest, command: name, flags: ["--failed", "--running"], values: ["--app", "--limit", "--since"])
+            scan = try self.scan(rest, command: name, flags: ["--failed", "--running"], values: ["--app", "--limit", "--since", "--branch", "--pr"])
             var query = BuildsQuery(app: scan.values["--app"], failed: scan.flags.contains("--failed"), running: scan.flags.contains("--running"))
+            if let branch = scan.values["--branch"] {
+                guard scan.values["--pr"] == nil else { throw usage("Choose --branch or --pr, not both.") }
+                query.branch = branch
+            }
+            if let text = scan.values["--pr"] {
+                guard let number = Int(text.hasPrefix("#") ? String(text.dropFirst()) : text), number > 0 else {
+                    throw usage("--pr takes a pull request number, such as 128 or #128.")
+                }
+                query.pullRequest = number
+            }
             if let text = scan.values["--limit"] {
                 guard let limit = Int(text), (1...BuildsQuery.maximumLimit).contains(limit) else {
                     throw usage("--limit takes a number from 1 to \(BuildsQuery.maximumLimit).")
@@ -116,6 +138,21 @@ nonisolated enum CLIParser {
                 timeout = seconds
             }
             command = .refresh(wait: scan.flags.contains("--wait"), timeout: timeout)
+        case "run":
+            scan = try self.scan(rest, command: name, flags: ["--clean", "--yes"], values: ["--branch", "--tag", "--pr"], positionals: 1)
+            guard let workflow = scan.positionals.first?.trimmingCharacters(in: .whitespaces), !workflow.isEmpty else {
+                throw usage("'cumulus run' takes a workflow: its name, or App/Workflow.", "Run 'cumulus workflows' to list them.")
+            }
+            let sources = ["--branch", "--tag", "--pr"].filter { scan.values[$0] != nil }
+            guard sources.count <= 1 else { throw usage("Choose one of --branch, --tag and --pr.") }
+            var launch = LaunchCommand(workflow: workflow, branch: scan.values["--branch"], tag: scan.values["--tag"], clean: scan.flags.contains("--clean"), yes: scan.flags.contains("--yes"))
+            if let text = scan.values["--pr"] {
+                guard let number = Int(text.hasPrefix("#") ? String(text.dropFirst()) : text), number > 0 else {
+                    throw usage("--pr takes a pull request number, such as 128 or #128.")
+                }
+                launch.pullRequest = number
+            }
+            command = .launch(launch)
         case "open":
             scan = try self.scan(rest, command: name, positionals: 1)
             guard let reference = scan.positionals.first else {

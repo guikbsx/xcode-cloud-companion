@@ -37,6 +37,20 @@ nonisolated enum CumulusCLI {
             } catch {
                 return failure(error, format: invocation.format, environment: environment)
             }
+        case .launch(let command):
+            do throws(CLIFailure) {
+                let runner = CLIQueryRunner(environment: environment, account: invocation.account)
+                let plan = try await runner.prepareLaunch(command)
+                // At a terminal, a person confirms what spends minutes; in a pipe or over MCP, the agent already decided.
+                if environment.isTerminal, !command.yes,
+                   !environment.confirm("Start \(plan.workflowName) on \(plan.request.source.label) for \(plan.appName)? [y/N]") {
+                    return CLIResult(stdout: "Nothing started.\n")
+                }
+                let response = try await runner.launch(plan)
+                return CLIResult(stdout: render(response, format: invocation.format, environment: environment))
+            } catch {
+                return failure(error, format: invocation.format, environment: environment)
+            }
         case .open(let reference):
             do throws(CLIFailure) {
                 let scope = try await CLIAccountScope.resolve(invocation.account, in: environment.directory)
@@ -113,6 +127,53 @@ nonisolated struct CLIQueryRunner: Sendable {
             meta.isEstimate = status.meta.isEstimate
         }
         return CLIResponse(report: .refresh(output), meta: meta)
+    }
+
+    /// Everything `cumulus run` needs before it asks the person, then the app: the workflow and the source, from the cache.
+    func prepareLaunch(_ command: LaunchCommand) async throws(CLIFailure) -> LaunchPlan {
+        let scope = try await CLIAccountScope.resolve(account, in: environment.directory)
+        let snapshot = try await CLIData.load(from: scope.directory, includingUsage: false).snapshot
+        let workflow = try CLIReference.workflow(command.workflow, in: snapshot)
+        let productID = workflow.productID ?? snapshot.runs.first { $0.workflowID == workflow.id }?.productID
+        let product = snapshot.products.first { $0.id == productID }
+        let source: IPCLaunchRequest.Source
+        if let branch = command.branch {
+            source = .branch(branch)
+        } else if let tag = command.tag {
+            source = .tag(tag)
+        } else if let number = command.pullRequest {
+            source = .pullRequest(number)
+        } else {
+            let last = snapshot.runs
+                .filter { $0.workflowID == workflow.id && $0.isPullRequestBuild != true && $0.pullRequestNumber == nil && $0.sourceBranchOrTag != nil }
+                .max { ($0.createdDate ?? .distantPast, $0.number ?? 0) < ($1.createdDate ?? .distantPast, $1.number ?? 0) }
+            guard let branch = last?.sourceBranchOrTag else {
+                throw CLIFailure(code: .usage, message: "No build of \(workflow.name) says which branch to build.", suggestions: ["Pass --branch <name>, --tag <name> or --pr <number>."])
+            }
+            source = .branch(branch)
+        }
+        return LaunchPlan(
+            request: IPCLaunchRequest(workflowID: workflow.id, source: source, clean: command.clean, accountID: scope.account.id),
+            workflowName: workflow.name, appName: product?.name ?? "?", accountName: scope.account.name, showsAccount: scope.hasSiblings
+        )
+    }
+
+    func launch(_ plan: LaunchPlan) async throws(CLIFailure) -> CLIResponse {
+        let (result, appLaunched) = try await CLIAppLink(environment: environment, accountID: plan.request.accountID).launch(plan.request)
+        let source: BuildOutput.Source = switch plan.request.source {
+        case .branch(let name): BuildOutput.Source(kind: "branch", name: name)
+        case .tag(let name): BuildOutput.Source(kind: "tag", name: name)
+        case .pullRequest(let number): BuildOutput.Source(kind: "pullRequest", pullRequestNumber: number)
+        }
+        let output = LaunchOutput(
+            buildRunID: result.buildRunID ?? "", number: result.buildNumber, reference: result.buildNumber.map { "\(plan.appName)#\($0)" },
+            app: plan.appName, workflow: plan.workflowName, source: source, clean: plan.request.clean, appLaunched: appLaunched
+        )
+        let meta = CLIMeta(
+            lastSuccessfulSync: result.lastSuccessfulSync, generatedAt: environment.now(), cliVersion: environment.version, appRunning: true,
+            account: plan.accountName, showsAccount: plan.showsAccount
+        )
+        return CLIResponse(report: .launch(output), meta: meta)
     }
 
     /// Every account with how fresh its cache is. `meta` speaks for the account on screen.

@@ -115,12 +115,28 @@ final class BuildStore {
         try? await cacheStore.save(snapshot)
     }
 
+    /// A workflow changed from the app (name, Xcode, clean…): Apple's answer shows at once, and a sync that read the list
+    /// before the change does not undo it.
+    private var confirmedWorkflowEdits: [String: (workflow: CIWorkflow, at: Date)] = [:]
+
+    func applyWorkflow(_ workflow: CIWorkflow) async {
+        confirmedWorkflowEdits[workflow.id] = (workflow, now())
+        applyConfirmedWorkflowStates(syncStartedAt: nil)
+        guard !isRetired else { return }
+        try? await cacheStore.save(snapshot)
+    }
+
     private func applyConfirmedWorkflowStates(syncStartedAt: Date?) {
         if let syncStartedAt {
             confirmedWorkflowStates = confirmedWorkflowStates.filter { $0.value.at >= syncStartedAt }
+            confirmedWorkflowEdits = confirmedWorkflowEdits.filter { $0.value.at >= syncStartedAt }
         }
         for index in snapshot.workflows.indices {
-            if let confirmed = confirmedWorkflowStates[snapshot.workflows[index].id] {
+            let id = snapshot.workflows[index].id
+            if let edit = confirmedWorkflowEdits[id] {
+                snapshot.workflows[index].adopt(edit.workflow)
+            }
+            if let confirmed = confirmedWorkflowStates[id] {
                 snapshot.workflows[index].isEnabled = confirmed.isEnabled
             }
         }

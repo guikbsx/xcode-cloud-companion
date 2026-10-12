@@ -4,6 +4,8 @@ import Observation
 enum SidebarSelection: Hashable {
     case overview
     case allBuilds
+    /// The view by branch and pull request.
+    case references
     case product(String)
     case workflow(String)
 }
@@ -19,10 +21,19 @@ final class NavigationModel {
     /// Picking something else in the sidebar clears the build, so the right column shows what was picked.
     var sidebarSelection: SidebarSelection = .allBuilds {
         didSet {
-            if oldValue != sidebarSelection { selectedBuildID = nil }
+            if oldValue != sidebarSelection {
+                selectedBuildID = nil
+                referenceScope = nil
+            }
         }
     }
     var selectedBuildID: String?
+    /// Under “Branches and pull requests”, the reference whose builds the middle column lists; nil shows the references.
+    var referenceScope: ReferenceKey? {
+        didSet {
+            if oldValue != referenceScope { selectedBuildID = nil }
+        }
+    }
     /// The tab the build sheet shows; it stays as the user left it from one build to the next.
     var buildTab = BuildTab.actions
 
@@ -40,6 +51,9 @@ final class NavigationModel {
         switch sidebarSelection {
         case .product, .workflow: sidebarSelection = .allBuilds
         case .overview, .allBuilds: selectedBuildID = nil
+        case .references:
+            selectedBuildID = nil
+            referenceScope = nil
         }
     }
 
@@ -50,13 +64,14 @@ final class NavigationModel {
         switch destination {
         case .build(let id): showBuild(id)
         case .overview: sidebarSelection = .overview
+        case .references: sidebarSelection = .references
         }
         return true
     }
 }
 
-/// `cumulus://build/<buildRunID>` and `cumulus://overview`, which may name its account (`?account=<id>`): read-only,
-/// no address ever launches or changes anything.
+/// `cumulus://build/<buildRunID>`, `cumulus://overview`, which may name its account (`?account=<id>`), and
+/// `cumulus://references`: read-only, no address ever launches or changes anything.
 nonisolated enum CumulusURL {
     static let scheme = "cumulus"
 
@@ -64,9 +79,12 @@ nonisolated enum CumulusURL {
         /// A build names itself alone: the app finds the account that holds it.
         case build(String)
         case overview(accountID: String?)
+        /// The view by branch and pull request of the account on screen.
+        case references
     }
 
     static let overview = URL(string: "\(scheme)://overview")
+    static let references = URL(string: "\(scheme)://references")
 
     static func overview(accountID: String?) -> URL? {
         guard let accountID, Account.isValid(id: accountID) else { return overview }
@@ -85,6 +103,9 @@ nonisolated enum CumulusURL {
             guard parts.isEmpty else { return nil }
             let account = URLComponents(url: url, resolvingAgainstBaseURL: false)?.queryItems?.first { $0.name == "account" }?.value
             return .overview(accountID: account.flatMap { Account.isValid(id: $0) ? $0 : nil })
+        }
+        if url.host() == "references" {
+            return parts.isEmpty ? .references : nil
         }
         guard url.host() == "build" else { return nil }
         guard parts.count == 1, isValid(id: parts[0]) else { return nil }

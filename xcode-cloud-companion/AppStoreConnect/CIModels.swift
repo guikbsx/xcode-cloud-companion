@@ -92,7 +92,7 @@ nonisolated struct CITestDeviceRun: Codable, Sendable, Equatable {
 
 nonisolated struct CIWorkflow: Codable, Sendable, Equatable, Identifiable {
     let id: String
-    let name: String
+    var name: String
     /// Destinations configured on each test action, in the workflow's order.
     let testDestinationCounts: [Int]
     // Added for the window; absent from caches written before.
@@ -108,6 +108,25 @@ nonisolated struct CIWorkflow: Codable, Sendable, Equatable, Identifiable {
     var xcodeVersionName: String? = nil
     var macOSVersionName: String? = nil
     var repositoryName: String? = nil
+    /// The bare Xcode version number (“27.1”), to compare with what Xcode Cloud offers.
+    var xcodeVersion: String? = nil
+    /// The versions' identifiers, for a change of version.
+    var xcodeVersionID: String? = nil
+    var macOSVersionID: String? = nil
+}
+
+nonisolated struct CIXcodeVersionAttributes: Decodable, Sendable {
+    let name: String?
+    let version: String?
+}
+
+nonisolated extension JSONAPIDocument where Attributes == CIXcodeVersionAttributes {
+    var xcodeVersions: [CIXcodeVersion] {
+        data.compactMap { resource in
+            guard let version = resource.attributes?.version else { return nil }
+            return CIXcodeVersion(id: resource.id, name: resource.attributes?.name ?? "Xcode \(version)", version: version)
+        }
+    }
 }
 
 nonisolated enum CIExecutionProgress: Sendable, Equatable {
@@ -474,7 +493,10 @@ nonisolated extension JSONAPIDocument where Attributes == CIWorkflowAttributes {
                 startConditions: attributes.map(CIStartConditions.init(attributes:)),
                 xcodeVersionName: versionName(of: includedResource(for: resource.relationship("xcodeVersion"))),
                 macOSVersionName: versionName(of: includedResource(for: resource.relationship("macOsVersion"))),
-                repositoryName: [repository?.ownerName, repository?.repositoryName].compactMap(\.self).joined(separator: "/").nilIfEmpty
+                repositoryName: [repository?.ownerName, repository?.repositoryName].compactMap(\.self).joined(separator: "/").nilIfEmpty,
+                xcodeVersion: includedResource(for: resource.relationship("xcodeVersion"))?.attributes?.version,
+                xcodeVersionID: resource.relationship("xcodeVersion")?.id,
+                macOSVersionID: resource.relationship("macOsVersion")?.id
             )
         }
     }
@@ -497,6 +519,7 @@ nonisolated extension CIStartConditions {
             tags: attributes.tagStartCondition?.source?.model,
             pullRequests: attributes.pullRequestStartCondition?.source?.model,
             scheduleFrequency: attributes.scheduledStartCondition?.schedule?.frequency.flatMap(CIScheduleFrequency.init(rawValue:)),
+            schedule: CISchedule(attributes: attributes.scheduledStartCondition?.schedule, source: attributes.scheduledStartCondition?.source),
             filesRule: (attributes.branchStartCondition ?? attributes.pullRequestStartCondition ?? attributes.tagStartCondition)?
                 .filesAndFoldersRule?.mode.flatMap(CIFilesRuleMode.init(rawValue:)),
             autoCancel: (attributes.branchStartCondition ?? attributes.pullRequestStartCondition ?? attributes.tagStartCondition)?.autoCancel,

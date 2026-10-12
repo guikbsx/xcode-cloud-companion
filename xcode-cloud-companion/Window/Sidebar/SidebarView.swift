@@ -28,6 +28,8 @@ struct SidebarView: View {
                 .badge(content.runningCount)
                 .badgeProminence(.increased)
                 .tag(SidebarSelection.allBuilds)
+            Label("Branches and pull requests", systemImage: "arrow.triangle.branch")
+                .tag(SidebarSelection.references)
 
             if !content.pinned.isEmpty {
                 Section("Pinned") {
@@ -100,8 +102,13 @@ struct SidebarView: View {
                 if showsProduct {
                     Text(workflow.productName).foregroundStyle(.secondary).font(.caption)
                 }
-                if workflow.isPaused {
+                if workflow.isPaused || workflow.isOnOlderXcode {
                     Spacer(minLength: 4)
+                }
+                if workflow.isOnOlderXcode {
+                    Image(systemName: "arrow.up.circle").foregroundStyle(BuildStatus.errored.tint).help("Builds with an older Xcode")
+                }
+                if workflow.isPaused {
                     Image(systemName: "pause.circle.fill").foregroundStyle(.secondary).help("Paused")
                 }
             }
@@ -110,7 +117,7 @@ struct SidebarView: View {
         }
         .opacity(workflow.isPaused ? 0.6 : 1)
         .accessibilityElement(children: .combine)
-        .accessibilityValue(workflow.isPaused ? Text("Paused") : Text(verbatim: ""))
+        .accessibilityValue(Text([workflow.isPaused ? String(localized: "Paused") : nil, workflow.isOnOlderXcode ? String(localized: "Builds with an older Xcode") : nil].compactMap(\.self).joined(separator: ", ")))
         .tag(SidebarSelection.workflow(workflow.id))
         .contextMenu {
             Button(pins.isPinned(workflow.id) ? "Unpin" : "Pin") { pins.toggle(workflow.id) }

@@ -54,7 +54,7 @@ nonisolated enum LaunchOutcome: Equatable, Sendable {
 @Observable
 final class BuildLauncher {
     private(set) var isLaunching = false
-    private(set) var referencesByWorkflow: [String: [GitReference]] = [:]
+    private(set) var choicesByWorkflow: [String: LaunchChoices] = [:]
     private let client: () async -> AppStoreConnectClient?
     private let now: () -> Date
 
@@ -63,14 +63,18 @@ final class BuildLauncher {
         self.now = now
     }
 
-    func references(for workflowID: String) async -> [GitReference]? {
-        if let known = referencesByWorkflow[workflowID] { return known }
+    /// What the workflow's repository offers to launch on, read once per session. The pull requests are a second request:
+    /// when it fails, the branches and tags still show.
+    func choices(for workflowID: String) async -> LaunchChoices? {
+        if let known = choicesByWorkflow[workflowID] { return known }
         guard let client = await client(),
               let repository = try? await client.repositoryID(workflowID: workflowID),
-              let found = try? await client.gitReferences(repositoryID: repository)
+              let references = try? await client.gitReferences(repositoryID: repository)
         else { return nil }
-        referencesByWorkflow[workflowID] = found
-        return found
+        let pullRequests = try? await client.pullRequests(repositoryID: repository)
+        let choices = LaunchChoices(references: references, pullRequests: pullRequests)
+        choicesByWorkflow[workflowID] = choices
+        return choices
     }
 
     func launch(_ request: BuildRunRequest, productID: String, workflowName: String?) async -> LaunchOutcome {

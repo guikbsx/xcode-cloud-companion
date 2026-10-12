@@ -216,6 +216,15 @@ nonisolated struct WorkflowOutput: Equatable, Sendable, Encodable {
         var averageMinutes: Double
     }
 
+    /// Over the newest finished builds of the cache: how long they take, how long they wait, how often they pass.
+    struct Trends: Equatable, Sendable, Encodable {
+        var sampleSize: Int
+        var medianDurationMinutes: Double?
+        var medianQueueWaitMinutes: Double?
+        /// 0 to 1, over finished builds, canceled and skipped ones left out.
+        var successRate: Double?
+    }
+
     var id: String
     var name: String
     var app: String?
@@ -229,6 +238,11 @@ nonisolated struct WorkflowOutput: Equatable, Sendable, Encodable {
     var macOSVersion: String?
     var lastBuild: BuildBrief?
     var cycle: Cycle?
+    var trends: Trends?
+    /// When a scheduled workflow next starts; absent for the others.
+    var nextScheduledRun: Date?
+    /// The newest public Xcode that Xcode Cloud offers, to compare with `xcodeVersion`; absent until the app read the list.
+    var latestXcodeVersion: String?
 }
 
 nonisolated struct UsageReportOutput: Equatable, Sendable, Encodable {
@@ -293,6 +307,19 @@ nonisolated struct AccountOutput: Equatable, Sendable, Encodable {
     var appCount: Int
 }
 
+/// What `cumulus run` started.
+nonisolated struct LaunchOutput: Equatable, Sendable, Encodable {
+    var buildRunID: String
+    var number: Int?
+    /// `App#42`, what `cumulus build` takes.
+    var reference: String?
+    var app: String
+    var workflow: String
+    var source: BuildOutput.Source
+    var clean: Bool
+    var appLaunched: Bool
+}
+
 nonisolated enum CLIReport: Equatable, Sendable {
     case accounts([AccountOutput])
     case status(StatusOutput)
@@ -302,6 +329,7 @@ nonisolated enum CLIReport: Equatable, Sendable {
     case workflows([WorkflowOutput])
     case usage(UsageReportOutput)
     case refresh(RefreshOutput)
+    case launch(LaunchOutput)
 }
 
 nonisolated struct CLIResponse: Equatable, Sendable {
@@ -318,6 +346,7 @@ nonisolated struct CLIResponse: Equatable, Sendable {
         case .workflows(let value): CLIJSON.data(CLIEnvelope(data: value, meta: meta))
         case .usage(let value): CLIJSON.data(CLIEnvelope(data: value, meta: meta))
         case .refresh(let value): CLIJSON.data(CLIEnvelope(data: value, meta: meta))
+        case .launch(let value): CLIJSON.data(CLIEnvelope(data: value, meta: meta))
         }
     }
 

@@ -11,6 +11,7 @@ private func apiReply(_ request: URLRequest) -> MockTransport.Reply {
     case "/v1/ciProducts": "ciProducts"
     case "/v1/ciProducts/product-1/buildRuns": request.queryValue("cursor") == nil ? "ciBuildRuns-page1" : "ciBuildRuns-page2"
     case let path where path.hasSuffix("/workflows"): "ciWorkflows"
+    case "/v1/ciXcodeVersions": "ciXcodeVersions"
     case let path where path.hasSuffix("/testResults"): "ciTestResults"
     case let path where path.hasPrefix("/v1/ciBuildRuns/"): "ciBuildActions"
     default: nil
@@ -37,9 +38,10 @@ struct BuildSynchronizerTests {
         #expect(snapshot.hasActiveBuilds)
         #expect(snapshot.workflows.map(\.name) == ["Release", "Pull Requests", "Release", "Pull Requests"])
         #expect(Set(snapshot.testDevicesByActionID.keys) == ["action-test"])
+        #expect(snapshot.xcodeVersions.count == 5 && snapshot.xcodeVersionsCheckedAt == now, "the Xcode versions come with the first sync")
         #expect(snapshot.testDevicesByActionID["action-test"]?.count == 3)
-        // products + 2 workflows + 3 build-run pages + 3 action lists + 1 test-results request (one action id, asked once) + 1 for the app icons
-        #expect(await transport.requests.count == 11)
+        // products + 2 workflows + 3 build-run pages + 3 action lists + 1 test-results request (one action id, asked once) + 1 for the app icons + 1 for the Xcode versions
+        #expect(await transport.requests.count == 12)
     }
 
     @Test func laterSyncsOnlyAskForNewAndRunningBuilds() async throws {
@@ -55,6 +57,8 @@ struct BuildSynchronizerTests {
         let newRequests = await Array(transport.requests.dropFirst(requestsAfterFirstSync)).compactMap { $0.url?.path() }
         #expect(newRequests.filter { $0.hasSuffix("/actions") } == ["/v1/ciBuildRuns/run-42/actions"])
         #expect(newRequests.filter { $0 == "/v1/ciProducts/product-1/buildRuns" }.count == 1)
+        #expect(!newRequests.contains("/v1/ciXcodeVersions"), "the Xcode versions are asked once a day")
+        #expect(second.xcodeVersions == first.xcodeVersions)
         #expect(newRequests.filter { $0.hasSuffix("/testResults") }.isEmpty)
     }
 

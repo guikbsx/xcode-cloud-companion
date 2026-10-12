@@ -47,6 +47,7 @@ struct MainWindowView: View {
     let importUsageExport: (URL) async -> Void
     @State private var launchTarget: LaunchTarget?
     @State private var pauseTarget: WorkflowPauseTarget?
+    @State private var editTarget: WorkflowEditTarget?
 
     private var buildStore: BuildStore { session.buildStore }
     private var usageStore: UsageStore { session.usageStore }
@@ -87,8 +88,19 @@ struct MainWindowView: View {
             sidebar
                 .navigationSplitViewColumnWidth(min: 200, ideal: 240, max: 320)
         } content: {
-            BuildListView(buildStore: buildStore, navigation: navigation)
-                .navigationSplitViewColumnWidth(min: 280, ideal: 340, max: 460)
+            Group {
+                if navigation.sidebarSelection == .references, navigation.referenceScope == nil {
+                    ReferencesListView(buildStore: buildStore, store: session.windowStores.references, open: { navigation.referenceScope = $0 })
+                } else {
+                    BuildListView(
+                        buildStore: buildStore, navigation: navigation,
+                        scope: navigation.referenceScope.map(BuildListScope.reference) ?? BuildListScope(navigation.sidebarSelection),
+                        back: navigation.referenceScope == nil ? nil : { navigation.referenceScope = nil },
+                        older: session.windowStores.older
+                    )
+                }
+            }
+            .navigationSplitViewColumnWidth(min: 280, ideal: 340, max: 460)
         } detail: {
             detail
         }
@@ -114,6 +126,9 @@ struct MainWindowView: View {
         .sheet(item: $pauseTarget) { target in
             WorkflowPauseSheet(target: target, pauser: pauser, onNotAllowed: { settings.keyAccess = .readOnly })
         }
+        .sheet(item: $editTarget) { target in
+            WorkflowEditSheet(target: target, editor: session.windowStores.editor, onSaved: { _ in }, onNotAllowed: { settings.keyAccess = .readOnly })
+        }
         .task(id: buildStore.snapshot.appIcons) { await icons.load(buildStore.snapshot.appIcons) }
         .task {
             // The detail views spend requests too: the budget shown follows what the client last saw.
@@ -126,6 +141,16 @@ struct MainWindowView: View {
 
     private var usageSummary: UsageSummary? {
         session.usageSummary(now: Date())
+    }
+
+    /// The scheduled workflows: the sync's entry, or the richer one read for the workflow's sheet.
+    private var forecast: ScheduleForecast {
+        let snapshot = buildStore.snapshot
+        let summary = usageSummary
+        return ScheduleForecast(
+            workflows: snapshot.workflows.map { workflowStore.workflow(id: $0.id) ?? $0 }, products: snapshot.products,
+            cycleEnd: summary?.cycle.end, usage: summary?.byWorkflow ?? [], now: Date()
+        )
     }
 
     private var sidebar: some View {
@@ -153,6 +178,7 @@ struct MainWindowView: View {
                 icons: icons, palette: palette,
                 openBuild: { navigation.selectedBuildID = $0 }, logOpener: logOpener, tab: $navigation.buildTab
             )
+            .environment(\.sourceOpening, sourceOpening(for: run))
         } else if navigation.sidebarSelection == .overview {
             OverviewView(
                 summary: usageSummary, palette: palette, usage: usageStore,
@@ -166,7 +192,9 @@ struct MainWindowView: View {
                             product: row.productKey, workflow: row.workflow, snapshot: buildStore.snapshot, ledger: usageStore.ledger, plan: $0, now: Date()
                         )
                     }
-                }
+                },
+                forecast: forecast,
+                openWorkflow: { navigation.sidebarSelection = .workflow($0) }
             )
         } else if case .workflow(let id) = navigation.sidebarSelection, let workflow = workflowStore.workflow(id: id) ?? buildStore.snapshot.workflow(id: id) {
             let product = buildStore.snapshot.products.first { $0.id == workflow.productID }
@@ -177,7 +205,15 @@ struct MainWindowView: View {
                     navigation.buildTab = .tests
                     navigation.selectedBuildID = id
                 },
-                togglePause: canLaunch ? { askToTogglePause(workflowID: id) } : nil
+                trends: WorkflowTrends(runs: buildStore.snapshot.runs.filter { $0.workflowID == id }),
+                openBuild: { navigation.selectedBuildID = $0 },
+                togglePause: canLaunch ? { askToTogglePause(workflowID: id) } : nil,
+                xcodeWarning: XcodeVersionCheck.warning(
+                    version: workflow.xcodeVersion ?? buildStore.snapshot.workflow(id: id)?.xcodeVersion, name: workflow.xcodeVersionName,
+                    among: buildStore.snapshot.xcodeVersions
+                ),
+                editWorkflow: canLaunch && workflow.isLockedForEditing != true ? { editTarget = WorkflowEditTarget(workflow: workflow) } : nil,
+                workflowURL: AppStoreConnectLinks.workflow(appID: product?.appID, workflowID: id, teamID: settings.issuerID.isEmpty ? nil : settings.issuerID)
             )
                 .task(id: id) { await loadWorkflow(id) }
         } else {
@@ -187,6 +223,13 @@ struct MainWindowView: View {
 
     private var canLaunch: Bool {
         settings.keyAccess == .canLaunch
+    }
+
+    /// Opens a build's files in Xcode from the app's local clone.
+    private func sourceOpening(for run: CIBuildRun) -> SourceOpening {
+        let product = buildStore.snapshot.products.first { $0.id == run.productID }
+        let opener = SourceOpener(repositories: session.localRepositories, product: product?.name ?? run.productID, appName: product?.displayName ?? run.productID)
+        return SourceOpening { path, line in opener.open(path: path, line: line) }
     }
 
     /// The workflow of the build on screen, or the one picked in the sidebar.
@@ -204,7 +247,10 @@ struct MainWindowView: View {
         guard canLaunch, let current = currentWorkflow else { return nil }
         let preferred = current.run?.sourceBranchOrTag
             ?? buildStore.snapshot.runs.first { $0.workflowID == current.workflow.id }?.sourceBranchOrTag
-        return LaunchTarget(mode: .launch(current.workflow, preferredReference: preferred), productID: current.productID)
+        return LaunchTarget(
+            mode: .launch(current.workflow, preferredReference: preferred), productID: current.productID,
+            recentRuns: buildStore.snapshot.runs.filter { $0.workflowID == current.workflow.id }
+        )
     }
 
     private func rebuildAction(for run: CIBuildRun) -> (() -> Void)? {

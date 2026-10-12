@@ -15,6 +15,9 @@ struct OverviewView: View {
     var artwork: [String: AppArtwork] = [:]
     /// Where a workflow's minutes went, worked out from what the app already holds; nil when it cannot be told.
     var breakdown: (OverviewModel.WorkflowRow) -> WorkflowCostBreakdown? = { _ in nil }
+    /// The scheduled workflows and when they next start; nil or empty leaves the section out.
+    var forecast: ScheduleForecast?
+    var openWorkflow: (String) -> Void = { _ in }
 
     @State private var isImporting = false
     @State private var expandedWorkflow: String?
@@ -30,6 +33,9 @@ struct OverviewView: View {
                     }
                 } else {
                     noPlan
+                }
+                if let forecast, !forecast.entries.isEmpty {
+                    upcoming(forecast)
                 }
                 importGroup
             }
@@ -135,6 +141,69 @@ struct OverviewView: View {
                 }
             }
         }
+    }
+
+    private func upcoming(_ forecast: ScheduleForecast) -> some View {
+        section("Upcoming") {
+            ForEach(forecast.entries) { entry in
+                Button {
+                    openWorkflow(entry.workflowID)
+                } label: {
+                    HStack(spacing: 10) {
+                        Image(systemName: "calendar.badge.clock").foregroundStyle(.secondary).accessibilityHidden(true)
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(entry.workflowName).fontWeight(.semibold)
+                            Text(UsageFormat.dotted([entry.productName, entry.source, Self.frequencyText(entry.frequency)].compactMap(\.self)))
+                                .font(.caption).foregroundStyle(.secondary)
+                        }
+                        Spacer()
+                        VStack(alignment: .trailing, spacing: 2) {
+                            Text(Self.whenText(entry.nextRun, now: forecast.now)).font(.callout.monospacedDigit())
+                            Text(entry.minutesPerRun.map { String(localized: "~\(UsageFormat.minutes($0)) estimated", comment: "What one scheduled build is expected to cost, from past builds") }
+                                ?? String(localized: "No build yet to estimate from"))
+                                .font(.caption).foregroundStyle(.secondary)
+                        }
+                    }
+                    .contentShape(.rect)
+                }
+                .buttonStyle(.plain)
+                .accessibilityElement(children: .combine)
+            }
+            if let total = forecast.minutesUntilReset {
+                Text(Self.totalText(total, hasUnestimatedRuns: forecast.hasUnestimatedRuns))
+                    .font(.caption).foregroundStyle(.secondary)
+            }
+        }
+    }
+
+    static func frequencyText(_ frequency: CIScheduleFrequency) -> String {
+        switch frequency {
+        case .hourly: String(localized: "every hour", comment: "Frequency of a scheduled workflow, in a caption")
+        case .daily: String(localized: "every day", comment: "Frequency of a scheduled workflow, in a caption")
+        case .weekly: String(localized: "every week", comment: "Frequency of a scheduled workflow, in a caption")
+        }
+    }
+
+    /// “today 14:00”, “tomorrow 02:00”, “Monday 06:00”, then the date.
+    static func whenText(_ date: Date, now: Date, calendar: Calendar = .current, locale: Locale = .autoupdatingCurrent) -> String {
+        let style = Date.FormatStyle(locale: locale, calendar: calendar, timeZone: calendar.timeZone)
+        let time = date.formatted(style.hour().minute())
+        if calendar.isDate(date, inSameDayAs: now) {
+            return String(localized: "today \(time)", comment: "When a scheduled build next starts; the argument is a time")
+        }
+        if let tomorrow = calendar.date(byAdding: .day, value: 1, to: now), calendar.isDate(date, inSameDayAs: tomorrow) {
+            return String(localized: "tomorrow \(time)", comment: "When a scheduled build next starts; the argument is a time")
+        }
+        if date.timeIntervalSince(now) < 6 * 86_400 {
+            return date.formatted(style.weekday(.wide).hour().minute())
+        }
+        return UsageFormat.moment(date, locale: locale)
+    }
+
+    static func totalText(_ minutes: Double, hasUnestimatedRuns: Bool) -> String {
+        let total = String(localized: "By the end of the cycle, the scheduled builds will cost about \(UsageFormat.minutes(minutes)), based on their past durations.")
+        guard hasUnestimatedRuns else { return total }
+        return total + " " + String(localized: "Workflows without a build this cycle are not counted.")
     }
 
     private var importGroup: some View {

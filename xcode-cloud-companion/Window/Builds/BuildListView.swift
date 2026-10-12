@@ -4,6 +4,11 @@ import SwiftUI
 struct BuildListView: View {
     let buildStore: BuildStore
     @Bindable var navigation: NavigationModel
+    var scope = BuildListScope.allBuilds
+    /// Set while the list is one reference's: the way back to the references.
+    var back: (() -> Void)?
+    /// Builds past the cache's window, read on request at the foot of the list.
+    var older: OlderBuildsStore?
     @State private var filter = BuildFilter.all
     @State private var query = ""
 
@@ -23,7 +28,7 @@ struct BuildListView: View {
     }
 
     private func content(now: Date) -> some View {
-        let model = BuildListModel(snapshot: buildStore.snapshot, scope: navigation.sidebarSelection, filter: filter, query: query, now: now)
+        let model = BuildListModel(snapshot: buildStore.snapshot, olderRuns: older?.runs ?? [], scope: scope, filter: filter, query: query, now: now)
         return ScrollViewReader { proxy in
             ScrollView {
                 if let reason = model.emptyReason {
@@ -47,6 +52,9 @@ struct BuildListView: View {
                     }
                     .padding(.bottom, 12)
                 }
+                if let older, let productIDs = olderProductIDs, !productIDs.isEmpty {
+                    olderFooter(older, productIDs: productIDs)
+                }
             }
             .focusable()
             .focusEffectDisabled()
@@ -57,6 +65,17 @@ struct BuildListView: View {
             }
             .safeAreaInset(edge: .top) {
                 VStack(spacing: 0) {
+                    if let back {
+                        Button(action: back) {
+                            Label("Branches and pull requests", systemImage: "chevron.left")
+                        }
+                        .buttonStyle(.plain)
+                        .foregroundStyle(CumulusStyle.accent)
+                        .font(.callout)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.horizontal, 16)
+                        .padding(.top, 8)
+                    }
                     filterBar
                     if model.isPausedWorkflow {
                         Label("This workflow is paused: no build starts until it is resumed.", systemImage: "pause.circle.fill")
@@ -84,6 +103,46 @@ struct BuildListView: View {
         .labelsHidden()
         .padding(.horizontal, 14)
         .padding(.vertical, 8)
+    }
+
+    /// The products whose older builds the foot of the list can ask for; nil where older pages mean nothing.
+    private var olderProductIDs: [String]? {
+        let snapshot = buildStore.snapshot
+        switch scope {
+        case .allBuilds: return snapshot.products.map(\.id)
+        case .product(let id): return [id]
+        case .workflow(let id):
+            let productID = snapshot.workflow(id: id)?.productID ?? snapshot.runs.first { $0.workflowID == id }?.productID
+            return productID.map { [$0] }
+        case .reference: return nil
+        }
+    }
+
+    @ViewBuilder
+    private func olderFooter(_ older: OlderBuildsStore, productIDs: [String]) -> some View {
+        let isLoading = productIDs.contains { older.isLoading($0) }
+        let allExhausted = productIDs.allSatisfy { older.isExhausted($0) }
+        VStack(spacing: 6) {
+            if allExhausted {
+                Text("No older builds.").font(.caption).foregroundStyle(.secondary)
+            } else if isLoading {
+                ProgressView().controlSize(.small)
+            } else {
+                Button("Load Older Builds") {
+                    Task {
+                        for productID in productIDs where !older.isExhausted(productID) {
+                            await older.loadOlder(productID: productID, known: buildStore.snapshot.runs(forProductID: productID))
+                        }
+                    }
+                }
+                .controlSize(.small)
+            }
+            if let message = older.lastError {
+                Text(message).font(.caption).foregroundStyle(BuildStatus.errored.tint).multilineTextAlignment(.center)
+            }
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 12)
     }
 
     private func step(_ offset: Int, in rows: [BuildRowData]) -> KeyPress.Result {

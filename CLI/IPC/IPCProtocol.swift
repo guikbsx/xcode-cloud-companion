@@ -6,8 +6,14 @@ nonisolated struct IPCRequest: Codable, Equatable, Sendable {
     struct Params: Codable, Equatable, Sendable {
         var wait: Bool?
         var buildRunID: String?
-        /// The account `ping` and `refresh` are about; the one on screen in the app when absent.
+        /// The account `ping`, `refresh` and `launch` are about; the one on screen in the app when absent.
         var accountID: String?
+        // `launch`: the workflow and exactly one of the three sources.
+        var workflowID: String?
+        var branch: String?
+        var tag: String?
+        var pullRequest: Int?
+        var clean: Bool?
     }
 
     var id: String
@@ -26,6 +32,77 @@ nonisolated struct IPCResult: Codable, Equatable, Sendable {
     var outcome: String?
     var opened: Bool?
     var loaded: Bool?
+    // `launch`
+    var launched: Bool?
+    var buildRunID: String?
+    var buildNumber: Int?
+    /// Why nothing was launched (`IPCLaunchReason`), and Apple's words when it refused.
+    var message: String?
+}
+
+/// What `launch` asks: one workflow, one source, by name as the command knows them.
+nonisolated struct IPCLaunchRequest: Equatable, Sendable {
+    enum Source: Equatable, Sendable {
+        case branch(String)
+        case tag(String)
+        case pullRequest(Int)
+
+        var label: String {
+            switch self {
+            case .branch(let name), .tag(let name): name
+            case .pullRequest(let number): "PR #\(number)"
+            }
+        }
+    }
+
+    var workflowID: String
+    var source: Source
+    var clean = false
+    var accountID: String?
+
+    init(workflowID: String, source: Source, clean: Bool = false, accountID: String? = nil) {
+        self.workflowID = workflowID
+        self.source = source
+        self.clean = clean
+        self.accountID = accountID
+    }
+
+    /// nil when the params name no workflow, or not exactly one source.
+    init?(params: IPCRequest.Params?) {
+        guard let params, let workflowID = params.workflowID else { return nil }
+        let sources: [Source] = [params.branch.map(Source.branch), params.tag.map(Source.tag), params.pullRequest.map(Source.pullRequest)].compactMap(\.self)
+        guard sources.count == 1, let source = sources.first else { return nil }
+        if case .pullRequest(let number) = source, number <= 0 { return nil }
+        self.init(workflowID: workflowID, source: source, clean: params.clean ?? false, accountID: params.accountID)
+    }
+
+    var params: IPCRequest.Params {
+        var params = IPCRequest.Params(accountID: accountID, workflowID: workflowID, clean: clean ? true : nil)
+        switch source {
+        case .branch(let name): params.branch = name
+        case .tag(let name): params.tag = name
+        case .pullRequest(let number): params.pullRequest = number
+        }
+        return params
+    }
+}
+
+/// Why `launch` started nothing, in `IPCResult.reason`.
+nonisolated enum IPCLaunchReason {
+    static let noCredentials = "noCredentials"
+    static let unknownAccount = "unknownAccount"
+    /// The key is declared read-only in the app, or Apple answered 403.
+    static let notAllowed = "notAllowed"
+    /// The app's own cap: so many launches by agents in the last hour.
+    static let capReached = "capReached"
+    static let unknownWorkflow = "unknownWorkflow"
+    static let unknownReference = "unknownReference"
+    /// 409 or 422: Apple's words are in `message`.
+    static let refused = "refused"
+    static let rateLimited = "rateLimited"
+    static let failed = "failed"
+    /// Apple did not confirm and the build list shows no new build.
+    static let uncertain = "uncertain"
 }
 
 nonisolated struct IPCFailure: Codable, Equatable, Sendable {
@@ -48,6 +125,7 @@ nonisolated enum IPCMethod {
     static let refresh = "refresh"
     static let open = "open"
     static let loadDetails = "loadDetails"
+    static let launch = "launch"
 }
 
 nonisolated enum IPCRefreshReason {
@@ -58,7 +136,7 @@ nonisolated enum IPCRefreshReason {
     static let unknownAccount = "unknownAccount"
 }
 
-/// What the app does for the command. Nothing here writes anything at Apple.
+/// What the app does for the command. `launch` is the one call that writes at Apple, with the app's own `BuildLauncher`.
 nonisolated protocol IPCService: Sendable {
     func ping(accountID: String?) async -> IPCResult
     func refresh(wait: Bool, accountID: String?) async -> IPCResult
@@ -66,6 +144,8 @@ nonisolated protocol IPCService: Sendable {
     func open(buildRunID: String) async -> IPCResult
     /// Fetches a finished build's issues, test results and artifacts into the shared cache, as opening its sheet does.
     func loadDetails(buildRunID: String) async -> IPCResult
+    /// Starts a build, once, behind the key's access and the app's cap on launches by agents.
+    func launch(_ request: IPCLaunchRequest) async -> IPCResult
 }
 
 nonisolated enum IPCCodec {
@@ -109,6 +189,11 @@ nonisolated struct IPCDispatcher: Sendable {
             }
             let result = request.method == IPCMethod.open ? await service.open(buildRunID: buildRunID) : await service.loadDetails(buildRunID: buildRunID)
             return IPCResponse(id: request.id, result: result)
+        case IPCMethod.launch:
+            guard let launch = IPCLaunchRequest(params: request.params), Self.isIdentifier(launch.workflowID) else {
+                return IPCResponse(id: request.id, error: IPCFailure(code: IPCFailure.invalidParams, message: "'launch' takes a workflowID and exactly one of branch, tag and pullRequest."))
+            }
+            return IPCResponse(id: request.id, result: await service.launch(launch))
         default:
             return IPCResponse(id: request.id, error: IPCFailure(code: IPCFailure.methodNotFound, message: "Unknown method '\(request.method)'."))
         }

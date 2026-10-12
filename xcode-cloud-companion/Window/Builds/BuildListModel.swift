@@ -95,6 +95,22 @@ nonisolated enum BuildListEmptyReason: Equatable, Sendable {
     case nothingMatches
 }
 
+/// Which builds the middle column lists: what the sidebar picked, or one reference of the view by branch and pull request.
+nonisolated enum BuildListScope: Hashable, Sendable {
+    case allBuilds
+    case product(String)
+    case workflow(String)
+    case reference(ReferenceKey)
+
+    init(_ selection: SidebarSelection) {
+        switch selection {
+        case .overview, .allBuilds, .references: self = .allBuilds
+        case .product(let id): self = .product(id)
+        case .workflow(let id): self = .workflow(id)
+        }
+    }
+}
+
 /// The middle column: the builds of the sidebar's selection, filtered, searched and grouped by day.
 nonisolated struct BuildListModel: Equatable, Sendable {
     var title: String
@@ -107,25 +123,34 @@ nonisolated struct BuildListModel: Equatable, Sendable {
     var rows: [BuildRowData] { groups.flatMap(\.rows) }
     var count: Int { groups.reduce(0) { $0 + $1.rows.count } }
 
+    /// `olderRuns` are builds read past the cache's window on request: listed like the others, never counted elsewhere.
     init(
-        snapshot: BuildSnapshot, scope: SidebarSelection, filter: BuildFilter = .all, query: String = "",
+        snapshot: BuildSnapshot, olderRuns: [CIBuildRun] = [], scope: BuildListScope, filter: BuildFilter = .all, query: String = "",
         now: Date, calendar: Calendar = .current, locale: Locale = .autoupdatingCurrent
     ) {
         let products = Dictionary(snapshot.products.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
         let workflows = Dictionary(snapshot.workflows.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
+        let cachedIDs = Set(snapshot.runs.map(\.id))
+        let allRuns = snapshot.runs + olderRuns.filter { !cachedIDs.contains($0.id) }
 
         let scoped: [CIBuildRun]
         switch scope {
-        case .overview, .allBuilds:
+        case .allBuilds:
             title = String(localized: "All builds")
-            scoped = snapshot.runs
+            scoped = allRuns
         case .product(let id):
             title = products[id]?.displayName ?? String(localized: "All builds")
-            scoped = snapshot.runs(forProductID: id)
+            scoped = allRuns.filter { $0.productID == id }
         case .workflow(let id):
             isPausedWorkflow = workflows[id]?.isEnabled == false
             title = workflows[id]?.name ?? String(localized: "All builds")
-            scoped = snapshot.runs.filter { $0.workflowID == id }
+            scoped = allRuns.filter { $0.workflowID == id }
+        case .reference(let key):
+            switch key {
+            case .branchOrTag(let name): title = name
+            case .pullRequest(let number): title = String(localized: "PR #\(number)", comment: "A pull request, in a build's line")
+            }
+            scoped = allRuns.filter { ReferencesModel.key(of: $0) == key }
         }
 
         let rows = scoped
@@ -181,7 +206,7 @@ nonisolated struct BuildListModel: Equatable, Sendable {
         return .month(year: parts.year ?? 0, month: parts.month ?? 0)
     }
 
-    private static func title(of key: BuildDayGroup.Key, calendar: Calendar, locale: Locale) -> String {
+    static func title(of key: BuildDayGroup.Key, calendar: Calendar, locale: Locale) -> String {
         switch key {
         case .today: String(localized: "Today")
         case .yesterday: String(localized: "Yesterday")

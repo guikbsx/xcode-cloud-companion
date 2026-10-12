@@ -93,6 +93,7 @@ nonisolated struct BuildSynchronizer: Sendable {
         attempts = attempts.filter { knownActions.contains($0.key) }
 
         let icons = await refreshedIcons(products: products, previous: previous, now: now)
+        let xcodeVersions = await refreshedXcodeVersions(previous: previous, now: now)
 
         return BuildSnapshot(
             products: products,
@@ -103,8 +104,20 @@ nonisolated struct BuildSynchronizer: Sendable {
             workflows: workflows,
             appIcons: icons.byAppID,
             appIconsCheckedAt: icons.checkedAt,
+            xcodeVersions: xcodeVersions.versions,
+            xcodeVersionsCheckedAt: xcodeVersions.checkedAt,
             lastSuccessfulSync: now
         )
+    }
+
+    /// The Xcode versions Xcode Cloud offers, asked once a day at most, like the icons; a failure is tried again in an hour.
+    private func refreshedXcodeVersions(previous: BuildSnapshot, now: Date) async -> (versions: [CIXcodeVersion], checkedAt: Date?) {
+        let isDue = previous.xcodeVersionsCheckedAt.map { now.timeIntervalSince($0) >= Self.iconRefreshInterval } ?? true
+        guard isDue else { return (previous.xcodeVersions, previous.xcodeVersionsCheckedAt) }
+        guard let fetched = try? await client.xcodeVersions(), !fetched.isEmpty else {
+            return (previous.xcodeVersions, now.addingTimeInterval(Self.iconRetryInterval - Self.iconRefreshInterval))
+        }
+        return (fetched, now)
     }
 
     /// At most one request, once a day or when an app appears. With no icon yet or a new app, every app is asked with

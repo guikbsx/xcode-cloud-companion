@@ -35,7 +35,7 @@ struct BuildListModelTests {
         return run
     }
 
-    private func model(_ runs: [CIBuildRun], scope: SidebarSelection = .allBuilds, filter: BuildFilter = .all, query: String = "") -> BuildListModel {
+    private func model(_ runs: [CIBuildRun], scope: BuildListScope = .allBuilds, filter: BuildFilter = .all, query: String = "") -> BuildListModel {
         var workflow = CIWorkflow(id: "w", name: "Release", testDestinationCounts: [])
         workflow.actions = [CIWorkflowAction(name: "Archive", actionType: .archive, destination: nil, buildDistributionAudience: "INTERNAL_ONLY", scheme: nil, platform: nil, isRequiredToPass: nil)]
         let snapshot = BuildSnapshot(

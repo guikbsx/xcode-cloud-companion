@@ -239,7 +239,7 @@ struct WorkflowPauseTests {
     @Test func theSyncAsksForTheEnabledAndLockedStates() {
         let fields = URLRequest(url: AppStoreConnectEndpoint.workflows(productID: "p1")).queryValue("fields[ciWorkflows]")
 
-        #expect(fields == "name,actions,isEnabled,isLockedForEditing")
+        #expect(fields == "name,actions,isEnabled,isLockedForEditing,scheduledStartCondition,xcodeVersion")
     }
 
     @Test func theSheetOfTheWorkflowAndItsCacheTakeApplesAnswer() async throws {

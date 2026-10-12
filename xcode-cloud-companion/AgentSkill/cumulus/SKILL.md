@@ -24,17 +24,19 @@ If none exists, tell the user to install the command from **Cumulus › Settings
 | `cumulus status` | Usage of the billing cycle (minutes used, remaining, reset date, projection) and how many builds run now |
 | `cumulus accounts` | The App Store Connect accounts the app follows, when there are several |
 | `cumulus apps` | The account's apps with their latest build and their minutes this cycle |
-| `cumulus builds [--app <app>] [--failed] [--running] [--limit <n>] [--since <when>]` | Recent builds, newest first |
+| `cumulus builds [--app <app>] [--failed] [--running] [--limit <n>] [--since <when>] [--branch <name> \| --pr <number>]` | Recent builds, newest first |
 | `cumulus build <build> [--cached]` | One build: actions, compiler errors and warnings, failed tests, artifacts, TestFlight builds, links |
 | `cumulus workflows [--app <app>]` | Workflows with their last build and their cost this cycle |
 | `cumulus usage [--by-app \| --by-workflow \| --daily]` | Minutes of the cycle, broken down |
 | `cumulus refresh [--wait] [--timeout <seconds>]` | Asks the app to sync with App Store Connect now |
+| `cumulus run <workflow> [--branch <name> \| --tag <name> \| --pr <number>] [--clean] [--yes]` | Starts a build of a workflow through the app; answers with the new build's `reference` |
 | `cumulus open <build>` | Opens the build in the Cumulus app, for the user to look at |
 
 - `<app>` is an app's name, bundle ID or product id. Case does not matter.
 - `<build>` is `App#42`, a build number alone when only one app has it, or a build run id. `cumulus builds` gives both `reference` and `id`.
 - `--limit` goes from 1 to 100 (default 10). `--since` takes an ISO 8601 date or a span: `7d`, `24h`, `30m`.
 - `--failed` keeps builds that failed or errored, `--running` those pending or running; together, builds in either state.
+- `--branch <name>` keeps the builds of one branch or tag (a pull request's builds are not its branch's), `--pr <number>` those of one pull request. Not both.
 - `--account <name>` goes with every command above except `accounts`: it answers for that account instead of the one shown in the app.
 - `cumulus help <command>` prints a command's options.
 
@@ -46,18 +48,19 @@ If none exists, tell the user to install the command from **Cumulus › Settings
 - **Minutes are estimates.** `estimatedMinutes` is computed by Cumulus from the builds' machines; Apple publishes no usage figure through its API. Only `billedMinutes` come from Apple, when the user imported a usage export. When `meta.isEstimate` is true, say "about" or "estimated", never present the figure as official.
 - **To explain a failure**, run `cumulus build <build> --json` and read, in order: `issues` of type `ERROR` and `TEST_FAILURE`, then `failedTests`, then the `actions` that did not succeed. If `detailsAvailable` is false, follow the `hint`: the app has to be running to fetch a finished build's details, which it does once.
 - **Do not retry a failed command blindly.** Read `error.code` and `error.suggestions` on standard error; see `references/output-contract.md`.
-- **Nothing here launches a build.** If the user wants to start or rerun one, tell them to do it from the Cumulus app or App Store Connect.
+- **Start a build only when the user asked for one.** `cumulus run` (and the `start_build` tool) spends compute hours of the user's plan: never call it to retry on your own, and never in a loop. The app allows three launches by agents an hour per account (`RATE_LIMITED`, exit 8), and the key must be set to “Read + Build” in Cumulus (`NOT_ALLOWED`, exit 7). Apple's own refusal comes back as `REFUSED` with its words. At a terminal the command asks the person to confirm; pass `--yes` only when they already did. Then follow the build with `cumulus build <reference>`.
 
 ## Typical flows
 
 - *"Why did my last build fail?"* - `cumulus builds --failed --limit 1 --json`, then `cumulus build <reference> --json`.
-- *"Is the build of the branch I just pushed done?"* - `cumulus refresh --wait --json`, then `cumulus builds --app <app> --limit 5 --json` and match `source.name` to the branch and `commit.sha` to the commit.
+- *"Is the build of the branch I just pushed done?"* - `cumulus refresh --wait --json`, then `cumulus builds --branch <name> --limit 1 --json` and match `commit.sha` to the commit.
+- *"Is my pull request green?"* - `cumulus builds --pr <number> --limit 1 --json`: its `status`, then `cumulus build <reference> --json` if it failed.
 - *"How much of the plan is left?"* - `cumulus status --json`: `usage.remainingMinutes`, `usage.resetDate`, `usage.projectedMinutes`.
 - *"Which workflow eats the minutes?"* - `cumulus usage --by-workflow --json`.
 
 ## MCP instead of the command
 
-The same answers are available as MCP tools (`get_status`, `list_apps`, `list_builds`, `get_build`, `list_workflows`, `get_usage`, `refresh`, `list_accounts`) by running `cumulus mcp`, a stdio server. When those tools are present in the session, use them rather than the shell: they return the same JSON. To register the server:
+The same answers are available as MCP tools (`get_status`, `list_apps`, `list_builds`, `get_build`, `list_workflows`, `get_usage`, `refresh`, `start_build`, `list_accounts`) by running `cumulus mcp`, a stdio server. When those tools are present in the session, use them rather than the shell: they return the same JSON. To register the server:
 
 - Claude Code: `claude mcp add --scope user cumulus -- /Applications/Cumulus.app/Contents/Helpers/cumulus mcp`
 - Codex: `codex mcp add cumulus -- /Applications/Cumulus.app/Contents/Helpers/cumulus mcp`

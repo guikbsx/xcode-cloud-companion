@@ -43,6 +43,7 @@ struct AccountDetailView: View {
             if model.hasStoredKey {
                 storedKey
                 foundApps
+                localRepositories
             } else {
                 KeyEntrySection(
                     keyID: $model.keyID, issuerID: $model.issuerID, keyAccess: $model.keyAccess,
@@ -205,6 +206,39 @@ struct AccountDetailView: View {
                 Text("Xcode Cloud Apps")
             } footer: {
                 Text("An app is missing? It has no Xcode Cloud workflow yet, or the key has no access to this team.")
+            }
+        }
+    }
+
+    /// Where each app's repository is cloned: what “Open in Xcode” needs on a build's problems and tests.
+    @ViewBuilder
+    private var localRepositories: some View {
+        let products = session.buildStore.snapshot.products
+        if !products.isEmpty {
+            Section {
+                ForEach(products) { product in
+                    let root = session.localRepositories.root(for: product.name)
+                    LabeledContent(product.displayName) {
+                        HStack(spacing: 8) {
+                            Text(root?.path(percentEncoded: false).replacingOccurrences(of: NSHomeDirectory(), with: "~") ?? String(localized: "Not set"))
+                                .foregroundStyle(.secondary)
+                                .lineLimit(1)
+                                .truncationMode(.middle)
+                            Button("Choose…") {
+                                if let picked = SourceOpener.chooseRepository(appName: product.displayName) {
+                                    session.localRepositories.set(picked, for: product.name)
+                                }
+                            }
+                            if root != nil {
+                                Button("Forget") { session.localRepositories.forget(product.name) }
+                            }
+                        }
+                    }
+                }
+            } header: {
+                Text("Local Repositories")
+            } footer: {
+                Text("A build’s problems and failed tests open in Xcode from these folders, at the right line.")
             }
         }
     }

@@ -17,6 +17,7 @@ nonisolated struct CLIRenderer: Sendable {
         case .workflows(let workflows): sections = [self.workflows(workflows)]
         case .usage(let usage): sections = self.usage(usage)
         case .refresh(let refresh): sections = self.refresh(refresh)
+        case .launch(let launch): sections = self.launch(launch)
         }
         sections.append(footer(response.meta))
         return sections.filter { !$0.isEmpty }.joined(separator: "\n")
@@ -79,6 +80,15 @@ nonisolated struct CLIRenderer: Sendable {
             line = "Cumulus was not running: it has been started. " + line
         }
         return [line + "\n"] + (refresh.status.map { [status($0)] } ?? [])
+    }
+
+    private func launch(_ launch: LaunchOutput) -> [String] {
+        let source = launch.source.pullRequestNumber.map { "PR #\($0)" } ?? launch.source.name ?? ""
+        var line = "Started \(launch.reference ?? launch.app) · \(launch.workflow) · \(source)."
+        if launch.appLaunched {
+            line = "Cumulus was not running: it has been started. " + line
+        }
+        return [line + "\n", "Follow it with: cumulus build \(launch.reference ?? launch.buildRunID)\n"]
     }
 
     private func usage(_ usage: UsageReportOutput) -> [String] {

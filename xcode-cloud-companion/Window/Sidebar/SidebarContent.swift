@@ -11,6 +11,8 @@ nonisolated struct SidebarContent: Equatable {
         /// As Apple last said; nil while the app does not know.
         var isEnabled: Bool? = nil
         var isLocked = false
+        /// Builds with an Xcode older than the newest public one Xcode Cloud offers.
+        var isOnOlderXcode = false
 
         var isPaused: Bool { isEnabled == false }
     }
@@ -43,7 +45,8 @@ nonisolated struct SidebarContent: Equatable {
             workflowsByProduct[productID, default: []].append(
                 Workflow(
                     id: workflow.id, name: workflow.name, productID: productID, productName: product.displayName, buildCount: runs.count,
-                    isEnabled: workflow.isEnabled, isLocked: workflow.isLockedForEditing == true
+                    isEnabled: workflow.isEnabled, isLocked: workflow.isLockedForEditing == true,
+                    isOnOlderXcode: XcodeVersionCheck.warning(version: workflow.xcodeVersion, name: nil, among: snapshot.xcodeVersions) != nil
                 )
             )
         }

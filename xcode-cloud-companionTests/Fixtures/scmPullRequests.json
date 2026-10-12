@@ -1,0 +1,7 @@
+{
+  "data": [
+    { "type": "scmPullRequests", "id": "pr-120", "attributes": { "title": "Old fix", "number": 120, "isClosed": true, "isCrossRepository": false, "sourceBranchName": "fix/old", "destinationBranchName": "main", "webUrl": "https://github.com/guik/cumulus/pull/120" } },
+    { "type": "scmPullRequests", "id": "pr-128", "attributes": { "title": "Add the cycle widget", "number": 128, "isClosed": false, "isCrossRepository": true, "sourceBranchName": "feature/widget-cycle", "destinationBranchName": "main", "webUrl": "https://github.com/guik/cumulus/pull/128" } },
+    { "type": "scmPullRequests", "id": "pr-131", "attributes": { "title": "Fix the CSV import", "number": 131, "isClosed": false, "isCrossRepository": false, "sourceBranchName": "fix/csv-import", "destinationBranchName": "main", "webUrl": "http://github.com/guik/cumulus/pull/131" } }
+  ]
+}

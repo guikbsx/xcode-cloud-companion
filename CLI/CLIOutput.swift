@@ -8,6 +8,12 @@ nonisolated enum CLIErrorCode: String, Codable, Sendable {
     case appUnreachable = "APP_UNREACHABLE"
     case timedOut = "TIMEOUT"
     case `internal` = "INTERNAL"
+    /// `run`: the key is read-only in the app, or Apple answered 403.
+    case notAllowed = "NOT_ALLOWED"
+    /// `run`: the app's cap on launches by agents, or Apple's hourly request limit.
+    case rateLimited = "RATE_LIMITED"
+    /// `run`: Apple understood and refused (a paused workflow, a branch no condition covers); its words are the message.
+    case refused = "REFUSED"
 
     var exitCode: Int32 {
         switch self {
@@ -16,7 +22,9 @@ nonisolated enum CLIErrorCode: String, Codable, Sendable {
         case .usage: CLIExitCode.usage
         case .appUnreachable: CLIExitCode.appUnreachable
         case .timedOut: CLIExitCode.timedOut
-        case .internal: CLIExitCode.failure
+        case .internal, .refused: CLIExitCode.failure
+        case .notAllowed: CLIExitCode.notAllowed
+        case .rateLimited: CLIExitCode.rateLimited
         }
     }
 }

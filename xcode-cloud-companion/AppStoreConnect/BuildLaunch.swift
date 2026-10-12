@@ -10,6 +10,22 @@ nonisolated struct GitReference: Identifiable, Equatable, Sendable {
     let kind: Kind
 }
 
+/// A pull request Xcode Cloud can build, as the launch sheet offers it. Shared with the `cumulus` command, like `GitReference`.
+nonisolated struct PullRequestReference: Identifiable, Equatable, Sendable {
+    let id: String
+    let number: Int
+    let title: String
+    let sourceBranch: String?
+    let destinationBranch: String?
+    let isCrossRepository: Bool
+    let webURL: URL?
+
+    /// “#128 Add the cycle widget”, or “#128” when the host gave no title.
+    var label: String {
+        title.isEmpty ? "#\(number)" : "#\(number) \(title)"
+    }
+}
+
 /// What a launched build runs on: one branch or tag, or one pull request. Never both.
 nonisolated enum LaunchSource: Equatable, Sendable {
     case gitReference(id: String)
@@ -106,6 +122,31 @@ nonisolated struct SCMGitReferenceAttributes: Decodable, Sendable {
     let kind: String?
 }
 
+nonisolated struct SCMPullRequestAttributes: Decodable, Sendable {
+    let title: String?
+    let number: Int?
+    let isClosed: Bool?
+    let isCrossRepository: Bool?
+    let sourceBranchName: String?
+    let destinationBranchName: String?
+    let webUrl: String?
+}
+
+nonisolated extension JSONAPIDocument where Attributes == SCMPullRequestAttributes {
+    /// Open pull requests only: a closed one cannot be built.
+    var pullRequests: [PullRequestReference] {
+        data.compactMap { resource in
+            guard let attributes = resource.attributes, let number = attributes.number, attributes.isClosed != true else { return nil }
+            let webURL = attributes.webUrl.flatMap(URL.init(string:)).flatMap { $0.scheme == "https" ? $0 : nil }
+            return PullRequestReference(
+                id: resource.id, number: number, title: attributes.title ?? "",
+                sourceBranch: attributes.sourceBranchName, destinationBranch: attributes.destinationBranchName,
+                isCrossRepository: attributes.isCrossRepository ?? false, webURL: webURL
+            )
+        }
+    }
+}
+
 nonisolated extension JSONAPIDocument where Attributes == SCMGitReferenceAttributes {
     /// Live branches and tags, branches first, each group by name.
     var gitReferences: [GitReference] {
@@ -157,6 +198,12 @@ extension AppStoreConnectClient {
         let all = pages.flatMap(\.gitReferences)
         let order: (GitReference, GitReference) -> Bool = { $0.name.localizedStandardCompare($1.name) == .orderedAscending }
         return all.filter { $0.kind == .branch }.sorted(by: order) + all.filter { $0.kind == .tag }.sorted(by: order)
+    }
+
+    /// The repository's open pull requests, newest first.
+    func pullRequests(repositoryID: String, maxPages: Int = 2) async throws(AppStoreConnectError) -> [PullRequestReference] {
+        let pages = try await collectPages(from: AppStoreConnectEndpoint.pullRequests(repositoryID: repositoryID), of: SCMPullRequestAttributes.self, maxPages: maxPages)
+        return pages.flatMap(\.pullRequests).sorted { $0.number > $1.number }
     }
 
     func latestBuildRun(workflowID: String, productID: String) async throws(AppStoreConnectError) -> CIBuildRun? {

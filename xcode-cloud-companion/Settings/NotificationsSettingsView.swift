@@ -28,6 +28,16 @@ struct NotificationsSettingsView: View {
                 }
                 Toggle(BuildStatus.canceled.label, isOn: $preferences.builds.canceled)
             }
+            Section("When an agent starts a build") {
+                Toggle(isOn: $preferences.builds.agentLaunches) {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("A build was started by `cumulus run` or an MCP tool")
+                        Text("Agents may start three builds an hour per account; each one uses compute hours.")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                }
+            }
             Section("When a build seems stuck") {
                 Toggle(isOn: $preferences.builds.stuck) {
                     VStack(alignment: .leading, spacing: 2) {

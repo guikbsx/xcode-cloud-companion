@@ -13,6 +13,7 @@ final class NotificationPreferences {
             defaults.set(builds.stuck, forKey: Keys.stuck)
             defaults.set(builds.stuckFactor, forKey: Keys.stuckFactor)
             defaults.set(builds.mutedProductIDs.sorted(), forKey: Keys.mutedProductIDs)
+            defaults.set(builds.agentLaunches, forKey: Keys.agentLaunches)
         }
     }
 
@@ -37,6 +38,7 @@ final class NotificationPreferences {
         let factor = defaults.integer(forKey: Keys.stuckFactor)
         builds.stuckFactor = BuildNotificationRules.stuckFactors.contains(factor) ? factor : BuildNotificationRules.defaultStuckFactor
         builds.mutedProductIDs = Set(defaults.stringArray(forKey: Keys.mutedProductIDs) ?? [])
+        builds.agentLaunches = defaults.object(forKey: Keys.agentLaunches) as? Bool ?? builds.agentLaunches
         self.builds = builds
         var usage = UsageAlertRules()
         usage.threshold75 = defaults.object(forKey: Keys.threshold75) as? Bool ?? usage.threshold75
@@ -64,6 +66,7 @@ final class NotificationPreferences {
         static let stuck = "notifications.builds.stuck"
         static let stuckFactor = "notifications.builds.stuckFactor"
         static let mutedProductIDs = "notifications.builds.mutedProductIDs"
+        static let agentLaunches = "notifications.builds.agentLaunches"
         static let threshold75 = "notifications.usage.threshold75"
         static let threshold90 = "notifications.usage.threshold90"
         static let pace = "notifications.usage.pace"

@@ -14,6 +14,8 @@ nonisolated struct BuildNotificationRules: Sendable, Equatable {
     var stuckFactor = BuildNotificationRules.defaultStuckFactor
     /// Apps are notified unless muted, so a new app speaks up without a visit to Settings.
     var mutedProductIDs: Set<String> = []
+    /// A build started by `cumulus run` or an MCP tool: the user learns at once that an agent spent minutes.
+    var agentLaunches = true
 
     var notifiesAnything: Bool { succeeded || failed || canceled || stuck }
 

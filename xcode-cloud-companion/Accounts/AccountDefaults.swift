@@ -8,9 +8,11 @@ nonisolated enum AccountDefaults {
     static let palette = "appPalette.assignments"
     static let usageAlertState = "notifications.usage.alertState"
     static let reportedStuckRunIDs = "notifications.builds.reportedStuckRunIDs"
+    /// Security-scoped bookmarks of the apps' local clones, by product name.
+    static let localRepositories = "localRepositories"
 
     /// Every name an account has its own value for.
-    static let names = [planHours, resetAnchor, keyAccess, palette, usageAlertState, reportedStuckRunIDs]
+    static let names = [planHours, resetAnchor, keyAccess, palette, usageAlertState, reportedStuckRunIDs, localRepositories]
 
     static func key(_ name: String, accountID: String) -> String {
         "account.\(accountID).\(name)"

@@ -9,6 +9,10 @@ nonisolated struct BuildsQuery: Equatable, Sendable {
     var running = false
     var limit = BuildsQuery.defaultLimit
     var since: Date?
+    /// Only the builds of this branch or tag, by name; pull request builds of that branch are not its builds.
+    var branch: String?
+    /// Only the builds of this pull request, by number.
+    var pullRequest: Int?
 }
 
 nonisolated enum UsageBreakdown: String, Equatable, Sendable, CaseIterable {
@@ -54,6 +58,37 @@ nonisolated enum CLIReference {
             throw CLIFailure(
                 code: .ambiguous, message: "Several apps match '\(wanted)'.",
                 suggestions: matches.map { "\($0.name) (\($0.bundleID ?? $0.id))" }
+            )
+        }
+    }
+
+    /// A workflow by its id, its name, or `App/Workflow` when two apps use the same name.
+    static func workflow(_ reference: String, in snapshot: BuildSnapshot) throws(CLIFailure) -> CIWorkflow {
+        let wanted = reference.trimmingCharacters(in: .whitespaces)
+        if let exact = snapshot.workflows.first(where: { $0.id == wanted }) {
+            return exact
+        }
+        let products = Dictionary(snapshot.products.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
+        func label(_ workflow: CIWorkflow) -> String {
+            [workflow.productID.flatMap { products[$0]?.name }, workflow.name].compactMap(\.self).joined(separator: "/")
+        }
+        let folded = wanted.lowercased()
+        let matches = snapshot.workflows.filter { workflow in
+            guard workflow.name.lowercased() == folded || label(workflow).lowercased() == folded else { return false }
+            return true
+        }
+        switch matches.count {
+        case 1:
+            return matches[0]
+        case 0:
+            throw CLIFailure(
+                code: .notFound, message: "No workflow matches '\(wanted)'.",
+                suggestions: snapshot.workflows.map(label).sorted().map { "Known workflow: \($0)" }
+            )
+        default:
+            throw CLIFailure(
+                code: .ambiguous, message: "Several workflows are named '\(wanted)'.",
+                suggestions: matches.map { "Use \(label($0))" }
             )
         }
     }

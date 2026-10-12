@@ -72,6 +72,7 @@ struct DetailClientTests {
         let conditions = try #require(workflow.startConditions)
         #expect(conditions.branches == CIPatterns(isAllMatch: false, patterns: ["develop", "release/"]))
         #expect(conditions.scheduleFrequency == .weekly)
+        #expect(conditions.schedule == CISchedule(frequency: .weekly, weekdays: [2], hour: 3, minute: 0, timeZoneID: nil, source: CIPatterns(isAllMatch: true, patterns: [])))
         #expect(conditions.filesRule == .doNotStartIfAllFilesMatch)
         #expect(conditions.autoCancel == true)
         #expect(conditions.allowsManualStart)

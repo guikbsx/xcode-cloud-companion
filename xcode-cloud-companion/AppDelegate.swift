@@ -10,6 +10,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private let loginItemModel = LoginItemModel()
     private let notificationPreferences = NotificationPreferences()
     private lazy var notifications = NotificationCoordinator(preferences: notificationPreferences)
+    private lazy var agentLaunches = AgentLaunchService(accounts: accounts, preferences: notificationPreferences, notify: { [notifications] in await notifications.deliver($0) })
     private var notificationResponder: NotificationResponder?
     private lazy var settingsWindowController = SettingsWindowController(
         accounts: accounts, loginItem: loginItemModel, notificationPreferences: notificationPreferences, notifications: notifications
@@ -91,7 +92,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             loadBuildDetails: { id in
                 guard let owner = await accounts.owner(ofBuild: id) else { return false }
                 return await BuildDetailsLoader(buildStore: owner.buildStore, extrasStore: owner.extrasStore).load(id)
-            }
+            },
+            launchBuild: { [agentLaunches] request in await agentLaunches.launch(request) }
         )
         let dispatcher = IPCDispatcher(service: service)
         let server = IPCSocketServer(path: path) { await dispatcher.reply(to: $0) }
@@ -149,6 +151,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                     await accounts.whenReady()
                     accounts.select(accountID)
                 }
+            case .references:
+                break
             }
             navigation.open(url)
             mainWindowController.show()

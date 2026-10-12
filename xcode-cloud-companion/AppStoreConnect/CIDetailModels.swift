@@ -40,12 +40,46 @@ nonisolated enum CIScheduleFrequency: String, Codable, Sendable, Equatable {
     case hourly = "HOURLY"
 }
 
+/// When a scheduled workflow starts: the weekdays as `Calendar` counts them (1 is Sunday), at `hour`:`minute` in the
+/// schedule's own time zone.
+nonisolated struct CISchedule: Codable, Sendable, Equatable {
+    var frequency: CIScheduleFrequency
+    var weekdays: [Int] = []
+    var hour = 0
+    var minute = 0
+    var timeZoneID: String?
+    /// The branches it builds.
+    var source: CIPatterns?
+
+    static let weekdays = ["SUNDAY": 1, "MONDAY": 2, "TUESDAY": 3, "WEDNESDAY": 4, "THURSDAY": 5, "FRIDAY": 6, "SATURDAY": 7]
+
+    init(frequency: CIScheduleFrequency, weekdays: [Int] = [], hour: Int = 0, minute: Int = 0, timeZoneID: String? = nil, source: CIPatterns? = nil) {
+        self.frequency = frequency
+        self.weekdays = weekdays
+        self.hour = hour
+        self.minute = minute
+        self.timeZoneID = timeZoneID
+        self.source = source
+    }
+
+    init?(attributes: CIStartConditionAttributes.Schedule?, source: CIPatternsAttributes?) {
+        guard let attributes, let frequency = attributes.frequency.flatMap(CIScheduleFrequency.init(rawValue:)) else { return nil }
+        self.init(
+            frequency: frequency,
+            weekdays: (attributes.days ?? []).compactMap { Self.weekdays[$0] }.sorted(),
+            hour: attributes.hour ?? 0, minute: attributes.minute ?? 0, timeZoneID: attributes.timezone, source: source?.model
+        )
+    }
+}
+
 /// What starts a workflow, folded from Apple's seven conditions; nil means the condition is absent.
 nonisolated struct CIStartConditions: Codable, Sendable, Equatable {
     var branches: CIPatterns?
     var tags: CIPatterns?
     var pullRequests: CIPatterns?
     var scheduleFrequency: CIScheduleFrequency?
+    /// The whole schedule; absent from caches written before it was read.
+    var schedule: CISchedule? = nil
     var filesRule: CIFilesRuleMode?
     var autoCancel: Bool?
     var manualBranches: CIPatterns?
@@ -273,6 +307,10 @@ nonisolated struct CIStartConditionAttributes: Decodable, Sendable {
 
     struct Schedule: Decodable, Sendable {
         let frequency: String?
+        let days: [String]?
+        let hour: Int?
+        let minute: Int?
+        let timezone: String?
     }
 }
 

@@ -84,6 +84,16 @@ final class WorkflowDetailStore {
         await cache.save(stored, productID: productID)
     }
 
+    /// A workflow changed from the app: the sheet shows Apple's answer at once, and the cache keeps it.
+    func apply(_ workflow: CIWorkflow) async {
+        workflowsByID[workflow.id] = workflow
+        guard let productID = workflow.productID, var stored = await cache.load(productID: productID),
+              let index = stored.workflows.firstIndex(where: { $0.id == workflow.id })
+        else { return }
+        stored.workflows[index] = workflow
+        await cache.save(stored, productID: productID)
+    }
+
     private func merge(_ workflows: [CIWorkflow]) {
         for workflow in workflows {
             workflowsByID[workflow.id] = workflow

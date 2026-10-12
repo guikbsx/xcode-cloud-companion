@@ -69,6 +69,17 @@
         }
       }
     },
+    "%@ (latest)" : {
+      "comment" : "The newest public Xcode in the version menu",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ (dernière)"
+          }
+        }
+      }
+    },
     "%@ already holds something named “cumulus”." : {
       "localizations" : {
         "fr" : {
@@ -92,6 +103,39 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%1$@ tourne depuis %2$@, contre %3$@ d’habitude."
+          }
+        }
+      }
+    },
+    "%@ into %@" : {
+      "comment" : "The two branches of a pull request: the source branch, then the one it goes into.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ into %2$@"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ vers %2$@"
+          }
+        }
+      }
+    },
+    "%@ isn’t in %@. Another branch is checked out there, or the clone is elsewhere: change it in Settings › Accounts." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ isn’t in %2$@. Another branch is checked out there, or the clone is elsewhere: change it in Settings › Accounts."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ n’est pas dans %2$@. Une autre branche y est extraite, ou le clone est ailleurs : changez-le dans Réglages › Comptes."
           }
         }
       }
@@ -216,6 +260,23 @@
         }
       }
     },
+    "%@ over the newest %lld" : {
+      "comment" : "How the newest builds drift from the ones before, e.g. “+18 % over the newest 10”",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ over the newest %2$lld"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ sur les %2$lld plus récents"
+          }
+        }
+      }
+    },
     "%@ per build" : {
       "localizations" : {
         "fr" : {
@@ -249,6 +310,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%1$@ · %2$@"
+          }
+        }
+      }
+    },
+    "%@, %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@, %2$@"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@, %2$@"
           }
         }
       }
@@ -566,6 +643,17 @@
         }
       }
     },
+    "%lld references" : {
+      "comment" : "Count under the title of the view by branch and pull request",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld références"
+          }
+        }
+      }
+    },
     "%lld test destinations: together, %@ of this workflow’s cost." : {
       "localizations" : {
         "en" : {
@@ -655,6 +743,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%lld fois la durée habituelle"
+          }
+        }
+      }
+    },
+    "A build was started by `cumulus run` or an MCP tool" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Un build a été lancé par `cumulus run` ou un outil MCP"
+          }
+        }
+      }
+    },
+    "A build’s problems and failed tests open in Xcode from these folders, at the right line." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Les problèmes et les tests en échec d’un build s’ouvrent dans Xcode depuis ces dossiers, à la bonne ligne."
           }
         }
       }
@@ -823,6 +931,32 @@
         }
       }
     },
+    "Agents already started %lld builds in the last hour; the next is possible at %@." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Agents already started %1$lld builds in the last hour; the next is possible at %2$@."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Les agents ont déjà lancé %1$lld builds dans la dernière heure ; le prochain sera possible à %2$@."
+          }
+        }
+      }
+    },
+    "Agents may start three builds an hour per account; each one uses compute hours." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Les agents peuvent lancer trois builds par heure et par compte ; chacun consomme des heures de calcul."
+          }
+        }
+      }
+    },
     "All" : {
       "localizations" : {
         "fr" : {
@@ -869,6 +1003,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Autoriser les notifications…"
+          }
+        }
+      }
+    },
+    "Always make a clean build" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Toujours faire un build propre"
           }
         }
       }
@@ -1037,12 +1181,42 @@
         }
       }
     },
+    "Apple did not confirm the change, and the workflow could not be read back. Check it in App Store Connect before trying again." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apple n’a pas confirmé la modification, et le workflow n’a pas pu être relu. Vérifiez-le dans App Store Connect avant de réessayer."
+          }
+        }
+      }
+    },
     "Apple did not confirm the change, and the workflow’s state could not be read. Check it in App Store Connect before trying again." : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Apple n’a pas confirmé la modification, et l’état du workflow n’a pas pu être lu. Vérifiez-le dans App Store Connect avant de réessayer."
+          }
+        }
+      }
+    },
+    "Apple did not confirm the change. The sheet now shows the workflow as Apple has it; look it over before trying again." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apple n’a pas confirmé la modification. La feuille montre maintenant le workflow tel qu’Apple l’a ; relisez-le avant de réessayer."
+          }
+        }
+      }
+    },
+    "Apple did not confirm the launch, and the build list shows no new build." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apple n’a pas confirmé le lancement, et la liste des builds n’en montre aucun nouveau."
           }
         }
       }
@@ -1113,6 +1287,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Apple indique que ce workflow est toujours en pause. Rien n’a changé ; vous pouvez réessayer."
+          }
+        }
+      }
+    },
+    "Apple’s hourly request limit is nearly spent: older builds wait for the next hour." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La limite horaire de requêtes d’Apple est presque atteinte : les builds plus anciens attendront l’heure suivante."
           }
         }
       }
@@ -1229,6 +1413,16 @@
         }
       }
     },
+    "Branch" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Branche"
+          }
+        }
+      }
+    },
     "Branch change" : {
       "localizations" : {
         "fr" : {
@@ -1249,12 +1443,42 @@
         }
       }
     },
-    "Branch or tag" : {
+    "Branch, tag or pull request" : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Branche ou tag"
+            "value" : "Branche, tag ou pull request"
+          }
+        }
+      }
+    },
+    "Branches" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Branches"
+          }
+        }
+      }
+    },
+    "Branches and pull requests" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Branches et pull requests"
+          }
+        }
+      }
+    },
+    "Branches, tags and pull requests appear here once Xcode Cloud has built one in the last 30 days." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Les branches, les tags et les pull requests apparaissent ici dès qu’Xcode Cloud en a construit dans les 30 derniers jours."
           }
         }
       }
@@ -1295,6 +1519,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Produits de build"
+          }
+        }
+      }
+    },
+    "Build started by an agent" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Build lancé par un agent"
           }
         }
       }
@@ -1355,6 +1589,26 @@
         }
       }
     },
+    "Builds with an older Xcode" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Construit avec un Xcode plus ancien"
+          }
+        }
+      }
+    },
+    "By the end of the cycle, the scheduled builds will cost about %@, based on their past durations." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "D’ici la fin du cycle, les builds planifiés coûteront environ %@, d’après leurs durées passées."
+          }
+        }
+      }
+    },
     "Cancel" : {
       "localizations" : {
         "fr" : {
@@ -1386,6 +1640,37 @@
         }
       }
     },
+    "Change “%@”" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Modifier « %@ »"
+          }
+        }
+      }
+    },
+    "Change…" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Modifier…"
+          }
+        }
+      }
+    },
+    "Choose" : {
+      "comment" : "Button of the panel that picks an app's local repository",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choisir"
+          }
+        }
+      }
+    },
     "Choose a File…" : {
       "localizations" : {
         "fr" : {
@@ -1403,6 +1688,42 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Choisissez un export d’utilisation téléchargé depuis App Store Connect › Xcode Cloud › Utilisation."
+          }
+        }
+      }
+    },
+    "Choose the local repository of %@." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choisissez le dépôt local de %@."
+          }
+        }
+      }
+    },
+    "Choose the local repository of %@: the folder that holds %@." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Choose the local repository of %1$@: the folder that holds %2$@."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choisissez le dépôt local de %1$@ : le dossier qui contient %2$@."
+          }
+        }
+      }
+    },
+    "Choose…" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choisir…"
           }
         }
       }
@@ -1761,6 +2082,16 @@
         }
       }
     },
+    "Current version" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Version actuelle"
+          }
+        }
+      }
+    },
     "Current workflow configuration: Apple doesn’t record the versions used by each build." : {
       "localizations" : {
         "fr" : {
@@ -1807,6 +2138,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Date pas encore saisie : en attendant, le menu ne montre pas de jauge, seulement les heures des 30 derniers jours."
+          }
+        }
+      }
+    },
+    "Description" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Description"
           }
         }
       }
@@ -1899,6 +2240,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Durée"
+          }
+        }
+      }
+    },
+    "Duration of each build" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Durée de chaque build"
+          }
+        }
+      }
+    },
+    "Duration of each build, oldest first. Failed builds are in red. Click a bar to open the build." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Durée de chaque build, du plus ancien au plus récent. Les échecs sont en rouge. Cliquez une barre pour ouvrir le build."
           }
         }
       }
@@ -2464,6 +2825,16 @@
         }
       }
     },
+    "Forget" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Oublier"
+          }
+        }
+      }
+    },
     "General" : {
       "comment" : "Settings tab",
       "localizations" : {
@@ -2751,6 +3122,16 @@
         }
       }
     },
+    "Kind" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sorte"
+          }
+        }
+      }
+    },
     "Language" : {
       "comment" : "Settings, general tab: section about the app's language.",
       "localizations" : {
@@ -2772,12 +3153,50 @@
         }
       }
     },
+    "Last %lld finished builds" : {
+      "comment" : "How many builds the trends of a workflow are computed over",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld derniers builds terminés"
+          }
+        }
+      }
+    },
     "Last Export Imported" : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Dernier export importé"
+          }
+        }
+      }
+    },
+    "Last build: %@" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dernier build : %@"
+          }
+        }
+      }
+    },
+    "Last build: %@, %@" : {
+      "comment" : "Under the launch menu: the state of the last build on this source and when it was, e.g. “Last build: Succeeded, 12 minutes ago”.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Last build: %1$@, %2$@"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dernier build : %1$@, %2$@"
           }
         }
       }
@@ -2952,6 +3371,16 @@
         }
       }
     },
+    "Load Older Builds" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Charger les builds plus anciens"
+          }
+        }
+      }
+    },
     "Loading %lld of %lld" : {
       "localizations" : {
         "en" : {
@@ -2968,12 +3397,12 @@
         }
       }
     },
-    "Loading branches…" : {
+    "Loading branches, tags and pull requests…" : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Chargement des branches…"
+            "value" : "Chargement des branches, des tags et des pull requests…"
           }
         }
       }
@@ -2988,12 +3417,32 @@
         }
       }
     },
+    "Loading versions…" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chargement des versions…"
+          }
+        }
+      }
+    },
     "Loads the tests and issues of both builds, one action at a time." : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Charge les tests et les problèmes des deux builds, une action à la fois."
+          }
+        }
+      }
+    },
+    "Local Repositories" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dépôts locaux"
           }
         }
       }
@@ -3096,6 +3545,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Mesure de vos builds"
+          }
+        }
+      }
+    },
+    "Median duration" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Durée médiane"
           }
         }
       }
@@ -3218,6 +3677,16 @@
         }
       }
     },
+    "No %@ in the repository, or the pull request is closed." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pas de %@ dans le dépôt, ou la pull request est fermée."
+          }
+        }
+      }
+    },
     "No API key" : {
       "localizations" : {
         "fr" : {
@@ -3259,12 +3728,32 @@
         }
       }
     },
-    "No branch or tag was found for this workflow." : {
+    "No branch or pull request yet" : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Aucune branche ni aucun tag trouvé pour ce workflow."
+            "value" : "Aucune branche ni pull request pour l’instant"
+          }
+        }
+      }
+    },
+    "No branch was found for this workflow." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aucune branche n’a été trouvée pour ce workflow."
+          }
+        }
+      }
+    },
+    "No build yet to estimate from" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aucun build pour estimer"
           }
         }
       }
@@ -3295,6 +3784,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Aucun test en échec ni nouveau problème par rapport au %@."
+          }
+        }
+      }
+    },
+    "No finished build in the last 30 days." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aucun build terminé dans les 30 derniers jours."
           }
         }
       }
@@ -3339,12 +3838,52 @@
         }
       }
     },
+    "No matching reference" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aucune référence ne correspond"
+          }
+        }
+      }
+    },
+    "No older builds." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aucun build plus ancien."
+          }
+        }
+      }
+    },
+    "No open pull request was found for this workflow." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aucune pull request ouverte n’a été trouvée pour ce workflow."
+          }
+        }
+      }
+    },
     "No skills folder at %@. Create it first, or choose another folder." : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Aucun dossier de skills à l’emplacement %@. Créez-le d’abord, ou choisissez un autre dossier."
+          }
+        }
+      }
+    },
+    "No tag was found for this workflow." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aucun tag n’a été trouvé pour ce workflow."
           }
         }
       }
@@ -3399,6 +3938,16 @@
         }
       }
     },
+    "Not enough builds to compare yet" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pas encore assez de builds pour comparer"
+          }
+        }
+      }
+    },
     "Not installed. Choose a folder of your PATH, such as %@." : {
       "localizations" : {
         "fr" : {
@@ -3419,6 +3968,16 @@
         }
       }
     },
+    "Not set" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Non défini"
+          }
+        }
+      }
+    },
     "Not updated yet" : {
       "localizations" : {
         "fr" : {
@@ -3435,6 +3994,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Archive notarisée"
+          }
+        }
+      }
+    },
+    "Nothing matches." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rien ne correspond."
           }
         }
       }
@@ -3621,6 +4190,16 @@
         }
       }
     },
+    "Open the pull request" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ouvrir la pull request"
+          }
+        }
+      }
+    },
     "Open this build" : {
       "localizations" : {
         "fr" : {
@@ -3762,12 +4341,12 @@
         }
       }
     },
-    "Pick another branch or tag." : {
+    "Pick another branch, tag or pull request." : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Choisissez une autre branche ou un autre tag."
+            "value" : "Choisissez une autre branche, un autre tag ou une autre pull request."
           }
         }
       }
@@ -3858,6 +4437,16 @@
         }
       }
     },
+    "Pull request" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pull request"
+          }
+        }
+      }
+    },
     "Pull request opened" : {
       "localizations" : {
         "fr" : {
@@ -3884,6 +4473,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Pull requests"
+          }
+        }
+      }
+    },
+    "Queue wait" : {
+      "comment" : "Median time a build waited for a machine before it started",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Attente en file"
           }
         }
       }
@@ -4191,6 +4791,16 @@
         }
       }
     },
+    "Save" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enregistrer"
+          }
+        }
+      }
+    },
     "Save and Test" : {
       "localizations" : {
         "fr" : {
@@ -4342,6 +4952,22 @@
         }
       }
     },
+    "Showing %lld of %lld. Type to narrow the list." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Showing %1$lld of %2$lld. Type to narrow the list."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld affichés sur %2$lld. Tapez pour affiner la liste."
+          }
+        }
+      }
+    },
     "Shows where this workflow’s minutes went" : {
       "localizations" : {
         "fr" : {
@@ -4404,6 +5030,27 @@
         }
       }
     },
+    "Source" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Source"
+          }
+        }
+      }
+    },
+    "Stable" : {
+      "comment" : "The newest builds of a workflow do not differ from the ones before",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stable"
+          }
+        }
+      }
+    },
     "Start condition" : {
       "localizations" : {
         "fr" : {
@@ -4420,6 +5067,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Conditions de démarrage"
+          }
+        }
+      }
+    },
+    "Start conditions, actions and environment variables are changed in Xcode or App Store Connect." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Les conditions de démarrage, les actions et les variables d’environnement se modifient dans Xcode ou App Store Connect."
           }
         }
       }
@@ -4507,6 +5164,16 @@
         }
       }
     },
+    "Success rate" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Réussite"
+          }
+        }
+      }
+    },
     "Switch accounts with ⌘1 to ⌘%lld" : {
       "comment" : "Tooltip of the account switcher in the menu; the digit is the number of accounts, 9 at most.",
       "localizations" : {
@@ -4534,6 +5201,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Synchronisation · commencée %@"
+          }
+        }
+      }
+    },
+    "Tag" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tag"
           }
         }
       }
@@ -4770,6 +5447,16 @@
         }
       }
     },
+    "The key is set to read-only in Cumulus › Settings › Accounts." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La clé est en lecture seule dans Cumulus › Réglages › Comptes."
+          }
+        }
+      }
+    },
     "The key stored in the keychain is unreadable. Remove it and import it again." : {
       "localizations" : {
         "fr" : {
@@ -4827,12 +5514,32 @@
         }
       }
     },
+    "The list of versions couldn’t be read: the version stays as it is." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La liste des versions n’a pas pu être lue : la version reste telle quelle."
+          }
+        }
+      }
+    },
     "The log archive can’t be unpacked safely. Save it from the Artifacts tab instead." : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "L’archive des journaux ne peut pas être décompressée en toute sécurité. Enregistrez-la plutôt depuis l’onglet Artefacts."
+          }
+        }
+      }
+    },
+    "The open pull requests couldn’t be read: closed ones may still show." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Les pull requests ouvertes n’ont pas pu être lues : des pull requests fermées peuvent encore apparaître."
           }
         }
       }
@@ -4858,6 +5565,16 @@
         }
       }
     },
+    "The pull requests couldn’t be read. Branches and tags are still available." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Les pull requests n’ont pas pu être lues. Les branches et les tags restent disponibles."
+          }
+        }
+      }
+    },
     "The skill tells an agent when to use the command and how to read its answers. It follows the app’s updates." : {
       "localizations" : {
         "fr" : {
@@ -4874,6 +5591,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "L’export d’utilisation ne contient aucun build."
+          }
+        }
+      }
+    },
+    "The workflow’s branches could not be read from App Store Connect." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Les branches du workflow n’ont pas pu être lues depuis App Store Connect."
           }
         }
       }
@@ -4918,6 +5645,26 @@
         }
       }
     },
+    "This file isn’t in the repository: %@" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ce fichier n’est pas dans le dépôt : %@"
+          }
+        }
+      }
+    },
+    "This folder couldn’t be kept for later. Try another one." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ce dossier n’a pas pu être mémorisé. Essayez-en un autre."
+          }
+        }
+      }
+    },
     "This isn’t an Xcode Cloud usage export: missing %@." : {
       "comment" : "Keep \"Xcode Cloud\", \"App Store Connect\" and \"TestFlight\" untranslated as product names.",
       "localizations" : {
@@ -4950,6 +5697,16 @@
         }
       }
     },
+    "This workflow is locked for editing in App Store Connect: it can’t be changed from here." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ce workflow est verrouillé dans App Store Connect : il ne peut pas être modifié d’ici."
+          }
+        }
+      }
+    },
     "This workflow is locked for editing in App Store Connect: it can’t be paused or resumed from here." : {
       "localizations" : {
         "fr" : {
@@ -4966,6 +5723,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ce workflow est en pause : aucun build ne démarre tant qu’il n’est pas réactivé."
+          }
+        }
+      }
+    },
+    "This workflow stays on %@. %@ is available on Xcode Cloud." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "This workflow stays on %1$@. %2$@ is available on Xcode Cloud."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ce workflow reste sur %1$@. %2$@ est disponible sur Xcode Cloud."
           }
         }
       }
@@ -5020,12 +5793,32 @@
         }
       }
     },
+    "Trends" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tendances"
+          }
+        }
+      }
+    },
     "Try Again" : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Réessayer"
+          }
+        }
+      }
+    },
+    "Type to narrow the list" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tapez pour affiner la liste"
           }
         }
       }
@@ -5050,12 +5843,32 @@
         }
       }
     },
+    "Unknown" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Inconnue"
+          }
+        }
+      }
+    },
     "Unpin" : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Désépingler"
+          }
+        }
+      }
+    },
+    "Upcoming" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "À venir"
           }
         }
       }
@@ -5152,6 +5965,16 @@
         }
       }
     },
+    "What this workflow is for" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "À quoi sert ce workflow"
+          }
+        }
+      }
+    },
     "When a build ends" : {
       "localizations" : {
         "fr" : {
@@ -5168,6 +5991,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Quand un build semble bloqué"
+          }
+        }
+      }
+    },
+    "When an agent starts a build" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quand un agent lance un build"
           }
         }
       }
@@ -5263,6 +6096,26 @@
         }
       }
     },
+    "Workflows without a build this cycle are not counted." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Les workflows sans build ce cycle ne sont pas comptés."
+          }
+        }
+      }
+    },
+    "Xcode" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Xcode"
+          }
+        }
+      }
+    },
     "Xcode Cloud Apps" : {
       "comment" : "Keep \"Xcode Cloud\", \"App Store Connect\" and \"TestFlight\" untranslated as product names.",
       "localizations" : {
@@ -5311,6 +6164,36 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Xcode Cloud démarre un build manuel et consomme des heures de calcul. Le workflow doit avoir une condition de démarrage manuel qui couvre cette branche. Cumulus ne peut pas l’annuler."
+          }
+        }
+      }
+    },
+    "Xcode Cloud starts a manual build and uses compute hours. The workflow needs a manual start condition that matches this pull request. Cumulus cannot cancel it." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Xcode Cloud démarre un build manuel et consomme des heures de calcul. Le workflow doit avoir une condition de démarrage manuel qui couvre cette pull request. Cumulus ne peut pas l’annuler."
+          }
+        }
+      }
+    },
+    "Xcode Cloud starts a manual build and uses compute hours. The workflow needs a manual start condition that matches this tag. Cumulus cannot cancel it." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Xcode Cloud démarre un build manuel et consomme des heures de calcul. Le workflow doit avoir une condition de démarrage manuel qui couvre ce tag. Cumulus ne peut pas l’annuler."
+          }
+        }
+      }
+    },
+    "Xcode isn’t installed on this Mac." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Xcode n’est pas installé sur ce Mac."
           }
         }
       }
@@ -5386,6 +6269,59 @@
         }
       }
     },
+    "every day" : {
+      "comment" : "Frequency of a scheduled workflow, in a caption",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "tous les jours"
+          }
+        }
+      }
+    },
+    "every hour" : {
+      "comment" : "Frequency of a scheduled workflow, in a caption",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "toutes les heures"
+          }
+        }
+      }
+    },
+    "every week" : {
+      "comment" : "Frequency of a scheduled workflow, in a caption",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "chaque semaine"
+          }
+        }
+      }
+    },
+    "from another repository" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "depuis un autre dépôt"
+          }
+        }
+      }
+    },
+    "macOS" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "macOS"
+          }
+        }
+      }
+    },
     "macOS refused the change: %@" : {
       "localizations" : {
         "fr" : {
@@ -5437,6 +6373,28 @@
         }
       }
     },
+    "today %@" : {
+      "comment" : "When a scheduled build next starts; the argument is a time",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "aujourd’hui %@"
+          }
+        }
+      }
+    },
+    "tomorrow %@" : {
+      "comment" : "When a scheduled build next starts; the argument is a time",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "demain %@"
+          }
+        }
+      }
+    },
     "used of" : {
       "comment" : "Between the hours used and the plan's hours in the diagram",
       "localizations" : {
@@ -5454,6 +6412,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "en attente"
+          }
+        }
+      }
+    },
+    "~%@ estimated" : {
+      "comment" : "What one scheduled build is expected to cost, from past builds",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "~%@ estimées"
           }
         }
       }

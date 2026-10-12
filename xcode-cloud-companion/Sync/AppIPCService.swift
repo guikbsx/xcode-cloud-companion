@@ -33,6 +33,8 @@ nonisolated struct AppIPCService: IPCService {
     var openBuild: @MainActor @Sendable (String) -> Void = { _ in }
     /// Loads a build's details into the cache; false when the build is unknown, still running, or Apple refused.
     var loadBuildDetails: @MainActor @Sendable (String) async -> Bool = { _ in false }
+    /// Starts a build for the command; `AgentLaunchService` in the app.
+    var launchBuild: @MainActor @Sendable (IPCLaunchRequest) async -> IPCResult = { _ in IPCResult(reason: IPCLaunchReason.failed, launched: false) }
 
     func ping(accountID: String?) async -> IPCResult {
         guard let sync = await sync(accountID) else {
@@ -72,6 +74,10 @@ nonisolated struct AppIPCService: IPCService {
 
     func loadDetails(buildRunID: String) async -> IPCResult {
         IPCResult(loaded: await loadBuildDetails(buildRunID))
+    }
+
+    func launch(_ request: IPCLaunchRequest) async -> IPCResult {
+        await launchBuild(request)
     }
 
     private func waitForSyncToEnd(_ sync: any RefreshableSync) async {

@@ -142,10 +142,21 @@ nonisolated struct CLIReportBuilder: Sendable {
         if let since = query.since {
             runs = runs.filter { ($0.createdDate ?? $0.startedDate).map { $0 >= since } ?? false }
         }
+        if let branch = query.branch {
+            runs = runs.filter { Self.isPullRequestBuild($0) == false && $0.sourceBranchOrTag?.caseInsensitiveCompare(branch) == .orderedSame }
+        }
+        if let pullRequest = query.pullRequest {
+            runs = runs.filter { $0.pullRequestNumber == pullRequest }
+        }
         let limit = min(max(1, query.limit), BuildsQuery.maximumLimit)
         let estimator = MinutesEstimator(data: data, productNames: productNames, now: now)
         let outputs = sorted(runs).prefix(limit).map { build($0, estimator: estimator) }
         return (outputs, outputs.contains { $0.estimatedMinutes != nil })
+    }
+
+    /// A pull request's build names the branch it came from too: the branch filter leaves it out.
+    private static func isPullRequestBuild(_ run: CIBuildRun) -> Bool {
+        run.isPullRequestBuild == true || run.pullRequestNumber != nil
     }
 
     private func sorted(_ runs: [CIBuildRun]) -> [CIBuildRun] {
@@ -309,7 +320,9 @@ nonisolated struct CLIReportBuilder: Sendable {
             .filter { product == nil || $0.productID == product?.id }
             .map { workflow -> WorkflowOutput in
                 let productName = workflow.productID.flatMap { productNames[$0] }
-                let lastRun = sorted(snapshot.runs.filter { $0.workflowID == workflow.id }).first
+                let runs = snapshot.runs.filter { $0.workflowID == workflow.id }
+                let lastRun = sorted(runs).first
+                let trends = WorkflowTrends(runs: runs)
                 let usage = summary?.byWorkflow.first { $0.product == productName && $0.workflow == workflow.name }
                 return WorkflowOutput(
                     id: workflow.id, name: workflow.name, app: productName, productID: workflow.productID,
@@ -326,7 +339,15 @@ nonisolated struct CLIReportBuilder: Sendable {
                             totalMinutes: CLINumber.minutes(usage?.totalMinutes ?? 0),
                             averageMinutes: CLINumber.minutes(usage?.averageMinutes ?? 0)
                         )
-                    }
+                    },
+                    trends: trends.sampleSize == 0 ? nil : WorkflowOutput.Trends(
+                        sampleSize: trends.sampleSize,
+                        medianDurationMinutes: trends.medianDuration.map { CLINumber.minutes($0 / 60) },
+                        medianQueueWaitMinutes: trends.medianQueueWait.map { CLINumber.minutes($0 / 60) },
+                        successRate: trends.successRate.map { ($0 * 100).rounded() / 100 }
+                    ),
+                    nextScheduledRun: workflow.isEnabled == false ? nil : workflow.startConditions?.schedule.flatMap { ScheduleForecast.nextRun(of: $0, after: now, calendar: .current) },
+                    latestXcodeVersion: XcodeVersionCheck.latestPublic(in: snapshot.xcodeVersions)?.name
                 )
             }
             .sorted { ($0.app ?? "", $0.name) < ($1.app ?? "", $1.name) }

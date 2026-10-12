@@ -42,10 +42,19 @@ nonisolated enum AppStoreConnectEndpoint {
 
     static func workflows(productID: String) -> URL {
         url(path: "/v1/ciProducts/\(productID)/workflows", query: [
-            "fields[ciWorkflows]": "name,actions,isEnabled,isLockedForEditing",
+            // The schedule and the Xcode version ride along: they cost no request, and the window warns about them.
+            "include": "xcodeVersion",
+            "fields[ciWorkflows]": "name,actions,isEnabled,isLockedForEditing,scheduledStartCondition,xcodeVersion",
+            "fields[ciXcodeVersions]": "name,version",
             "limit": String(maximumPageSize),
         ])
     }
+
+    /// Every Xcode version Xcode Cloud offers, asked once a day: nothing marks the newest, the app works it out.
+    static let xcodeVersions: URL = url(path: "/v1/ciXcodeVersions", query: [
+        "fields[ciXcodeVersions]": "name,version",
+        "limit": String(maximumPageSize),
+    ])
 
     /// Everything the workflow sheet shows, with the Xcode and macOS versions and the repository included.
     static func workflowDetails(productID: String) -> URL {
@@ -127,6 +136,24 @@ nonisolated enum AppStoreConnectEndpoint {
         url(path: "/v1/ciWorkflows/\(id)", query: ["fields[ciWorkflows]": "isEnabled"])
     }
 
+    /// One workflow with its versions, to learn what an unconfirmed change did.
+    static func workflowDetail(id: String) -> URL {
+        url(path: "/v1/ciWorkflows/\(id)", query: [
+            "include": "xcodeVersion,macOsVersion",
+            "fields[ciWorkflows]": "name,description,isEnabled,isLockedForEditing,clean,containerFilePath,lastModifiedDate,xcodeVersion,macOsVersion",
+            "fields[ciXcodeVersions]": "name,version",
+            "fields[ciMacOsVersions]": "name,version",
+        ])
+    }
+
+    /// The macOS versions Xcode Cloud offers for one Xcode version.
+    static func macOSVersions(xcodeVersionID: String) -> URL {
+        url(path: "/v1/ciXcodeVersions/\(xcodeVersionID)/macOsVersions", query: [
+            "fields[ciMacOsVersions]": "name,version",
+            "limit": String(maximumPageSize),
+        ])
+    }
+
     static func workflowRepository(workflowID: String) -> URL {
         url(path: "/v1/ciWorkflows/\(workflowID)/repository", query: [
             "fields[scmRepositories]": "ownerName,repositoryName",
@@ -136,6 +163,14 @@ nonisolated enum AppStoreConnectEndpoint {
     static func gitReferences(repositoryID: String) -> URL {
         url(path: "/v1/scmRepositories/\(repositoryID)/gitReferences", query: [
             "fields[scmGitReferences]": "name,canonicalName,isDeleted,kind",
+            "limit": String(maximumPageSize),
+        ])
+    }
+
+    /// The repository's pull requests, open and closed: Apple offers no filter, the app keeps the open ones.
+    static func pullRequests(repositoryID: String) -> URL {
+        url(path: "/v1/scmRepositories/\(repositoryID)/pullRequests", query: [
+            "fields[scmPullRequests]": "title,number,isClosed,isCrossRepository,sourceBranchName,destinationBranchName,webUrl",
             "limit": String(maximumPageSize),
         ])
     }

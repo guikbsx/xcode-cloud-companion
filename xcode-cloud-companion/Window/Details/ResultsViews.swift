@@ -46,20 +46,30 @@ private struct SourceLine: View {
     let location: String?
     let path: String?
     let message: String?
+    var line: Int?
+    @Environment(\.sourceOpening) private var opening
+    @State private var failure: String?
 
     var body: some View {
-        HStack(spacing: 10) {
-            if let location {
-                Text(location).font(.system(.caption, design: .monospaced)).foregroundStyle(.secondary).textSelection(.enabled)
-            }
-            if let path {
-                Button("Copy Path") { SourceActions.copy(path) }.buttonStyle(.borderless)
-                if SourceActions.existsLocally(path) {
-                    Button("Open in Xcode") { SourceActions.openInXcode(path) }.buttonStyle(.borderless)
+        VStack(alignment: .leading, spacing: 4) {
+            HStack(spacing: 10) {
+                if let location {
+                    Text(location).font(.system(.caption, design: .monospaced)).foregroundStyle(.secondary).textSelection(.enabled)
+                }
+                if let path {
+                    Button("Copy Path") { SourceActions.copy(path) }.buttonStyle(.borderless)
+                    if SourceActions.existsLocally(path) {
+                        Button("Open in Xcode") { SourceActions.openInXcode(path) }.buttonStyle(.borderless)
+                    } else if let opening, SourceOpener.xcodeURL != nil, RepositoryFileLocator.relativePath(of: path) != nil {
+                        Button("Open in Xcode", systemImage: "hammer") { failure = opening.open(path, line) }.buttonStyle(.borderless)
+                    }
+                }
+                if let message {
+                    Button("Copy Message") { SourceActions.copy(message) }.buttonStyle(.borderless)
                 }
             }
-            if let message {
-                Button("Copy Message") { SourceActions.copy(message) }.buttonStyle(.borderless)
+            if let failure {
+                Text(failure).foregroundStyle(BuildStatus.errored.tint).fixedSize(horizontal: false, vertical: true)
             }
         }
         .font(.caption)
@@ -171,7 +181,7 @@ struct TestsTabView: View {
                     if let message = row.message {
                         Text(message).font(.callout).textSelection(.enabled)
                     }
-                    SourceLine(location: row.location, path: row.path, message: row.message)
+                    SourceLine(location: row.location, path: row.path, message: row.message, line: row.line)
                     ForEach(Array(row.devices.enumerated()), id: \.offset) { _, device in
                         HStack(spacing: 8) {
                             StatusBadge(status: device.status.buildStatus, size: 14)
@@ -240,7 +250,7 @@ struct IssuesTabView: View {
                                     if let category = row.category {
                                         Text(category).font(.caption).foregroundStyle(.secondary)
                                     }
-                                    SourceLine(location: row.location, path: row.path, message: row.message)
+                                    SourceLine(location: row.location, path: row.path, message: row.message, line: row.line)
                                 }
                                 .padding(.leading, 24)
                             }
