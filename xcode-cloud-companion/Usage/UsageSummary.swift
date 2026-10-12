@@ -105,6 +105,8 @@ nonisolated struct UsageSummary: Sendable, Equatable {
     var measurement = MeasurementProgress()
     var byWorkflow: [WorkflowUsage] = []
     var costliestBuild: BuildCost?
+    /// The same, app by app, keyed by product name.
+    var costliestBuildByApp: [String: BuildCost] = [:]
 
     /// Gauge segments: one per app that Apple billed, biggest first, then one for everything still estimated.
     var gaugeSegments: [GaugeSegment] {
@@ -211,6 +213,7 @@ nonisolated enum UsageCalculator {
 
         var workflows: [String: WorkflowUsage] = [:]
         var costliest: BuildCost?
+        var costliestByApp: [String: BuildCost] = [:]
         for entry in inCycle {
             let name = entry.workflow ?? String(localized: "Other workflows")
             let key = "\(entry.product)|\(name)"
@@ -219,11 +222,11 @@ nonisolated enum UsageCalculator {
             usage.estimatedMinutes += entry.estimatedMinutes
             usage.buildCount += 1
             workflows[key] = usage
-            if let number = entry.buildNumber, entry.billedMinutes + entry.estimatedMinutes > (costliest?.minutes ?? 0) {
-                costliest = BuildCost(
-                    product: entry.product, buildNumber: number, workflow: entry.workflow,
-                    minutes: entry.billedMinutes + entry.estimatedMinutes, isEstimated: entry.billedMinutes == 0
-                )
+            let minutes = entry.billedMinutes + entry.estimatedMinutes
+            if let number = entry.buildNumber, minutes > 0 {
+                let cost = BuildCost(product: entry.product, buildNumber: number, workflow: entry.workflow, minutes: minutes, isEstimated: entry.billedMinutes == 0)
+                if minutes > (costliest?.minutes ?? 0) { costliest = cost }
+                if minutes > (costliestByApp[entry.product]?.minutes ?? 0) { costliestByApp[entry.product] = cost }
             }
         }
 
@@ -262,7 +265,8 @@ nonisolated enum UsageCalculator {
             byApp: byApp.values.sorted { $0.totalMinutes > $1.totalMinutes },
             measurement: measurement,
             byWorkflow: workflows.values.sorted { ($0.totalMinutes, $1.workflow) > ($1.totalMinutes, $0.workflow) },
-            costliestBuild: costliest
+            costliestBuild: costliest,
+            costliestBuildByApp: costliestByApp
         )
     }
 
