@@ -13,15 +13,20 @@ final class AccountSession: Identifiable {
     /// A build's issues, tests and artifacts: the window and the `cumulus` command load them through the same store.
     let extrasStore: BuildExtrasStore
     let paletteStore: AppPaletteStore
+    /// How many icons gave their colour since launch: whoever draws the palette reads it, to draw again when it grows.
+    private(set) var iconColorReadings = 0
     /// Where the apps' repositories are cloned on this Mac, to open a build's files in Xcode.
     let localRepositories: LocalRepositories
     /// Made when the window first shows the account.
     @ObservationIgnored private(set) lazy var windowStores = AccountWindowStores(buildStore: buildStore, extrasStore: extrasStore, paths: paths)
     private let defaults: UserDefaults
+    /// Where the icons are read from to find the apps' colours; without one, no icon is read.
+    private let iconCache: AppIconCache?
+    @ObservationIgnored private var iconReadingAttempts: [String: Date] = [:]
 
     init(
         account: Account, paths: AccountPaths, settings: SettingsModel, buildStore: BuildStore, usageStore: UsageStore,
-        extrasStore: BuildExtrasStore, defaults: UserDefaults = .standard
+        extrasStore: BuildExtrasStore, iconCache: AppIconCache? = nil, defaults: UserDefaults = .standard
     ) {
         id = account.id
         name = account.name
@@ -31,6 +36,7 @@ final class AccountSession: Identifiable {
         self.usageStore = usageStore
         self.extrasStore = extrasStore
         self.defaults = defaults
+        self.iconCache = iconCache
         paletteStore = .account(account.id)
         localRepositories = LocalRepositories(accountID: account.id, defaults: defaults)
 
@@ -58,6 +64,7 @@ final class AccountSession: Identifiable {
             // Exports are read once for every account, then handed to the one they belong to: no account watches Downloads itself.
             usageStore: UsageStore(ledgerStore: UsageLedgerStore(fileURL: paths.usageLedger), watchedDirectory: nil),
             extrasStore: BuildExtrasStore(cache: BuildExtrasCache(directory: paths.buildDetails), client: { [buildStore] in await buildStore.detailClient() }),
+            iconCache: AppIconCache(directory: paths.appIcons),
             defaults: defaults
         )
     }
@@ -65,6 +72,37 @@ final class AccountSession: Identifiable {
     var account: Account {
         Account(id: id, name: name)
     }
+
+    /// The apps' colours, brought up to date with the apps that exist.
+    func palette(for snapshot: BuildSnapshot, summary: UsageSummary?) -> AppPalette {
+        _ = iconColorReadings
+        return paletteStore.refreshed(for: snapshot, summary: summary, defaults: defaults)
+    }
+
+    /// Gives each app the colour of its icon. An icon is read once, off the main actor, and again only when it changes;
+    /// one that could not be fetched is tried again an hour later at the earliest.
+    func readIconColors(in snapshot: BuildSnapshot, now: Date = Date()) async {
+        guard let iconCache else { return }
+        let known = paletteStore.load(from: defaults)
+        for product in snapshot.products {
+            guard let appID = product.appID, let icon = snapshot.appIcons[appID] else { continue }
+            let fingerprint = AppIconCache.fingerprint(of: icon)
+            let lastAttempt = iconReadingAttempts[fingerprint]
+            guard known.needsReading(ofIcon: fingerprint, for: product.name),
+                  lastAttempt.map({ now.timeIntervalSince($0) >= Self.iconReadingRetryInterval }) ?? true
+            else { continue }
+            iconReadingAttempts[fingerprint] = now
+            guard let data = await iconCache.imageData(appID: appID, icon: icon) else { continue }
+            let color = await IconColorReader.color(ofImage: data)
+            // Loaded again: the palette may have been saved while the icon was read.
+            var palette = paletteStore.load(from: defaults)
+            palette.setIconReading(AppPalette.IconReading(icon: fingerprint, color: color), for: product.name)
+            paletteStore.save(palette, to: defaults)
+            iconColorReadings += 1
+        }
+    }
+
+    private static let iconReadingRetryInterval: TimeInterval = 3600
 
     /// The same figure in the menu, the window and the alerts; nil while no reset date is set.
     func usageSummary(now: Date) -> UsageSummary? {

@@ -169,6 +169,7 @@ final class AccountsModel {
     private func follow(_ session: AccountSession) {
         session.buildStore.onSync = { [weak self, weak session] previous, current in
             guard let self, let session else { return }
+            Task { await session.readIconColors(in: current) }
             onSync?(session, previous, current)
         }
     }

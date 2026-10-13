@@ -56,6 +56,7 @@ extension AppSwatch {
         case .orange: .systemOrange
         case .mint: .systemMint
         case .gray: .systemGray
+        case .icon(let color): NSColor(srgbRed: color.red, green: color.green, blue: color.blue, alpha: 1)
         }
     }
 }

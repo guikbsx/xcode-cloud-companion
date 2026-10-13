@@ -61,7 +61,7 @@ struct MainWindowView: View {
     private var logOpener: LogOpener { session.windowStores.logOpener }
     private var workflowTests: WorkflowTestsModel { session.windowStores.workflowTests }
     private var pauser: WorkflowPauser { session.windowStores.pauser }
-    private var palette: AppPalette { session.paletteStore.refreshed(for: buildStore.snapshot, summary: usageSummary) }
+    private var palette: AppPalette { session.palette(for: buildStore.snapshot, summary: usageSummary) }
 
     var body: some View {
         switch contentState {
@@ -178,7 +178,7 @@ struct MainWindowView: View {
     private var sidebar: some View {
         let summary = usageSummary
         return SidebarView(
-            content: SidebarContent(snapshot: buildStore.snapshot, pinnedIDs: pins.ids, palette: session.paletteStore.refreshed(for: buildStore.snapshot, summary: summary)),
+            content: SidebarContent(snapshot: buildStore.snapshot, pinnedIDs: pins.ids, palette: session.palette(for: buildStore.snapshot, summary: summary)),
             pins: pins,
             selection: $navigation.sidebarSelection,
             cycle: CycleCard.Content(summary: summary),
