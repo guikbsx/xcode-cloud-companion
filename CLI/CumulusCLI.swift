@@ -11,6 +11,9 @@ nonisolated enum CumulusCLI {
         if invocation.command.needsPro, let refusal = ProGate.refusal(in: environment.directory) {
             return failure(refusal, format: invocation.format, environment: environment)
         }
+        if case .query(.status) = invocation.command, let refusal = await ProGate.pausedRefusal(account: invocation.account, in: environment.directory) {
+            return failure(refusal, format: invocation.format, environment: environment)
+        }
         switch invocation.command {
         case .help(let topic):
             guard let topic else { return CLIResult(stdout: CLIHelp.overview) }

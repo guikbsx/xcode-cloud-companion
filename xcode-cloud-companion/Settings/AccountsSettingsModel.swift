@@ -141,6 +141,8 @@ final class AccountsSettingsModel {
 
     /// A form already started is taken up where it was left.
     func startAdding(among accounts: AccountsModel) {
+        // One more account comes with Cumulus Pro: no form opens without it.
+        guard accounts.canAddAccount else { return }
         if selection != .newAccount {
             beforeAdding = selection
         }

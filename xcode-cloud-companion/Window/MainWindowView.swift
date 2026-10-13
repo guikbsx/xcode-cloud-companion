@@ -13,7 +13,8 @@ struct MainWindowRoot: View {
         Group {
             if let session = accounts.selected {
                 MainWindowView(
-                    session: session, others: accounts.sessions.filter { $0.id != session.id }, navigation: navigation, pins: pins,
+                    // A paused account shows nothing of itself here, not even the progress of a measure it left unfinished.
+                    session: session, others: accounts.activeSessions.filter { $0.id != session.id }, navigation: navigation, pins: pins,
                     openSettings: openSettings, importUsageExport: { await accounts.importUsageExport(at: $0) }
                 )
                 // Sheets, tasks and what was typed belong to the account they were opened for.
@@ -28,7 +29,11 @@ struct MainWindowRoot: View {
                 ToolbarItem(placement: .navigation) {
                     Picker("Account", selection: Binding(get: { accounts.selectedID }, set: { if let id = $0 { accounts.select(id) } })) {
                         ForEach(accounts.sessions) { session in
-                            Text(session.name).tag(Optional(session.id))
+                            if accounts.isPaused(session) {
+                                Label(session.name, systemImage: "lock").tag(Optional(session.id))
+                            } else {
+                                Text(session.name).tag(Optional(session.id))
+                            }
                         }
                     }
                     .pickerStyle(.menu)

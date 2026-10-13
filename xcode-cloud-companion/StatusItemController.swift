@@ -65,9 +65,7 @@ final class StatusItemController: NSObject, NSMenuDelegate {
             teamID: settings.issuerID.isEmpty ? nil : settings.issuerID,
             measurement: measurement,
             activity: buildStore.progress,
-            accounts: accounts.hasSeveral ? accounts.sessions.map {
-                AccountChoice(id: $0.id, name: $0.name, badge: MenuBarBadge.status(for: $0.buildStore.snapshot))
-            } : [],
+            accounts: AccountChoice.all(of: accounts),
             selectedAccountID: session.id
         )
     }
@@ -156,6 +154,6 @@ final class StatusItemController: NSObject, NSMenuDelegate {
         }
         #endif
         // The dot speaks for every account: a build of an account that is not on screen still shows.
-        return MenuBarBadge.status(for: accounts.sessions.map(\.buildStore.snapshot))
+        return MenuBarBadge.status(for: accounts.activeSessions.map(\.buildStore.snapshot))
     }
 }

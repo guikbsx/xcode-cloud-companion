@@ -62,6 +62,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             openHelp: #selector(openHelp)
         ))
         accounts.pro = pro
+        accounts.onPausedSelection = { [weak self] in self?.presentCumulusPro(for: .multipleAccounts) }
         statusItemController = StatusItemController(accounts: accounts, actions: menuActions())
         accounts.onSelectionChange = { [weak self, navigation] in
             navigation.accountDidChange()
@@ -124,7 +125,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         let service = AppIPCService(
             sync: { id in
                 guard let id else { return accounts.selected?.buildStore }
-                return accounts.session(id: id)?.buildStore
+                // A paused account is not synced on anyone's request.
+                return accounts.session(id: id).flatMap { accounts.isPaused($0) ? nil : $0.buildStore }
             },
             openBuild: { [weak self] id in
                 self?.openBuild(id)
@@ -221,10 +223,24 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     /// The purchase sheet hangs on the main window: it opens the window first.
     @objc func openCumulusPro() {
+        presentCumulusPro(for: nil)
+    }
+
+    /// `feature` is the locked function one came from: its benefit is read first.
+    private func presentCumulusPro(for feature: ProFeature?) {
         mainWindowController.show()
         NSApp.activate()
         guard let window = mainWindowController.window else { return }
-        proPurchase.present(over: window)
+        proPurchase.present(over: window, origin: feature)
+    }
+
+    /// A first account is free; without Cumulus Pro, one more leads to the purchase sheet before any key is asked for.
+    private func addAccount() {
+        if accounts.canAddAccount {
+            settingsWindowController.show(addingAccount: true)
+        } else {
+            presentCumulusPro(for: .multipleAccounts)
+        }
     }
 
     @objc private func refresh() {
@@ -266,7 +282,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             },
             importUsageExport: { [weak self] in self?.importUsageExport() },
             openSettings: { [weak self] in self?.openSettings() },
-            addAccount: { [weak self] in self?.settingsWindowController.show(addingAccount: true) },
+            addAccount: { [weak self] in self?.addAccount() },
             openApp: { [weak self] in self?.openMainWindow() },
             openBuild: { [weak self] in self?.openBuild($0) }
         )

@@ -36,6 +36,8 @@ nonisolated protocol ProSource: Sendable {
 @Observable
 final class ProStore {
     private(set) var entitlement: ProEntitlement
+    /// False until the transactions were read once: before that, “free” only means “not known yet”.
+    private(set) var hasResolved: Bool
     private(set) var offers: [ProOffer] = []
     private(set) var isLoadingOffers = false
 
@@ -53,6 +55,7 @@ final class ProStore {
         self.now = now
         entitlement = forced ?? .free
         isForced = forced != nil
+        hasResolved = forced != nil
     }
 
     var isPro: Bool { entitlement.isActive }
@@ -84,6 +87,9 @@ final class ProStore {
         let resolved = ProEntitlement.resolve(await source.readings())
         if resolved != entitlement {
             entitlement = resolved
+        }
+        if !hasResolved {
+            hasResolved = true
         }
         onRead?(resolved)
         scheduleRecheck()

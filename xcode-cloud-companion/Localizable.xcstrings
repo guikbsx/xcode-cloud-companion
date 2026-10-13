@@ -5551,6 +5551,26 @@
         }
       }
     },
+    "Paused, needs Cumulus Pro" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "En pause, demande Cumulus Pro"
+          }
+        }
+      }
+    },
+    "Paused: following several accounts comes with Cumulus Pro" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "En pause : suivre plusieurs comptes vient avec Cumulus Pro"
+          }
+        }
+      }
+    },
     "Pause…" : {
       "localizations" : {
         "fr" : {
@@ -7328,6 +7348,16 @@
         }
       }
     },
+    "This account is paused" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ce compte est en pause"
+          }
+        }
+      }
+    },
     "This alert comes with Cumulus Pro. Your setting is kept." : {
       "localizations" : {
         "fr" : {
@@ -7999,6 +8029,16 @@
         }
       }
     },
+    "Without Cumulus Pro, Cumulus follows your first account only. Nothing is erased: this account’s key, builds and settings are intact, and its sync starts again with Pro." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sans Cumulus Pro, Cumulus ne suit que votre premier compte. Rien n’est effacé : la clé, les builds et les réglages de ce compte sont intacts, et sa synchronisation reprend avec Pro."
+          }
+        }
+      }
+    },
     "Without an export, the usage shown is an estimate computed from the builds’ actions." : {
       "localizations" : {
         "fr" : {
@@ -8430,6 +8470,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "en pause"
+          }
+        }
+      }
+    },
+    "paused, needs Cumulus Pro" : {
+      "comment" : "VoiceOver, after the name of an account that is not followed without Cumulus Pro.",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "en pause, demande Cumulus Pro"
           }
         }
       }

@@ -7,25 +7,57 @@ struct AccountDetailView: View {
     let session: AccountSession
     @Bindable var model: SettingsModel
     let requestRemoval: () -> Void
+    /// Opens the purchase sheet over the Settings window.
+    var openPurchase: () -> Void = {}
     @State private var showsGuides = false
     @State private var isImportingExport = false
     @State private var name: String
     @FocusState private var nameIsFocused: Bool
 
-    init(accounts: AccountsModel, session: AccountSession, requestRemoval: @escaping () -> Void) {
+    init(accounts: AccountsModel, session: AccountSession, openPurchase: @escaping () -> Void = {}, requestRemoval: @escaping () -> Void) {
         self.accounts = accounts
         self.session = session
         self.model = session.settings
+        self.openPurchase = openPurchase
         self.requestRemoval = requestRemoval
         _name = State(initialValue: session.name)
     }
 
     private var showsKeyGuide: Bool { !model.hasStoredKey || showsGuides }
 
+    /// Without Cumulus Pro only the first account is followed: this one keeps everything and waits.
+    @ViewBuilder
+    private var pausedBanner: some View {
+        if accounts.isPaused(session) {
+            Section {
+                HStack(alignment: .top, spacing: 10) {
+                    Label {
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("This account is paused")
+                                .font(.headline)
+                            Text("Without Cumulus Pro, Cumulus follows your first account only. Nothing is erased: this account’s key, builds and settings are intact, and its sync starts again with Pro.")
+                                .font(.callout)
+                                .foregroundStyle(.secondary)
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
+                    } icon: {
+                        Image(systemName: "lock.fill")
+                            .foregroundStyle(Color.accentColor)
+                    }
+                    Spacer(minLength: 8)
+                    Button("Discover Pro", action: openPurchase)
+                        .buttonStyle(.borderedProminent)
+                        .fixedSize()
+                }
+            }
+        }
+    }
+
     var body: some View {
         Group {
             if model.hasStoredKey {
                 SettingsColumns(single: {
+                    pausedBanner
                     connectionBanner
                     accountSection
                     planSection
@@ -38,6 +70,7 @@ struct AccountDetailView: View {
                     removalSection
                 }) {
                     // The account and where its apps are cloned; each guide opens under what it explains.
+                    pausedBanner
                     connectionBanner
                     accountSection
                     keyGuide
@@ -75,7 +108,8 @@ struct AccountDetailView: View {
                     Button("Test Connection") {
                         Task { await model.testConnection() }
                     }
-                    .disabled(model.connectionState == .testing)
+                    // A paused account asks Apple nothing, a test included.
+                    .disabled(model.connectionState == .testing || accounts.isPaused(session))
                     .help("Ask App Store Connect whether this key still works")
                 }
             }

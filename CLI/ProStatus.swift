@@ -59,4 +59,21 @@ nonisolated enum ProGate {
             suggestions: ["Ask the user to open Cumulus › Settings › Cumulus Pro, to start the free trial or restore a purchase."] + free
         )
     }
+
+    /// Without Cumulus Pro the app follows its first account only and pauses the others: `status` answers for none of
+    /// them. Nil with Pro, without `--account`, or when the account named is the first.
+    static func pausedRefusal(account reference: String?, in directory: URL) async -> CLIFailure? {
+        guard let reference, ProStatusStore(directory: directory).load()?.isActive != true,
+              let registry = await CLIAccountScope.registry(in: directory), let first = registry.accounts.first,
+              let scope = try? await CLIAccountScope.resolve(reference, in: directory), scope.account.id != first.id
+        else { return nil }
+        return CLIFailure(
+            code: .proRequired,
+            message: "The account '\(scope.account.name)' is paused: without Cumulus Pro, Cumulus follows '\(first.name)' only.",
+            suggestions: [
+                "Run 'cumulus status' without --account.",
+                "Ask the user to open Cumulus › Settings › Cumulus Pro to follow several accounts.",
+            ]
+        )
+    }
 }

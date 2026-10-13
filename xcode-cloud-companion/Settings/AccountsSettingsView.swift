@@ -5,6 +5,8 @@ import SwiftUI
 struct AccountsSettingsView: View {
     let accounts: AccountsModel
     @Bindable var model: AccountsSettingsModel
+    /// Opens the purchase sheet over the Settings window.
+    var openPurchase: () -> Void = {}
     /// Told once an account is gone, so the window can leave the pane after the last one.
     var accountWasRemoved: () -> Void = {}
     @State private var removal: AccountSession?
@@ -55,7 +57,7 @@ struct AccountsSettingsView: View {
             newAccount(form)
                 .navigationTitle(Text("New Account"))
         } else if let id = model.selectedAccountID, let session = accounts.session(id: id) {
-            AccountDetailView(accounts: accounts, session: session, requestRemoval: { removal = session })
+            AccountDetailView(accounts: accounts, session: session, openPurchase: openPurchase, requestRemoval: { removal = session })
                 // What was typed belongs to the account it was typed for.
                 .id(session.id)
         } else {
