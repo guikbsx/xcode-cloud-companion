@@ -1,6 +1,16 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "%@" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@"
+          }
+        }
+      }
+    },
     "%@ #%@ failed" : {
       "comment" : "Notification title: app name, then build number.",
       "localizations" : {
@@ -221,6 +231,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%1$@ utilisés sur %2$@"
+          }
+        }
+      }
+    },
+    "%@ of %@ used (%@). The cycle resets on %@." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ of %2$@ used (%3$@). The cycle resets on %4$@."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ utilisés sur %2$@ (%3$@). Le cycle se réinitialise le %4$@."
           }
         }
       }
@@ -881,6 +907,22 @@
         }
       }
     },
+    "About %@ of %@ used (%@), an estimate. The cycle resets on %@." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "About %1$@ of %2$@ used (%3$@), an estimate. The cycle resets on %4$@."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Environ %1$@ utilisés sur %2$@ (%3$@), une estimation. Le cycle se réinitialise le %4$@."
+          }
+        }
+      }
+    },
     "About Cumulus" : {
       "localizations" : {
         "fr" : {
@@ -1164,6 +1206,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Analyse du build %1$lld sur %2$lld…"
+          }
+        }
+      }
+    },
+    "App" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App"
           }
         }
       }
@@ -1786,6 +1838,16 @@
         }
       }
     },
+    "Builds running: %@." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Builds en cours : %@."
+          }
+        }
+      }
+    },
     "Builds running: %lld" : {
       "localizations" : {
         "fr" : {
@@ -2267,12 +2329,52 @@
         }
       }
     },
+    "Cumulus follows no app named %@." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cumulus ne suit aucune app nommée %@."
+          }
+        }
+      }
+    },
+    "Cumulus has no build yet. Open the app and add your App Store Connect API key." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cumulus n’a encore aucun build. Ouvrez l’app et ajoutez votre clé API App Store Connect."
+          }
+        }
+      }
+    },
+    "Cumulus is still measuring the builds of this cycle." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cumulus mesure encore les builds de ce cycle."
+          }
+        }
+      }
+    },
     "Cumulus isn’t set up yet" : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Cumulus n’est pas encore configuré"
+          }
+        }
+      }
+    },
+    "Cumulus knows no build for this." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cumulus ne connaît aucun build pour cela."
           }
         }
       }
@@ -2397,6 +2499,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Cycle"
+          }
+        }
+      }
+    },
+    "Cycle Usage" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Consommation du cycle"
           }
         }
       }
@@ -3176,6 +3288,36 @@
         }
       }
     },
+    "Get Cycle Usage" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Obtenir la consommation du cycle"
+          }
+        }
+      }
+    },
+    "Get Latest Build" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Obtenir le dernier build"
+          }
+        }
+      }
+    },
+    "Get Running Builds" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Obtenir les builds en cours"
+          }
+        }
+      }
+    },
     "Git reference change" : {
       "localizations" : {
         "fr" : {
@@ -3243,6 +3385,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Masquer les guides"
+          }
+        }
+      }
+    },
+    "How much of the Xcode Cloud plan is used this cycle, as Cumulus estimates it." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La part du forfait Xcode Cloud utilisée sur ce cycle, telle que Cumulus l’estime."
           }
         }
       }
@@ -3660,6 +3812,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Tient jusqu’à la réinitialisation à ce rythme"
+          }
+        }
+      }
+    },
+    "Latest Build" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dernier build"
           }
         }
       }
@@ -4192,6 +4354,16 @@
         }
       }
     },
+    "No build is running." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aucun build en cours."
+          }
+        }
+      }
+    },
     "No build yet" : {
       "localizations" : {
         "fr" : {
@@ -4318,6 +4490,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Aucune pull request ouverte n’a été trouvée pour ce workflow."
+          }
+        }
+      }
+    },
+    "No plan is set in Cumulus: add the reset date in Settings to follow the cycle." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aucun forfait n’est réglé dans Cumulus : ajoutez la date de réinitialisation dans les Réglages pour suivre le cycle."
           }
         }
       }
@@ -5350,6 +5532,16 @@
         }
       }
     },
+    "Running Builds" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Builds en cours"
+          }
+        }
+      }
+    },
     "Runs out around %@ at this pace" : {
       "localizations" : {
         "fr" : {
@@ -6027,6 +6219,16 @@
         }
       }
     },
+    "The Xcode Cloud builds that are waiting or running right now." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Les builds Xcode Cloud en attente ou en cours en ce moment."
+          }
+        }
+      }
+    },
     "The agent then calls Cumulus as tools instead of a command." : {
       "localizations" : {
         "fr" : {
@@ -6192,6 +6394,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "L’archive des journaux ne peut pas être décompressée en toute sécurité. Enregistrez-la plutôt depuis l’onglet Artefacts."
+          }
+        }
+      }
+    },
+    "The most recent Xcode Cloud build Cumulus knows, of every app or of one." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Le build Xcode Cloud le plus récent que Cumulus connaît, toutes apps confondues ou pour une seule."
           }
         }
       }
