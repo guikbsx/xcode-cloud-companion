@@ -3381,6 +3381,17 @@
         }
       }
     },
+    "Installed" : {
+      "comment" : "Settings, Agents: the command or the skill is in place",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Installé"
+          }
+        }
+      }
+    },
     "Installed in %@." : {
       "localizations" : {
         "fr" : {
@@ -3599,6 +3610,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Dernier build : %1$@, %2$@"
+          }
+        }
+      }
+    },
+    "Last connection %@" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dernière connexion %@"
           }
         }
       }
@@ -4024,6 +4045,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Nom"
+          }
+        }
+      }
+    },
+    "Needs Repair" : {
+      "comment" : "Settings, Agents: the link leads to a copy of the app that moved",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "À réparer"
           }
         }
       }

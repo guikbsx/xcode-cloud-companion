@@ -16,13 +16,25 @@ final class AgentsSettingsModel {
     private(set) var commandState = AgentLinkState.missing
     private(set) var skills: [SkillRow] = []
     private(set) var errorMessage: String?
+    /// The agents that connected to `cumulus mcp`, as the command noted them.
+    private(set) var connections = AgentConnections()
 
     let locations: AgentLocations
     private let defaults: UserDefaults
+    private let connectionsStore: AgentConnectionsStore
 
-    init(locations: AgentLocations = .live, defaults: UserDefaults = .standard) {
+    init(
+        locations: AgentLocations = .live, defaults: UserDefaults = .standard,
+        connectionsStore: AgentConnectionsStore = AgentConnectionsStore(directory: SharedContainer.applicationSupport)
+    ) {
         self.locations = locations
         self.defaults = defaults
+        self.connectionsStore = connectionsStore
+    }
+
+    /// When the agent last connected to the MCP server; nil while it never did, or cannot be told from another.
+    func lastConnection(of client: AgentClient) -> Date? {
+        connections.lastSeen(where: client.isConnection(named:))
     }
 
     /// Where the open panel starts for the command: the first usual PATH folder that exists.
@@ -32,6 +44,7 @@ final class AgentsSettingsModel {
 
     /// Looks at every link again; what it finds may have changed outside the app.
     func refresh() async {
+        connections = await Self.connections(in: connectionsStore)
         var found: (URL, AgentLinkState)?
         for directory in commandCandidates {
             let state = await locations.commandLink(in: directory).state()
@@ -157,6 +170,10 @@ final class AgentsSettingsModel {
         } catch {
             errorMessage = error.message
         }
+    }
+
+    @concurrent private static func connections(in store: AgentConnectionsStore) async -> AgentConnections {
+        store.load()
     }
 
     @concurrent private static func directoryExists(_ directory: URL) async -> Bool {

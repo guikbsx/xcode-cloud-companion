@@ -45,6 +45,9 @@ nonisolated struct MCPServer: Sendable {
         switch method {
         case "initialize":
             let requested = params["protocolVersion"]?.stringValue
+            if let client = params["clientInfo"]?["name"]?.stringValue {
+                AgentConnectionsStore(directory: environment.directory).note(client: client, at: environment.now())
+            }
             return Self.success(id: id, [
                 "protocolVersion": .string(requested.flatMap { Self.supportedVersions.contains($0) ? $0 : nil } ?? Self.fallbackVersion),
                 "capabilities": ["tools": ["listChanged": false]],

@@ -196,6 +196,18 @@ nonisolated enum AgentClient: String, CaseIterable, Identifiable, Sendable {
         }
     }
 
+    /// Whether a name an agent gave when it connected to `cumulus mcp` is this client's. Xcode's agent is Claude Code
+    /// under another roof: unless its name says Xcode, its connections cannot be told from Claude Code's.
+    func isConnection(named name: String) -> Bool {
+        let name = name.lowercased()
+        switch self {
+        case .claudeCode: return name.contains("claude-code") || name.contains("claude code")
+        case .codex: return name.contains("codex")
+        case .xcode: return name.contains("xcode")
+        case .claudeDesktop: return name.contains("claude-ai") || name.contains("claude-desktop") || name.contains("claude desktop")
+        }
+    }
+
     /// Quoted only when the shell would split or expand it, as a path with a space would be.
     static func shellQuoted(_ text: String) -> String {
         let safe = text.allSatisfy { $0.isASCII && ($0.isLetter || $0.isNumber || "/._-+@:".contains($0)) }

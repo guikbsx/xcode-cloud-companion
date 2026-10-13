@@ -126,7 +126,7 @@ struct AgentsSettingsView: View {
                     skillRow(row)
                 }
             }
-            step(client.keepsSkills ? 3 : 2, isDone: nil) {
+            step(client.keepsSkills ? 3 : 2, isDone: model.lastConnection(of: client) == nil ? nil : true) {
                 serverRow(client)
             }
         } header: {
@@ -172,19 +172,43 @@ struct AgentsSettingsView: View {
         .accessibilityElement(children: .contain)
     }
 
+    /// Said in words beside the button: what is in place must not be installed a second time.
+    @ViewBuilder
+    private func stateLabel(_ state: AgentLinkState) -> some View {
+        switch state {
+        case .installed:
+            statusLabel(Text("Installed", comment: "Settings, Agents: the command or the skill is in place"), symbol: "checkmark.circle.fill", tint: BuildStatus.succeeded.textTint)
+        case .broken:
+            statusLabel(Text("Needs Repair", comment: "Settings, Agents: the link leads to a copy of the app that moved"), symbol: "exclamationmark.triangle.fill", tint: BuildStatus.errored.textTint)
+        case .missing, .occupied:
+            EmptyView()
+        }
+    }
+
+    private func statusLabel(_ text: Text, symbol: String, tint: Color) -> some View {
+        Label { text } icon: { Image(systemName: symbol) }
+            .font(.callout.weight(.medium))
+            .foregroundStyle(tint)
+            .labelStyle(.titleAndIcon)
+            .fixedSize()
+    }
+
     private var commandRow: some View {
         LabeledContent {
-            switch model.commandState {
-            case .installed:
-                if let directory = model.commandDirectory, model.canChange(directory) {
-                    Button("Remove") { Task { await model.removeCommand() } }
-                } else {
-                    Button("Remove…") { picking = .removingCommand }
+            HStack(spacing: 10) {
+                stateLabel(model.commandState)
+                switch model.commandState {
+                case .installed:
+                    if let directory = model.commandDirectory, model.canChange(directory) {
+                        Button("Remove") { Task { await model.removeCommand() } }
+                    } else {
+                        Button("Remove…") { picking = .removingCommand }
+                    }
+                case .broken:
+                    Button("Repair…") { picking = .command }
+                case .missing, .occupied:
+                    Button("Install…") { picking = .command }
                 }
-            case .broken:
-                Button("Repair…") { picking = .command }
-            case .missing, .occupied:
-                Button("Install…") { picking = .command }
             }
         } label: {
             VStack(alignment: .leading, spacing: 2) {
@@ -199,18 +223,21 @@ struct AgentsSettingsView: View {
 
     private func skillRow(_ row: AgentsSettingsModel.SkillRow) -> some View {
         LabeledContent {
-            switch row.state {
-            case .installed:
-                if model.canChange(row.directory) {
-                    Button("Remove") { Task { await model.removeSkill(in: row.directory) } }
-                } else {
-                    Button("Remove…") { picking = .removingSkill(row.directory) }
+            HStack(spacing: 10) {
+                stateLabel(row.state)
+                switch row.state {
+                case .installed:
+                    if model.canChange(row.directory) {
+                        Button("Remove") { Task { await model.removeSkill(in: row.directory) } }
+                    } else {
+                        Button("Remove…") { picking = .removingSkill(row.directory) }
+                    }
+                case .broken:
+                    Button("Repair…") { picking = .skill(row.directory) }
+                case .missing, .occupied:
+                    Button("Install…") { picking = .skill(row.directoryExists ? row.directory : nil) }
+                        .disabled(!row.directoryExists)
                 }
-            case .broken:
-                Button("Repair…") { picking = .skill(row.directory) }
-            case .missing, .occupied:
-                Button("Install…") { picking = .skill(row.directoryExists ? row.directory : nil) }
-                    .disabled(!row.directoryExists)
             }
         } label: {
             VStack(alignment: .leading, spacing: 2) {
@@ -235,6 +262,11 @@ struct AgentsSettingsView: View {
                         .fixedSize(horizontal: false, vertical: true)
                 }
                 Spacer()
+                if let lastConnection = model.lastConnection(of: client) {
+                    statusLabel(Text("Connected"), symbol: "checkmark.circle.fill", tint: BuildStatus.succeeded.textTint)
+                        .help(Text("Last connection \(UsageFormat.relative(lastConnection, now: Date()))"))
+                        .accessibilityValue(Text("Last connection \(UsageFormat.relative(lastConnection, now: Date()))"))
+                }
                 Button(copiedClient == client ? "Copied" : "Copy") { copy(snippet, for: client) }
             }
             Text(verbatim: client.compactSnippet(command: model.locations.command))
