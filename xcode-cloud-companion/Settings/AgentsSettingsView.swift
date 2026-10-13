@@ -18,6 +18,7 @@ struct AgentsSettingsView: View {
     let model: AgentsSettingsModel
     @State private var picking: Picking?
     @State private var copiedClient: AgentClient?
+    @State private var extensionError: String?
     @AppStorage(AgentsSettingsView.clientKey) private var clientName = AgentClient.claudeCode.rawValue
 
     private var client: AgentClient { AgentClient(rawValue: clientName) ?? .claudeCode }
@@ -243,6 +244,32 @@ struct AgentsSettingsView: View {
                 .truncationMode(.middle)
                 .textSelection(.enabled)
                 .frame(maxWidth: .infinity, alignment: .leading)
+            if client == .claudeDesktop {
+                HStack(alignment: .firstTextBaseline) {
+                    Text(extensionError ?? String(localized: "Or as an extension: export it, then double-click the file to install it in Claude Desktop."))
+                        .font(.caption)
+                        .foregroundStyle(extensionError == nil ? Color.secondary : Color.red)
+                        .fixedSize(horizontal: false, vertical: true)
+                    Spacer()
+                    Button("Export Extension…") { exportExtension() }
+                }
+            }
+        }
+    }
+
+    /// Saves the Claude Desktop extension where the user says; choosing the place is what lets the sandbox write there.
+    private func exportExtension() {
+        let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "1.0"
+        guard let data = MCPBundle.data(command: model.locations.command, appVersion: version) else { return }
+        let panel = NSSavePanel()
+        panel.nameFieldStringValue = MCPBundle.fileName
+        panel.canCreateDirectories = true
+        guard panel.runModal() == .OK, let url = panel.url else { return }
+        do {
+            try data.write(to: url, options: [.atomic])
+            extensionError = nil
+        } catch {
+            extensionError = String(localized: "The extension could not be saved there.")
         }
     }
 

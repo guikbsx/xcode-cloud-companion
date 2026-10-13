@@ -2664,6 +2664,16 @@
         }
       }
     },
+    "Export Extension…" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Exporter l’extension…"
+          }
+        }
+      }
+    },
     "Exported archive" : {
       "localizations" : {
         "fr" : {
@@ -4520,6 +4530,16 @@
         }
       }
     },
+    "Or as an extension: export it, then double-click the file to install it in Claude Desktop." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ou en extension : exportez-la, puis double-cliquez sur le fichier pour l’installer dans Claude Desktop."
+          }
+        }
+      }
+    },
     "Other" : {
       "localizations" : {
         "fr" : {
@@ -5850,6 +5870,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Le téléchargement n’a pas pu aboutir."
+          }
+        }
+      }
+    },
+    "The extension could not be saved there." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "L’extension n’a pas pu être enregistrée à cet endroit."
           }
         }
       }
