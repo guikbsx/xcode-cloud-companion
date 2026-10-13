@@ -192,6 +192,23 @@
         }
       }
     },
+    "%@ of %@" : {
+      "comment" : "Cycle card of the sidebar: the compute time used, then the plan, such as “13 hr, 37 min of 25 hr”",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ of %2$@"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ sur %2$@"
+          }
+        }
+      }
+    },
     "%@ of %@ used" : {
       "localizations" : {
         "en" : {
@@ -204,22 +221,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%1$@ utilisés sur %2$@"
-          }
-        }
-      }
-    },
-    "%@ of %lld h" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "%1$@ of %2$lld h"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%1$@ sur %2$lld h"
           }
         }
       }

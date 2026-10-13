@@ -40,7 +40,7 @@ nonisolated struct CLIRenderer: Sendable {
     private func usageFields(_ usage: UsageOutput) -> [(String, String)] {
         var fields: [(String, String)] = [
             ("Cycle", "\(CLIText.date(usage.cycleStart, calendar: calendar)) to \(CLIText.date(usage.resetDate, calendar: calendar)) (resets in \(CLIText.timeLeft(until: usage.resetDate, now: now)))"),
-            ("Used", "\(CLIText.minutes(usage.usedMinutes, estimated: usage.estimatedMinutes > 0)) of \(usage.planHours)h (\(CLIText.percent(usage.fractionUsed)))"),
+            ("Used", "\(CLIText.minutes(usage.usedMinutes, estimated: usage.estimatedMinutes > 0)) of \(usage.planHours)h (\(CLIText.percent(CLINumber.wholePercentFraction(usedMinutes: usage.usedMinutes, quotaMinutes: usage.quotaMinutes))))"),
             ("  Billed", CLIText.minutes(usage.billedMinutes) + (usage.lastImport.map { ", export imported \(CLIText.age(since: $0, now: now))" } ?? ", no usage export imported")),
             ("  Estimated", "\(CLIText.minutes(usage.estimatedMinutes, estimated: true)) (\(usage.estimatedBuildCount) builds)"),
             ("Remaining", CLIText.minutes(usage.remainingMinutes, estimated: usage.estimatedMinutes > 0)),

@@ -115,6 +115,15 @@ nonisolated enum CLINumber {
         (value * 1000).rounded() / 1000
     }
 
+    /// The share of a plan as the whole percentage shown to people, given back as a fraction (0.54). The minutes are
+    /// taken at the precision of the contract first: the app, which has the exact minutes, and the command, which has
+    /// the published ones, then round the same figures and cannot disagree.
+    static func wholePercentFraction(usedMinutes: Double, quotaMinutes: Double) -> Double {
+        let quota = minutes(quotaMinutes)
+        guard quota > 0 else { return 0 }
+        return (minutes(usedMinutes) / quota * 100).rounded() / 100
+    }
+
     static func seconds(_ value: TimeInterval) -> Int {
         Int(value.rounded())
     }

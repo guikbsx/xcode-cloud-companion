@@ -126,6 +126,8 @@ nonisolated struct UsageSummary: Sendable, Equatable {
     var quotaMinutes: Double { Double(plan.hours * 60) }
     var availableMinutes: Double { max(0, quotaMinutes - usedMinutes) }
     var fractionUsed: Double { quotaMinutes > 0 ? usedMinutes / quotaMinutes : 0 }
+    /// `fractionUsed` at the whole percentage that is written out, the same in the app and in the `cumulus` command.
+    var writtenFractionUsed: Double { CLINumber.wholePercentFraction(usedMinutes: usedMinutes, quotaMinutes: quotaMinutes) }
     var resetDate: Date { cycle.end }
     var timeUntilReset: TimeInterval { max(0, cycle.end.timeIntervalSince(now)) }
     var isImportStale: Bool { lastImport.map { now.timeIntervalSince($0) > Self.staleImportAge } ?? true }

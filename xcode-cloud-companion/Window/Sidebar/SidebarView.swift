@@ -186,8 +186,11 @@ extension CycleCard {
 
         init?(summary: UsageSummary?) {
             guard let summary, !summary.measurement.isMeasuring else { return nil }
-            fractionUsed = summary.fractionUsed
-            usedText = String(localized: "\(UsageFormat.minutes(summary.usedMinutes)) of \(summary.plan.hours) h")
+            fractionUsed = summary.writtenFractionUsed
+            usedText = String(
+                localized: "\(UsageFormat.minutes(summary.usedMinutes)) of \(UsageFormat.minutes(summary.quotaMinutes))",
+                comment: "Cycle card of the sidebar: the compute time used, then the plan, such as “13 hr, 37 min of 25 hr”"
+            )
             resetText = String(localized: "Resets \(UsageFormat.day(summary.resetDate))")
         }
     }

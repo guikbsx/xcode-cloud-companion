@@ -92,7 +92,7 @@ nonisolated enum UsageAlertPlanner {
 
     private static func usedLine(_ summary: UsageSummary) -> String {
         let used = (isEstimate(summary) ? "~" : "") + UsageFormat.minutes(summary.usedMinutes)
-        return String(localized: "\(used) of \(summary.plan.hours) h")
+        return String(localized: "\(used) of \(UsageFormat.minutes(summary.quotaMinutes))")
     }
 
     private static func resetLine(_ summary: UsageSummary) -> String {

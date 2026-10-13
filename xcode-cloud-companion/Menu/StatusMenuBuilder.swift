@@ -172,7 +172,7 @@ enum StatusMenuBuilder {
 
     static func buttonTitle(for summary: UsageSummary?, isFirstSync: Bool = false) -> String {
         guard let summary else { return isFirstSync ? "…" : "" }
-        return summary.measurement.isMeasuring ? "…" : UsageFormat.compactPercent(summary.fractionUsed)
+        return summary.measurement.isMeasuring ? "…" : UsageFormat.compactPercent(summary.writtenFractionUsed)
     }
 
     private static func viewItem(_ view: some View) -> NSMenuItem {

@@ -29,7 +29,7 @@ struct CycleRingGroup: View {
     private var ring: some View {
         CycleRing(segments: isMeasuring ? [] : model.ring, remainingTint: remainingTint) {
             VStack(spacing: 2) {
-                Text(isMeasuring ? "—" : UsageFormat.compactPercent(summary.fractionUsed))
+                Text(isMeasuring ? "—" : UsageFormat.compactPercent(summary.writtenFractionUsed))
                     .font(.system(size: 26, weight: .bold, design: .rounded).monospacedDigit())
                     .minimumScaleFactor(0.6)
                     .lineLimit(1)
@@ -41,7 +41,7 @@ struct CycleRingGroup: View {
         }
         .frame(width: 120, height: 120)
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel(isMeasuring ? Text("Measuring usage…") : Text("Cycle used at \(UsageFormat.percent(summary.fractionUsed))"))
+        .accessibilityLabel(isMeasuring ? Text("Measuring usage…") : Text("Cycle used at \(UsageFormat.percent(summary.writtenFractionUsed))"))
         .accessibilityAddTraits(.isImage)
     }
 
@@ -106,12 +106,25 @@ struct CycleRingGroup: View {
         .accessibilityElement(children: .combine)
     }
 
+    /// The name comes first: when it does not fit beside its figures, the figures go under it.
     private func legend(_ name: String, value: String, fill: AnyShapeStyle) -> some View {
-        HStack(spacing: 7) {
-            RoundedRectangle(cornerRadius: 2.5).fill(fill).frame(width: 9, height: 9).accessibilityHidden(true)
-            Text(name).lineLimit(1)
-            Spacer(minLength: 6)
-            Text(value).font(.callout.monospacedDigit()).foregroundStyle(.secondary).lineLimit(1).fixedSize()
+        let square = RoundedRectangle(cornerRadius: 2.5).fill(fill).frame(width: 9, height: 9).accessibilityHidden(true)
+        let figures = Text(value).font(.callout.monospacedDigit()).foregroundStyle(.secondary).lineLimit(1)
+        return ViewThatFits(in: .horizontal) {
+            HStack(spacing: 7) {
+                square
+                Text(name).lineLimit(1).fixedSize()
+                Spacer(minLength: 6)
+                figures.fixedSize()
+            }
+            HStack(alignment: .firstTextBaseline, spacing: 7) {
+                square
+                VStack(alignment: .leading, spacing: 1) {
+                    Text(name).lineLimit(1)
+                    figures.minimumScaleFactor(0.8)
+                }
+                Spacer(minLength: 0)
+            }
         }
         .font(.callout)
         .accessibilityElement(children: .combine)

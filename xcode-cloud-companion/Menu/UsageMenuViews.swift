@@ -21,7 +21,7 @@ struct UsageGaugeView: View {
             HStack(alignment: .firstTextBaseline) {
                 Text(isMeasuring
                     ? String(localized: "Measuring usage…")
-                    : String(localized: "\(UsageFormat.percent(summary.fractionUsed)) of \(UsageFormat.minutes(summary.quotaMinutes)) used"))
+                    : String(localized: "\(UsageFormat.percent(summary.writtenFractionUsed)) of \(UsageFormat.minutes(summary.quotaMinutes)) used"))
                     .font(.headline)
                     .lineLimit(1)
                 Spacer(minLength: 8)
