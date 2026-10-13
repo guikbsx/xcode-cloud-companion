@@ -460,7 +460,7 @@ private struct PlanGuideSection: View {
     var body: some View {
         Section("Where to find them") {
             GuideStep(number: 1) {
-                Text("In App Store Connect, open **Xcode Cloud › Usage**.")
+                Text("In App Store Connect, open **Users and Access › Xcode Cloud › Usage**.")
                 Link("Open Usage ↗", destination: AppStoreConnectLinks.xcodeCloudUsage(teamID: issuerID))
                     .buttonStyle(.borderedProminent)
                     .controlSize(.small)

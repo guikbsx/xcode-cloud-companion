@@ -10,7 +10,7 @@ nonisolated enum AppStoreConnectLinks {
         teamPage("access/integrations/api", teamID: teamID) ?? home
     }
 
-    /// Xcode Cloud › Usage.
+    /// Users and Access › Xcode Cloud › Usage.
     static func xcodeCloudUsage(teamID: String?) -> URL {
         teamPage("access/ci/usage", teamID: teamID) ?? home
     }

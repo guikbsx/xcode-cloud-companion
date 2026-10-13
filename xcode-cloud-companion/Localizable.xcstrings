@@ -3145,13 +3145,13 @@
         }
       }
     },
-    "In App Store Connect, open **Xcode Cloud › Usage**." : {
+    "In App Store Connect, open **Users and Access › Xcode Cloud › Usage**." : {
       "comment" : "Keep \"Xcode Cloud\", \"App Store Connect\" and \"TestFlight\" untranslated as product names.",
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Dans App Store Connect, ouvrez **Xcode Cloud › Utilisation**."
+            "value" : "Dans App Store Connect, ouvrez **Utilisateurs et accès › Xcode Cloud › Utilisation**."
           }
         }
       }
