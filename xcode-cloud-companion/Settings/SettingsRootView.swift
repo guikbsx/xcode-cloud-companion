@@ -9,6 +9,9 @@ struct SettingsRootView: View {
     let notificationPreferences: NotificationPreferences
     let notifications: NotificationCoordinator
     let agents: AgentsSettingsModel
+    let pro: ProStore
+    /// Opens the purchase sheet over this window.
+    let openPurchase: () -> Void
     @State private var columnVisibility = NavigationSplitViewVisibility.all
 
     var body: some View {
@@ -30,6 +33,7 @@ struct SettingsRootView: View {
             Label("General", systemImage: "gearshape").tag(SettingsDestination.general)
             Label("Notifications", systemImage: "bell").tag(SettingsDestination.notifications)
             Label("Agents", systemImage: "terminal").tag(SettingsDestination.agents)
+            Label("Cumulus Pro", systemImage: "sparkles").tag(SettingsDestination.pro)
             Section("Accounts") {
                 ForEach(accounts.sessions) { session in
                     HStack(spacing: 6) {
@@ -64,6 +68,9 @@ struct SettingsRootView: View {
         case .agents:
             AgentsSettingsView(model: agents)
                 .navigationTitle(Text("Agents"))
+        case .pro:
+            ProSettingsView(store: pro, openPurchase: openPurchase)
+                .navigationTitle(Text("Cumulus Pro"))
         case .accounts:
             AccountsSettingsView(accounts: accounts, model: navigation.accountsTab, accountWasRemoved: { navigation.accountWasRemoved(from: accounts) })
         }

@@ -13,17 +13,21 @@ final class SettingsWindowController: NSObject, NSWindowDelegate {
     private let notificationPreferences: NotificationPreferences
     private let notifications: NotificationCoordinator
     private let navigation: SettingsNavigationModel
+    private let pro: ProStore
+    private let purchase: ProPurchasePresenter
     private let agents = AgentsSettingsModel()
     private var window: NSWindow?
 
     init(
         accounts: AccountsModel, loginItem: LoginItemModel, notificationPreferences: NotificationPreferences,
-        notifications: NotificationCoordinator, defaults: UserDefaults = .standard
+        notifications: NotificationCoordinator, pro: ProStore, purchase: ProPurchasePresenter, defaults: UserDefaults = .standard
     ) {
         self.accounts = accounts
         self.loginItem = loginItem
         self.notificationPreferences = notificationPreferences
         self.notifications = notifications
+        self.pro = pro
+        self.purchase = purchase
         navigation = SettingsNavigationModel(defaults: defaults)
         super.init()
     }
@@ -48,7 +52,11 @@ final class SettingsWindowController: NSObject, NSWindowDelegate {
     private func makeWindow() -> NSWindow {
         let hosting = NSHostingController(rootView: SettingsRootView(
             accounts: accounts, navigation: navigation, loginItem: loginItem,
-            notificationPreferences: notificationPreferences, notifications: notifications, agents: agents
+            notificationPreferences: notificationPreferences, notifications: notifications, agents: agents,
+            pro: pro, openPurchase: { [weak self] in
+                guard let self, let window = self.window else { return }
+                self.purchase.present(over: window)
+            }
         ))
         // The size is the window's own: a hosting controller that keeps reporting one would pin the window to it.
         hosting.sizingOptions = []

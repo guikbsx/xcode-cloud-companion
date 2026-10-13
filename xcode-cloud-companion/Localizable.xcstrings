@@ -1144,6 +1144,16 @@
         }
       }
     },
+    "Already bought Cumulus Pro?" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vous avez déjà acheté Cumulus Pro ?"
+          }
+        }
+      }
+    },
     "Always make a clean build" : {
       "localizations" : {
         "fr" : {
@@ -2716,6 +2726,16 @@
         }
       }
     },
+    "Discover Cumulus Pro…" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Découvrir Cumulus Pro…"
+          }
+        }
+      }
+    },
     "Done" : {
       "localizations" : {
         "fr" : {
@@ -3480,6 +3500,16 @@
         }
       }
     },
+    "Have an offer code?" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vous avez un code d’offre ?"
+          }
+        }
+      }
+    },
     "Help" : {
       "localizations" : {
         "fr" : {
@@ -4199,6 +4229,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Journaux"
+          }
+        }
+      }
+    },
+    "Manage Subscription…" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gérer l’abonnement…"
           }
         }
       }
@@ -5260,6 +5300,16 @@
         }
       }
     },
+    "Paused Until Pro Resumes" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "En pause jusqu’au retour de Pro"
+          }
+        }
+      }
+    },
     "Pause…" : {
       "localizations" : {
         "fr" : {
@@ -5535,6 +5585,16 @@
         }
       }
     },
+    "Redeem a Code…" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Utiliser un code…"
+          }
+        }
+      }
+    },
     "Redo" : {
       "localizations" : {
         "fr" : {
@@ -5758,6 +5818,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Réactiver"
+          }
+        }
+      }
+    },
+    "Resume Cumulus Pro…" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reprendre Cumulus Pro…"
           }
         }
       }
@@ -7327,6 +7397,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Avertissement"
+          }
+        }
+      }
+    },
+    "What Pro Adds" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ce que Pro ajoute"
           }
         }
       }

@@ -14,10 +14,11 @@ struct SettingsWindowTests {
 
     private func controller(_ accounts: TestAccounts) -> SettingsWindowController {
         let preferences = NotificationPreferences(defaults: accounts.defaults)
+        let pro = ProStore(source: StubProSource())
         return SettingsWindowController(
             accounts: accounts.model, loginItem: LoginItemModel(loginItem: NoLoginItem()), notificationPreferences: preferences,
             notifications: NotificationCoordinator(center: MockNotificationCenter(), preferences: preferences, defaults: accounts.defaults),
-            defaults: accounts.defaults
+            pro: pro, purchase: ProPurchasePresenter(store: pro), defaults: accounts.defaults
         )
     }
 
@@ -51,10 +52,11 @@ let smallest = try #require(window.delegate?.windowWillResize?(window, to: NSSiz
     func theWindowKeepsTheSizeTheUserGivesItDownToAMinimumAndEachTabOpensAtItsOwn() async throws {
         let accounts = TestAccounts()
         let preferences = NotificationPreferences(defaults: accounts.defaults)
+        let pro = ProStore(source: StubProSource())
         let controller = SettingsWindowController(
             accounts: accounts.model, loginItem: LoginItemModel(loginItem: NoLoginItem()), notificationPreferences: preferences,
             notifications: NotificationCoordinator(center: MockNotificationCenter(), preferences: preferences, defaults: accounts.defaults),
-            defaults: accounts.defaults
+            pro: pro, purchase: ProPurchasePresenter(store: pro), defaults: accounts.defaults
         )
         controller.show()
         let window = try #require(NSApp.windows.first { $0.contentViewController is NSTabViewController })

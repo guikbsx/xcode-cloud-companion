@@ -25,7 +25,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private lazy var agentLaunches = AgentLaunchService(accounts: accounts, preferences: notificationPreferences, notify: { [notifications] in await notifications.deliver($0) })
     private var notificationResponder: NotificationResponder?
     private lazy var settingsWindowController = SettingsWindowController(
-        accounts: accounts, loginItem: loginItemModel, notificationPreferences: notificationPreferences, notifications: notifications
+        accounts: accounts, loginItem: loginItemModel, notificationPreferences: notificationPreferences, notifications: notifications,
+        pro: pro, purchase: proPurchase
     )
     private let navigation = NavigationModel()
     private lazy var mainWindowController = MainWindowController(
@@ -98,7 +99,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                 }
             }
         }
-        // XCC_SETTINGS=general|notifications|agents|accounts opens Settings on that pane, to look at it without a click.
+        // XCC_SETTINGS=general|notifications|agents|pro|accounts opens Settings on that pane, to look at it without a click.
         if let pane = ProcessInfo.processInfo.environment["XCC_SETTINGS"].flatMap(SettingsNavigationModel.Pane.init(rawValue:)) {
             settingsWindowController.show(pane: pane)
         }
