@@ -385,4 +385,24 @@ struct NotificationCoordinatorTests {
         #expect(NotificationPreferences(defaults: defaults).builds.stuckFactor == BuildNotificationRules.defaultStuckFactor)
         #expect(BuildNotificationRules.stuckFactors == [2, 3, 5] && BuildNotificationRules.stuckFactors.contains(BuildNotificationRules.defaultStuckFactor))
     }
+
+    @Test func withoutProAStuckBuildIsNeitherSignalledNorRememberedAsSaid() async {
+        var runs = (1...3).map { run($0, createdMinutesAgo: 600, finishedMinutesAgo: 500) }
+        var actions = Dictionary(uniqueKeysWithValues: (1...3).map { ("run-\($0)", [action("a\($0)", run: $0, startedMinutesAgo: 600, ranFor: 10)]) })
+        runs.insert(run(42, progress: .running), at: 0)
+        actions["run-42"] = [action("live", run: 42, progress: .running, startedMinutesAgo: 45)]
+        let stuck = snapshot(runs, actions: actions)
+        let center = MockNotificationCenter(status: .allowed)
+        let free = ProStore(source: StubProSource(), forced: .free)
+        let locked = NotificationCoordinator(center: center, preferences: NotificationPreferences(defaults: defaults), defaults: defaults, pro: free, now: { now })
+        await locked.buildsDidSync(previous: .empty, current: stuck)
+        await locked.buildsDidSync(previous: stuck, current: stuck)
+        #expect(await center.posted.isEmpty)
+
+        // The day Pro opens, the build still stuck is said once.
+        let open = makeCoordinator(center)
+        await open.buildsDidSync(previous: .empty, current: stuck)
+        await open.buildsDidSync(previous: stuck, current: stuck)
+        #expect(await center.posted.map(\.id) == ["stuck-run-42"])
+    }
 }

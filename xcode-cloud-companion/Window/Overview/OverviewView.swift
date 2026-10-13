@@ -21,6 +21,7 @@ struct OverviewView: View {
 
     @State private var isImporting = false
     @State private var expandedWorkflow: String?
+    @Environment(ProAccess.self) private var access: ProAccess?
 
     var body: some View {
         let model = summary.map { OverviewModel(summary: $0, palette: palette, displayNames: displayNames) }
@@ -37,8 +38,14 @@ struct OverviewView: View {
                 noPlan
             }
             if let forecast, !forecast.entries.isEmpty {
-                upcoming(forecast)
-                    .detailPlacement(.side)
+                Group {
+                    if access.allows(.upcomingBuilds) {
+                        upcoming(forecast)
+                    } else {
+                        ProLockedCard(feature: .upcomingBuilds)
+                    }
+                }
+                .detailPlacement(.side)
             }
             // With a column for short facts, the most expensive build and the exports are cards of their own there.
             if columns == .two {
@@ -110,7 +117,9 @@ struct OverviewView: View {
                     .accessibilityElement(children: .combine)
                     .accessibilityHint(Text("Shows where this workflow’s minutes went"))
                     .accessibilityAddTraits(isExpanded ? .isSelected : [])
-                    if isExpanded, let breakdown = breakdown(workflow) {
+                    if isExpanded, !access.allows(.workflowCostBreakdown) {
+                        ProLockedCard(feature: .workflowCostBreakdown)
+                    } else if isExpanded, let breakdown = breakdown(workflow) {
                         WorkflowBreakdownView(breakdown: breakdown)
                     }
                 }

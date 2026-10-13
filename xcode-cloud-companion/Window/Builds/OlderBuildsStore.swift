@@ -17,10 +17,16 @@ final class OlderBuildsStore {
     private var nextPages: [String: URL] = [:]
     private let client: () async -> AppStoreConnectClient?
     private let budget: () async -> RateLimit?
+    /// Cumulus Pro: false sends nothing and reads nothing.
+    private let allowed: @MainActor () -> Bool
 
-    init(client: @escaping () async -> AppStoreConnectClient?, budget: @escaping () async -> RateLimit?) {
+    init(
+        client: @escaping () async -> AppStoreConnectClient?, budget: @escaping () async -> RateLimit?,
+        allowed: @escaping @MainActor () -> Bool = { true }
+    ) {
         self.client = client
         self.budget = budget
+        self.allowed = allowed
     }
 
     func runs(forProductID productID: String) -> [CIBuildRun] {
@@ -38,7 +44,7 @@ final class OlderBuildsStore {
     /// Reads the next page of a product's builds, one request at a time and never again after a 429. `known` are the
     /// builds already shown, so a page that only repeats them is followed by the next one.
     func loadOlder(productID: String, known: [CIBuildRun]) async {
-        guard !loading.contains(productID), !exhausted.contains(productID) else { return }
+        guard allowed(), !loading.contains(productID), !exhausted.contains(productID) else { return }
         guard let client = await client() else { return }
         if let left = await budget(), left.remaining <= SyncSchedule.criticalRemaining {
             lastError = String(localized: "Apple’s hourly request limit is nearly spent: older builds wait for the next hour.")

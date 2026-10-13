@@ -200,14 +200,18 @@ final class WorkflowTestsModel {
     /// Loads one build's test results, one action at a time; returns the reason when it could not.
     private let loadTests: @MainActor (CIBuildRun, [CIBuildAction]) async -> String?
     private let budget: @MainActor () async -> RateLimit?
+    /// Cumulus Pro: false sends nothing and reads nothing.
+    private let allowed: @MainActor () -> Bool
     private var task: Task<Void, Never>?
 
     init(
         reader: TestHealthReader = TestHealthReader(),
         snapshot: @escaping @MainActor () -> BuildSnapshot,
         loadTests: @escaping @MainActor (CIBuildRun, [CIBuildAction]) async -> String?,
-        budget: @escaping @MainActor () async -> RateLimit?
+        budget: @escaping @MainActor () async -> RateLimit?,
+        allowed: @escaping @MainActor () -> Bool = { true }
     ) {
+        self.allowed = allowed
         self.reader = reader
         self.snapshot = snapshot
         self.loadTests = loadTests
@@ -218,6 +222,7 @@ final class WorkflowTestsModel {
 
     /// What is on disk, right now. No request.
     func refresh(workflowID: String) async {
+        guard allowed() else { return }
         if reportWorkflowID != workflowID {
             // Another workflow's figures are never shown while this one's are read.
             report = nil
@@ -244,7 +249,7 @@ final class WorkflowTestsModel {
     }
 
     func analyze(workflowID: String, limit: Int = WorkflowTestsModel.batchSize) async {
-        guard progress == nil else { return }
+        guard allowed(), progress == nil else { return }
         await refresh(workflowID: workflowID)
         stoppedForBudget = false
         failureMessage = nil

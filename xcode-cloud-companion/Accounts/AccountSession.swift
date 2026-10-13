@@ -20,7 +20,9 @@ final class AccountSession: Identifiable {
     /// Where the apps' repositories are cloned on this Mac, to open a build's files in Xcode.
     let localRepositories: LocalRepositories
     /// Made when the window first shows the account.
-    @ObservationIgnored private(set) lazy var windowStores = AccountWindowStores(buildStore: buildStore, extrasStore: extrasStore, paths: paths)
+    @ObservationIgnored private(set) lazy var windowStores = AccountWindowStores(buildStore: buildStore, extrasStore: extrasStore, paths: paths, pro: pro)
+    /// Cumulus Pro, given before the window first shows the account; nil leaves every function open.
+    @ObservationIgnored var pro: ProStore?
     private let defaults: UserDefaults
     /// Where the icons are read from to find the apps' colours; without one, no icon is read.
     private let iconCache: AppIconCache?

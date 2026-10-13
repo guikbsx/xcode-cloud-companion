@@ -18,6 +18,7 @@ struct BuildDetailView: View {
     @Binding var tab: BuildTab
     /// Bumped by “Compare with #n” beside the commit: the group below starts its comparison.
     @State private var compareRequest = 0
+    @Environment(ProAccess.self) private var access: ProAccess?
 
     var body: some View {
         TickingView(interval: Self.redrawInterval(for: run)) { now in
@@ -299,7 +300,7 @@ struct BuildDetailView: View {
         if let url = commit.webURL {
             Link("View commit", destination: url)
         }
-        if let reference = comparison {
+        if let reference = comparison, access.allows(.regressions) {
             Button("Compare with \(reference.number.map { "#\($0)" } ?? "#?")") { compareRequest += 1 }
                 .buttonStyle(.link)
                 .help("Loads the tests and issues of both builds, one action at a time.")

@@ -5,6 +5,19 @@ struct NotificationsSettingsView: View {
     @Bindable var preferences: NotificationPreferences
     let coordinator: NotificationCoordinator
     let accounts: AccountsModel
+    /// Cumulus Pro; nil leaves every alert open.
+    var pro: ProStore?
+
+    private var hasStuckAlert: Bool { pro?.allows(.stuckBuildAlert) ?? true }
+    private var hasEarlyAlerts: Bool { pro?.allows(.earlyUsageAlerts) ?? true }
+
+    /// Why a setting is greyed: it is kept as it was, and waits for Pro.
+    private var proNote: some View {
+        Text("This alert comes with Cumulus Pro. Your setting is kept.")
+            .font(.caption)
+            .foregroundStyle(.secondary)
+            .frame(maxWidth: .infinity, alignment: .leading)
+    }
 
     var body: some View {
         SettingsColumns {
@@ -20,7 +33,7 @@ struct NotificationsSettingsView: View {
                     state(.canceled)
                 }
             }
-            Section("When a build seems stuck") {
+            Section {
                 Toggle(isOn: $preferences.builds.stuck) {
                     VStack(alignment: .leading, spacing: 2) {
                         Text("A running action takes far longer than usual")
@@ -38,7 +51,14 @@ struct NotificationsSettingsView: View {
                 }
                 .pickerStyle(.segmented)
                 .disabled(!preferences.builds.stuck)
+            } header: {
+                Text("When a build seems stuck")
+            } footer: {
+                if !hasStuckAlert {
+                    proNote
+                }
             }
+            .disabled(!hasStuckAlert)
         } trailing: {
             Section("When an agent starts a build") {
                 Toggle(isOn: $preferences.builds.agentLaunches) {
@@ -52,6 +72,7 @@ struct NotificationsSettingsView: View {
             }
             Section {
                 Toggle("\(UsageFormat.percent(0.75)) of the plan used", isOn: $preferences.usage.threshold75)
+                    .disabled(!hasEarlyAlerts)
                 Toggle("\(UsageFormat.percent(0.9)) of the plan used", isOn: $preferences.usage.threshold90)
                 Toggle(isOn: $preferences.usage.pace) {
                     VStack(alignment: .leading, spacing: 2) {
@@ -61,13 +82,21 @@ struct NotificationsSettingsView: View {
                             .foregroundStyle(.secondary)
                     }
                 }
+                .disabled(!hasEarlyAlerts)
             } header: {
                 Text("When the plan runs low")
             } footer: {
-                Text("Each alert is sent once per cycle. The figure is an estimate until a recent usage export is imported, and the alert says so.")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                    .frame(maxWidth: .infinity, alignment: .leading)
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Each alert is sent once per cycle. The figure is an estimate until a recent usage export is imported, and the alert says so.")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                    if !hasEarlyAlerts {
+                        Text("The alert at \(UsageFormat.percent(0.75)) and the one on the pace come with Cumulus Pro. The alert at \(UsageFormat.percent(0.9)) is free.")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
             }
             if accounts.sessions.isEmpty {
                 Section("Apps") {

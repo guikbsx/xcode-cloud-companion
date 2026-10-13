@@ -63,7 +63,7 @@ struct SettingsRootView: View {
             GeneralSettingsView(loginItem: loginItem, accounts: accounts)
                 .navigationTitle(Text("General"))
         case .notifications:
-            NotificationsSettingsView(preferences: notificationPreferences, coordinator: notifications, accounts: accounts)
+            NotificationsSettingsView(preferences: notificationPreferences, coordinator: notifications, accounts: accounts, pro: pro)
                 .navigationTitle(Text("Notifications"))
         case .agents:
             AgentsSettingsView(model: agents)

@@ -39,13 +39,20 @@ final class WorkflowPauser {
     private let client: () async -> AppStoreConnectClient?
     /// Hands Apple's answer to whatever shows workflows: the workflow, and whether it is enabled.
     private let applied: @MainActor (String, Bool) async -> Void
+    /// Cumulus Pro: false sends nothing and reads nothing.
+    private let allowed: @MainActor () -> Bool
 
-    init(client: @escaping () async -> AppStoreConnectClient?, applied: @escaping @MainActor (String, Bool) async -> Void) {
+    init(
+        client: @escaping () async -> AppStoreConnectClient?, applied: @escaping @MainActor (String, Bool) async -> Void,
+        allowed: @escaping @MainActor () -> Bool = { true }
+    ) {
         self.client = client
         self.applied = applied
+        self.allowed = allowed
     }
 
     func setEnabled(_ isEnabled: Bool, workflow: CIWorkflow) async -> WorkflowStateOutcome {
+        guard allowed() else { return .failed(message: ProFeatureText.required) }
         // A second tap while the first is in flight must not send a second request.
         guard !isSending else { return .failed(message: String(localized: "A change is already in progress.")) }
         guard workflow.isLockedForEditing != true else { return .failed(message: Self.lockedMessage) }

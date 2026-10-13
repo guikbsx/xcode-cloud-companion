@@ -11,6 +11,8 @@ final class NotificationCoordinator {
     private let preferences: NotificationPreferences
     private let defaults: UserDefaults
     private let now: () -> Date
+    /// Cumulus Pro; nil leaves every alert open.
+    private let pro: ProStore?
     /// The first sync of an account in a session only says where things stand: a build it finds finished ended while nobody was watching.
     private var accountsWithBaseline: Set<String> = []
     private var reportedStuckRunIDs: [String: Set<String>] = [:]
@@ -20,11 +22,13 @@ final class NotificationCoordinator {
         center: any NotificationPosting = SystemNotificationCenter(),
         preferences: NotificationPreferences,
         defaults: UserDefaults = .standard,
+        pro: ProStore? = nil,
         now: @escaping () -> Date = { Date() }
     ) {
         self.center = center
         self.preferences = preferences
         self.defaults = defaults
+        self.pro = pro
         self.now = now
     }
 
@@ -44,7 +48,8 @@ final class NotificationCoordinator {
             return
         }
         var notifications = BuildNotificationPlanner.finished(previous: previous, current: current, rules: rules, now: date)
-        let stuck = BuildNotificationPlanner.stuck(in: current, rules: rules, alreadyReported: reported, now: date)
+        // Without Pro a stuck build is neither looked for nor remembered as said.
+        let stuck = allows(.stuckBuildAlert) ? BuildNotificationPlanner.stuck(in: current, rules: rules, alreadyReported: reported, now: date) : []
         reported.formUnion(stuck.map(\.runID))
         notifications += stuck.map(\.notification)
         if let summary {
@@ -93,11 +98,21 @@ final class NotificationCoordinator {
         let key = AccountDefaults.key(AccountDefaults.usageAlertState, accountID: accountID)
         let stored = defaults.data(forKey: key).flatMap { try? JSONDecoder().decode(UsageAlertState.self, from: $0) }
         var state = stored ?? UsageAlertState()
-        let notifications = UsageAlertPlanner.alerts(for: summary, rules: preferences.usage, state: &state, accountID: accountID)
+        var rules = preferences.usage
+        if !allows(.earlyUsageAlerts) {
+            // The alert at 90 % is free; the one at 75 % and the one on the pace come with Pro.
+            rules.threshold75 = false
+            rules.pace = false
+        }
+        let notifications = UsageAlertPlanner.alerts(for: summary, rules: rules, state: &state, accountID: accountID)
         if state != stored, let data = try? JSONEncoder().encode(state) {
             defaults.set(data, forKey: key)
         }
         return notifications
+    }
+
+    private func allows(_ feature: ProFeature) -> Bool {
+        pro?.allows(feature) ?? true
     }
 
     private func stuckRunIDs(of accountID: String) -> Set<String> {

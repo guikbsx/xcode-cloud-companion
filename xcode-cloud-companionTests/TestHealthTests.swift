@@ -292,4 +292,26 @@ struct WorkflowTestsModelTests {
         #expect(navigation.selectedBuildID == "run-5")
         #expect(navigation.buildTab == .tests)
     }
+
+    @Test func withoutProNothingIsReadFromTheDiskNorFromApple() async {
+        defer { Task { [cache] in await cache.deleteAll() } }
+        let loads = Loads()
+        let cache = cache
+        let model = WorkflowTestsModel(
+            reader: TestHealthReader(cache: cache),
+            snapshot: { snapshot },
+            loadTests: { run, _ in
+                loads.runs.append(run.number ?? 0)
+                return nil
+            },
+            budget: { RateLimit(limit: 3_600, remaining: 3_000) },
+            allowed: { false }
+        )
+
+        await model.refresh(workflowID: "w1")
+        await model.analyze(workflowID: "w1")
+
+        #expect(model.report == nil)
+        #expect(loads.runs.isEmpty)
+    }
 }

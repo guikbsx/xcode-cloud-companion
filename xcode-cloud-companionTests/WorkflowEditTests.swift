@@ -157,4 +157,26 @@ struct WorkflowEditTests {
         #expect(kept.description == nil, "the answer's description is Apple's, even when empty")
         #expect(kept.repositoryName == "guik/cumulus" && kept.isEnabled == true && kept.macOSVersionName == "macOS 26", "untouched when the answer says nothing")
     }
+
+    @Test func withoutProNothingIsSentNorRead() async {
+        let asked = Mutex<Int>(0)
+        let transport = MockTransport { _ in
+            asked.withLock { $0 += 1 }
+            return MockTransport.Reply(body: answer(name: "x"))
+        }
+        let client = AppStoreConnectClient(credentials: .sample(), transport: transport)
+        let editor = WorkflowEditor(client: { client }, budget: { nil }, applied: { _ in }, allowed: { false })
+
+        await editor.loadVersions(currentXcodeVersionID: "xc-27-1")
+        await editor.loadMacOSVersions(xcodeVersionID: "xc-27-1")
+        let outcome = await editor.save(WorkflowUpdateRequest(workflowID: "wf-1", name: "x"), workflow: workflow())
+
+        guard case .failed(let message) = outcome else {
+            Issue.record("a locked edit must fail, got \(outcome)")
+            return
+        }
+        #expect(message == ProFeatureText.required)
+        #expect(asked.withLock { $0 } == 0)
+        #expect(editor.xcodeVersions == nil)
+    }
 }

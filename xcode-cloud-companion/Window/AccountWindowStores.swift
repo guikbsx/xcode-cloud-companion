@@ -14,14 +14,16 @@ final class AccountWindowStores {
     let editor: WorkflowEditor
     let older: OlderBuildsStore
 
-    init(buildStore: BuildStore, extrasStore: BuildExtrasStore, paths: AccountPaths) {
+    /// `pro` is Cumulus Pro; without one (tests) every store is open.
+    init(buildStore: BuildStore, extrasStore: BuildExtrasStore, paths: AccountPaths, pro: ProStore? = nil) {
+        let allows: @MainActor (ProFeature) -> Bool = { [pro] in pro?.allows($0) ?? true }
         let client: () async -> AppStoreConnectClient? = { [buildStore] in await buildStore.detailClient() }
         let budget: () async -> RateLimit? = { [buildStore] in
             await buildStore.updateRateLimit()
             return buildStore.rateLimit
         }
         references = ReferencesStore(client: client, budget: budget)
-        older = OlderBuildsStore(client: client, budget: budget)
+        older = OlderBuildsStore(client: client, budget: budget, allowed: { allows(.olderBuilds) })
         let workflowStore = WorkflowDetailStore(cache: WorkflowDetailsCache(directory: paths.workflowDetails), client: client)
         self.workflowStore = workflowStore
         artifactSaver = ArtifactSaver(client: client)
@@ -39,14 +41,16 @@ final class AccountWindowStores {
             budget: { [buildStore] in
                 await buildStore.updateRateLimit()
                 return buildStore.rateLimit
-            }
+            },
+            allowed: { allows(.testHealth) }
         )
         pauser = WorkflowPauser(
             client: client,
             applied: { [workflowStore, buildStore] workflowID, isEnabled in
                 await workflowStore.setEnabled(isEnabled, workflowID: workflowID)
                 await buildStore.setWorkflowEnabled(isEnabled, workflowID: workflowID)
-            }
+            },
+            allowed: { allows(.pauseWorkflow) }
         )
         editor = WorkflowEditor(
             client: client,
@@ -57,7 +61,8 @@ final class AccountWindowStores {
             applied: { [workflowStore, buildStore] workflow in
                 await workflowStore.apply(workflow)
                 await buildStore.applyWorkflow(workflow)
-            }
+            },
+            allowed: { allows(.editWorkflow) }
         )
     }
 }

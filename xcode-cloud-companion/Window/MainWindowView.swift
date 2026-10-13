@@ -6,6 +6,8 @@ struct MainWindowRoot: View {
     let navigation: NavigationModel
     let pins: PinnedWorkflows
     let openSettings: () -> Void
+    /// Cumulus Pro for this window; nil leaves every function open.
+    var pro: ProAccess?
 
     var body: some View {
         Group {
@@ -20,6 +22,7 @@ struct MainWindowRoot: View {
                 NotSetUpView(openSettings: openSettings)
             }
         }
+        .environment(pro)
         .toolbar {
             if accounts.hasSeveral {
                 ToolbarItem(placement: .navigation) {
@@ -50,6 +53,7 @@ struct MainWindowView: View {
     @State private var editTarget: WorkflowEditTarget?
     @State private var columnVisibility = NavigationSplitViewVisibility.all
     @State private var colorPanel = AppColorPanel()
+    @Environment(ProAccess.self) private var access: ProAccess?
 
     private var buildStore: BuildStore { session.buildStore }
     private var usageStore: UsageStore { session.usageStore }
@@ -191,7 +195,7 @@ struct MainWindowView: View {
             },
             budgetHelp: buildStore.rateLimit.map { String(localized: "\($0.remaining) of \($0.limit) requests left this hour") },
             artwork: icons.artwork(in: buildStore.snapshot, by: \.id),
-            togglePause: canLaunch ? { askToTogglePause(workflowID: $0.id) } : nil,
+            togglePause: canLaunch ? { workflow in withPro(.pauseWorkflow) { askToTogglePause(workflowID: workflow.id) } } : nil,
             chooseColor: { [session] product, choice in session.chooseColor(choice, forApp: product.paletteKey) },
             pickOtherColor: { [session, colorPanel] product in
                 colorPanel.open(with: product.swatch.nsColor) { session.chooseColor(.custom($0), forApp: product.paletteKey) }
@@ -237,15 +241,22 @@ struct MainWindowView: View {
                 },
                 trends: WorkflowTrends(runs: buildStore.snapshot.runs.filter { $0.workflowID == id }),
                 openBuild: { navigation.selectedBuildID = $0 },
-                togglePause: canLaunch ? { askToTogglePause(workflowID: id) } : nil,
+                togglePause: canLaunch ? { withPro(.pauseWorkflow) { askToTogglePause(workflowID: id) } } : nil,
                 xcodeWarning: XcodeVersionCheck.warning(
                     version: workflow.xcodeVersion ?? buildStore.snapshot.workflow(id: id)?.xcodeVersion, name: workflow.xcodeVersionName,
                     among: buildStore.snapshot.xcodeVersions
                 ),
-                editWorkflow: canLaunch && workflow.isLockedForEditing != true ? { editTarget = WorkflowEditTarget(workflow: workflow) } : nil,
+                editWorkflow: canLaunch && workflow.isLockedForEditing != true ? { withPro(.editWorkflow) { editTarget = WorkflowEditTarget(workflow: workflow) } } : nil,
                 workflowURL: AppStoreConnectLinks.workflow(appID: product?.appID, workflowID: id, teamID: settings.issuerID.isEmpty ? nil : settings.issuerID)
             )
                 .task(id: id) { await loadWorkflow(id) }
+        } else if case .product(let id) = navigation.sidebarSelection, !access.allows(.appOverview),
+                  let product = buildStore.snapshot.products.first(where: { $0.id == id }) {
+            // Without Pro the app's sheet reads nothing: neither its workflows nor its TestFlight build.
+            AppOverviewLockedPage(
+                appName: product.displayName, swatch: palette.swatch(for: product.name),
+                artwork: icons.artwork(in: buildStore.snapshot, by: \.id)[id]
+            )
         } else if case .product(let id) = navigation.sidebarSelection, let model = appOverview(productID: id) {
             AppOverviewView(
                 model: model, swatch: palette.swatch(for: model.productKey), artwork: icons.artwork(in: buildStore.snapshot, by: \.id)[id], now: Date(),
@@ -287,6 +298,15 @@ struct MainWindowView: View {
         guard extrasStore.extras(for: run.id)?.betaBuilds == nil else { return }
         if let budget = buildStore.rateLimit, budget.remaining <= SyncSchedule.criticalRemaining { return }
         await extrasStore.loadBetaBuilds(for: run)
+    }
+
+    /// Does `action` with Cumulus Pro; without it, shows the way to buy it instead.
+    private func withPro(_ feature: ProFeature, _ action: () -> Void) {
+        if access.allows(feature) {
+            action()
+        } else {
+            access?.showPurchase(for: feature)
+        }
     }
 
     private var canLaunch: Bool {

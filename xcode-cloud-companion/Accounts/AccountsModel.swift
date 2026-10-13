@@ -40,6 +40,8 @@ final class AccountsModel {
     private let registryStore: AccountRegistryStore
     private let migration: AccountMigration?
     private let makeSession: (Account) -> AccountSession
+    /// Cumulus Pro, handed to every account; set before the accounts start. Nil leaves every function open.
+    @ObservationIgnored var pro: ProStore?
     @ObservationIgnored private lazy var importer = UsageImporter(
         sessions: { [weak self] in self?.sessions ?? [] },
         selected: { [weak self] in self?.selected },
@@ -64,6 +66,12 @@ final class AccountsModel {
         self.makeSession = makeSession ?? { AccountSession.live($0, defaults: defaults) }
         // Before the first account reads its plan: what was saved before accounts existed is its own.
         migration?.adoptPreferences(in: defaults)
+    }
+
+    private func newSession(_ account: Account) -> AccountSession {
+        let session = makeSession(account)
+        session.pro = pro
+        return session
     }
 
     var selected: AccountSession? {
@@ -128,7 +136,7 @@ final class AccountsModel {
                 session.name = account.name
                 return session
             }
-            let session = makeSession(account)
+            let session = newSession(account)
             follow(session)
             return session
         }
@@ -138,7 +146,7 @@ final class AccountsModel {
     /// The first account of an installation from before accounts existed: its key is in the keychain under the first id,
     /// and its caches were just moved into its folders. A Mac that never had a key starts with no account.
     private func adoptInstallationFromBeforeAccounts() async {
-        let session = makeSession(Account(id: AccountRegistry.firstAccountID, name: Self.defaultName(among: [])))
+        let session = newSession(Account(id: AccountRegistry.firstAccountID, name: Self.defaultName(among: [])))
         await session.settings.load()
         guard session.settings.hasStoredKey || FileManager.default.fileExists(atPath: session.paths.buildCache.path(percentEncoded: false)) else { return }
         follow(session)
@@ -279,7 +287,7 @@ final class AccountsModel {
     func add(
         name: String, credentials: StoredCredentials, keyAccess: KeyAccess = .defaultValue, productNames: [String] = []
     ) async throws(CredentialsStoreError) -> AccountSession {
-        let session = makeSession(Account(id: UUID().uuidString.lowercased(), name: name.nilIfBlank ?? Self.defaultName(among: sessions.map(\.name))))
+        let session = newSession(Account(id: UUID().uuidString.lowercased(), name: name.nilIfBlank ?? Self.defaultName(among: sessions.map(\.name))))
         try await session.settings.adopt(credentials, productNames: productNames)
         session.settings.keyAccess = keyAccess
         follow(session)

@@ -100,6 +100,17 @@
         }
       }
     },
+    "%@ at a glance" : {
+      "comment" : "Title of the locked app overview. The placeholder is an app’s name.",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ d’un coup d’œil"
+          }
+        }
+      }
+    },
     "%@ free trial" : {
       "comment" : "Under the yearly price. The placeholder is a length such as “1 month”.",
       "localizations" : {
@@ -928,6 +939,26 @@
         }
       }
     },
+    "A warning at 75 % of the plan, and when the pace will not last until the reset." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Une alerte à 75 % du forfait, et quand le rythme ne tiendra pas jusqu’à la réinitialisation."
+          }
+        }
+      }
+    },
+    "A warning when an action runs far longer than it usually does." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Une alerte quand une action dure bien plus longtemps que d’habitude."
+          }
+        }
+      }
+    },
     "About %@ of %@ used (%@), an estimate. The cycle resets on %@." : {
       "localizations" : {
         "en" : {
@@ -1257,6 +1288,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Couleurs des apps"
+          }
+        }
+      }
+    },
+    "App Overview" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vue d’ensemble d’une app"
           }
         }
       }
@@ -1889,6 +1930,16 @@
         }
       }
     },
+    "Builds older than 35 days come with Cumulus Pro" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Les builds de plus de 35 jours viennent avec Cumulus Pro"
+          }
+        }
+      }
+    },
     "Builds running: %@." : {
       "localizations" : {
         "fr" : {
@@ -1976,6 +2027,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Annulé"
+          }
+        }
+      }
+    },
+    "Change a workflow's name, its clean build and its Xcode version." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Changer le nom d’un workflow, son build propre et sa version d’Xcode."
           }
         }
       }
@@ -2736,6 +2797,16 @@
         }
       }
     },
+    "Discover Pro" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Découvrir Pro"
+          }
+        }
+      }
+    },
     "Done" : {
       "localizations" : {
         "fr" : {
@@ -2826,6 +2897,16 @@
         }
       }
     },
+    "Early Plan Alerts" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alertes de forfait anticipées"
+          }
+        }
+      }
+    },
     "Edit" : {
       "comment" : "Title of the Edit menu.",
       "localizations" : {
@@ -2833,6 +2914,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Édition"
+          }
+        }
+      }
+    },
+    "Edit a Workflow" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Modifier un workflow"
           }
         }
       }
@@ -2969,6 +3060,16 @@
         }
       }
     },
+    "Every cumulus command, for your terminal and your agents." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Toutes les commandes cumulus, pour votre terminal et vos agents."
+          }
+        }
+      }
+    },
     "Every day" : {
       "localizations" : {
         "fr" : {
@@ -2995,6 +3096,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Toutes les semaines"
+          }
+        }
+      }
+    },
+    "Every workflow" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chaque workflow"
           }
         }
       }
@@ -3346,12 +3457,32 @@
         }
       }
     },
+    "Flaky and Slow Tests" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tests instables et tests lents"
+          }
+        }
+      }
+    },
     "Flaky tests" : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Tests instables"
+          }
+        }
+      }
+    },
+    "Follow several App Store Connect teams, each with its own key." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Suivre plusieurs équipes App Store Connect, chacune avec sa clé."
           }
         }
       }
@@ -3772,6 +3903,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Sa clé quitte le trousseau, et ses builds en cache, ses exports d’utilisation importés, son forfait et sa date de réinitialisation sont effacés. Les autres comptes ne sont pas touchés."
+          }
+        }
+      }
+    },
+    "Its last build, its success rate, its median duration and its minutes this cycle." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Son dernier build, son taux de réussite, sa durée médiane et ses minutes sur le cycle."
           }
         }
       }
@@ -4233,6 +4374,16 @@
         }
       }
     },
+    "MCP Server" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Serveur MCP"
+          }
+        }
+      }
+    },
     "Manage Subscription…" : {
       "localizations" : {
         "fr" : {
@@ -4310,6 +4461,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Durée médiane"
+          }
+        }
+      }
+    },
+    "Median duration, time in the queue and success rate over the last thirty builds." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Durée médiane, attente en file et taux de réussite sur les trente derniers builds."
           }
         }
       }
@@ -4927,6 +5088,16 @@
         }
       }
     },
+    "Older Builds" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Builds plus anciens"
+          }
+        }
+      }
+    },
     "On" : {
       "localizations" : {
         "fr" : {
@@ -4957,6 +5128,16 @@
         }
       }
     },
+    "One app at a glance: its workflows, its cycle, its last builds, its branches." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Une app d’un coup d’œil : ses workflows, son cycle, ses derniers builds, ses branches."
+          }
+        }
+      }
+    },
     "One payment" : {
       "localizations" : {
         "fr" : {
@@ -4973,6 +5154,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Un seul paiement. Pas d’abonnement."
+          }
+        }
+      }
+    },
+    "One screen for this app: its workflows, its cycle, its last builds and its branches." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Un écran pour cette app : ses workflows, son cycle, ses derniers builds et ses branches."
           }
         }
       }
@@ -5078,6 +5269,16 @@
         }
       }
     },
+    "Open the failing file in Xcode, at the right line, from your local clone." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ouvrir le fichier en cause dans Xcode, à la bonne ligne, depuis votre clone local."
+          }
+        }
+      }
+    },
     "Open the last build" : {
       "localizations" : {
         "fr" : {
@@ -5114,6 +5315,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ouvrir ce build"
+          }
+        }
+      }
+    },
+    "Opening a file from your local clone comes with Cumulus Pro" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ouvrir un fichier depuis votre clone local vient avec Cumulus Pro"
           }
         }
       }
@@ -5270,12 +5481,32 @@
         }
       }
     },
+    "Pause a Workflow" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mettre un workflow en pause"
+          }
+        }
+      }
+    },
     "Pause a workflow, change its Xcode version" : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Mettre un workflow en pause, changer sa version d’Xcode"
+          }
+        }
+      }
+    },
+    "Pause and resume a workflow without leaving Cumulus." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mettre un workflow en pause et le reprendre sans quitter Cumulus."
           }
         }
       }
@@ -6034,6 +6265,16 @@
         }
       }
     },
+    "Several Accounts" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Plusieurs comptes"
+          }
+        }
+      }
+    },
     "Several App Store Connect accounts" : {
       "localizations" : {
         "fr" : {
@@ -6291,6 +6532,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Arrêté : trop peu de requêtes restantes cette heure-ci. Réessayez plus tard."
+          }
+        }
+      }
+    },
+    "Stuck Build Alert" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alerte de build bloqué"
           }
         }
       }
@@ -6630,6 +6881,16 @@
         }
       }
     },
+    "The MCP server, for Claude Code, Codex, Xcode and Claude Desktop." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Le serveur MCP, pour Claude Code, Codex, Xcode et Claude Desktop."
+          }
+        }
+      }
+    },
     "The Xcode Cloud builds that are waiting or running right now." : {
       "localizations" : {
         "fr" : {
@@ -6646,6 +6907,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "L’agent appelle alors Cumulus comme des outils, plutôt que par une commande."
+          }
+        }
+      }
+    },
+    "The alert at %@ and the one on the pace come with Cumulus Pro. The alert at %@ is free." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "The alert at %1$@ and the one on the pace come with Cumulus Pro. The alert at %2$@ is free."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "L’alerte à %1$@ et celle sur le rythme viennent avec Cumulus Pro. L’alerte à %2$@ est gratuite."
           }
         }
       }
@@ -6691,6 +6968,36 @@
         }
       }
     },
+    "The app’s share of the cycle" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La part de l’app dans le cycle"
+          }
+        }
+      }
+    },
+    "The builds from before the last 35 days." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Les builds d’avant les 35 derniers jours."
+          }
+        }
+      }
+    },
+    "The builds of this app stay in the list, with or without Pro." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Les builds de cette app restent dans la liste, avec ou sans Pro."
+          }
+        }
+      }
+    },
     "The command %@" : {
       "comment" : "Settings, Agents: first thing to install, the argument is the command's name",
       "localizations" : {
@@ -6698,6 +7005,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "La commande %@"
+          }
+        }
+      }
+    },
+    "The cumulus Command" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La commande cumulus"
           }
         }
       }
@@ -6775,6 +7092,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Le trousseau a refusé l’opération : %1$@ (%2$@)"
+          }
+        }
+      }
+    },
+    "The last 30 builds" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Les 30 derniers builds"
+          }
+        }
+      }
+    },
+    "The last build of each, and the one that cost the most." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Le dernier build de chacune, et celui qui a coûté le plus."
           }
         }
       }
@@ -6880,6 +7217,16 @@
         }
       }
     },
+    "The scheduled builds still to run this cycle, and what they are likely to cost." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Les builds planifiés d’ici la fin du cycle, et ce qu’ils devraient coûter."
+          }
+        }
+      }
+    },
     "The skill" : {
       "comment" : "Settings, Agents: second thing to install for an agent that keeps skills",
       "localizations" : {
@@ -6887,6 +7234,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Le skill"
+          }
+        }
+      }
+    },
+    "The test that fails then passes on the same commit, and the ones that cost the most minutes." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Le test qui échoue puis réussit sur le même commit, et ceux qui coûtent le plus de minutes."
+          }
+        }
+      }
+    },
+    "The tests this build broke and the new issues, compared with the last successful build." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Les tests que ce build a cassés et les nouveaux problèmes, par rapport au dernier build réussi."
           }
         }
       }
@@ -6921,6 +7288,16 @@
         }
       }
     },
+    "Their durations side by side, failures in red, and the time spent in the queue." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Leurs durées côte à côte, les échecs en rouge, et l’attente en file."
+          }
+        }
+      }
+    },
     "Then %@ per year, renewed automatically. Cancel at any time in your App Store account." : {
       "localizations" : {
         "fr" : {
@@ -6937,6 +7314,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Cette clé d’API n’a pas le droit de faire cela. Vérifiez son rôle, et qu’il s’agit d’une clé d’équipe."
+          }
+        }
+      }
+    },
+    "This alert comes with Cumulus Pro. Your setting is kept." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cette alerte vient avec Cumulus Pro. Votre réglage est conservé."
           }
         }
       }
@@ -7050,6 +7437,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Cette clé a été enregistrée par une autre version de l’app, et macOS ne laisse que celle-ci la supprimer. Dans Trousseau d’accès, supprimez « %@ », puis réessayez."
+          }
+        }
+      }
+    },
+    "This needs Cumulus Pro." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cumulus Pro est requis."
           }
         }
       }
@@ -7251,6 +7648,16 @@
         }
       }
     },
+    "Upcoming Builds" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Builds à venir"
+          }
+        }
+      }
+    },
     "Update from App Store Connect" : {
       "comment" : "Keep \"Xcode Cloud\", \"App Store Connect\" and \"TestFlight\" untranslated as product names.",
       "localizations" : {
@@ -7401,6 +7808,16 @@
         }
       }
     },
+    "What Broke" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ce qui a cassé"
+          }
+        }
+      }
+    },
     "What Pro Adds" : {
       "localizations" : {
         "fr" : {
@@ -7427,6 +7844,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ce qui a cassé, tests instables, tendances et coût d’un workflow"
+          }
+        }
+      }
+    },
+    "What this app used of the plan, workflow by workflow, and where it is heading." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ce que cette app a utilisé du forfait, workflow par workflow, et où elle va."
           }
         }
       }
@@ -7481,6 +7908,16 @@
         }
       }
     },
+    "Where the minutes of this workflow go: build, tests per device, archive, retries." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Où vont les minutes de ce workflow : build, tests par appareil, archive, tests rejoués."
+          }
+        }
+      }
+    },
     "Where to find the key and the reset date?" : {
       "localizations" : {
         "fr" : {
@@ -7517,6 +7954,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Tant que la fenêtre de Cumulus est ouverte. Pris en compte à sa prochaine ouverture."
+          }
+        }
+      }
+    },
+    "Why This Workflow Costs" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pourquoi ce workflow coûte"
           }
         }
       }

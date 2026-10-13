@@ -13,6 +13,7 @@ struct BuildListView: View {
     var icons: AppIconStore?
     var palette = AppPalette()
     @State private var filter = BuildFilter.all
+    @Environment(ProAccess.self) private var access: ProAccess?
     @State private var query = ""
 
     var body: some View {
@@ -130,6 +131,12 @@ struct BuildListView: View {
                 Text("No older builds.").font(.caption).foregroundStyle(.secondary)
             } else if isLoading {
                 ProgressView().controlSize(.small)
+            } else if !access.allows(.olderBuilds) {
+                Button("Load Older Builds", systemImage: "lock") {
+                    access?.showPurchase(for: .olderBuilds)
+                }
+                .controlSize(.small)
+                .help("Builds older than 35 days come with Cumulus Pro")
             } else {
                 Button("Load Older Builds") {
                     Task {

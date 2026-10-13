@@ -48,6 +48,7 @@ private struct SourceLine: View {
     let message: String?
     var line: Int?
     @Environment(\.sourceOpening) private var opening
+    @Environment(ProAccess.self) private var access: ProAccess?
     @State private var failure: String?
 
     var body: some View {
@@ -61,7 +62,13 @@ private struct SourceLine: View {
                     if SourceActions.existsLocally(path) {
                         Button("Open in Xcode") { SourceActions.openInXcode(path) }.buttonStyle(.borderless)
                     } else if let opening, SourceOpener.xcodeURL != nil, RepositoryFileLocator.relativePath(of: path) != nil {
-                        Button("Open in Xcode", systemImage: "hammer") { failure = opening.open(path, line) }.buttonStyle(.borderless)
+                        if access.allows(.openInXcode) {
+                            Button("Open in Xcode", systemImage: "hammer") { failure = opening.open(path, line) }.buttonStyle(.borderless)
+                        } else {
+                            Button("Open in Xcode", systemImage: "lock") { access?.showPurchase(for: .openInXcode) }
+                                .buttonStyle(.borderless)
+                                .help("Opening a file from your local clone comes with Cumulus Pro")
+                        }
                     }
                 }
                 if let message {

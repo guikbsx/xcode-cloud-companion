@@ -21,7 +21,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     /// Nil under tests: nothing is written for the widgets then.
     private var widgetFeed: WidgetFeedWriter?
     private lazy var proPurchase = ProPurchasePresenter(store: pro)
-    private lazy var notifications = NotificationCoordinator(preferences: notificationPreferences)
+    private lazy var notifications = NotificationCoordinator(preferences: notificationPreferences, pro: pro)
     private lazy var agentLaunches = AgentLaunchService(accounts: accounts, preferences: notificationPreferences, notify: { [notifications] in await notifications.deliver($0) })
     private var notificationResponder: NotificationResponder?
     private lazy var settingsWindowController = SettingsWindowController(
@@ -33,7 +33,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         accounts: accounts,
         navigation: navigation,
         activation: ActivationPolicyCoordinator(app: NSApp),
-        openSettings: { [weak self] in self?.openSettings() }
+        openSettings: { [weak self] in self?.openSettings() },
+        pro: pro, purchase: proPurchase
     )
     private var statusItemController: StatusItemController?
     private var ipcServer: IPCSocketServer?
@@ -60,6 +61,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             refresh: #selector(refresh),
             openHelp: #selector(openHelp)
         ))
+        accounts.pro = pro
         statusItemController = StatusItemController(accounts: accounts, actions: menuActions())
         accounts.onSelectionChange = { [weak self, navigation] in
             navigation.accountDidChange()
