@@ -53,7 +53,7 @@ struct UsageGaugeView: View {
                     Text(summary.paceLine)
                         .foregroundStyle(.secondary)
                     Text(summary.exportLine)
-                        .foregroundStyle(summary.isImportStale ? Color.orange : Color.secondary)
+                        .foregroundStyle(.secondary)
                     if summary.measurement.unmeasurableBuilds > 0 {
                         Text("\(summary.measurement.unmeasurableBuilds) builds not measured, estimated from their duration")
                             .foregroundStyle(Color.orange)
