@@ -10,7 +10,7 @@ Ce document oriente les sessions d'agents (Claude Code, Codex) qui travaillent s
 
 | | |
 |---|---|
-| Plateforme | macOS 27.0+ (`MACOSX_DEPLOYMENT_TARGET = 27.0`) |
+| Plateforme | macOS 26.0+ (`MACOSX_DEPLOYMENT_TARGET = 26.0`, XCO-151 : aucune API propre à macOS 27 n'est utilisée ; descendre sous 26 demanderait une interface sans verre) |
 | Langage | Swift, SwiftUI pour les vues, AppKit pour la structure du menu |
 | Target / scheme | target `xcode-cloud-companion`, scheme `Cumulus` (produit : `Cumulus.app`, module `XcodeCloudCompanion`, bundle ID `com.guik.xcode-cloud-companion`) |
 | Sandbox | Activé (garder la porte du Mac App Store ouverte) |
