@@ -4,6 +4,7 @@ import AppKit
 enum MainMenu {
     struct Actions {
         var openSettings: Selector
+        var openPro: Selector
         var openMainWindow: Selector
         var refresh: Selector
         var openHelp: Selector
@@ -36,6 +37,7 @@ enum MainMenu {
         item(menu, String(localized: "About Cumulus"), #selector(NSApplication.orderFrontStandardAboutPanel(_:)))
         menu.addItem(.separator())
         item(menu, String(localized: "Settings…"), actions.openSettings, ",", target: target)
+        item(menu, String(localized: "Cumulus Pro…"), actions.openPro, target: target)
         menu.addItem(.separator())
         item(menu, String(localized: "Hide Cumulus"), #selector(NSApplication.hide(_:)), "h")
         let hideOthers = item(menu, String(localized: "Hide Others"), #selector(NSApplication.hideOtherApplications(_:)), "h")

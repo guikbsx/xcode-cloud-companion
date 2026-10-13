@@ -83,37 +83,6 @@ struct ProEntitlementTests {
     }
 }
 
-/// Transactions a test hands over, and a way to say they changed.
-private actor StubProSource: ProSource {
-    private var current: [ProReading]
-    private let stream: AsyncStream<Void>
-    private let continuation: AsyncStream<Void>.Continuation
-    private(set) var reads = 0
-
-    init(_ readings: [ProReading] = []) {
-        current = readings
-        (stream, continuation) = AsyncStream.makeStream()
-    }
-
-    func set(_ readings: [ProReading]) {
-        current = readings
-        continuation.yield()
-    }
-
-    func readings() async -> [ProReading] {
-        reads += 1
-        return current
-    }
-
-    nonisolated func changes() -> AsyncStream<Void> {
-        stream
-    }
-
-    func offers() async -> [ProOffer] { [] }
-    func purchase(_ product: ProProduct) async -> ProPurchaseOutcome { .unavailable }
-    func restore() async -> Bool { true }
-}
-
 @MainActor
 struct ProStoreTests {
     private let now = Date(timeIntervalSince1970: 1_800_000_000)

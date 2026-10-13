@@ -88,7 +88,7 @@ struct StatusMenuTests {
     @Test func mainMenuKeepsCopyAndPasteWorkingInTextFields() {
         let target = Target()
         let menu = MainMenu.make(target: target, MainMenu.Actions(
-            openSettings: #selector(Target.openSettings), openMainWindow: #selector(Target.openMainWindow),
+            openSettings: #selector(Target.openSettings), openPro: #selector(Target.openSettings), openMainWindow: #selector(Target.openMainWindow),
             refresh: #selector(Target.refresh), openHelp: #selector(Target.openHelp)
         ))
 

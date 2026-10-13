@@ -20,6 +20,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private let notificationPreferences = NotificationPreferences()
     /// Nil under tests: nothing is written for the widgets then.
     private var widgetFeed: WidgetFeedWriter?
+    private lazy var proPurchase = ProPurchasePresenter(store: pro)
     private lazy var notifications = NotificationCoordinator(preferences: notificationPreferences)
     private lazy var agentLaunches = AgentLaunchService(accounts: accounts, preferences: notificationPreferences, notify: { [notifications] in await notifications.deliver($0) })
     private var notificationResponder: NotificationResponder?
@@ -53,6 +54,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         // The main menu is only seen while the main window is open, but its key equivalents drive ⌘, and copy/paste in text fields at any time.
         NSApp.mainMenu = MainMenu.make(target: self, MainMenu.Actions(
             openSettings: #selector(openSettings),
+            openPro: #selector(openCumulusPro),
             openMainWindow: #selector(openMainWindow),
             refresh: #selector(refresh),
             openHelp: #selector(openHelp)
@@ -210,6 +212,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     @objc func openMainWindow() {
         mainWindowController.show()
+    }
+
+    /// The purchase sheet hangs on the main window: it opens the window first.
+    @objc func openCumulusPro() {
+        mainWindowController.show()
+        NSApp.activate()
+        guard let window = mainWindowController.window else { return }
+        proPurchase.present(over: window)
     }
 
     @objc private func refresh() {

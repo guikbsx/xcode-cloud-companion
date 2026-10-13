@@ -100,6 +100,17 @@
         }
       }
     },
+    "%@ free trial" : {
+      "comment" : "Under the yearly price. The placeholder is a length such as “1 month”.",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Essai gratuit de %@"
+          }
+        }
+      }
+    },
     "%@ has been running for %@, usually %@." : {
       "comment" : "Notification body: action name, time it has run, its usual duration.",
       "localizations" : {
@@ -359,6 +370,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%@ par appareil en moyenne"
+          }
+        }
+      }
+    },
+    "%@ per year, renewed automatically. Cancel at any time in your App Store account." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ par an, renouvelé automatiquement. Résiliable à tout moment dans votre compte App Store."
           }
         }
       }
@@ -1569,6 +1590,16 @@
         }
       }
     },
+    "Asking the App Store for the prices…" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Demande des prix à l’App Store…"
+          }
+        }
+      }
+    },
     "At the top of the page, note the plan's **number of hours** and the **reset date**." : {
       "localizations" : {
         "fr" : {
@@ -1668,6 +1699,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Bleu"
+          }
+        }
+      }
+    },
+    "Bought on %@. Nothing to renew." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Acheté le %@. Rien à renouveler."
           }
         }
       }
@@ -1884,6 +1925,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Les builds, les tests, les problèmes et le forfait. Rien n’est modifié sur votre compte App Store Connect."
+          }
+        }
+      }
+    },
+    "Buy for %@" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Acheter pour %@"
           }
         }
       }
@@ -2319,6 +2370,56 @@
         }
       }
     },
+    "Cumulus Pro" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cumulus Pro"
+          }
+        }
+      }
+    },
+    "Cumulus Pro ended on %@" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cumulus Pro a pris fin le %@"
+          }
+        }
+      }
+    },
+    "Cumulus Pro, lifetime" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cumulus Pro, à vie"
+          }
+        }
+      }
+    },
+    "Cumulus Pro, yearly" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cumulus Pro, annuel"
+          }
+        }
+      }
+    },
+    "Cumulus Pro…" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cumulus Pro…"
+          }
+        }
+      }
+    },
     "Cumulus asks for your permission the first time it has something to tell you." : {
       "localizations" : {
         "fr" : {
@@ -2611,6 +2712,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Diffère d’un appareil à l’autre"
+          }
+        }
+      }
+    },
+    "Done" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "OK"
           }
         }
       }
@@ -3277,6 +3388,26 @@
         }
       }
     },
+    "Free trial, until %@" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Essai gratuit, jusqu’au %@"
+          }
+        }
+      }
+    },
+    "Free version" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Version gratuite"
+          }
+        }
+      }
+    },
     "General" : {
       "comment" : "Settings tab",
       "localizations" : {
@@ -3906,6 +4037,16 @@
         }
       }
     },
+    "Lifetime" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "À vie"
+          }
+        }
+      }
+    },
     "Line %lld of the usage export can’t be read." : {
       "localizations" : {
         "fr" : {
@@ -4313,6 +4454,16 @@
         }
       }
     },
+    "No Cumulus Pro purchase was found for this Apple Account." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aucun achat de Cumulus Pro n’a été trouvé pour ce compte Apple."
+          }
+        }
+      }
+    },
     "No Xcode Cloud app yet." : {
       "comment" : "Keep \"Xcode Cloud\", \"App Store Connect\" and \"TestFlight\" untranslated as product names.",
       "localizations" : {
@@ -4585,6 +4736,16 @@
         }
       }
     },
+    "Not Now" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Plus tard"
+          }
+        }
+      }
+    },
     "Not enough builds to compare yet" : {
       "localizations" : {
         "fr" : {
@@ -4641,6 +4802,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Archive notarisée"
+          }
+        }
+      }
+    },
+    "Nothing is erased: your accounts, your builds and your settings are intact. The Pro functions are paused." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rien n’est effacé : vos comptes, vos builds et vos réglages sont intacts. Les fonctions Pro sont en pause."
           }
         }
       }
@@ -4732,6 +4903,36 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Un compte par équipe App Store Connect, chacun avec sa clé API et son forfait. Tous les comptes restent à jour et envoient leurs notifications ; le menu et la fenêtre en affichent un à la fois."
+          }
+        }
+      }
+    },
+    "One account, its usage and its builds. Pro adds the alerts, the diagnostics and the agents." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Un compte, sa consommation, ses builds. Pro ajoute les alertes, les diagnostics et les agents."
+          }
+        }
+      }
+    },
+    "One payment" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Un seul paiement"
+          }
+        }
+      }
+    },
+    "One payment. No subscription." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Un seul paiement. Pas d’abonnement."
           }
         }
       }
@@ -5029,6 +5230,16 @@
         }
       }
     },
+    "Pause a workflow, change its Xcode version" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mettre un workflow en pause, changer sa version d’Xcode"
+          }
+        }
+      }
+    },
     "Pause “%@”?" : {
       "localizations" : {
         "fr" : {
@@ -5121,6 +5332,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "La préparation des machines de test (~%1$@) pèse plus que l’exécution des tests (~%2$@)."
+          }
+        }
+      }
+    },
+    "Privacy" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Confidentialité"
           }
         }
       }
@@ -5420,6 +5641,46 @@
         }
       }
     },
+    "Renewal is off: Cumulus Pro stops on %@." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Le renouvellement est coupé : Cumulus Pro s’arrête le %@."
+          }
+        }
+      }
+    },
+    "Renewal is off: Cumulus Pro stops on that date, and nothing is charged." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Le renouvellement est coupé : Cumulus Pro s’arrête à cette date, et rien n’est débité."
+          }
+        }
+      }
+    },
+    "Renewed every year" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Renouvelé chaque année"
+          }
+        }
+      }
+    },
+    "Renews on %@." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Renouvellement le %@."
+          }
+        }
+      }
+    },
     "Repair…" : {
       "localizations" : {
         "fr" : {
@@ -5477,6 +5738,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Réinitialisation le"
+          }
+        }
+      }
+    },
+    "Restore Purchases" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Restaurer les achats"
           }
         }
       }
@@ -5689,6 +5960,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Réglages…"
+          }
+        }
+      }
+    },
+    "Several App Store Connect accounts" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Plusieurs comptes App Store Connect"
           }
         }
       }
@@ -5944,6 +6225,16 @@
         }
       }
     },
+    "Subscribe for %@ per Year" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "S’abonner pour %@ par an"
+          }
+        }
+      }
+    },
     "Succeeded" : {
       "comment" : "State of a build that ended well.",
       "localizations" : {
@@ -6022,6 +6313,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Modifications de tag"
+          }
+        }
+      }
+    },
+    "Terms of Use" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Conditions d’utilisation"
           }
         }
       }
@@ -6198,12 +6499,32 @@
         }
       }
     },
+    "The App Store could not be reached. Try again in a moment." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "L’App Store est injoignable. Réessayez dans un instant."
+          }
+        }
+      }
+    },
     "The App Store could not verify this purchase." : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "L’App Store n’a pas pu vérifier cet achat."
+          }
+        }
+      }
+    },
+    "The App Store did not give the prices. Check the connection, then try again." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "L’App Store n’a pas donné les prix. Vérifiez la connexion, puis réessayez."
           }
         }
       }
@@ -6259,6 +6580,16 @@
         }
       }
     },
+    "The alerts, the diagnostics, the agents, several teams." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Les alertes, les diagnostics, les agents, plusieurs équipes."
+          }
+        }
+      }
+    },
     "The app" : {
       "comment" : "Last row of the table of an app's workflows: the figures for the app as a whole",
       "localizations" : {
@@ -6297,6 +6628,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "La commande %@"
+          }
+        }
+      }
+    },
+    "The cumulus command and the MCP server for your agents" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La commande cumulus et le serveur MCP pour vos agents"
           }
         }
       }
@@ -6496,6 +6837,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Les branches du workflow n’ont pas pu être lues depuis App Store Connect."
+          }
+        }
+      }
+    },
+    "The yearly subscription starts then. Nothing is charged before that date." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "L’abonnement annuel commence alors. Rien n’est débité avant cette date."
+          }
+        }
+      }
+    },
+    "Then %@ per year, renewed automatically. Cancel at any time in your App Store account." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Puis %@ par an, renouvelé automatiquement. Résiliable à tout moment dans votre compte App Store."
           }
         }
       }
@@ -6749,6 +7110,17 @@
         }
       }
     },
+    "Try Free for %@" : {
+      "comment" : "Purchase button. The placeholder is a length such as “1 month”.",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Essayer gratuitement pendant %@"
+          }
+        }
+      }
+    },
     "Type to narrow the list" : {
       "localizations" : {
         "fr" : {
@@ -6919,12 +7291,32 @@
         }
       }
     },
+    "Waiting for approval. Cumulus Pro opens as soon as the purchase is approved." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "En attente d’approbation. Cumulus Pro s’ouvre dès que l’achat est approuvé."
+          }
+        }
+      }
+    },
     "Waiting for your approval in System Settings." : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "En attente de votre accord dans Réglages Système."
+          }
+        }
+      }
+    },
+    "Warned at 75 % of the plan, on the pace, and when a build is stuck" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Prévenu à 75 % du forfait, sur le rythme, et quand un build est bloqué"
           }
         }
       }
@@ -6945,6 +7337,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ce qu’un agent peut faire"
+          }
+        }
+      }
+    },
+    "What broke, flaky tests, trends and what a workflow costs" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ce qui a cassé, tests instables, tendances et coût d’un workflow"
           }
         }
       }
@@ -7189,6 +7591,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Xcode n’est pas installé sur ce Mac."
+          }
+        }
+      }
+    },
+    "Yearly" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Annuel"
           }
         }
       }
@@ -7471,6 +7883,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "en pause"
+          }
+        }
+      }
+    },
+    "per year" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "par an"
           }
         }
       }
