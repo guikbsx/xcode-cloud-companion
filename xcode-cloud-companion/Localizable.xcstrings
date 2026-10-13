@@ -6198,6 +6198,26 @@
         }
       }
     },
+    "The App Store could not verify this purchase." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "L’App Store n’a pas pu vérifier cet achat."
+          }
+        }
+      }
+    },
+    "The App Store gave an answer Cumulus does not know." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "L’App Store a donné une réponse que Cumulus ne connaît pas."
+          }
+        }
+      }
+    },
     "The Issuer ID or the Key ID may not match the file, or the key was revoked. Check step 3." : {
       "localizations" : {
         "fr" : {

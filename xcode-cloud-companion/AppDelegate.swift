@@ -8,6 +8,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private static let isUnderTest = ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil
     private let accounts = AccountsModel(migration: isUnderTest ? nil : AccountMigration(legacySupport: .applicationSupportDirectory))
     private let loginItemModel = LoginItemModel()
+    private let pro: ProStore = {
+        #if DEBUG
+        // XCC_PRO=0|1|trial|lifetime|expired pins Cumulus Pro, to look at the locks and the screens without buying.
+        if let forced = ProStore.forcedEntitlement(named: ProcessInfo.processInfo.environment["XCC_PRO"], now: Date()) {
+            return ProStore(forced: forced)
+        }
+        #endif
+        return ProStore()
+    }()
     private let notificationPreferences = NotificationPreferences()
     /// Nil under tests: nothing is written for the widgets then.
     private var widgetFeed: WidgetFeedWriter?
@@ -56,6 +65,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
         guard !Self.isUnderTest else { return }
         widgetFeed = WidgetFeedWriter()
+        pro.start()
         startNotifications()
         let workspaceCenter = NSWorkspace.shared.notificationCenter
         workspaceCenter.addObserver(self, selector: #selector(systemWillSleep), name: NSWorkspace.willSleepNotification, object: nil)
