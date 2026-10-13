@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		000000000000000151000000 /* cumulus in Embed Command Line Tool */ = {isa = PBXBuildFile; fileRef = 000000000000000000000122 /* cumulus */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		000000000000000181000000 /* CumulusWidgets.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 000000000000000000000123 /* CumulusWidgets.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -25,6 +26,13 @@
 			remoteGlobalIDString = 000000000000000100000000;
 			remoteInfo = "xcode-cloud-companion";
 		};
+		000000000000000195000000 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 000000000000000000000000 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 000000000000000400000000;
+			remoteInfo = CumulusWidgets;
+		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -37,12 +45,22 @@
 			);
 			name = "Embed Command Line Tool";
 		};
+		000000000000000180000000 /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			dstPath = "";
+			dstSubfolder = PlugIns;
+			files = (
+				000000000000000181000000 /* CumulusWidgets.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+		};
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		000000000000000000000120 /* Cumulus.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Cumulus.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		000000000000000000000121 /* xcode-cloud-companionTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "xcode-cloud-companionTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		000000000000000000000122 /* cumulus */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = cumulus; sourceTree = BUILT_PRODUCTS_DIR; };
+		000000000000000000000123 /* CumulusWidgets.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = CumulusWidgets.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -84,6 +102,21 @@
 			);
 			target = 000000000000000300000000 /* cumulus */;
 		};
+		000000000000000000000403 /* Exceptions for "CLI" folder in "CumulusWidgets" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				WidgetSnapshot.swift,
+			);
+			target = 000000000000000400000000 /* CumulusWidgets */;
+		};
+		000000000000000000000404 /* Exceptions for "xcode-cloud-companion" folder in "CumulusWidgets" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Menu/UsageFormat.swift,
+				Sync/SharedContainer.swift,
+			);
+			target = 000000000000000400000000 /* CumulusWidgets */;
+		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -91,6 +124,7 @@
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
 				000000000000000000000402 /* Exceptions for "xcode-cloud-companion" folder in "cumulus" target */,
+				000000000000000000000404 /* Exceptions for "xcode-cloud-companion" folder in "CumulusWidgets" target */,
 			);
 			explicitFolders = (
 				AgentSkill,
@@ -107,8 +141,14 @@
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
 				000000000000000000000401 /* Exceptions for "CLI" folder in "xcode-cloud-companion" target */,
+				000000000000000000000403 /* Exceptions for "CLI" folder in "CumulusWidgets" target */,
 			);
 			path = CLI;
+			sourceTree = "<group>";
+		};
+		000000000000000000000013 /* Widgets */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = Widgets;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -129,6 +169,11 @@
 			files = (
 			);
 		};
+		000000000000000430000000 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			files = (
+			);
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -137,6 +182,7 @@
 			children = (
 				000000000000000000000010 /* xcode-cloud-companion */,
 				000000000000000000000012 /* CLI */,
+				000000000000000000000013 /* Widgets */,
 				000000000000000000000011 /* xcode-cloud-companionTests */,
 				000000000000000000000020 /* Products */,
 			);
@@ -148,6 +194,7 @@
 				000000000000000000000120 /* Cumulus.app */,
 				000000000000000000000121 /* xcode-cloud-companionTests.xctest */,
 				000000000000000000000122 /* cumulus */,
+				000000000000000000000123 /* CumulusWidgets.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -163,11 +210,13 @@
 				000000000000000130000000 /* Frameworks */,
 				000000000000000140000000 /* Resources */,
 				000000000000000150000000 /* Embed Command Line Tool */,
+				000000000000000180000000 /* Embed Foundation Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
 				000000000000000160000000 /* PBXTargetDependency */,
+				000000000000000190000000 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				000000000000000000000010 /* xcode-cloud-companion */,
@@ -216,6 +265,24 @@
 			productReference = 000000000000000000000122 /* cumulus */;
 			productType = "com.apple.product-type.tool";
 		};
+		000000000000000400000000 /* CumulusWidgets */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 000000000000000410000000 /* Build configuration list for PBXNativeTarget "CumulusWidgets" */;
+			buildPhases = (
+				000000000000000420000000 /* Sources */,
+				000000000000000430000000 /* Frameworks */,
+				000000000000000440000000 /* Resources */,
+			);
+			buildRules = (
+			);
+			fileSystemSynchronizedGroups = (
+				000000000000000000000013 /* Widgets */,
+			);
+			name = CumulusWidgets;
+			productName = CumulusWidgets;
+			productReference = 000000000000000000000123 /* CumulusWidgets.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -234,6 +301,9 @@
 						TestTargetID = 000000000000000100000000;
 					};
 					000000000000000300000000 = {
+						CreatedOnToolsVersion = 27.1;
+					};
+					000000000000000400000000 = {
 						CreatedOnToolsVersion = 27.1;
 					};
 				};
@@ -256,6 +326,7 @@
 				000000000000000100000000 /* xcode-cloud-companion */,
 				000000000000000200000000 /* xcode-cloud-companionTests */,
 				000000000000000300000000 /* cumulus */,
+				000000000000000400000000 /* CumulusWidgets */,
 			);
 		};
 /* End PBXProject section */
@@ -267,6 +338,11 @@
 			);
 		};
 		000000000000000240000000 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			files = (
+			);
+		};
+		000000000000000440000000 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			files = (
 			);
@@ -289,6 +365,11 @@
 			files = (
 			);
 		};
+		000000000000000420000000 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			files = (
+			);
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -301,6 +382,11 @@
 			isa = PBXTargetDependency;
 			target = 000000000000000100000000 /* xcode-cloud-companion */;
 			targetProxy = 000000000000000260000000 /* PBXContainerItemProxy */;
+		};
+		000000000000000190000000 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 000000000000000400000000 /* CumulusWidgets */;
+			targetProxy = 000000000000000195000000 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -595,6 +681,62 @@
 			};
 			name = Release;
 		};
+		000000000000000411000000 /* Debug configuration for PBXNativeTarget "CumulusWidgets" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				CODE_SIGN_ENTITLEMENTS = Config/CumulusWidgets.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 4HYT2U85R2;
+				ENABLE_APP_SANDBOX = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "Config/CumulusWidgets-Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = Cumulus;
+				LD_RUNPATH_SEARCH_PATHS = "@executable_path/../Frameworks @executable_path/../../../../Frameworks";
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.guik.xcode-cloud-companion.widgets";
+				PRODUCT_NAME = CumulusWidgets;
+				REGISTER_APP_GROUPS = YES;
+				SDKROOT = macosx;
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SUPPORTED_PLATFORMS = macosx;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 6.0;
+			};
+			name = Debug;
+		};
+		000000000000000412000000 /* Release configuration for PBXNativeTarget "CumulusWidgets" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				CODE_SIGN_ENTITLEMENTS = Config/CumulusWidgets.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 4HYT2U85R2;
+				ENABLE_APP_SANDBOX = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "Config/CumulusWidgets-Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = Cumulus;
+				LD_RUNPATH_SEARCH_PATHS = "@executable_path/../Frameworks @executable_path/../../../../Frameworks";
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.guik.xcode-cloud-companion.widgets";
+				PRODUCT_NAME = CumulusWidgets;
+				REGISTER_APP_GROUPS = YES;
+				SDKROOT = macosx;
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SUPPORTED_PLATFORMS = macosx;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 6.0;
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -627,6 +769,14 @@
 			buildConfigurations = (
 				000000000000000311000000 /* Debug configuration for PBXNativeTarget "cumulus" */,
 				000000000000000312000000 /* Release configuration for PBXNativeTarget "cumulus" */,
+			);
+			defaultConfigurationName = Release;
+		};
+		000000000000000410000000 /* Build configuration list for PBXNativeTarget "CumulusWidgets" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				000000000000000411000000 /* Debug configuration for PBXNativeTarget "CumulusWidgets" */,
+				000000000000000412000000 /* Release configuration for PBXNativeTarget "CumulusWidgets" */,
 			);
 			defaultConfigurationName = Release;
 		};

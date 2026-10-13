@@ -1,0 +1,385 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "%@" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@"
+          }
+        }
+      }
+    },
+    "%@ of %@" : {
+      "comment" : "Widget: the compute time used, then the plan",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ of %2$@"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ sur %2$@"
+          }
+        }
+      }
+    },
+    "%@ of the plan used" : {
+      "comment" : "Widget, VoiceOver: the share of the plan used this cycle",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ du forfait utilisés"
+          }
+        }
+      }
+    },
+    "%@ · %@" : {
+      "comment" : "Joins two parts of a line, such as a build's state and its duration. Keep the middle dot.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ · %2$@"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ · %2$@"
+          }
+        }
+      }
+    },
+    "%lld tests" : {
+      "comment" : "Widget: how many tests failed in the build",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld test"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld tests"
+                }
+              }
+            }
+          }
+        },
+        "fr" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld test"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld tests"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "Add your App Store Connect key to see your builds here." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ajoutez votre clé App Store Connect pour voir vos builds ici."
+          }
+        }
+      }
+    },
+    "App" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App"
+          }
+        }
+      }
+    },
+    "Canceled" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Annulé"
+          }
+        }
+      }
+    },
+    "Cycle" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cycle"
+          }
+        }
+      }
+    },
+    "Cycle Ring and Builds" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Anneau du cycle et builds"
+          }
+        }
+      }
+    },
+    "Cycle and Builds" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cycle et builds"
+          }
+        }
+      }
+    },
+    "Error" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Erreur"
+          }
+        }
+      }
+    },
+    "Failed" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Échec"
+          }
+        }
+      }
+    },
+    "Finished" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Terminé"
+          }
+        }
+      }
+    },
+    "How much of the Xcode Cloud plan is used this cycle, app by app." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La part du forfait Xcode Cloud utilisée sur ce cycle, app par app."
+          }
+        }
+      }
+    },
+    "Latest Build" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dernier build"
+          }
+        }
+      }
+    },
+    "Measuring usage…" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mesure de l’utilisation…"
+          }
+        }
+      }
+    },
+    "No build yet" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aucun build"
+          }
+        }
+      }
+    },
+    "No plan set" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aucun forfait réglé"
+          }
+        }
+      }
+    },
+    "Open Cumulus" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ouvrez Cumulus"
+          }
+        }
+      }
+    },
+    "Resets %@" : {
+      "comment" : "Widget: the day the cycle starts again",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Réinit. le %@"
+          }
+        }
+      }
+    },
+    "Running" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "En cours"
+          }
+        }
+      }
+    },
+    "Set the reset date in Cumulus to follow the cycle." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Réglez la date de réinitialisation dans Cumulus pour suivre le cycle."
+          }
+        }
+      }
+    },
+    "Skipped" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ignoré"
+          }
+        }
+      }
+    },
+    "Succeeded" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Réussi"
+          }
+        }
+      }
+    },
+    "The cycle as a bar, and the three latest builds." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Le cycle en barre, et les trois derniers builds."
+          }
+        }
+      }
+    },
+    "The cycle as a ring, and the three latest builds." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Le cycle en anneau, et les trois derniers builds."
+          }
+        }
+      }
+    },
+    "The figure shows once every build of the cycle is measured." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Le chiffre s’affiche une fois tous les builds du cycle mesurés."
+          }
+        }
+      }
+    },
+    "The latest build of one app, or of all of them when none is chosen." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Le dernier build d’une app, ou de toutes quand aucune n’est choisie."
+          }
+        }
+      }
+    },
+    "The state of the latest Xcode Cloud build, of one app or of all." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "L’état du dernier build Xcode Cloud, d’une app ou de toutes."
+          }
+        }
+      }
+    },
+    "This cycle" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ce cycle"
+          }
+        }
+      }
+    },
+    "now" : {
+      "comment" : "Age of a build created less than a minute ago. Very short.",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "à l’instant"
+          }
+        }
+      }
+    },
+    "of the plan" : {
+      "comment" : "Widget: under the percentage at the centre of the ring",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "du forfait"
+          }
+        }
+      }
+    }
+  },
+  "version" : "1.0"
+}

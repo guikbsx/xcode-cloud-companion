@@ -9,6 +9,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private let accounts = AccountsModel(migration: isUnderTest ? nil : AccountMigration(legacySupport: .applicationSupportDirectory))
     private let loginItemModel = LoginItemModel()
     private let notificationPreferences = NotificationPreferences()
+    /// Nil under tests: nothing is written for the widgets then.
+    private var widgetFeed: WidgetFeedWriter?
     private lazy var notifications = NotificationCoordinator(preferences: notificationPreferences)
     private lazy var agentLaunches = AgentLaunchService(accounts: accounts, preferences: notificationPreferences, notify: { [notifications] in await notifications.deliver($0) })
     private var notificationResponder: NotificationResponder?
@@ -47,9 +49,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             openHelp: #selector(openHelp)
         ))
         statusItemController = StatusItemController(accounts: accounts, actions: menuActions())
-        accounts.onSelectionChange = { [navigation] in navigation.accountDidChange() }
+        accounts.onSelectionChange = { [weak self, navigation] in
+            navigation.accountDidChange()
+            self?.updateWidgets()
+        }
 
         guard !Self.isUnderTest else { return }
+        widgetFeed = WidgetFeedWriter()
         startNotifications()
         let workspaceCenter = NSWorkspace.shared.notificationCenter
         workspaceCenter.addObserver(self, selector: #selector(systemWillSleep), name: NSWorkspace.willSleepNotification, object: nil)
@@ -59,6 +65,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         distributedCenter.addObserver(self, selector: #selector(screenDidUnlock), name: Notification.Name("com.apple.screenIsUnlocked"), object: nil)
         // Started before the window may open: the caches are moved into their account before anything reads them.
         accounts.start()
+        updateWidgets()
         Task {
             await accounts.whenReady()
             await startIPCServer()
@@ -119,6 +126,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         ipcIsListening = true
     }
 
+    /// The widgets show the account on screen: its file is written again when that account, or its data, changes.
+    private func updateWidgets() {
+        guard let widgetFeed else { return }
+        Task { [accounts] in
+            await accounts.whenReady()
+            await widgetFeed.update(for: accounts.selected)
+        }
+    }
+
     /// Banners come from what each sync changed. The delegate is in place at launch, so a click on a banner that
     /// starts the app still opens its build; the permission itself is only asked when a first banner is due.
     private func startNotifications() {
@@ -128,6 +144,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         // Every account speaks, whichever one is on screen; with several, a banner names its account.
         accounts.onSync = { [weak self] session, previous, current in
             guard let self else { return }
+            updateWidgets()
             let account = NotificationAccount(id: session.id, name: accounts.hasSeveral ? session.name : nil)
             // The same figure as the menu and the Overview; nil while no reset date is set.
             let summary = session.usageSummary(now: Date())
