@@ -15,6 +15,8 @@ final class AccountSession: Identifiable {
     let paletteStore: AppPaletteStore
     /// How many icons gave their colour since launch: whoever draws the palette reads it, to draw again when it grows.
     private(set) var iconColorReadings = 0
+    /// How many times a colour was chosen or given back since launch, read the same way.
+    private(set) var colorChoices = 0
     /// Where the apps' repositories are cloned on this Mac, to open a build's files in Xcode.
     let localRepositories: LocalRepositories
     /// Made when the window first shows the account.
@@ -76,7 +78,17 @@ final class AccountSession: Identifiable {
     /// The apps' colours, brought up to date with the apps that exist.
     func palette(for snapshot: BuildSnapshot, summary: UsageSummary?) -> AppPalette {
         _ = iconColorReadings
+        _ = colorChoices
         return paletteStore.refreshed(for: snapshot, summary: summary, defaults: defaults)
+    }
+
+    /// Gives an app (by its product name) a colour, or with nil gives it back the colour of its icon.
+    func chooseColor(_ choice: AppPalette.Choice?, forApp app: String) {
+        var palette = paletteStore.load(from: defaults)
+        guard palette.choice(for: app) != choice else { return }
+        palette.choose(choice, for: app)
+        paletteStore.save(palette, to: defaults)
+        colorChoices += 1
     }
 
     /// Gives each app the colour of its icon. An icon is read once, off the main actor, and again only when it changes;

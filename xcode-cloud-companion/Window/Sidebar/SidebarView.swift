@@ -19,6 +19,9 @@ struct SidebarView: View {
     var artwork: [String: AppArtwork] = [:]
     /// Pauses or resumes a workflow; nil while the key is declared read-only, and the menu then offers nothing.
     var togglePause: ((SidebarContent.Workflow) -> Void)?
+    /// Gives an app a colour, nil for its icon's; and opens the colour panel for any other colour.
+    var chooseColor: ((SidebarContent.Product, AppPalette.Choice?) -> Void)?
+    var pickOtherColor: ((SidebarContent.Product) -> Void)?
 
     var body: some View {
         List(selection: $selection) {
@@ -123,6 +126,14 @@ struct SidebarView: View {
         .accessibilityLabel(product.name)
         .accessibilityValue(Text("\(product.buildCount) builds"))
         .tag(SidebarSelection.product(product.id))
+        .contextMenu {
+            if let chooseColor, let pickOtherColor {
+                AppColorMenu(
+                    choice: product.colorChoice, defaultSwatch: product.defaultSwatch, hasIconColor: product.hasIconColor,
+                    choose: { chooseColor(product, $0) }, pickOther: { pickOtherColor(product) }
+                )
+            }
+        }
     }
 
     /// A workflow carries the state of its last build; under its app it is indented, among the pinned it names its app.

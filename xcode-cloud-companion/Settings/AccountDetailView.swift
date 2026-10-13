@@ -32,6 +32,7 @@ struct AccountDetailView: View {
                     planGuide
                     billedMinutes
                     localRepositories
+                    appColors
                     guidesToggle
                     keyGuide
                     removalSection
@@ -41,6 +42,7 @@ struct AccountDetailView: View {
                     accountSection
                     keyGuide
                     localRepositories
+                    appColors
                     guidesToggle
                 } trailing: {
                     planSection
@@ -235,6 +237,24 @@ struct AccountDetailView: View {
     }
 
     /// Where each app's repository is cloned: what “Open in Xcode” needs on a build's problems and tests.
+    /// The colour of each app of the account: its icon's unless one is chosen here.
+    @ViewBuilder
+    private var appColors: some View {
+        let snapshot = session.buildStore.snapshot
+        let palette = session.palette(for: snapshot, summary: nil)
+        if !snapshot.products.isEmpty {
+            Section {
+                ForEach(snapshot.products) { product in
+                    AppColorRow(session: session, product: product, palette: palette)
+                }
+            } header: {
+                Text("App Colors")
+            } footer: {
+                Text("Each app takes the color of its icon. The color chosen here shows in the menu, the cycle ring and the charts.")
+            }
+        }
+    }
+
     @ViewBuilder
     private var localRepositories: some View {
         let products = session.buildStore.snapshot.products

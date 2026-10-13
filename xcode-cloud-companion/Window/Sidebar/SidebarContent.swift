@@ -26,6 +26,12 @@ nonisolated struct SidebarContent: Equatable {
         let buildCount: Int
         let swatch: AppSwatch
         let workflows: [Workflow]
+        /// The product's name, which is what its colour is kept under.
+        var paletteKey = ""
+        /// The colour chosen for the app, the one it has without a choice, and whether that one is its icon's.
+        var colorChoice: AppPalette.Choice?
+        var defaultSwatch = AppSwatch.gray
+        var hasIconColor = false
     }
 
     var runningCount = 0
@@ -61,7 +67,11 @@ nonisolated struct SidebarContent: Equatable {
                     name: product.displayName,
                     buildCount: runs.count,
                     swatch: palette.swatch(for: product.name),
-                    workflows: (workflowsByProduct[product.id] ?? []).sorted { $0.name.localizedStandardCompare($1.name) == .orderedAscending }
+                    workflows: (workflowsByProduct[product.id] ?? []).sorted { $0.name.localizedStandardCompare($1.name) == .orderedAscending },
+                    paletteKey: product.name,
+                    colorChoice: palette.choice(for: product.name),
+                    defaultSwatch: palette.defaultSwatch(for: product.name),
+                    hasIconColor: palette.hasIconColor(product.name)
                 )
             }
             .sorted { lhs, rhs in

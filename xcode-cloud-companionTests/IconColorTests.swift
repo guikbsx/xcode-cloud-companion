@@ -305,3 +305,115 @@ struct IconColorReadingTests {
         #expect(session.iconColorReadings == 0)
     }
 }
+
+struct ChosenColorTests {
+    private let blue = swatch(cumulusBlue)
+    private let teal = SwatchColor(red: 0, green: 0.65, blue: 0.63)
+
+    private var palette: AppPalette {
+        var palette = AppPalette()
+        palette.update(ranking: ["withIcon", "noIcon"])
+        palette.setIconReading(AppPalette.IconReading(icon: "abc", color: blue), for: "withIcon")
+        return palette
+    }
+
+    @Test func aChosenColourGoesBeforeTheIconsAndNilGivesTheIconBack() {
+        var palette = palette
+
+        palette.choose(.system(4), for: "withIcon")
+        #expect(palette.swatch(for: "withIcon") == .orange)
+        #expect(palette.defaultSwatch(for: "withIcon") == .icon(blue.legible))
+
+        palette.choose(.custom(teal), for: "withIcon")
+        #expect(palette.swatch(for: "withIcon") == .icon(teal.legible))
+
+        palette.choose(nil, for: "withIcon")
+        #expect(palette.swatch(for: "withIcon") == .icon(blue.legible))
+        #expect(palette.choice(for: "withIcon") == nil)
+    }
+
+    @Test func anAppWithoutIconTakesAColourToo() {
+        var palette = palette
+        #expect(!palette.hasIconColor("noIcon") && palette.hasIconColor("withIcon"))
+
+        palette.choose(.custom(teal), for: "noIcon")
+        #expect(palette.swatch(for: "noIcon") == .icon(teal.legible))
+
+        palette.choose(nil, for: "noIcon")
+        #expect(palette.swatch(for: "noIcon") == .cyan)
+    }
+
+    @Test func aChangeOfIconLeavesAChosenColourAlone() {
+        var palette = palette
+        palette.choose(.system(5), for: "withIcon")
+
+        palette.setIconReading(AppPalette.IconReading(icon: "changed", color: SwatchColor(red: 0.9, green: 0.2, blue: 0.2)), for: "withIcon")
+
+        #expect(palette.swatch(for: "withIcon") == .mint)
+    }
+
+    @Test func aChoiceSurvivesARelaunchAndGoesWithItsApp() throws {
+        let suite = "ChosenColorTests.\(UUID().uuidString)"
+        let defaults = try #require(UserDefaults(suiteName: suite))
+        defer { defaults.removePersistentDomain(forName: suite) }
+        var palette = palette
+        palette.choose(.custom(teal), for: "withIcon")
+        palette.choose(.system(0), for: "noIcon")
+
+        AppPaletteStore().save(palette, to: defaults)
+        var loaded = AppPaletteStore().load(from: defaults)
+
+        #expect(loaded == palette)
+        let changed = loaded.update(ranking: ["withIcon"])
+        #expect(changed)
+        #expect(loaded.choice(for: "noIcon") == nil && loaded.choice(for: "withIcon") == .custom(teal))
+    }
+
+    @Test func aStoredHueThatDoesNotExistFallsBackToTheDefault() {
+        var palette = palette
+        palette.choose(.system(42), for: "withIcon")
+
+        #expect(palette.swatch(for: "withIcon") == .icon(blue.legible))
+    }
+
+    @Test func aPaletteSavedBeforeColoursCouldBeChosenIsReadAsItWas() throws {
+        let saved = Data(#"{"swatchIndexByApp":{"big":0},"iconReadingByApp":{"big":{"icon":"abc"}}}"#.utf8)
+        let palette = try JSONDecoder().decode(AppPalette.self, from: saved)
+
+        #expect(palette.choice(for: "big") == nil && palette.swatch(for: "big") == .blue)
+    }
+
+    @Test func everyChoosableHueHasANameAndTheMenuNamesTheColourInUse() {
+        #expect(AppSwatch.choosable == [.blue, .cyan, .yellow, .purple, .orange, .mint])
+        #expect(Set(AppSwatch.choosable.map(\.colorName)).count == 6)
+        #expect(AppColorText.name(of: nil, hasIconColor: true) == "Icon Color")
+        #expect(AppColorText.name(of: nil, hasIconColor: false) == "Default Color")
+        #expect(AppColorText.name(of: .system(3), hasIconColor: true) == "Purple")
+        #expect(AppColorText.name(of: .custom(teal), hasIconColor: true) == "Custom Color")
+    }
+}
+
+@MainActor
+struct ColorChoiceSessionTests {
+    private let accounts = TestAccounts()
+    private let app = CIProduct(id: "p1", name: "realmotivation", productType: "APP", appID: "app-1", appName: "Élan", bundleID: nil)
+
+    @Test func choosingAColourShowsAtOnceAndIsKeptForTheAccount() async throws {
+        let session = try await accounts.add("Work")
+        let snapshot = BuildSnapshot(products: [app])
+        let before = session.colorChoices
+
+        session.chooseColor(.system(4), forApp: "realmotivation")
+        session.chooseColor(.system(4), forApp: "realmotivation")
+
+        #expect(session.colorChoices == before + 1)
+        #expect(session.palette(for: snapshot, summary: nil).swatch(for: "realmotivation") == .orange)
+        let sidebar = SidebarContent(snapshot: snapshot, pinnedIDs: [], palette: session.palette(for: snapshot, summary: nil))
+        let product = try #require(sidebar.products.first)
+        #expect(product.paletteKey == "realmotivation" && product.colorChoice == .system(4) && product.swatch == .orange)
+        #expect(product.defaultSwatch == .blue && !product.hasIconColor)
+
+        session.chooseColor(nil, forApp: "realmotivation")
+        #expect(session.palette(for: snapshot, summary: nil).swatch(for: "realmotivation") == .blue)
+    }
+}

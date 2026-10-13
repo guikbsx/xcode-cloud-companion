@@ -49,6 +49,7 @@ struct MainWindowView: View {
     @State private var pauseTarget: WorkflowPauseTarget?
     @State private var editTarget: WorkflowEditTarget?
     @State private var columnVisibility = NavigationSplitViewVisibility.all
+    @State private var colorPanel = AppColorPanel()
 
     private var buildStore: BuildStore { session.buildStore }
     private var usageStore: UsageStore { session.usageStore }
@@ -190,7 +191,11 @@ struct MainWindowView: View {
             },
             budgetHelp: buildStore.rateLimit.map { String(localized: "\($0.remaining) of \($0.limit) requests left this hour") },
             artwork: icons.artwork(in: buildStore.snapshot, by: \.id),
-            togglePause: canLaunch ? { askToTogglePause(workflowID: $0.id) } : nil
+            togglePause: canLaunch ? { askToTogglePause(workflowID: $0.id) } : nil,
+            chooseColor: { [session] product, choice in session.chooseColor(choice, forApp: product.paletteKey) },
+            pickOtherColor: { [session, colorPanel] product in
+                colorPanel.open(with: product.swatch.nsColor) { session.chooseColor(.custom($0), forApp: product.paletteKey) }
+            }
         )
     }
 

@@ -5,7 +5,7 @@ nonisolated enum AppSwatch: Hashable, Sendable {
     case blue, cyan, yellow, purple, orange, mint
     /// Beyond the sixth app, so no hue is claimed twice.
     case gray
-    /// The colour of the app's own icon.
+    /// A colour of the app's own: its icon's, or one chosen for it.
     case icon(SwatchColor)
 
     /// The system hues in the order they are handed out, `gray` last. A saved palette names them by their place here.
@@ -24,8 +24,16 @@ nonisolated struct AppPalette: Codable, Sendable, Equatable {
         var color: SwatchColor?
     }
 
+    /// The colour someone gave an app, which goes before its icon's.
+    enum Choice: Codable, Sendable, Hashable {
+        /// One of the system hues, by its place in `AppSwatch.system`.
+        case system(Int)
+        case custom(SwatchColor)
+    }
+
     private(set) var swatchIndexByApp: [String: Int] = [:]
     private(set) var iconReadingByApp: [String: IconReading] = [:]
+    private(set) var choiceByApp: [String: Choice] = [:]
 
     private static let grayIndex = AppSwatch.system.count - 1
 
@@ -36,6 +44,7 @@ nonisolated struct AppPalette: Codable, Sendable, Equatable {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         swatchIndexByApp = try container.decodeIfPresent([String: Int].self, forKey: .swatchIndexByApp) ?? [:]
         iconReadingByApp = try container.decodeIfPresent([String: IconReading].self, forKey: .iconReadingByApp) ?? [:]
+        choiceByApp = try container.decodeIfPresent([String: Choice].self, forKey: .choiceByApp) ?? [:]
     }
 
     /// `ranking` lists every app that exists, biggest consumer first; apps no longer listed give their colour back.
@@ -46,6 +55,7 @@ nonisolated struct AppPalette: Codable, Sendable, Equatable {
         let existing = Set(ranking)
         swatchIndexByApp = swatchIndexByApp.filter { existing.contains($0.key) }
         iconReadingByApp = iconReadingByApp.filter { existing.contains($0.key) }
+        choiceByApp = choiceByApp.filter { existing.contains($0.key) }
 
         var used = Set(swatchIndexByApp.values)
         for app in ranking where swatchIndexByApp[app] == nil {
@@ -73,12 +83,35 @@ nonisolated struct AppPalette: Codable, Sendable, Equatable {
         return first + rest
     }
 
+    func choice(for app: String) -> Choice? {
+        choiceByApp[app]
+    }
+
+    /// Nil gives the app back the colour of its icon.
+    mutating func choose(_ choice: Choice?, for app: String) {
+        choiceByApp[app] = choice
+    }
+
     func swatch(for app: String) -> AppSwatch {
+        switch choiceByApp[app] {
+        case .system(let index)? where AppSwatch.system.indices.contains(index): AppSwatch.system[index]
+        case .custom(let color)?: .icon(color.legible)
+        default: defaultSwatch(for: app)
+        }
+    }
+
+    /// The colour an app has while none is chosen for it: its icon's, else its system swatch.
+    func defaultSwatch(for app: String) -> AppSwatch {
         if let color = iconReadingByApp[app]?.color {
             return .icon(color.legible)
         }
         guard let index = swatchIndexByApp[app], AppSwatch.system.indices.contains(index) else { return .gray }
         return AppSwatch.system[index]
+    }
+
+    /// Whether the app's default colour comes from its icon, which is what the interface then calls it.
+    func hasIconColor(_ app: String) -> Bool {
+        iconReadingByApp[app]?.color != nil
     }
 }
 

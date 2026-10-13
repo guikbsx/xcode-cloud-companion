@@ -1168,6 +1168,16 @@
         }
       }
     },
+    "App Colors" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Couleurs des apps"
+          }
+        }
+      }
+    },
     "App Store Connect API Key" : {
       "comment" : "Keep \"Xcode Cloud\", \"App Store Connect\" and \"TestFlight\" untranslated as product names.",
       "localizations" : {
@@ -1549,6 +1559,26 @@
         }
       }
     },
+    "Back to Default" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Revenir à la couleur par défaut"
+          }
+        }
+      }
+    },
+    "Back to Icon" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Revenir à l’icône"
+          }
+        }
+      }
+    },
     "Billed Minutes" : {
       "localizations" : {
         "fr" : {
@@ -1576,6 +1606,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Minutes facturées, d’après l’export d’usage importé."
+          }
+        }
+      }
+    },
+    "Blue" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bleu"
           }
         }
       }
@@ -1966,6 +2006,28 @@
         }
       }
     },
+    "Color" : {
+      "comment" : "Context menu of an app in the sidebar: the row of colours to give the app",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Couleur"
+          }
+        }
+      }
+    },
+    "Color of %@" : {
+      "comment" : "Settings, App Colors: what VoiceOver reads for an app's colour well",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Couleur de %@"
+          }
+        }
+      }
+    },
     "Commit" : {
       "comment" : "Heading of the card that shows a build's commit",
       "localizations" : {
@@ -2299,12 +2361,32 @@
         }
       }
     },
+    "Custom Color" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Couleur personnalisée"
+          }
+        }
+      }
+    },
     "Cut" : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Couper"
+          }
+        }
+      }
+    },
+    "Cyan" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cyan"
           }
         }
       }
@@ -2335,6 +2417,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Date pas encore saisie : en attendant, le menu ne montre pas de jauge, seulement les heures des 30 derniers jours."
+          }
+        }
+      }
+    },
+    "Default" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Par défaut"
+          }
+        }
+      }
+    },
+    "Default Color" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Couleur par défaut"
           }
         }
       }
@@ -2467,6 +2569,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Chaque alerte est envoyée une fois par cycle. Le chiffre est une estimation tant qu’aucun export d’utilisation récent n’est importé, et l’alerte le dit."
+          }
+        }
+      }
+    },
+    "Each app takes the color of its icon. The color chosen here shows in the menu, the cycle ring and the charts." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chaque app prend la couleur de son icône. La couleur choisie ici se retrouve dans le menu, l’anneau du cycle et les graphiques."
           }
         }
       }
@@ -3074,6 +3186,16 @@
         }
       }
     },
+    "Gray" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gris"
+          }
+        }
+      }
+    },
     "Guide" : {
       "comment" : "Name of the panel that explains how to create an API key, for VoiceOver",
       "localizations" : {
@@ -3121,6 +3243,27 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Masquer les guides"
+          }
+        }
+      }
+    },
+    "Icon" : {
+      "comment" : "Settings, App Colors: the app has the colour of its icon",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Icône"
+          }
+        }
+      }
+    },
+    "Icon Color" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Couleur de l’icône"
           }
         }
       }
@@ -3844,6 +3987,16 @@
         }
       }
     },
+    "Mint" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Menthe"
+          }
+        }
+      }
+    },
     "Mixed" : {
       "localizations" : {
         "fr" : {
@@ -4540,12 +4693,32 @@
         }
       }
     },
+    "Orange" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Orange"
+          }
+        }
+      }
+    },
     "Other" : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Autre"
+          }
+        }
+      }
+    },
+    "Other Color…" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Autre couleur…"
           }
         }
       }
@@ -4804,6 +4977,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Pull requests"
+          }
+        }
+      }
+    },
+    "Purple" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Violet"
           }
         }
       }
@@ -6742,6 +6925,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Xcode n’est pas installé sur ce Mac."
+          }
+        }
+      }
+    },
+    "Yellow" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Jaune"
           }
         }
       }
