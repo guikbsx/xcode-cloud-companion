@@ -88,6 +88,10 @@ nonisolated struct CLIRenderer: Sendable {
         if launch.appLaunched {
             line = "Cumulus was not running: it has been started. " + line
         }
+        // Apple accepted the launch but the run is not listed yet: there is nothing to follow it by.
+        guard launch.reference != nil || !launch.buildRunID.isEmpty else {
+            return [line + "\n", "It is not in the list yet. See it with: cumulus refresh --wait, then cumulus builds --limit 1\n"]
+        }
         return [line + "\n", "Follow it with: cumulus build \(launch.reference ?? launch.buildRunID)\n"]
     }
 

@@ -67,7 +67,7 @@ final class WorkflowPauser {
             case .refused(let message, _)?: return .refused(message: message)
             case .rateLimited?: return .rateLimited
             case .failed(let message)?: return .failed(message: message)
-            case .started?, .uncertain?, nil:
+            case .started?, .accepted?, .uncertain?, .unknown?, nil:
                 // The request may have reached Apple: the workflow tells what happened, before anyone tries again.
                 let state = await known(nil, workflowID: workflow.id, client: client)
                 if let state {

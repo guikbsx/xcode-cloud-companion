@@ -285,8 +285,10 @@ struct LaunchSheet: View {
             pointsAtSource ? UsageFormat.dotted([message, String(localized: "Pick another branch, tag or pull request.")]) : message
         case .rateLimited: String(localized: "Apple’s hourly request limit is reached. Nothing was started; try again later.")
         case .failed(let message): message
+        case .accepted: String(localized: "Apple accepted the launch. The build is not in the list yet: it will show at the next sync. Do not launch it again.")
         case .uncertain(let found):
             found == nil ? String(localized: "Apple did not confirm the launch, and the build list shows no new build. Nothing seems to have started; you can try again.") : nil
+        case .unknown: String(localized: "Apple did not confirm the launch, and the build list could not be read: a build may have started. Check the list of builds before trying again.")
         }
     }
 }

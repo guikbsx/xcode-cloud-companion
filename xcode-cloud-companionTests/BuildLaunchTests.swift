@@ -140,18 +140,41 @@ struct BuildLaunchTests {
 
     private final class Log: Sendable {
         let posts = Mutex<Int>(0)
+        let looks = Mutex<Int>(0)
+        let pauses = Mutex<[Duration]>([])
     }
 
-    private func launcher(status: Int = 201, fixture: String? = "ciBuildRun-created", error: URLError? = nil, body: Data? = nil, log: Log) -> BuildLauncher {
+    /// What the build list answers at each look after a launch Apple did not confirm.
+    private enum List: Sendable {
+        /// The new run shows from this look on (1 is the first); before, the list is empty.
+        case showsRun(fromLook: Int)
+        case empty
+        case fails(status: Int)
+    }
+
+    private func launcher(
+        status: Int = 201, fixture: String? = "ciBuildRun-created", error: URLError? = nil, body: Data? = nil, list: List = .showsRun(fromLook: 1), log: Log
+    ) -> BuildLauncher {
         let transport = MockTransport { request in
             if request.httpMethod == "POST" {
                 log.posts.withLock { $0 += 1 }
                 return MockTransport.Reply(status: status, body: body ?? (fixture.flatMap { try? Fixture.data($0) } ?? Data()), error: error, headers: [:])
             }
-            return MockTransport.Reply(status: 200, body: (try? Fixture.data("ciBuildRuns-latest")) ?? Data(), headers: [:])
+            let look = log.looks.withLock { count in
+                count += 1
+                return count
+            }
+            switch list {
+            case .showsRun(let first) where look >= first:
+                return MockTransport.Reply(status: 200, body: (try? Fixture.data("ciBuildRuns-latest")) ?? Data(), headers: [:])
+            case .showsRun, .empty:
+                return MockTransport.Reply(status: 200, body: Data(#"{"data":[]}"#.utf8), headers: [:])
+            case .fails(let status):
+                return MockTransport.Reply(status: status, body: Data(), headers: [:])
+            }
         }
         let client = AppStoreConnectClient(credentials: .sample(), transport: transport)
-        return BuildLauncher(client: { client }, now: { Date(timeIntervalSince1970: 1_791_581_400) })
+        return BuildLauncher(client: { client }, now: { Date(timeIntervalSince1970: 1_791_581_400) }, pause: { duration in log.pauses.withLock { $0.append(duration) } })
     }
 
     private let request = BuildRunRequest.launch(workflowID: "wf-1", source: .gitReference(id: "ref-main"))
@@ -222,6 +245,93 @@ struct BuildLaunchTests {
 
         if case .uncertain = outcome {} else { Issue.record("expected uncertain, got \(outcome)") }
         #expect(log.posts.withLock { $0 } == 1)
+    }
+
+    /// Seen on 2026-10-12: Apple answered 201, the app could not read the answer, and one look at the list, half a
+    /// second later, did not show the build. The launch was announced as not confirmed while the build was running.
+    @Test func anAnswerThatCannotBeReadInFullIsStillALaunch() async {
+        let log = Log()
+        let body = Data(#"{"data":{"type":"ciBuildRuns","id":"run-odd","attributes":{"number":"not a number","createdDate":12}}}"#.utf8)
+
+        let outcome = await launcher(body: body, log: log).launch(request, productID: "p", workflowName: "Public archive")
+
+        guard case .started(let run) = outcome else {
+            Issue.record("expected a started run, got \(outcome)")
+            return
+        }
+        #expect(run.id == "run-odd" && run.executionProgress == .pending && run.startReason == "MANUAL")
+        #expect(run.workflowID == "wf-1" && run.workflowName == "Public archive" && run.productID == "p")
+        #expect(run.createdDate != nil)
+        #expect(log.posts.withLock { $0 } == 1 && log.looks.withLock { $0 } == 0)
+    }
+
+    @Test func anAcceptedLaunchWithNothingReadableIsFoundInTheListAtALaterLook() async {
+        let log = Log()
+
+        let outcome = await launcher(body: Data("<html>".utf8), list: .showsRun(fromLook: 2), log: log).launch(request, productID: "p", workflowName: "Public archive")
+
+        guard case .started(let run) = outcome else {
+            Issue.record("expected a started run, got \(outcome)")
+            return
+        }
+        #expect(run.id == "run-found")
+        #expect(log.posts.withLock { $0 } == 1 && log.looks.withLock { $0 } == 2)
+        #expect(log.pauses.withLock { $0 } == [.seconds(2)])
+    }
+
+    @Test func anAcceptedLaunchTheListNeverShowsIsStillSaidToHaveStarted() async {
+        for list in [List.empty, .fails(status: 503)] {
+            let log = Log()
+
+            let outcome = await launcher(body: Data("<html>".utf8), list: list, log: log).launch(request, productID: "p", workflowName: nil)
+
+            #expect(outcome == .accepted)
+            #expect(log.posts.withLock { $0 } == 1 && log.looks.withLock { $0 } == BuildLauncher.lookDelays.count)
+            #expect(LaunchSheet.message(for: outcome)?.contains("accepted") == true)
+        }
+    }
+
+    @Test func anUnconfirmedLaunchIsLookedForMoreThanOnce() async {
+        let log = Log()
+
+        let outcome = await launcher(error: URLError(.timedOut), list: .showsRun(fromLook: 3), log: log).launch(request, productID: "p", workflowName: "Public archive")
+
+        guard case .uncertain(let found?) = outcome else {
+            Issue.record("expected an uncertain launch that found the new run, got \(outcome)")
+            return
+        }
+        #expect(found.id == "run-found")
+        #expect(log.posts.withLock { $0 } == 1 && log.looks.withLock { $0 } == 3)
+        #expect(log.pauses.withLock { $0 } == [.seconds(2), .seconds(4)])
+    }
+
+    @Test func aListReadSeveralTimesWithoutTheBuildSaysNothingSeemsToHaveStarted() async {
+        let log = Log()
+
+        let outcome = await launcher(error: URLError(.timedOut), list: .empty, log: log).launch(request, productID: "p", workflowName: nil)
+
+        #expect(outcome == .uncertain(found: nil))
+        #expect(log.posts.withLock { $0 } == 1 && log.looks.withLock { $0 } == BuildLauncher.lookDelays.count)
+    }
+
+    @Test func aListThatCannotBeReadIsNotTakenForNoNewBuild() async {
+        let log = Log()
+
+        let outcome = await launcher(status: 503, body: Data(), list: .fails(status: 503), log: log).launch(request, productID: "p", workflowName: nil)
+
+        #expect(outcome == .unknown)
+        #expect(LaunchSheet.message(for: outcome)?.contains("may have started") == true)
+        #expect(LaunchSheet.message(for: .uncertain(found: nil))?.contains("Nothing seems to have started") == true)
+        #expect(log.posts.withLock { $0 } == 1 && log.looks.withLock { $0 } == BuildLauncher.lookDelays.count)
+    }
+
+    @Test func aRateLimitOnTheListStopsTheLooks() async {
+        let log = Log()
+
+        let outcome = await launcher(error: URLError(.timedOut), list: .fails(status: 429), log: log).launch(request, productID: "p", workflowName: nil)
+
+        #expect(outcome == .unknown)
+        #expect(log.posts.withLock { $0 } == 1 && log.looks.withLock { $0 } == 1)
     }
 
     @Test func noConnectionMeansItNeverLeft() async {

@@ -1,4 +1,5 @@
 import Foundation
+import os
 
 nonisolated struct GitReference: Identifiable, Equatable, Sendable {
     enum Kind: Sendable {
@@ -157,6 +158,30 @@ nonisolated extension JSONAPIDocument where Attributes == SCMGitReferenceAttribu
     }
 }
 
+/// The least a 2xx answer to a creation says: the id of what was created.
+private nonisolated struct CreatedResource: Decodable {
+    struct Resource: Decodable {
+        let id: String
+    }
+
+    let data: Resource
+}
+
+/// What went wrong around a launch goes to the system log (`log show --predicate 'subsystem == "com.guik.xcode-cloud-companion"'`):
+/// a launch costs a build, so nobody reproduces one to learn why its answer was not understood.
+nonisolated enum LaunchLog {
+    private static let logger = Logger(subsystem: "com.guik.xcode-cloud-companion", category: "launch")
+
+    /// Apple answered 2xx and its body did not decode. The reason names fields, never a credential.
+    static func unreadableAnswer(_ reason: String) {
+        logger.error("Apple accepted the launch (2xx) but its answer did not decode: \(reason, privacy: .public)")
+    }
+
+    static func unconfirmed(_ error: AppStoreConnectError, outcome: String) {
+        logger.error("Launch not confirmed by Apple (\(String(describing: error), privacy: .public)); after reading the build list: \(outcome, privacy: .public)")
+    }
+}
+
 extension AppStoreConnectClient {
     /// Starts or rebuilds a run. One request, never repeated: a second one could start a second build.
     func startBuildRun(_ request: BuildRunRequest, productID: String, workflowName: String?) async throws(AppStoreConnectError) -> CIBuildRun {
@@ -166,8 +191,21 @@ extension AppStoreConnectClient {
         urlRequest.setValue("application/json", forHTTPHeaderField: "Accept")
         urlRequest.setValue("application/json", forHTTPHeaderField: "Content-Type")
         urlRequest.httpBody = body
-        let document: JSONAPISingleDocument<CIBuildRunAttributes> = try await send(urlRequest)
-        return JSONAPIDocument(single: document).buildRuns(productID: productID, workflowID: request.workflowID, workflowName: workflowName)[0]
+        // From here on Apple said yes: the build exists, whatever can be read of the answer.
+        let data = try await accepted(urlRequest)
+        do {
+            let document = try JSONDecoder.appStoreConnect.decode(JSONAPISingleDocument<CIBuildRunAttributes>.self, from: data)
+            return JSONAPIDocument(single: document).buildRuns(productID: productID, workflowID: request.workflowID, workflowName: workflowName)[0]
+        } catch {
+            let reason = String(describing: error)
+            LaunchLog.unreadableAnswer(reason)
+            // Its id is enough to know the run; the next sync reads the rest.
+            guard let id = (try? JSONDecoder().decode(CreatedResource.self, from: data))?.data.id else { throw .decoding(reason) }
+            return CIBuildRun(
+                id: id, productID: productID, number: nil, createdDate: now(), startedDate: nil, finishedDate: nil, executionProgress: .pending,
+                completionStatus: nil, startReason: "MANUAL", workflowID: request.workflowID, workflowName: workflowName, sourceBranchOrTag: nil
+            )
+        }
     }
 
     /// Pauses or resumes a workflow. One request, never repeated. Returns the state Apple answers with, nil if it says none.

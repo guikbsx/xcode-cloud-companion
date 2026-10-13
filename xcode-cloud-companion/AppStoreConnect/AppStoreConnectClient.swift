@@ -15,7 +15,7 @@ nonisolated struct URLSessionTransport: HTTPTransport {
 actor AppStoreConnectClient {
     private let credentials: AppStoreConnectCredentials
     private let transport: any HTTPTransport
-    private let now: @Sendable () -> Date
+    let now: @Sendable () -> Date
     private var token: AppStoreConnectToken?
     private var lastRateLimit: RateLimit?
 
@@ -200,6 +200,16 @@ actor AppStoreConnectClient {
 
     /// Sends one request and decodes the answer. It never sends twice: a POST is not safe to repeat.
     func send<Body: Decodable & Sendable>(_ prepared: URLRequest) async throws(AppStoreConnectError) -> Body {
+        let data = try await accepted(prepared)
+        do {
+            return try JSONDecoder.appStoreConnect.decode(Body.self, from: data)
+        } catch {
+            throw .decoding(String(describing: error))
+        }
+    }
+
+    /// Sends one request, once, and gives the body of a 2xx answer as it came: Apple said yes, whatever the body holds.
+    func accepted(_ prepared: URLRequest) async throws(AppStoreConnectError) -> Data {
         var request = prepared
         request.setValue("Bearer \(try currentToken())", forHTTPHeaderField: "Authorization")
 
@@ -221,11 +231,7 @@ actor AppStoreConnectClient {
         }
         switch httpResponse.statusCode {
         case 200..<300:
-            do {
-                return try JSONDecoder.appStoreConnect.decode(Body.self, from: data)
-            } catch {
-                throw .decoding(String(describing: error))
-            }
+            return data
         case 401:
             throw .unauthorized(status: 401)
         case 429:

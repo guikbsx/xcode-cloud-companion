@@ -103,6 +103,8 @@ nonisolated enum IPCLaunchReason {
     static let failed = "failed"
     /// Apple did not confirm and the build list shows no new build.
     static let uncertain = "uncertain"
+    /// Apple did not confirm and the build list could not be read: a build may have started.
+    static let unknown = "unknown"
 }
 
 nonisolated struct IPCFailure: Codable, Equatable, Sendable {

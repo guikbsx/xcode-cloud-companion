@@ -85,6 +85,8 @@ struct LaunchCommandTests {
         #expect(code(IPCLaunchReason.refused) == .refused && CLIErrorCode.refused.exitCode == 1)
         #expect(code(IPCLaunchReason.unknownReference) == .notFound && code(IPCLaunchReason.unknownWorkflow) == .notFound)
         #expect(code(IPCLaunchReason.noCredentials) == .noCache && code(IPCLaunchReason.uncertain) == .internal)
+        #expect(code(IPCLaunchReason.unknown) == .internal)
+        #expect(CLIAppLink.failure(for: IPCResult(reason: IPCLaunchReason.unknown, launched: false)).suggestions.contains { $0.contains("Do not launch again") })
         #expect(CLIAppLink.failure(for: IPCResult(reason: IPCLaunchReason.refused, launched: false, message: "Workflow disabled.")).message.hasSuffix("Workflow disabled."))
     }
 

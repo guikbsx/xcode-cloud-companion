@@ -74,9 +74,16 @@ final class AgentLaunchService {
             return refusal(IPCLaunchReason.rateLimited)
         case .failed(let message):
             return refusal(IPCLaunchReason.failed, message: message)
+        case .accepted:
+            launches[session.id, default: []].append(now())
+            Task { await session.buildStore.refreshNow() }
+            return IPCResult(launched: true, message: String(localized: "Apple accepted the launch; the build is not in the list yet."))
         case .uncertain(nil):
             launches[session.id, default: []].append(now())
             return refusal(IPCLaunchReason.uncertain, message: String(localized: "Apple did not confirm the launch, and the build list shows no new build."))
+        case .unknown:
+            launches[session.id, default: []].append(now())
+            return refusal(IPCLaunchReason.unknown, message: String(localized: "Apple did not confirm the launch, and the build list could not be read: a build may have started."))
         }
     }
 

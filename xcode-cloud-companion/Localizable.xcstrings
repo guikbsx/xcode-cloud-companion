@@ -1255,6 +1255,26 @@
         }
       }
     },
+    "Apple accepted the launch. The build is not in the list yet: it will show at the next sync. Do not launch it again." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apple a accepté le lancement. Le build n’est pas encore dans la liste : il apparaîtra à la prochaine synchronisation. Ne le relancez pas."
+          }
+        }
+      }
+    },
+    "Apple accepted the launch; the build is not in the list yet." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apple a accepté le lancement ; le build n’est pas encore dans la liste."
+          }
+        }
+      }
+    },
     "Apple did not confirm the change, and the workflow could not be read back. Check it in App Store Connect before trying again." : {
       "localizations" : {
         "fr" : {
@@ -1281,6 +1301,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Apple n’a pas confirmé la modification. La feuille montre maintenant le workflow tel qu’Apple l’a ; relisez-le avant de réessayer."
+          }
+        }
+      }
+    },
+    "Apple did not confirm the launch, and the build list could not be read: a build may have started." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apple n’a pas confirmé le lancement, et la liste des builds n’a pas pu être lue : un build a peut-être démarré."
+          }
+        }
+      }
+    },
+    "Apple did not confirm the launch, and the build list could not be read: a build may have started. Check the list of builds before trying again." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apple n’a pas confirmé le lancement, et la liste des builds n’a pas pu être lue : un build a peut-être démarré. Vérifiez la liste des builds avant de réessayer."
           }
         }
       }
