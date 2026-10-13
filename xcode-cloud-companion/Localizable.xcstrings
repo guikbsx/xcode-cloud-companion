@@ -1115,6 +1115,16 @@
         }
       }
     },
+    "Agents come with Cumulus Pro" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Les agents viennent avec Cumulus Pro"
+          }
+        }
+      }
+    },
     "Agents may start three builds an hour per account; each one uses compute hours." : {
       "localizations" : {
         "fr" : {
@@ -7995,6 +8005,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Sans export, l’utilisation affichée est une estimation calculée d’après les actions des builds."
+          }
+        }
+      }
+    },
+    "Without it, only `cumulus status` answers; the other commands and every MCP tool say that Cumulus Pro is required. What is installed here stays in place." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sans lui, seule `cumulus status` répond ; les autres commandes et tous les outils MCP disent que Cumulus Pro est requis. Ce qui est installé ici reste en place."
           }
         }
       }

@@ -14,6 +14,8 @@ nonisolated enum CLIErrorCode: String, Codable, Sendable {
     case rateLimited = "RATE_LIMITED"
     /// `run`: Apple understood and refused (a paused workflow, a branch no condition covers); its words are the message.
     case refused = "REFUSED"
+    /// Everything but `status` comes with Cumulus Pro.
+    case proRequired = "PRO_REQUIRED"
 
     var exitCode: Int32 {
         switch self {
@@ -25,6 +27,7 @@ nonisolated enum CLIErrorCode: String, Codable, Sendable {
         case .internal, .refused: CLIExitCode.failure
         case .notAllowed: CLIExitCode.notAllowed
         case .rateLimited: CLIExitCode.rateLimited
+        case .proRequired: CLIExitCode.proRequired
         }
     }
 }

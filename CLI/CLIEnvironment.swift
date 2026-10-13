@@ -18,6 +18,8 @@ nonisolated enum CLIExitCode {
     static let notAllowed: Int32 = 7
     /// `run`: the app's cap on launches by agents, or Apple's hourly limit.
     static let rateLimited: Int32 = 8
+    /// Every command but `status`: Cumulus Pro is not active.
+    static let proRequired: Int32 = 9
 }
 
 /// Everything a command reads from the outside, so tests run it against a temporary folder and a fixed clock.

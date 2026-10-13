@@ -45,6 +45,7 @@ On standard error, with a non-zero exit code:
 | 7 | `NOT_ALLOWED` | `run`: the key is read-only in the app, or Apple answered 403 | Ask the user to set the key to “Read + Build” in Cumulus › Settings › Accounts; do not retry |
 | 8 | `RATE_LIMITED` | `run`: three launches by agents already this hour, or Apple's hourly limit | Ask the user to start the build from the app, or wait |
 | 1 | `REFUSED` | `run`: Apple refused the build; its words are in `message` | Report them; do not retry |
+| 9 | `PRO_REQUIRED` | Cumulus Pro is not active: every command but `status` is refused, and every MCP tool | Tell the user that this needs Cumulus Pro (Cumulus › Settings › Cumulus Pro); do not retry. `cumulus status` still answers. If `message` says the app has not said yet, ask them to open Cumulus |
 
 Through MCP, the same `error` object comes back as the text of a result with `isError: true`.
 

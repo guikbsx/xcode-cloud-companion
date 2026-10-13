@@ -14,6 +14,15 @@ nonisolated enum CLICommand: Equatable, Sendable {
     case refresh(wait: Bool, timeout: TimeInterval?)
     case launch(LaunchCommand)
     case mcp(verbose: Bool)
+
+    /// `status` answers without Cumulus Pro, and so does what reads no build: help, version, the cache's place. The
+    /// MCP server always starts; it asks about Pro at each call.
+    var needsPro: Bool {
+        switch self {
+        case .help, .version, .cacheInfo, .mcp, .query(.status): false
+        case .query, .open, .refresh, .launch: true
+        }
+    }
 }
 
 /// `cumulus run`: a workflow by name and at most one source; without one, the branch of the workflow's last build.

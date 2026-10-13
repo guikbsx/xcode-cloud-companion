@@ -70,6 +70,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
         guard !Self.isUnderTest else { return }
         widgetFeed = WidgetFeedWriter()
+        // The `cumulus` command cannot ask StoreKit: the app tells it, at launch and whenever the answer changes.
+        pro.onRead = { entitlement in ProStatusStore().record(isActive: entitlement.isActive, now: Date()) }
         pro.start()
         startNotifications()
         let workspaceCenter = NSWorkspace.shared.notificationCenter

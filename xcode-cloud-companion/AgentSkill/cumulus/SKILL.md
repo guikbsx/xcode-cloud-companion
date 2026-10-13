@@ -50,6 +50,8 @@ If none exists, tell the user to install the command from **Cumulus › Settings
 - **Do not retry a failed command blindly.** Read `error.code` and `error.suggestions` on standard error; see `references/output-contract.md`.
 - **Start a build only when the user asked for one.** `cumulus run` (and the `start_build` tool) spends compute hours of the user's plan: never call it to retry on your own, and never in a loop. The app allows three launches by agents an hour per account (`RATE_LIMITED`, exit 8), and the key must be set to “Read + Build” in Cumulus (`NOT_ALLOWED`, exit 7). Apple's own refusal comes back as `REFUSED` with its words. At a terminal the command asks the person to confirm; pass `--yes` only when they already did. Then follow the build with `cumulus build <reference>`. If the launch ends in `INTERNAL` because Apple did not confirm it, or with an empty `buildRunID`, a build may well have started: do not launch again; run `cumulus refresh --wait --json`, then `cumulus builds --limit 1 --json`, and tell the user what you see.
 
+- **Cumulus Pro.** Without it, only `cumulus status` answers: every other command exits 9 with `PRO_REQUIRED`, and every MCP tool returns the same error as a result with `isError: true`. Do not retry and do not look for another way to read the cache: tell the user that the answer needs Cumulus Pro, which they start or restore in Cumulus › Settings › Cumulus Pro.
+
 ## Typical flows
 
 - *"Why did my last build fail?"* - `cumulus builds --failed --limit 1 --json`, then `cumulus build <reference> --json`.

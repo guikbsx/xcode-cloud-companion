@@ -82,6 +82,10 @@ nonisolated struct MCPServer: Sendable {
         } catch {
             return Self.failure(id: id, code: ErrorCode.invalidParams, message: error.message)
         }
+        // Every tool comes with Cumulus Pro. The server still starts and lists its tools: the refusal is an answer.
+        if let refusal = ProGate.refusal(in: environment.directory, overMCP: true) {
+            return Self.refusal(id: id, refusal)
+        }
         let runner = CLIQueryRunner(environment: environment, account: account)
         do throws(CLIFailure) {
             let response = switch call {
@@ -96,10 +100,14 @@ nonisolated struct MCPServer: Sendable {
                 "isError": false,
             ])
         } catch {
-            // What the tool could not answer is a result the model reads, not a protocol error.
-            let payload = JSONValue(data: CLIJSON.data(["error": error])) ?? .null
-            return Self.success(id: id, ["content": [["type": "text", "text": .string(payload.compactString)]], "isError": true])
+            return Self.refusal(id: id, error)
         }
+    }
+
+    /// What the tool could not answer is a result the model reads, not a protocol error.
+    private static func refusal(id: JSONValue, _ failure: CLIFailure) -> JSONValue {
+        let payload = JSONValue(data: CLIJSON.data(["error": failure])) ?? .null
+        return success(id: id, ["content": [["type": "text", "text": .string(payload.compactString)]], "isError": true])
     }
 
     static func success(id: JSONValue, _ result: JSONValue) -> JSONValue {

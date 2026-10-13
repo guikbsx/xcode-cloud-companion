@@ -44,6 +44,8 @@ final class ProStore {
     private let now: () -> Date
     private var listener: Task<Void, Never>?
     private var recheck: Task<Void, Never>?
+    /// Told the state after each reading of the transactions, the first one included; never with a pinned state.
+    @ObservationIgnored var onRead: ((ProEntitlement) -> Void)?
 
     /// `forced` pins the state and reads nothing: Debug captures, and tests of what a lock shows.
     init(source: any ProSource = StoreKitProSource(), forced: ProEntitlement? = nil, now: @escaping () -> Date = { Date() }) {
@@ -83,6 +85,7 @@ final class ProStore {
         if resolved != entitlement {
             entitlement = resolved
         }
+        onRead?(resolved)
         scheduleRecheck()
     }
 

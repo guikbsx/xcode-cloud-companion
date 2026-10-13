@@ -8,6 +8,9 @@ nonisolated enum CumulusCLI {
         } catch {
             return failure(error, format: nil, environment: environment)
         }
+        if invocation.command.needsPro, let refusal = ProGate.refusal(in: environment.directory) {
+            return failure(refusal, format: invocation.format, environment: environment)
+        }
         switch invocation.command {
         case .help(let topic):
             guard let topic else { return CLIResult(stdout: CLIHelp.overview) }

@@ -90,6 +90,8 @@ nonisolated struct CLIAppLink: Sendable {
             return CLIFailure(code: .refused, message: "Apple refused to start the build.\(detail)", suggestions: ["The workflow may be paused, or none of its manual start conditions covers this source."])
         case IPCLaunchReason.uncertain?:
             return CLIFailure(code: .internal, message: "Apple did not confirm the launch.\(detail)", suggestions: ["Run 'cumulus refresh --wait', then 'cumulus builds --limit 1' before trying again: a build may have started."])
+        case IPCLaunchReason.proRequired?:
+            return CLIFailure(code: .proRequired, message: "Cumulus Pro is required to start a build from an agent.", suggestions: ["Ask the user to open Cumulus › Settings › Cumulus Pro."])
         case IPCLaunchReason.unknown?:
             return CLIFailure(code: .internal, message: "Whether a build started is not known.\(detail)", suggestions: ["Do not launch again yet: run 'cumulus refresh --wait', then 'cumulus builds --limit 1' to see whether it started."])
         default:

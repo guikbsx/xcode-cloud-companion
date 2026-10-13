@@ -66,7 +66,7 @@ struct SettingsRootView: View {
             NotificationsSettingsView(preferences: notificationPreferences, coordinator: notifications, accounts: accounts, pro: pro)
                 .navigationTitle(Text("Notifications"))
         case .agents:
-            AgentsSettingsView(model: agents)
+            AgentsSettingsView(model: agents, pro: pro, openPurchase: openPurchase)
                 .navigationTitle(Text("Agents"))
         case .pro:
             ProSettingsView(store: pro, openPurchase: openPurchase)

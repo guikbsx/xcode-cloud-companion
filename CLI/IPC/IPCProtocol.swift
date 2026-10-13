@@ -105,6 +105,8 @@ nonisolated enum IPCLaunchReason {
     static let uncertain = "uncertain"
     /// Apple did not confirm and the build list could not be read: a build may have started.
     static let unknown = "unknown"
+    /// The app itself says Cumulus Pro is not active, whatever the shared file claims.
+    static let proRequired = "proRequired"
 }
 
 nonisolated struct IPCFailure: Codable, Equatable, Sendable {
