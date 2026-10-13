@@ -168,13 +168,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             // The same figure as the menu and the Overview; nil while no reset date is set.
             let summary = session.usageSummary(now: Date())
             let notifications = notifications
+            let insights = StoreFailureInsightSource(store: session.failureInsights)
             #if DEBUG
             // XCC_NOTIFY=1 posts a sample banner about the newest build after the first sync, to try the permission and the click without waiting for a build.
             let postsSample = ProcessInfo.processInfo.environment["XCC_NOTIFY"] != nil && !hasPostedSample
             if postsSample { hasPostedSample = true }
             #endif
             Task {
-                await notifications.buildsDidSync(account: account, previous: previous, current: current, summary: summary)
+                await notifications.buildsDidSync(account: account, previous: previous, current: current, summary: summary, insights: insights)
                 #if DEBUG
                 guard postsSample, let run = current.runs.first else { return }
                 await notifications.deliver([LocalNotification(

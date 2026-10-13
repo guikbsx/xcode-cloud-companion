@@ -36,6 +36,7 @@ nonisolated enum ProFeatureText {
     static func title(_ feature: ProFeature) -> String {
         switch feature {
         case .regressions: String(localized: "What Broke")
+        case .failureInsight: String(localized: "In Brief")
         case .testHealth: String(localized: "Flaky and Slow Tests")
         case .workflowTrends: String(localized: "Trends")
         case .workflowCostBreakdown: String(localized: "Why This Workflow Costs")
@@ -56,6 +57,7 @@ nonisolated enum ProFeatureText {
     static func sentence(_ feature: ProFeature) -> String {
         switch feature {
         case .regressions: String(localized: "The tests this build broke and the new issues, compared with the last successful build.")
+        case .failureInsight: String(localized: "A one-line summary of a failed build and its tests in groups, written on this Mac by Apple Intelligence.")
         case .testHealth: String(localized: "The test that fails then passes on the same commit, and the ones that cost the most minutes.")
         case .workflowTrends: String(localized: "Median duration, time in the queue and success rate over the last thirty builds.")
         case .workflowCostBreakdown: String(localized: "Where the minutes of this workflow go: build, tests per device, archive, retries.")

@@ -21,6 +21,8 @@ struct WorkflowEditSheet: View {
     @State private var xcodeVersionID: String?
     @State private var macOSVersionID: String?
     @State private var message: String?
+    /// The versions have been asked for, answered or not.
+    @State private var versionsEnded = false
 
     private var workflow: CIWorkflow { target.workflow }
 
@@ -75,6 +77,7 @@ struct WorkflowEditSheet: View {
         .onAppear(perform: adopt)
         .task {
             await editor.loadVersions(currentXcodeVersionID: workflow.xcodeVersionID)
+            versionsEnded = true
         }
         .onChange(of: xcodeVersionID) { _, id in
             guard let id else { return }
@@ -103,12 +106,20 @@ struct WorkflowEditSheet: View {
         } else if editor.versionsFailed {
             Text(workflow.xcodeVersionName ?? String(localized: "Unknown")).foregroundStyle(.secondary)
             Text("The list of versions couldn’t be read: the version stays as it is.").font(.caption).foregroundStyle(.secondary)
+        } else if versionsEnded {
+            Text(workflow.xcodeVersionName ?? String(localized: "Unknown")).foregroundStyle(.secondary)
         } else {
-            HStack(spacing: 8) {
-                ProgressView().controlSize(.small)
-                Text("Loading versions…").foregroundStyle(.secondary)
-            }
+            versionSkeleton("Xcode", name: workflow.xcodeVersionName ?? "Xcode 27.1")
         }
+    }
+
+    /// The menu as it will stand, over the version the workflow uses, until the lists are read.
+    private func versionSkeleton(_ label: LocalizedStringKey, name: String) -> some View {
+        Picker(label, selection: .constant(name)) {
+            Text(verbatim: name).tag(name)
+        }
+        .labelsHidden()
+        .skeleton(true)
     }
 
     @ViewBuilder
@@ -120,6 +131,8 @@ struct WorkflowEditSheet: View {
                 }
             }
             .labelsHidden()
+        } else if !versionsEnded, xcodeVersionID != nil {
+            versionSkeleton("macOS", name: workflow.macOSVersionName ?? "macOS 27.0")
         } else {
             Text(workflow.macOSVersionName ?? String(localized: "Unknown")).foregroundStyle(.secondary)
         }

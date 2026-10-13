@@ -19,19 +19,19 @@
 			remoteGlobalIDString = 000000000000000300000000;
 			remoteInfo = cumulus;
 		};
-		000000000000000260000000 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 000000000000000000000000 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 000000000000000100000000;
-			remoteInfo = "xcode-cloud-companion";
-		};
 		000000000000000195000000 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 000000000000000000000000 /* Project object */;
 			proxyType = 1;
 			remoteGlobalIDString = 000000000000000400000000;
 			remoteInfo = CumulusWidgets;
+		};
+		000000000000000260000000 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 000000000000000000000000 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 000000000000000100000000;
+			remoteInfo = "xcode-cloud-companion";
 		};
 /* End PBXContainerItemProxy section */
 
@@ -378,15 +378,15 @@
 			target = 000000000000000300000000 /* cumulus */;
 			targetProxy = 000000000000000170000000 /* PBXContainerItemProxy */;
 		};
-		000000000000000250000000 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 000000000000000100000000 /* xcode-cloud-companion */;
-			targetProxy = 000000000000000260000000 /* PBXContainerItemProxy */;
-		};
 		000000000000000190000000 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 000000000000000400000000 /* CumulusWidgets */;
 			targetProxy = 000000000000000195000000 /* PBXContainerItemProxy */;
+		};
+		000000000000000250000000 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 000000000000000100000000 /* xcode-cloud-companion */;
+			targetProxy = 000000000000000260000000 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -695,7 +695,10 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "Config/CumulusWidgets-Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = Cumulus;
-				LD_RUNPATH_SEARCH_PATHS = "@executable_path/../Frameworks @executable_path/../../../../Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"@executable_path/../Frameworks",
+					"@executable_path/../../../../Frameworks",
+				);
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.guik.xcode-cloud-companion.widgets";
 				PRODUCT_NAME = CumulusWidgets;
@@ -723,7 +726,10 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "Config/CumulusWidgets-Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = Cumulus;
-				LD_RUNPATH_SEARCH_PATHS = "@executable_path/../Frameworks @executable_path/../../../../Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"@executable_path/../Frameworks",
+					"@executable_path/../../../../Frameworks",
+				);
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.guik.xcode-cloud-companion.widgets";
 				PRODUCT_NAME = CumulusWidgets;

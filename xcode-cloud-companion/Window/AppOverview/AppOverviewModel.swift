@@ -25,6 +25,13 @@ nonisolated struct AppOverviewModel: Equatable, Sendable {
         /// Share of what the account used in the cycle; nil when nothing was used.
         var shareOfUsed: Double? { accountMinutes > 0 ? min(totalMinutes / accountMinutes, 1) : nil }
         var hasEstimates: Bool { estimatedMinutes > 0 }
+
+        /// The cycle card's skeleton, while the builds it rests on are measured: figures of a typical length, none of them shown.
+        static let placeholder = Cycle(
+            billedMinutes: 0, estimatedMinutes: 135, quotaMinutes: 1_500, accountMinutes: 400, projectedMinutes: 320,
+            segments: [Segment(workflow: "Release", minutes: 90, shade: 1), Segment(workflow: "Main", minutes: 45, shade: 0.78), Segment(workflow: nil, minutes: 120, shade: 1)],
+            isMeasuring: false, lastImport: nil
+        )
     }
 
     struct Segment: Identifiable, Equatable, Sendable {

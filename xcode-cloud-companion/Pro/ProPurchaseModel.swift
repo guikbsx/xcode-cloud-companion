@@ -8,7 +8,7 @@ nonisolated enum ProBenefit: CaseIterable, Sendable {
     var features: [ProFeature] {
         switch self {
         case .alerts: [.earlyUsageAlerts, .stuckBuildAlert]
-        case .diagnostics: [.regressions, .testHealth, .workflowTrends, .workflowCostBreakdown, .upcomingBuilds, .appOverview, .olderBuilds, .openInXcode]
+        case .diagnostics: [.regressions, .failureInsight, .testHealth, .workflowTrends, .workflowCostBreakdown, .upcomingBuilds, .appOverview, .olderBuilds, .openInXcode]
         case .workflows: [.pauseWorkflow, .editWorkflow]
         case .agents: [.commandLine, .mcpServer]
         case .accounts: [.multipleAccounts]

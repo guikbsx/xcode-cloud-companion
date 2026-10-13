@@ -141,6 +141,11 @@ final class LogOpener {
         tasks[actionID]?.cancel()
     }
 
+    /// Where an action's logs are already unpacked, if they are: nothing is downloaded.
+    func unpackedFolder(of actionID: String) async -> URL? {
+        await cache.folder(actionID: actionID)
+    }
+
     func open(_ action: CIBuildAction, run: CIBuildRun, knownArtifacts: [CIArtifact]?, title: String) async {
         guard !state(of: action.id).isBusy else { return }
         // A finished build never changes: what was unpacked once is opened again without a word to Apple.

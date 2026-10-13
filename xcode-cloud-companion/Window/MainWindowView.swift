@@ -56,6 +56,10 @@ struct MainWindowView: View {
     @State private var launchTarget: LaunchTarget?
     @State private var pauseTarget: WorkflowPauseTarget?
     @State private var editTarget: WorkflowEditTarget?
+    /// The build whose TestFlight builds were last asked for in the app's sheet, answered or not.
+    @State private var testFlightEndedRunID: String?
+    /// The workflow whose details were last asked for, answered or not.
+    @State private var workflowEndedID: String?
     @State private var columnVisibility = NavigationSplitViewVisibility.all
     @State private var colorPanel = AppColorPanel()
     @Environment(ProAccess.self) private var access: ProAccess?
@@ -117,7 +121,8 @@ struct MainWindowView: View {
                         buildStore: buildStore, navigation: navigation,
                         scope: navigation.referenceScope.map(BuildListScope.reference) ?? BuildListScope(navigation.sidebarSelection),
                         back: navigation.referenceScope == nil ? nil : { navigation.referenceScope = nil },
-                        older: session.windowStores.older, icons: icons, palette: palette
+                        older: session.windowStores.older, icons: icons, palette: palette,
+                        failureCopier: BuildFailureCopier(buildStore: buildStore, extrasStore: extrasStore, logOpener: logOpener)
                     )
                 }
             }
@@ -192,6 +197,7 @@ struct MainWindowView: View {
             pins: pins,
             selection: $navigation.sidebarSelection,
             cycle: CycleCard.Content(summary: summary),
+            cycleIsPending: SkeletonRules.sidebarCycle(hasPlan: settings.plan != nil, isMeasuring: summary?.measurement.isMeasuring == true),
             setPlan: settings.plan == nil ? openSettings : nil,
             activity: session.activity(now: Date()),
             backgroundActivity: SyncActivity.background(among: others.map { ($0.name, $0.activity(now: Date())) }),
@@ -215,7 +221,7 @@ struct MainWindowView: View {
                 run: run, buildStore: buildStore, extrasStore: extrasStore, artifactSaver: artifactSaver, onRebuild: rebuildAction(for: run),
                 teamID: settings.issuerID.isEmpty ? nil : settings.issuerID,
                 icons: icons, palette: palette,
-                openBuild: { navigation.selectedBuildID = $0 }, logOpener: logOpener, ledger: usageStore.ledger, tab: $navigation.buildTab
+                openBuild: { navigation.selectedBuildID = $0 }, logOpener: logOpener, ledger: usageStore.ledger, insights: session.failureInsights, tab: $navigation.buildTab
             )
             .environment(\.sourceOpening, sourceOpening(for: run))
         } else if navigation.sidebarSelection == .overview {
@@ -239,6 +245,7 @@ struct MainWindowView: View {
             let product = buildStore.snapshot.products.first { $0.id == workflow.productID }
             WorkflowDetailView(
                 model: WorkflowDetailModel(workflow: workflow, productName: product?.displayName), tests: workflowTests,
+                isLoading: SkeletonRules.workflowSheet(isCached: workflowStore.workflow(id: id) != nil, loadEnded: workflowEndedID == id),
                 openBuildTests: { id in
                     // The build stays in its workflow's list: only the sheet and its tab change.
                     navigation.buildTab = .tests
@@ -254,7 +261,10 @@ struct MainWindowView: View {
                 editWorkflow: canLaunch && workflow.isLockedForEditing != true ? { withPro(.editWorkflow) { editTarget = WorkflowEditTarget(workflow: workflow) } } : nil,
                 workflowURL: AppStoreConnectLinks.workflow(appID: product?.appID, workflowID: id, teamID: settings.issuerID.isEmpty ? nil : settings.issuerID)
             )
-                .task(id: id) { await loadWorkflow(id) }
+                .task(id: id) {
+                    await loadWorkflow(id)
+                    workflowEndedID = id
+                }
         } else if case .product(let id) = navigation.sidebarSelection, !access.allows(.appOverview),
                   let product = buildStore.snapshot.products.first(where: { $0.id == id }) {
             // Without Pro the app's sheet reads nothing: neither its workflows nor its TestFlight build.
@@ -266,6 +276,10 @@ struct MainWindowView: View {
             AppOverviewView(
                 model: model, swatch: palette.swatch(for: model.productKey), artwork: icons.artwork(in: buildStore.snapshot, by: \.id)[id], now: Date(),
                 testFlight: testFlightText(for: model.testFlightRun),
+                isTestFlightPending: SkeletonRules.testFlightPill(
+                    hasShippedRun: model.testFlightRun != nil, hasText: testFlightText(for: model.testFlightRun) != nil,
+                    loadEnded: model.testFlightRun.map { $0.id == testFlightEndedRunID } ?? false
+                ),
                 openSettings: openSettings,
                 openWorkflow: { navigation.sidebarSelection = .workflow($0) },
                 openBuild: { navigation.selectedBuildID = $0 },
@@ -299,6 +313,7 @@ struct MainWindowView: View {
     /// What the disk holds comes back for free; Apple is only asked once per build, and not while the key's budget is nearly spent.
     private func loadTestFlightBuild(of run: CIBuildRun?) async {
         guard let run else { return }
+        defer { testFlightEndedRunID = run.id }
         await extrasStore.loadCached(run)
         guard extrasStore.extras(for: run.id)?.betaBuilds == nil else { return }
         if let budget = buildStore.rateLimit, budget.remaining <= SyncSchedule.criticalRemaining { return }

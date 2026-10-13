@@ -4,6 +4,8 @@ import SwiftUI
 struct WorkflowDetailView: View {
     let model: WorkflowDetailModel
     var tests: WorkflowTestsModel?
+    /// The workflow's own details are on their way: the facts, the description and the conditions stand as skeletons.
+    var isLoading = false
     var openBuildTests: (String) -> Void = { _ in }
     /// How the workflow's builds go over time, from the cache; nil leaves the section out.
     var trends: WorkflowTrends?
@@ -28,25 +30,28 @@ struct WorkflowDetailView: View {
             }
             header
                 .accessibilitySortPriority(isSplit ? 1 : 0)
-            if !model.info.isEmpty {
+            let showsFactsSkeleton = isLoading && model.info.isEmpty
+            let showsConditionsSkeleton = isLoading && model.startConditions.isEmpty
+            if !model.info.isEmpty || showsFactsSkeleton {
                 LazyVGrid(columns: isSplit ? Self.pairedFacts : Self.flowingFacts, alignment: .leading, spacing: 14) {
-                    ForEach(model.info) { InfoItem(key: $0.title, value: $0.value, help: $0.help) }
+                    ForEach(showsFactsSkeleton ? WorkflowDetailModel.placeholderInfo : model.info) { InfoItem(key: $0.title, value: $0.value, help: $0.help) }
                 }
                 .cumulusGroup()
+                .skeleton(showsFactsSkeleton)
                 .detailPlacement(configuration)
             }
-            if !model.startConditions.isEmpty {
+            if !model.startConditions.isEmpty || showsConditionsSkeleton {
                 section("Start conditions") {
-                    ForEach(model.startConditions) { condition in
+                    ForEach(showsConditionsSkeleton ? WorkflowDetailModel.placeholderConditions : model.startConditions) { condition in
                         // The value beside its title; under it when it is too long for the line.
                         ViewThatFits(in: .horizontal) {
                             HStack(alignment: .firstTextBaseline) {
-                                Text(condition.title).fontWeight(.semibold).lineLimit(1).fixedSize()
+                                Text(condition.title).fontWeight(.semibold).lineLimit(1).fixedSize().unredacted()
                                 Spacer(minLength: 12)
                                 Text(condition.value).foregroundStyle(.secondary).lineLimit(1).fixedSize().textSelection(.enabled)
                             }
                             VStack(alignment: .leading, spacing: 2) {
-                                Text(condition.title).fontWeight(.semibold)
+                                Text(condition.title).fontWeight(.semibold).unredacted()
                                 Text(condition.value).foregroundStyle(.secondary).textSelection(.enabled)
                             }
                             .frame(maxWidth: .infinity, alignment: .leading)
@@ -54,6 +59,7 @@ struct WorkflowDetailView: View {
                         .accessibilityElement(children: .combine)
                     }
                 }
+                .skeleton(showsConditionsSkeleton)
                 .detailPlacement(configuration)
             }
             if !model.actions.isEmpty {
@@ -129,6 +135,8 @@ struct WorkflowDetailView: View {
             }
             if let description = model.description {
                 Text(description).foregroundStyle(.secondary).textSelection(.enabled)
+            } else if isLoading {
+                Text(WorkflowDetailModel.placeholderDescription).foregroundStyle(.secondary).skeleton(true)
             }
         }
     }
@@ -157,6 +165,7 @@ struct WorkflowDetailView: View {
                 .textCase(.uppercase)
                 .tracking(0.5)
                 .foregroundStyle(.secondary)
+                .unredacted()
             content()
         }
         .frame(maxWidth: .infinity, alignment: .leading)

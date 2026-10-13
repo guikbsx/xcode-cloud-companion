@@ -63,6 +63,20 @@ nonisolated struct WorkflowDetailModel: Equatable, Sendable {
         }
     }
 
+    /// The facts and the conditions of the sheet's skeleton: their titles are the real ones, their values only a length.
+    static let placeholderInfo = [
+        InfoField(title: String(localized: "Project"), value: "Cumulus.xcodeproj"),
+        InfoField(title: String(localized: "Repository"), value: "xcode-cloud-companion"),
+        InfoField(title: "Xcode", value: "Xcode 27.1"),
+        InfoField(title: "macOS", value: "macOS 27.0"),
+    ]
+    static let placeholderConditions = [
+        InfoField(title: String(localized: "Branch changes"), value: "main"),
+        InfoField(title: String(localized: "Pull requests"), value: "All"),
+        InfoField(title: String(localized: "Auto-cancel"), value: "On"),
+    ]
+    static let placeholderDescription = "Builds, tests and archives the app, then hands it to TestFlight."
+
     private static func conditions(_ conditions: CIStartConditions?) -> [InfoField] {
         guard let conditions else { return [] }
         var lines: [InfoField] = []

@@ -6,6 +6,7 @@ struct GeneralSettingsView: View {
     /// The accounts, for how fresh the builds of the one on screen are; nil shows the app's name and version alone.
     var accounts: AccountsModel?
     @AppStorage(ActivationPolicyCoordinator.showsInDockKey) private var showsInDock = true
+    @AppStorage(FailureInsightFeature.settingKey) private var summarizesFailures = true
 
     var body: some View {
         // The app's own line goes across the pane, above the columns when there are two.
@@ -41,6 +42,18 @@ struct GeneralSettingsView: View {
                 }
             }
         } trailing: {
+            Section("Failed Builds") {
+                let model = FailureInsightFeature.ModelStatus.current
+                Toggle(isOn: $summarizesFailures) {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Summarize failed builds with Apple Intelligence")
+                        Text(model.reason ?? String(localized: "Runs on this Mac: nothing about your builds leaves it. The summary may be wrong.", comment: "Caption of the Apple Intelligence setting in Settings"))
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                }
+                .disabled(model != .available)
+            }
             Section("Language") {
                 LabeledContent {
                     Button("Language & Region…") { NSWorkspace.shared.open(Self.languageSettings) }

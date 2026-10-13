@@ -10,6 +10,12 @@ nonisolated struct ProOffer: Equatable, Sendable, Identifiable {
     var trialDays: Int?
 
     var id: ProProduct { product }
+
+    /// The two offers of the purchase sheet's skeleton: prices of a typical length, never shown as text.
+    static let placeholders = [
+        ProOffer(product: .yearly, displayName: "Yearly", displayPrice: "$19.99", trialDays: 30),
+        ProOffer(product: .lifetime, displayName: "Lifetime", displayPrice: "$59.99", trialDays: nil),
+    ]
 }
 
 nonisolated enum ProPurchaseOutcome: Equatable, Sendable {

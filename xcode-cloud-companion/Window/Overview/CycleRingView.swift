@@ -165,6 +165,7 @@ struct CycleRing<Center: View>: View {
 /// The workflows' shares of the cycle, as one bar above their lines.
 struct WorkflowBar: View {
     let segments: [OverviewModel.WorkflowSegment]
+    @Environment(\.redactionReasons) private var redaction
 
     var body: some View {
         GeometryReader { proxy in
@@ -173,7 +174,8 @@ struct WorkflowBar: View {
             HStack(spacing: spacing) {
                 ForEach(segments) { segment in
                     Rectangle()
-                        .fill(segment.swatch.map { AnyShapeStyle($0.color.opacity(segment.shade)) } ?? AnyShapeStyle(Color.primary.opacity(0.15)))
+                        .fill(redaction.isSkeleton ? AnyShapeStyle(Color.skeleton)
+                            : segment.swatch.map { AnyShapeStyle($0.color.opacity(segment.shade)) } ?? AnyShapeStyle(Color.primary.opacity(0.15)))
                         .frame(width: max(2, width * segment.fraction))
                 }
             }

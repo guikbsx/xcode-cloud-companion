@@ -34,18 +34,24 @@ struct ProSettingsView: View {
     @State private var isRedeeming = false
 
     private var actions: [ProSettingsAction] { ProSettingsAction.actions(for: store.entitlement) }
+    /// Until the transactions are read once, the state is not known: neither the row nor its buttons say anything.
+    private var isSkeleton: Bool { SkeletonRules.proSettings(hasResolved: store.hasResolved) }
 
     var body: some View {
         SettingsColumns {
             Section {
                 state
+                    .skeleton(isSkeleton)
                 if actions.contains(.restore) {
                     restore
+                        .skeleton(isSkeleton)
                 }
                 if actions.contains(.redeemCode) {
                     LabeledContent("Have an offer code?") {
                         Button("Redeem a Code…") { isRedeeming = true }
+                            .disabled(isSkeleton)
                     }
+                    .skeleton(isSkeleton)
                 }
             }
         } trailing: {
@@ -85,10 +91,12 @@ struct ProSettingsView: View {
             if actions.contains(.purchase) {
                 Button(purchaseTitle, action: openPurchase)
                     .buttonStyle(.borderedProminent)
+                    .disabled(isSkeleton)
             } else if actions.contains(.manageSubscription) {
                 Button("Manage Subscription…") {
                     NSWorkspace.shared.open(ProSettingsAction.subscriptionsPage)
                 }
+                .disabled(isSkeleton)
             }
         } label: {
             VStack(alignment: .leading, spacing: 2) {
@@ -126,7 +134,7 @@ struct ProSettingsView: View {
                         : String(localized: "The App Store could not be reached. Try again in a moment."))
                 }
             }
-            .disabled(isRestoring)
+            .disabled(isRestoring || isSkeleton)
         } label: {
             VStack(alignment: .leading, spacing: 2) {
                 Text("Already bought Cumulus Pro?")

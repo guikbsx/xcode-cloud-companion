@@ -14,11 +14,16 @@ struct BuildDetailView: View {
     var logOpener: LogOpener?
     /// The imported usage exports: what the build cost, when it can be told.
     var ledger: UsageLedger?
+    /// The “In Brief” summaries of failed builds; without one the card and the suggested groups do not exist.
+    var insights: FailureInsightStore?
 
     @Binding var tab: BuildTab
     /// Bumped by “Compare with #n” beside the commit: the group below starts its comparison.
     @State private var compareRequest = 0
+    /// The build whose TestFlight builds have been asked for, answered or not.
+    @State private var betaEndedRunID: String?
     @Environment(ProAccess.self) private var access: ProAccess?
+    @AppStorage(FailureInsightFeature.settingKey) private var isInsightSettingOn = true
 
     var body: some View {
         TickingView(interval: Self.redrawInterval(for: run)) { now in
@@ -32,7 +37,10 @@ struct BuildDetailView: View {
                 cost: ledger.flatMap { UsageCalculator.cost(of: run, in: buildStore.snapshot, ledger: $0, now: now) }
             ))
         }
-        .task(id: run) { await extrasStore.loadBetaBuilds(for: run) }
+        .task(id: run) {
+            await extrasStore.loadBetaBuilds(for: run)
+            betaEndedRunID = run.id
+        }
     }
 
     /// A running build's durations go on every second until a sync says it ended; a finished build only has its
@@ -48,6 +56,16 @@ struct BuildDetailView: View {
                 .accessibilitySortPriority(columns == .two ? 1 : 0)
             if columns == .one, !model.frieze.isEmpty {
                 frieze(model).padding(.horizontal, 8)
+            }
+            if BuildFailurePrompt.isOffered(for: run) {
+                if let insights {
+                    FailureInsightSection(run: run, store: insights)
+                        .id(run.id)
+                        .detailPlacement(.side)
+                }
+                BuildFailureCard(run: run, copier: BuildFailureCopier(buildStore: buildStore, extrasStore: extrasStore, logOpener: logOpener))
+                    .id(run.id)
+                    .detailPlacement(.side)
             }
             if let commit = model.commit {
                 Group {
@@ -309,14 +327,20 @@ struct BuildDetailView: View {
 
     @ViewBuilder
     private var testFlightGroup: some View {
-        if let builds = extrasStore.extras(for: run.id)?.betaBuilds, !builds.isEmpty {
+        let known = extrasStore.extras(for: run.id)?.betaBuilds ?? []
+        let isSkeleton = SkeletonRules.testFlightCard(
+            shipsToTestFlight: buildStore.snapshot.workflow(id: run.workflowID)?.shipsToTestFlight ?? false,
+            isSucceeded: run.completionStatus == .succeeded, hasBuilds: !known.isEmpty, loadEnded: betaEndedRunID == run.id
+        )
+        if !known.isEmpty || isSkeleton {
             VStack(alignment: .leading, spacing: 8) {
                 Text("TestFlight")
                     .font(.caption2.weight(.semibold))
                     .textCase(.uppercase)
                     .tracking(0.5)
                     .foregroundStyle(.secondary)
-                ForEach(builds) { build in
+                    .unredacted()
+                ForEach(isSkeleton ? [CIBetaBuild.placeholder] : known) { build in
                     HStack {
                         Label(build.version.map { String(localized: "Build \($0)") } ?? String(localized: "Build"), systemImage: "paperplane")
                         Spacer()
@@ -328,6 +352,7 @@ struct BuildDetailView: View {
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             .cumulusGroup()
+            .skeleton(isSkeleton)
         }
     }
 
@@ -361,7 +386,7 @@ struct BuildDetailView: View {
             case .tests:
                 TestsTabView(
                     results: extras?.testsByAction ?? [:], actions: actions, state: extrasStore.state(.tests, runID: run.id),
-                    retry: { Task { await extrasStore.loadTests(for: run, actions: actions) } }
+                    insight: openInsight, retry: { Task { await extrasStore.loadTests(for: run, actions: actions) } }
                 )
                 .task(id: run) { await extrasStore.loadTests(for: run, actions: actions) }
             case .problems:
@@ -378,6 +403,14 @@ struct BuildDetailView: View {
                 .task(id: run) { await extrasStore.loadArtifacts(for: run, actions: actions) }
             }
         }
+    }
+
+    /// What the Tests tab may use: the groups of this build, only while the feature is open.
+    private var openInsight: FailureInsightRecord? {
+        guard BuildFailurePrompt.isOffered(for: run),
+              FailureInsightFeature.mode(model: .current, settingOn: isInsightSettingOn, proAllows: access.allows(.failureInsight)) == .open
+        else { return nil }
+        return insights?.insight(for: run.id)
     }
 
     // MARK: - Logs

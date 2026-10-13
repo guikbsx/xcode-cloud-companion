@@ -8,24 +8,24 @@ struct WorkflowTestsSection: View {
     let openBuild: (String) -> Void
 
     var body: some View {
+        // The report is read from the disk: until it is, the section stands as a skeleton of itself.
+        let report = model.report ?? .placeholder
         VStack(alignment: .leading, spacing: 12) {
             Text("Tests")
                 .font(.caption2.weight(.semibold))
                 .textCase(.uppercase)
                 .tracking(0.5)
                 .foregroundStyle(.secondary)
-            if let report = model.report {
-                coverage(report)
-                if report.analyzedBuilds > 0 {
-                    flaky(report)
-                    slowest(report)
-                }
-            } else {
-                ProgressView().controlSize(.small)
+                .unredacted()
+            coverage(report)
+            if report.analyzedBuilds > 0 {
+                flaky(report)
+                slowest(report)
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .cumulusGroup()
+        .skeleton(model.report == nil)
         .task(id: workflowID) { await model.refresh(workflowID: workflowID) }
     }
 

@@ -87,6 +87,8 @@ nonisolated enum ProFeature: String, CaseIterable, Sendable {
     case earlyUsageAlerts
     case stuckBuildAlert
     case regressions
+    /// The summary line and the suggested groups, written on this Mac by Apple Intelligence.
+    case failureInsight
     case testHealth
     case workflowTrends
     case workflowCostBreakdown

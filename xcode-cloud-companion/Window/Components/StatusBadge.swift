@@ -5,16 +5,20 @@ struct StatusBadge: View {
     let status: BuildStatus
     var size: CGFloat = 30
     var isOnAccent = false
+    @Environment(\.redactionReasons) private var redaction
+
+    /// In a skeleton the state is not known: its colour would say it.
+    private var tint: Color { redaction.isSkeleton ? Color.skeleton : status.tint }
 
     var body: some View {
         Image(systemName: status.systemImage)
             .font(.system(size: size * (status == .finished ? 0.3 : 0.46), weight: .bold))
-            .foregroundStyle(isOnAccent ? AnyShapeStyle(.white) : AnyShapeStyle(status.tint))
+            .foregroundStyle(isOnAccent ? AnyShapeStyle(.white) : AnyShapeStyle(tint))
             .frame(width: size, height: size)
-            .background(isOnAccent ? Color.white.opacity(0.22) : status.tint.opacity(0.16), in: .circle)
+            .background(isOnAccent ? Color.white.opacity(0.22) : tint.opacity(0.16), in: .circle)
             .overlay {
                 if status == .running {
-                    Circle().stroke(status.tint.opacity(0.28), lineWidth: 3).padding(-3)
+                    Circle().stroke(tint.opacity(0.28), lineWidth: 3).padding(-3)
                 }
             }
             .accessibilityLabel(status.label)

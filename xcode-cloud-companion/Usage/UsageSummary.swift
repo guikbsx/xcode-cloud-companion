@@ -33,6 +33,9 @@ nonisolated struct BuildCost: Sendable, Equatable {
     var minutes: Double
     /// True when the minutes are computed from the build's actions, not billed by Apple.
     var isEstimated: Bool
+
+    /// The line of the “Most expensive build” skeleton.
+    static let placeholder = BuildCost(product: "Cumulus", buildNumber: 128, workflow: "Release", minutes: 42, isEstimated: false)
 }
 
 /// A slice of the gauge: `product` nil stands for the minutes that are estimated rather than billed.

@@ -31,9 +31,7 @@ struct OverviewView: View {
                 .detailPlacement(.full)
             if let summary, let model {
                 CycleRingGroup(summary: summary, model: model, artwork: artwork)
-                if !isMeasuring {
-                    details(model, columns: columns)
-                }
+                details(model, columns: columns, isMeasuring: isMeasuring)
             } else {
                 noPlan
             }
@@ -49,8 +47,9 @@ struct OverviewView: View {
             }
             // With a column for short facts, the most expensive build and the exports are cards of their own there.
             if columns == .two {
-                if let costliest = model?.costliestBuild, !isMeasuring {
+                if let costliest = isMeasuring ? BuildCost.placeholder : model?.costliestBuild {
                     section("Most expensive build") { costliestLine(costliest, showsTitle: false) }
+                        .skeleton(isMeasuring, label: "Measuring usage…")
                         .detailPlacement(.side)
                 }
                 importCard
@@ -80,11 +79,12 @@ struct OverviewView: View {
     }
 
     @ViewBuilder
-    private func details(_ model: OverviewModel, columns: DetailColumns) -> some View {
-        if !model.workflows.isEmpty {
+    private func details(_ model: OverviewModel, columns: DetailColumns, isMeasuring: Bool) -> some View {
+        // While the builds are measured their figures are not known: the section stands as a skeleton of itself, with none.
+        if isMeasuring || !model.workflows.isEmpty {
             section("Cost by workflow") {
-                WorkflowBar(segments: model.workflowBar)
-                ForEach(model.workflows.prefix(OverviewModel.visibleWorkflows)) { workflow in
+                WorkflowBar(segments: isMeasuring ? OverviewModel.WorkflowSegment.placeholders : model.workflowBar)
+                ForEach((isMeasuring ? OverviewModel.WorkflowRow.placeholders : model.workflows).prefix(OverviewModel.visibleWorkflows)) { workflow in
                     let isExpanded = expandedWorkflow == workflow.id
                     Button {
                         expandedWorkflow = isExpanded ? nil : workflow.id
@@ -95,10 +95,7 @@ struct OverviewView: View {
                                 .foregroundStyle(.secondary)
                                 .rotationEffect(.degrees(isExpanded ? 90 : 0))
                                 .accessibilityHidden(true)
-                            RoundedRectangle(cornerRadius: 2.5)
-                                .fill(workflow.swatch.color.opacity(workflow.shade))
-                                .frame(width: 9, height: 9)
-                                .accessibilityHidden(true)
+                            SwatchSquare(color: workflow.swatch.color.opacity(workflow.shade))
                             VStack(alignment: .leading, spacing: 2) {
                                 Text(workflow.workflow).fontWeight(.semibold)
                                 Text(UsageFormat.dotted([workflow.product, String(localized: "\(workflow.buildCount) builds")]))
@@ -123,18 +120,19 @@ struct OverviewView: View {
                         WorkflowBreakdownView(breakdown: breakdown)
                     }
                 }
-                if columns == .one, let costliest = model.costliestBuild {
+                if columns == .one, let costliest = isMeasuring ? BuildCost.placeholder : model.costliestBuild {
                     Divider()
                     costliestLine(costliest, showsTitle: true)
                 }
             }
+            .skeleton(isMeasuring, label: "Measuring usage…")
         }
     }
 
     private func costliestLine(_ costliest: BuildCost, showsTitle: Bool) -> some View {
         let build = Text(UsageFormat.dotted([costliest.product, "#\(costliest.buildNumber)", costliest.workflow].compactMap(\.self))).fontWeight(.semibold)
         let minutes = Text((costliest.isEstimated ? "~" : "") + UsageFormat.minutes(costliest.minutes)).font(.callout.monospacedDigit())
-        let title = Text("Most expensive build").foregroundStyle(.secondary)
+        let title = Text("Most expensive build").foregroundStyle(.secondary).unredacted()
         // The title before the build on one line; above it in a column too narrow for both.
         return ViewThatFits(in: .horizontal) {
             HStack(alignment: .firstTextBaseline) {
@@ -291,6 +289,7 @@ struct OverviewView: View {
                 .textCase(.uppercase)
                 .tracking(0.5)
                 .foregroundStyle(.secondary)
+                .unredacted()
             content()
         }
         .frame(maxWidth: .infinity, alignment: .leading)

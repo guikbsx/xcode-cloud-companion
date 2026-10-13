@@ -39,6 +39,11 @@ nonisolated enum BuildNotificationPlanner {
     static let minimumOverrun: TimeInterval = 10 * 60
 
     static func finished(previous: BuildSnapshot, current: BuildSnapshot, rules: BuildNotificationRules, now: Date) -> [LocalNotification] {
+        finishedBuilds(previous: previous, current: current, rules: rules, now: now).map(\.notification)
+    }
+
+    /// The same banners, with the build each one is about: a failed one may be enriched before it is posted.
+    static func finishedBuilds(previous: BuildSnapshot, current: BuildSnapshot, rules: BuildNotificationRules, now: Date) -> [FinishedBuildBanner] {
         // The first load has no "before": every build in it was already over.
         guard let previousSync = previous.lastSuccessfulSync else { return [] }
         let before = Dictionary(previous.runs.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
@@ -53,7 +58,7 @@ nonisolated enum BuildNotificationPlanner {
             guard now.timeIntervalSince(run.finishedDate ?? now) <= freshness else { return nil }
             let status = BuildStatus(run: run)
             guard rules.includes(status) else { return nil }
-            return notification(for: run, status: status, in: current)
+            return FinishedBuildBanner(run: run, status: status, notification: notification(for: run, status: status, in: current))
         }
     }
 
@@ -129,6 +134,14 @@ nonisolated enum BuildNotificationPlanner {
     private static func number(of run: CIBuildRun) -> String {
         run.number.map(String.init) ?? "?"
     }
+}
+
+nonisolated struct FinishedBuildBanner: Sendable, Equatable {
+    var run: CIBuildRun
+    var status: BuildStatus
+    var notification: LocalNotification
+
+    var isFailure: Bool { status == .failed || status == .errored }
 }
 
 nonisolated struct StuckBuild: Sendable, Equatable {

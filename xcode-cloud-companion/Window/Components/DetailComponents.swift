@@ -6,6 +6,10 @@ struct CapsuleTag: View {
     var systemImage: String?
     var tint: Color?
     var isMonospaced = false
+    @Environment(\.redactionReasons) private var redaction
+
+    /// In a skeleton a state's colour would say a state: the capsule goes neutral.
+    private var shownTint: Color? { redaction.isSkeleton ? nil : tint }
 
     var body: some View {
         HStack(spacing: 5) {
@@ -18,8 +22,8 @@ struct CapsuleTag: View {
         }
         .padding(.horizontal, 10)
         .padding(.vertical, 4)
-        .foregroundStyle(tint ?? Color.primary)
-        .background((tint ?? Color.primary).opacity(tint == nil ? 0.07 : 0.15), in: .capsule)
+        .foregroundStyle(shownTint ?? Color.primary)
+        .background((shownTint ?? Color.primary).opacity(shownTint == nil ? 0.07 : 0.15), in: .capsule)
     }
 }
 
@@ -54,6 +58,7 @@ struct InfoItem: View {
                 .textCase(.uppercase)
                 .tracking(0.5)
                 .foregroundStyle(.secondary)
+                .unredacted()
             Text(value)
                 .lineLimit(2)
         }

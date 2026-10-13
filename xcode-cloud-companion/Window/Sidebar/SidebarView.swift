@@ -6,6 +6,8 @@ struct SidebarView: View {
     @Bindable var pins: PinnedWorkflows
     @Binding var selection: SidebarSelection
     let cycle: CycleCard.Content?
+    /// The plan is set and its first measure is under way: the card stands as a skeleton, so the list below does not move.
+    var cycleIsPending = false
     /// Opens Settings on the plan; set while the account has no reset date, which is why there is no cycle to show.
     var setPlan: (() -> Void)?
     /// What the app is fetching, or how fresh the data is: shown above the cycle.
@@ -26,8 +28,9 @@ struct SidebarView: View {
     var body: some View {
         List(selection: $selection) {
             Group {
-                if let cycle {
-                    CycleCard(fractionUsed: cycle.fractionUsed, usedText: cycle.usedText, resetText: cycle.resetText)
+                if let shown = cycle ?? (cycleIsPending ? .placeholder : nil) {
+                    CycleCard(fractionUsed: shown.fractionUsed, usedText: shown.usedText, resetText: shown.resetText)
+                        .skeleton(cycle == nil, label: "Measuring usage…")
                 } else if let setPlan {
                     CyclePromptCard(setPlan: setPlan)
                 }
@@ -188,6 +191,9 @@ extension CycleCard {
         let fractionUsed: Double
         let usedText: String
         let resetText: String
+
+        /// The card's skeleton while the first measure runs: two lines of a typical length, none of them shown.
+        static let placeholder = Content(fractionUsed: 0.35, usedText: "8 hr, 45 min of 25 hr", resetText: "Resets Nov 7")
 
         init(fractionUsed: Double, usedText: String, resetText: String) {
             self.fractionUsed = fractionUsed

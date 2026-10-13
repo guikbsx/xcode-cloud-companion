@@ -68,13 +68,6 @@ struct ProPurchaseView: View {
     @ViewBuilder
     private var offer: some View {
         switch model.phase {
-        case .loading:
-            HStack(spacing: 8) {
-                ProgressView().controlSize(.small)
-                Text("Asking the App Store for the prices…")
-                    .foregroundStyle(.secondary)
-            }
-            .frame(maxWidth: .infinity, minHeight: 76)
         case .unavailable:
             VStack(spacing: 8) {
                 Text("The App Store did not give the prices. Check the connection, then try again.")
@@ -86,23 +79,27 @@ struct ProPurchaseView: View {
                 }
             }
             .frame(maxWidth: .infinity, minHeight: 76)
-        case .ready, .purchasing, .pending, .failed:
-            products
+        case .loading, .ready, .purchasing, .pending, .failed:
+            products(isSkeleton: model.phase == .loading)
         }
     }
 
-    private var products: some View {
-        VStack(alignment: .leading, spacing: 12) {
+    /// The two cards, the button and the fine print; while the App Store answers, the same views over sample offers, in grey.
+    private func products(isSkeleton: Bool) -> some View {
+        let offers = isSkeleton ? ProOffer.placeholders : model.offers
+        let selected = isSkeleton ? ProOffer.placeholders.first : model.selectedOffer
+        return VStack(alignment: .leading, spacing: 12) {
             HStack(spacing: 10) {
-                ForEach(model.offers) { offer in
-                    ProOfferCard(offer: offer, isSelected: model.selectedOffer?.product == offer.product) {
+                ForEach(offers) { offer in
+                    ProOfferCard(offer: offer, isSelected: !isSkeleton && selected?.product == offer.product) {
                         model.selection = offer.product
                     }
                 }
             }
             .disabled(model.isBusy)
+            .skeleton(isSkeleton)
 
-            if let offer = model.selectedOffer {
+            if let offer = selected {
                 Button {
                     Task { await model.buy() }
                 } label: {
@@ -113,7 +110,8 @@ struct ProPurchaseView: View {
                 .buttonStyle(.borderedProminent)
                 .controlSize(.large)
                 .keyboardShortcut(.defaultAction)
-                .disabled(model.isBusy)
+                .disabled(model.isBusy || isSkeleton)
+                .skeleton(isSkeleton)
 
                 Text(ProPurchaseText.finePrint(for: offer))
                     .font(.footnote)
@@ -121,6 +119,7 @@ struct ProPurchaseView: View {
                     .multilineTextAlignment(.center)
                     .fixedSize(horizontal: false, vertical: true)
                     .frame(maxWidth: .infinity)
+                    .skeleton(isSkeleton)
             }
 
             switch model.phase {
@@ -174,12 +173,14 @@ private struct ProOfferCard: View {
     let offer: ProOffer
     let isSelected: Bool
     let select: () -> Void
+    @Environment(\.redactionReasons) private var redaction
 
     var body: some View {
         Button(action: select) {
             VStack(alignment: .leading, spacing: 2) {
                 Text(ProPurchaseText.name(of: offer.product))
                     .fontWeight(.semibold)
+                    .unredacted()
                 HStack(alignment: .firstTextBaseline, spacing: 4) {
                     Text(offer.displayPrice)
                         .font(.title3.bold())
@@ -191,7 +192,7 @@ private struct ProOfferCard: View {
                 }
                 Text(ProPurchaseText.tagline(for: offer))
                     .font(.footnote)
-                    .foregroundStyle(offer.trialDays != nil ? AnyShapeStyle(.tint) : AnyShapeStyle(.secondary))
+                    .foregroundStyle(offer.trialDays != nil && !redaction.isSkeleton ? AnyShapeStyle(.tint) : AnyShapeStyle(.secondary))
             }
             .frame(maxWidth: .infinity, minHeight: 58, alignment: .leading)
             .padding(EdgeInsets(top: 10, leading: 12, bottom: 10, trailing: 12))

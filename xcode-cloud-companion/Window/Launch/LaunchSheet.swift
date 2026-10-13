@@ -135,11 +135,26 @@ struct LaunchSheet: View {
                 Text(detail).font(.callout).foregroundStyle(.secondary)
             }
         } else {
-            HStack(spacing: 8) {
-                ProgressView().controlSize(.small)
-                Text("Loading branches, tags and pull requests…").foregroundStyle(.secondary)
-            }
+            skeleton
         }
+    }
+
+    /// The source picker as it will stand: the three kinds, the menu of branches, the line on the last build.
+    private var skeleton: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            Picker("Source", selection: .constant(LaunchSourceKind.branch)) {
+                Text("Branch").tag(LaunchSourceKind.branch)
+                Text("Tag").tag(LaunchSourceKind.tag)
+                Text("Pull request").tag(LaunchSourceKind.pullRequest)
+            }
+            .pickerStyle(.segmented)
+            .labelsHidden()
+            Picker("Branch", selection: .constant("main")) {
+                Text(verbatim: "main").tag("main")
+            }
+            Text(verbatim: "Last build: Succeeded, 12 minutes ago").font(.callout).foregroundStyle(.secondary)
+        }
+        .skeleton(true)
     }
 
     @ViewBuilder

@@ -665,6 +665,47 @@
         }
       }
     },
+    "%lld failed tests" : {
+      "comment" : "Count of failed tests in the summary of the “For AI” card",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld failed test"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld failed tests"
+                }
+              }
+            }
+          }
+        },
+        "fr" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld test en échec"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld tests en échec"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "%lld failures" : {
       "localizations" : {
         "fr" : {
@@ -845,10 +886,40 @@
     "%lld tests" : {
       "comment" : "Number of failed tests of a build, in the build list",
       "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld test"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld tests"
+                }
+              }
+            }
+          }
+        },
         "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%lld tests"
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld test"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld tests"
+                }
+              }
+            }
           }
         }
       }
@@ -925,6 +996,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Un lancement est déjà en cours."
+          }
+        }
+      }
+    },
+    "A one-line summary of a failed build and its tests in groups, written on this Mac by Apple Intelligence." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Un résumé d'une ligne d'un build en échec et ses tests par groupes, écrits sur ce Mac par Apple Intelligence."
           }
         }
       }
@@ -1399,6 +1480,16 @@
         }
       }
     },
+    "Apple Intelligence is turned off in System Settings." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apple Intelligence est désactivé dans Réglages Système."
+          }
+        }
+      }
+    },
     "Apple accepted the launch. The build is not in the list yet: it will show at the next sync. Do not launch it again." : {
       "localizations" : {
         "fr" : {
@@ -1631,6 +1722,16 @@
         }
       }
     },
+    "Arrangement" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Présentation"
+          }
+        }
+      }
+    },
     "Artifacts" : {
       "localizations" : {
         "fr" : {
@@ -1652,6 +1753,7 @@
       }
     },
     "Asking the App Store for the prices…" : {
+      "extractionState" : "stale",
       "localizations" : {
         "fr" : {
           "stringUnit" : {
@@ -2010,6 +2112,16 @@
         }
       }
     },
+    "By Class" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Par classe"
+          }
+        }
+      }
+    },
     "By the end of the cycle, the scheduled builds will cost about %@, based on their past durations." : {
       "localizations" : {
         "fr" : {
@@ -2263,6 +2375,17 @@
         }
       }
     },
+    "Compilation" : {
+      "comment" : "Category of a failed build: the code does not compile",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Compilation"
+          }
+        }
+      }
+    },
     "Compute hours" : {
       "comment" : "Label in the diagram of App Store Connect's Xcode Cloud usage page",
       "localizations" : {
@@ -2280,6 +2403,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Heures de calcul par mois"
+          }
+        }
+      }
+    },
+    "Configuration" : {
+      "comment" : "Category of a failed build: the workflow or project is misconfigured",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Configuration"
           }
         }
       }
@@ -2338,6 +2472,16 @@
         }
       }
     },
+    "Copies the text for an AI assistant, loading the issues and test results first" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Copie le texte pour un assistant IA, après avoir chargé les problèmes et les résultats de tests"
+          }
+        }
+      }
+    },
     "Copy" : {
       "localizations" : {
         "fr" : {
@@ -2368,6 +2512,16 @@
         }
       }
     },
+    "Copy for AI" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Copier pour une IA"
+          }
+        }
+      }
+    },
     "Copy the **Issuer ID**, shown above the table of keys, then the **Key ID** on the new key's row." : {
       "localizations" : {
         "fr" : {
@@ -2384,6 +2538,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Copier le SHA du commit"
+          }
+        }
+      }
+    },
+    "Copy the text for an AI assistant" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Copier le texte pour un assistant IA"
           }
         }
       }
@@ -2705,6 +2869,17 @@
         }
       }
     },
+    "Data from Xcode Cloud, for an AI assistant" : {
+      "comment" : "Caption under the full text of the “For AI” card",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Données d’Xcode Cloud, pour un assistant IA"
+          }
+        }
+      }
+    },
     "Date not set yet: until then the menu shows no gauge, only the hours of the last 30 days." : {
       "localizations" : {
         "fr" : {
@@ -2813,6 +2988,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Découvrir Pro"
+          }
+        }
+      }
+    },
+    "Distribution" : {
+      "comment" : "Category of a failed build: exporting or uploading the build failed",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Distribution"
           }
         }
       }
@@ -3171,6 +3357,16 @@
         }
       }
     },
+    "Failed Builds" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Builds en échec"
+          }
+        }
+      }
+    },
     "Fails and passes on the same commit" : {
       "localizations" : {
         "fr" : {
@@ -3467,6 +3663,17 @@
         }
       }
     },
+    "Flaky Test" : {
+      "comment" : "Category of a failed build: tests that both passed and failed",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Test instable"
+          }
+        }
+      }
+    },
     "Flaky and Slow Tests" : {
       "localizations" : {
         "fr" : {
@@ -3528,6 +3735,17 @@
         }
       }
     },
+    "For AI" : {
+      "comment" : "Heading of the card that offers a failed build as text for an AI assistant",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pour une IA"
+          }
+        }
+      }
+    },
     "For Apple's exact figures: in **Xcode Cloud › Usage**, click **Export as CSV**. The app picks the file up from Downloads on its own." : {
       "comment" : "Keep \"Xcode Cloud\", \"App Store Connect\" and \"TestFlight\" untranslated as product names.",
       "localizations" : {
@@ -3576,6 +3794,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Général"
+          }
+        }
+      }
+    },
+    "Generated on this Mac by Apple Intelligence · may be wrong" : {
+      "comment" : "Under the one-sentence summary of a failed build",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Généré sur ce Mac par Apple Intelligence · peut contenir des erreurs"
           }
         }
       }
@@ -3804,12 +4033,44 @@
         }
       }
     },
+    "In Brief" : {
+      "comment" : "Heading of the card that sums up a failed build in one sentence",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "En bref"
+          }
+        }
+      }
+    },
+    "In Brief, loading" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "En bref, chargement"
+          }
+        }
+      }
+    },
     "In the keychain" : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Dans le trousseau"
+          }
+        }
+      }
+    },
+    "Infrastructure" : {
+      "comment" : "Category of a failed build: Xcode Cloud or the build machine failed",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Infrastructure"
           }
         }
       }
@@ -4288,6 +4549,17 @@
         }
       }
     },
+    "Loading" : {
+      "comment" : "What VoiceOver says of a section that is still loading and shown as a grey skeleton",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chargement"
+          }
+        }
+      }
+    },
     "Loading %lld of %lld" : {
       "localizations" : {
         "en" : {
@@ -4305,6 +4577,7 @@
       }
     },
     "Loading branches, tags and pull requests…" : {
+      "extractionState" : "stale",
       "localizations" : {
         "fr" : {
           "stringUnit" : {
@@ -4325,6 +4598,7 @@
       }
     },
     "Loading versions…" : {
+      "extractionState" : "stale",
       "localizations" : {
         "fr" : {
           "stringUnit" : {
@@ -5380,6 +5654,7 @@
       }
     },
     "Other" : {
+      "comment" : "Category of a failed build with no clear cause",
       "localizations" : {
         "fr" : {
           "stringUnit" : {
@@ -5436,6 +5711,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Autres workflows"
+          }
+        }
+      }
+    },
+    "Others" : {
+      "comment" : "Section of the failed tests that no suggested group holds",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Autres"
           }
         }
       }
@@ -6144,6 +6430,17 @@
         }
       }
     },
+    "Runs on this Mac: nothing about your builds leaves it. The summary may be wrong." : {
+      "comment" : "Caption of the Apple Intelligence setting in Settings",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fonctionne sur ce Mac : rien de vos builds n'en sort. Le résumé peut contenir des erreurs."
+          }
+        }
+      }
+    },
     "Runs out around %@ at this pace" : {
       "localizations" : {
         "fr" : {
@@ -6326,12 +6623,44 @@
         }
       }
     },
+    "Show %lld more" : {
+      "localizations" : {
+        "fr" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Afficher %lld de plus"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Afficher %lld de plus"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "Show All" : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Tout afficher"
+          }
+        }
+      }
+    },
+    "Show Full Text" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Afficher le texte complet"
           }
         }
       }
@@ -6382,12 +6711,33 @@
         }
       }
     },
+    "Shows the whole text, loading the issues and test results first" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Affiche le texte entier, après avoir chargé les problèmes et les résultats de tests"
+          }
+        }
+      }
+    },
     "Shows where this workflow’s minutes went" : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Montre où sont passées les minutes de ce workflow"
+          }
+        }
+      }
+    },
+    "Signing" : {
+      "comment" : "Category of a failed build: code signing or provisioning",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Signature"
           }
         }
       }
@@ -6491,6 +6841,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Les conditions de démarrage, les actions et les variables d’environnement se modifient dans Xcode ou App Store Connect."
+          }
+        }
+      }
+    },
+    "Start of the text for an AI assistant" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Début du texte pour un assistant IA"
           }
         }
       }
@@ -6613,6 +6973,37 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Réussite"
+          }
+        }
+      }
+    },
+    "Suggested Groups" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Groupes suggérés"
+          }
+        }
+      }
+    },
+    "Suggested on this Mac by Apple Intelligence · may be wrong, a cause may be missing" : {
+      "comment" : "Above the failed tests arranged in groups by the model",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Suggérés sur ce Mac par Apple Intelligence · peuvent contenir des erreurs, une cause peut manquer"
+          }
+        }
+      }
+    },
+    "Summarize failed builds with Apple Intelligence" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Résumer les builds en échec avec Apple Intelligence"
           }
         }
       }
@@ -6780,6 +7171,7 @@
       }
     },
     "Tests" : {
+      "comment" : "Category of a failed build: tests failed",
       "localizations" : {
         "fr" : {
           "stringUnit" : {
@@ -6886,6 +7278,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "L’App Store a donné une réponse que Cumulus ne connaît pas."
+          }
+        }
+      }
+    },
+    "The Apple Intelligence model is still downloading." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Le modèle d'Apple Intelligence est encore en téléchargement."
           }
         }
       }
@@ -7348,6 +7750,16 @@
         }
       }
     },
+    "This Mac does not support Apple Intelligence." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ce Mac ne prend pas en charge Apple Intelligence."
+          }
+        }
+      }
+    },
     "This account is paused" : {
       "localizations" : {
         "fr" : {
@@ -7379,6 +7791,7 @@
       }
     },
     "This app’s minutes show once its builds are measured." : {
+      "extractionState" : "stale",
       "localizations" : {
         "fr" : {
           "stringUnit" : {
@@ -8327,6 +8740,17 @@
         }
       }
     },
+    "last success #%lld" : {
+      "comment" : "Part of the summary of the “For AI” card: the number of the last build that succeeded",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "dernier succès #%lld"
+          }
+        }
+      }
+    },
     "macOS" : {
       "localizations" : {
         "fr" : {
@@ -8532,6 +8956,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "tags"
+          }
+        }
+      }
+    },
+    "the commit" : {
+      "comment" : "Part of the summary of the “For AI” card: the text includes the build's commit",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "le commit"
           }
         }
       }

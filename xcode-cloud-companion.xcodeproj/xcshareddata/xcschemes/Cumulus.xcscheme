@@ -64,7 +64,7 @@
          </BuildableReference>
       </BuildableProductRunnable>
       <StoreKitConfigurationFileReference
-         identifier = "../../../xcode-cloud-companionTests/Cumulus.storekit">
+         identifier = "../../xcode-cloud-companionTests/Cumulus.storekit">
       </StoreKitConfigurationFileReference>
    </LaunchAction>
    <ProfileAction

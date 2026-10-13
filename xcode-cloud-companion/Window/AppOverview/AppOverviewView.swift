@@ -9,6 +9,8 @@ struct AppOverviewView: View {
     let now: Date
     /// “TestFlight: build 386 · 4d”, once the build handed to testers is known.
     var testFlight: String?
+    /// The TestFlight build is on its way: the pill stands as a skeleton of itself.
+    var isTestFlightPending = false
     var openSettings: () -> Void = {}
     var openWorkflow: (String) -> Void = { _ in }
     var openBuild: (String) -> Void = { _ in }
@@ -111,26 +113,25 @@ struct AppOverviewView: View {
     private var pill: some View {
         if let testFlight {
             TestFlightPill(text: testFlight)
+        } else if isTestFlightPending {
+            TestFlightPill(text: "TestFlight: build 386 · 4d").skeleton(true)
         }
     }
 
     @ViewBuilder
     private var cycleGroup: some View {
         if let cycle = model.cycle {
+            // Measured builds are the ones the figures rest on: until then the card is the shape of what will stand there.
+            let shown = cycle.isMeasuring ? AppOverviewModel.Cycle.placeholder : cycle
             VStack(alignment: .leading, spacing: 9) {
-                if cycle.isMeasuring {
-                    Text("Measuring usage…").font(.headline)
-                    Text("This app’s minutes show once its builds are measured.")
-                        .font(.callout).foregroundStyle(.secondary)
-                } else {
-                    figures(cycle)
-                    AppCycleBar(segments: cycle.segments, quotaMinutes: cycle.quotaMinutes, swatch: swatch)
-                        .accessibilityElement(children: .ignore)
-                        .accessibilityLabel(Text("This app used \(UsageFormat.percent(cycle.fractionOfPlan)) of the plan"))
-                        .accessibilityAddTraits(.isImage)
-                    legend(cycle)
-                }
+                figures(shown, isMeasuring: cycle.isMeasuring)
+                AppCycleBar(segments: shown.segments, quotaMinutes: shown.quotaMinutes, swatch: swatch)
+                    .accessibilityElement(children: .ignore)
+                    .accessibilityLabel(Text("This app used \(UsageFormat.percent(shown.fractionOfPlan)) of the plan"))
+                    .accessibilityAddTraits(.isImage)
+                legend(shown)
             }
+            .skeleton(cycle.isMeasuring, label: "Measuring usage…")
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
             .cumulusGroup()
         } else {
@@ -144,25 +145,31 @@ struct AppOverviewView: View {
         }
     }
 
-    private func figures(_ cycle: AppOverviewModel.Cycle) -> some View {
+    private func figures(_ cycle: AppOverviewModel.Cycle, isMeasuring: Bool) -> some View {
         ViewThatFits(in: .horizontal) {
             HStack(alignment: .firstTextBaseline, spacing: 10) {
-                used(cycle)
+                used(cycle, isMeasuring: isMeasuring)
                 share(cycle)
                 Spacer(minLength: 8)
                 projection(cycle)
             }
             VStack(alignment: .leading, spacing: 2) {
-                used(cycle)
+                used(cycle, isMeasuring: isMeasuring)
                 share(cycle)
                 projection(cycle)
             }
         }
     }
 
-    private func used(_ cycle: AppOverviewModel.Cycle) -> some View {
-        Text(AppOverviewText.minutes(billed: cycle.billedMinutes, estimated: cycle.estimatedMinutes))
-            .font(.system(size: 20, weight: .bold, design: .rounded).monospacedDigit())
+    private func used(_ cycle: AppOverviewModel.Cycle, isMeasuring: Bool) -> some View {
+        Group {
+            if isMeasuring {
+                Text("Measuring usage…").unredacted()
+            } else {
+                Text(AppOverviewText.minutes(billed: cycle.billedMinutes, estimated: cycle.estimatedMinutes))
+            }
+        }
+        .font(.system(size: 20, weight: .bold, design: .rounded).monospacedDigit())
             .lineLimit(1)
             .fixedSize()
     }
@@ -193,10 +200,7 @@ struct AppOverviewView: View {
         LazyVGrid(columns: [GridItem(.adaptive(minimum: 130), spacing: 14, alignment: .leading)], alignment: .leading, spacing: 4) {
             ForEach(cycle.segments) { segment in
                 HStack(spacing: 6) {
-                    RoundedRectangle(cornerRadius: 2.5)
-                        .fill(AppCycleBar.fill(segment, swatch: swatch))
-                        .frame(width: 9, height: 9)
-                        .accessibilityHidden(true)
+                    SwatchSquare(fill: AppCycleBar.fill(segment, swatch: swatch))
                     Text(segment.workflow ?? String(localized: "Other apps", comment: "Legend of an app's cycle bar: what the account's other apps used"))
                         .lineLimit(1)
                 }
@@ -212,6 +216,7 @@ struct AppCycleBar: View {
     let segments: [AppOverviewModel.Segment]
     let quotaMinutes: Double
     let swatch: AppSwatch
+    @Environment(\.redactionReasons) private var redaction
 
     var body: some View {
         GeometryReader { geometry in
@@ -219,7 +224,7 @@ struct AppCycleBar: View {
             HStack(spacing: 2) {
                 ForEach(Array(zip(segments, widths)), id: \.0.id) { segment, width in
                     Rectangle()
-                        .fill(Self.fill(segment, swatch: swatch))
+                        .fill(redaction.isSkeleton ? AnyShapeStyle(Color.skeleton) : Self.fill(segment, swatch: swatch))
                         .frame(width: max(0, width - 2))
                 }
                 Spacer(minLength: 0)

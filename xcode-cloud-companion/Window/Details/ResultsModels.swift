@@ -48,6 +48,14 @@ nonisolated struct TestRow: Identifiable, Equatable, Sendable {
     let path: String?
     let line: Int?
     let devices: [CITestDeviceResult]
+
+    /// The rows of the Tests tab's skeleton: names of a typical length, none of them detailed.
+    static let placeholders: [TestRow] = [
+        ("testSavingASettingKeepsItsValue()", "0.4 s"), ("testTheSidebarListsEveryWorkflow()", "1.2 s"),
+        ("testALaunchedBuildAppearsInTheList()", "0.8 s"), ("testTheCycleResetsOnTheChosenDay()", "0.3 s"),
+    ].enumerated().map { index, row in
+        TestRow(id: "placeholder-\(index)", name: row.0, status: .success, duration: row.1, message: nil, location: nil, path: nil, line: nil, devices: [])
+    }
 }
 
 nonisolated struct TestGroup: Identifiable, Equatable, Sendable {
@@ -107,7 +115,7 @@ nonisolated struct TestsTabModel: Equatable, Sendable {
             }
     }
 
-    private static func row(_ result: CITestResult, destination: String?) -> TestRow {
+    static func row(_ result: CITestResult, destination: String?) -> TestRow {
         let devices = destination.map { name in result.devices.filter { $0.deviceName == name } } ?? result.devices
         return TestRow(
             id: result.id, name: result.name ?? "?", status: result.status,
@@ -140,6 +148,16 @@ nonisolated struct IssueGroup: Identifiable, Equatable, Sendable {
     let rows: [IssueRow]
 
     var id: String { actionID }
+
+    /// The rows of the Issues tab's skeleton, with a card around them.
+    static let placeholder = IssueGroup(actionID: "placeholder", actionName: "Archive", rows: [
+        ("The value of type ‘Settings’ has no member ‘resetDay’", "Compiler"),
+        ("Variable ‘cycle’ was never mutated; consider changing to ‘let’", "Compiler"),
+        ("Cannot find ‘WorkflowRow’ in scope", "Compiler"),
+        ("No signing certificate was found for the archive", "Signing"),
+    ].enumerated().map { index, row in
+        IssueRow(id: "placeholder-\(index)", type: index.isMultiple(of: 2) ? .error : .warning, message: row.0, category: row.1, location: nil, path: nil, line: nil)
+    })
 }
 
 nonisolated extension CIIssueType {

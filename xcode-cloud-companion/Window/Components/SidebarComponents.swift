@@ -59,6 +59,7 @@ struct CycleCard: View {
     let fractionUsed: Double
     let usedText: String
     let resetText: String
+    @Environment(\.redactionReasons) private var redaction
 
     var body: some View {
         HStack(spacing: 12) {
@@ -66,7 +67,7 @@ struct CycleCard: View {
                 Circle().stroke(Color.primary.opacity(0.1), lineWidth: 5)
                 Circle()
                     .trim(from: 0, to: max(0.012, min(max(fractionUsed, 0), 1)))
-                    .stroke(CumulusStyle.accent, style: StrokeStyle(lineWidth: 5, lineCap: .round))
+                    .stroke(redaction.isSkeleton ? Color.skeleton : CumulusStyle.accent, style: StrokeStyle(lineWidth: 5, lineCap: .round))
                     .rotationEffect(.degrees(-90))
                 Text(UsageFormat.compactPercent(fractionUsed))
                     .font(.caption2.weight(.bold).monospacedDigit())

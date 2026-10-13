@@ -237,6 +237,14 @@ nonisolated struct CIArtifact: Codable, Sendable, Equatable, Identifiable {
     /// Short-lived and signed: asked again right before a download, and left out of anything written to disk.
     let downloadURL: URL?
 
+    /// The rows of the Artifacts tab's skeleton.
+    static let placeholders: [CIArtifact] = [
+        CIArtifact(id: "placeholder-0", buildActionID: "placeholder", fileType: "ARCHIVE", fileName: "Cumulus.xcarchive.zip", fileSize: 48_000_000, downloadURL: nil),
+        CIArtifact(id: "placeholder-1", buildActionID: "placeholder", fileType: "LOG_BUNDLE", fileName: "Logs.zip", fileSize: 1_200_000, downloadURL: nil),
+        CIArtifact(id: "placeholder-2", buildActionID: "placeholder", fileType: "XCODEBUILD_PRODUCTS", fileName: "Products.zip", fileSize: 9_400_000, downloadURL: nil),
+        CIArtifact(id: "placeholder-3", buildActionID: "placeholder", fileType: "TEST_PRODUCTS", fileName: "TestProducts.zip", fileSize: 3_100_000, downloadURL: nil),
+    ]
+
     private enum CodingKeys: String, CodingKey {
         case id, buildActionID, fileType, fileName, fileSize
     }
@@ -267,6 +275,9 @@ nonisolated struct CIBetaBuild: Codable, Sendable, Equatable, Identifiable {
     let version: String?
     let uploadedDate: Date?
     let processingState: String?
+
+    /// Stands in for the TestFlight card's rows in its skeleton.
+    static let placeholder = CIBetaBuild(id: "placeholder", version: "386", uploadedDate: nil, processingState: "PROCESSING")
 }
 
 // MARK: - JSON:API attributes

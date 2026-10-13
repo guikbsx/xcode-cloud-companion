@@ -12,6 +12,8 @@ final class AccountSession: Identifiable {
     let usageStore: UsageStore
     /// A build's issues, tests and artifacts: the window and the `cumulus` command load them through the same store.
     let extrasStore: BuildExtrasStore
+    /// The one-line summaries of failed builds, kept per build and language in the account's own folder.
+    let failureInsights: FailureInsightStore
     let paletteStore: AppPaletteStore
     /// How many icons gave their colour since launch: whoever draws the palette reads it, to draw again when it grows.
     private(set) var iconColorReadings = 0
@@ -28,9 +30,11 @@ final class AccountSession: Identifiable {
     private let iconCache: AppIconCache?
     @ObservationIgnored private var iconReadingAttempts: [String: Date] = [:]
 
+    /// `failureInsights` is made with a model that always declines when none is given, so that nothing asks the real one by accident.
     init(
         account: Account, paths: AccountPaths, settings: SettingsModel, buildStore: BuildStore, usageStore: UsageStore,
-        extrasStore: BuildExtrasStore, iconCache: AppIconCache? = nil, defaults: UserDefaults = .standard
+        extrasStore: BuildExtrasStore, iconCache: AppIconCache? = nil, defaults: UserDefaults = .standard,
+        failureInsights: FailureInsightStore? = nil, modelStatus: @escaping () -> FailureInsightFeature.ModelStatus = { .current }
     ) {
         id = account.id
         name = account.name
@@ -39,6 +43,11 @@ final class AccountSession: Identifiable {
         self.buildStore = buildStore
         self.usageStore = usageStore
         self.extrasStore = extrasStore
+        let insights = failureInsights ?? FailureInsightStore(
+            buildStore: buildStore, extrasStore: extrasStore, cache: FailureInsightCache(directory: paths.failureInsights),
+            service: FailureInsightService(generator: UnavailableInsightGenerator())
+        )
+        self.failureInsights = insights
         self.defaults = defaults
         self.iconCache = iconCache
         paletteStore = .account(account.id)
@@ -47,7 +56,13 @@ final class AccountSession: Identifiable {
         settings.onCredentialsChange = { [buildStore] in
             Task { await buildStore.credentialsDidChange() }
         }
+        insights.isOpen = { [weak self, defaults] in
+            FailureInsightFeature.mode(
+                model: modelStatus(), settingOn: FailureInsightFeature.isSettingOn(defaults), proAllows: self?.pro?.allows(.failureInsight) ?? true
+            ) == .open
+        }
         settings.onReset = { [paths, usageStore] in
+            await insights.reset()
             await BuildExtrasCache(directory: paths.buildDetails).deleteAll()
             await WorkflowDetailsCache(directory: paths.workflowDetails).deleteAll()
             await AppIconCache(directory: paths.appIcons).deleteAll()
@@ -61,15 +76,19 @@ final class AccountSession: Identifiable {
         let paths = AccountPaths(accountID: account.id)
         let credentials = KeychainCredentialsStore(account: account.id)
         let buildStore = BuildStore(credentialsStore: credentials, cacheStore: BuildCacheStore(fileURL: paths.buildCache))
+        let extrasStore = BuildExtrasStore(cache: BuildExtrasCache(directory: paths.buildDetails), client: { [buildStore] in await buildStore.detailClient() })
         return AccountSession(
             account: account, paths: paths,
             settings: SettingsModel(accountID: account.id, store: credentials, defaults: defaults, planMirror: SharedPlanStore(fileURL: paths.usagePlan)),
             buildStore: buildStore,
             // Exports are read once for every account, then handed to the one they belong to: no account watches Downloads itself.
             usageStore: UsageStore(ledgerStore: UsageLedgerStore(fileURL: paths.usageLedger), watchedDirectory: nil),
-            extrasStore: BuildExtrasStore(cache: BuildExtrasCache(directory: paths.buildDetails), client: { [buildStore] in await buildStore.detailClient() }),
+            extrasStore: extrasStore,
             iconCache: AppIconCache(directory: paths.appIcons),
-            defaults: defaults
+            defaults: defaults,
+            failureInsights: FailureInsightStore(
+                buildStore: buildStore, extrasStore: extrasStore, cache: FailureInsightCache(directory: paths.failureInsights), service: FailureInsightService()
+            )
         )
     }
 

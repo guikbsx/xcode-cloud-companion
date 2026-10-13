@@ -406,3 +406,218 @@ struct NotificationCoordinatorTests {
         #expect(await center.posted.map(\.id) == ["stuck-run-42"])
     }
 }
+
+@MainActor
+private final class FakeInsightSource: FailureInsightSource {
+    var isOpen = true
+    var answer: FailureInsightRecord?
+    var blocks = false
+    private(set) var askedRunIDs: [String] = []
+    private(set) var timeouts: [Duration] = []
+    private var waiting: CheckedContinuation<Void, Never>?
+
+    func record(for run: CIBuildRun, within timeout: Duration) async -> FailureInsightRecord? {
+        askedRunIDs.append(run.id)
+        timeouts.append(timeout)
+        if blocks {
+            await withCheckedContinuation { waiting = $0 }
+        }
+        return answer
+    }
+
+    func release() {
+        waiting?.resume()
+        waiting = nil
+    }
+}
+
+struct FailureBannerFormatTests {
+    private func banner(status: CICompletionStatus = .failed, body: String = "2 errors · Release · main") -> FinishedBuildBanner {
+        let failed = run(42, status: status)
+        return FinishedBuildBanner(
+            run: failed, status: BuildStatus(run: failed),
+            notification: LocalNotification(id: "build-run-42", title: "Cumulus #42 failed", body: body, url: CumulusURL.build(id: "run-42"), thread: "p1")
+        )
+    }
+
+    private let record = FailureInsightRecord(category: .compilation, headline: "A missing import breaks two files.")
+
+    @Test func oneAccountPutsTheCategoryAndTheWorkflowInTheSubtitleAndTheHeadlineInTheBody() {
+        let note = FailureBannerFormat.notification(for: banner(), record: record, accountName: nil)
+        #expect(note.title == "Cumulus #42 failed")
+        #expect(note.subtitle == "Compilation · Release")
+        #expect(note.body == "A missing import breaks two files.")
+        #expect(note.id == "build-run-42")
+        #expect(note.url == CumulusURL.build(id: "run-42"))
+    }
+
+    @Test func oneAccountWithoutAHeadlineKeepsTodaysBody() {
+        let note = FailureBannerFormat.notification(for: banner(), record: FailureInsightRecord(category: .signing), accountName: nil)
+        #expect(note.subtitle == "Signing · Release")
+        #expect(note.body == "2 errors · Release · main")
+    }
+
+    @Test func severalAccountsKeepTheAccountNameAndPutTheCategoryBeforeTheHeadline() {
+        let note = FailureBannerFormat.notification(for: banner(), record: record, accountName: "Work")
+        #expect(note.subtitle == "Work")
+        #expect(note.body == "Compilation · A missing import breaks two files.")
+    }
+
+    @Test func severalAccountsWithoutAHeadlineSayTheCategoryBeforeTodaysBody() {
+        let note = FailureBannerFormat.notification(for: banner(), record: FailureInsightRecord(category: .tests), accountName: "Work")
+        #expect(note.subtitle == "Work")
+        #expect(note.body == "Tests · 2 errors · Release · main")
+    }
+
+    @Test func aBuildWithoutRecordOrThatDidNotFailIsTodaysBanner() {
+        let today = banner().notification
+        #expect(FailureBannerFormat.notification(for: banner(), record: nil, accountName: nil) == today)
+        var named = today
+        named.subtitle = "Work"
+        #expect(FailureBannerFormat.notification(for: banner(), record: nil, accountName: "Work") == named)
+
+        let succeeded = banner(status: .succeeded)
+        #expect(FailureBannerFormat.notification(for: succeeded, record: record, accountName: nil) == succeeded.notification)
+    }
+
+    @Test func theWaitStopsWhenTheWorkEndsAndLeavesALateWorkRunning() async {
+        let quick = Task {}
+        #expect(await BannerWait.finished(quick, within: .seconds(5)))
+
+        let slow = Task { _ = try? await Task.sleep(for: .seconds(30)) }
+        #expect(await BannerWait.finished(slow, within: .milliseconds(30)) == false)
+        #expect(!slow.isCancelled)
+        slow.cancel()
+    }
+}
+
+@MainActor
+struct FailureBannerCoordinatorTests {
+    private let defaults: UserDefaults
+    private let center = MockNotificationCenter(status: .allowed)
+    private let source = FakeInsightSource()
+    private let running = snapshot([run(42, progress: .running), run(43, progress: .running, product: "p2")], syncedMinutesAgo: 1)
+
+    init() {
+        let suiteName = "FailureBannerCoordinatorTests-\(UUID().uuidString)"
+        defaults = UserDefaults(suiteName: suiteName) ?? .standard
+        defaults.removePersistentDomain(forName: suiteName)
+    }
+
+    private func makeCoordinator(muting muted: Set<String> = []) -> NotificationCoordinator {
+        let preferences = NotificationPreferences(defaults: defaults)
+        preferences.builds.mutedProductIDs = muted
+        return NotificationCoordinator(center: center, preferences: preferences, defaults: defaults, failureWait: .seconds(5), now: { now })
+    }
+
+    private func sync(
+        _ coordinator: NotificationCoordinator, to current: BuildSnapshot, account: NotificationAccount = NotificationAccount(), withBaseline: Bool = true
+    ) async {
+        if withBaseline {
+            await coordinator.buildsDidSync(account: account, previous: .empty, current: running, insights: source)
+        }
+        await coordinator.buildsDidSync(account: account, previous: running, current: current, insights: source)
+    }
+
+    private let failedAndSucceeded = snapshot([run(42, status: .failed), run(43, product: "p2")])
+
+    @Test func aRecordInTimeEnrichesTheFailedBannerAndItIsPostedOnce() async {
+        source.answer = FailureInsightRecord(category: .tests, headline: "Two login tests fail.")
+        let coordinator = makeCoordinator()
+
+        await sync(coordinator, to: failedAndSucceeded)
+        await coordinator.settleFailureBanners()
+
+        let posted = await center.posted
+        #expect(posted.map(\.id).sorted() == ["build-run-42", "build-run-43"])
+        let failed = posted.first { $0.id == "build-run-42" }
+        #expect(failed?.subtitle == "Tests · Release")
+        #expect(failed?.body == "Two login tests fail.")
+        #expect(failed?.url == CumulusURL.build(id: "run-42"))
+        #expect(posted.first { $0.id == "build-run-43" }?.subtitle == nil)
+        #expect(source.askedRunIDs == ["run-42"])
+        #expect(source.timeouts == [.seconds(5)])
+    }
+
+    @Test func severalAccountsKeepTheAccountNameInTheSubtitle() async {
+        source.answer = FailureInsightRecord(category: .tests, headline: "Two login tests fail.")
+        let coordinator = makeCoordinator()
+
+        await sync(coordinator, to: failedAndSucceeded, account: NotificationAccount(id: "work", name: "Work"))
+        await coordinator.settleFailureBanners()
+
+        let failed = await center.posted.first { $0.id == "build-run-42" }
+        #expect(failed?.subtitle == "Work")
+        #expect(failed?.body.hasPrefix("Tests · Two login tests fail.") == true)
+    }
+
+    @Test func aSourceThatIsNotReadyInTimeLeavesTodaysBannerPostedOnce() async {
+        source.answer = nil
+        let coordinator = makeCoordinator()
+
+        await sync(coordinator, to: failedAndSucceeded, account: NotificationAccount(id: "work", name: "Work"))
+        await coordinator.settleFailureBanners()
+
+        let failed = await center.posted.filter { $0.id == "build-run-42" }
+        let today = BuildNotificationPlanner.finished(previous: running, current: failedAndSucceeded, rules: BuildNotificationRules(), now: now)
+            .first { $0.id == "build-run-42" }
+        #expect(failed.count == 1)
+        #expect(failed.first?.body == today?.body)
+        #expect(failed.first?.subtitle == "Work")
+    }
+
+    @Test func aClosedFeatureAsksNothingAndPostsTodaysBannerAtOnce() async {
+        source.isOpen = false
+        source.answer = FailureInsightRecord(category: .tests, headline: "Never shown.")
+        let coordinator = makeCoordinator()
+
+        await sync(coordinator, to: failedAndSucceeded)
+
+        let posted = await center.posted
+        #expect(posted.map(\.id).sorted() == ["build-run-42", "build-run-43"])
+        #expect(posted.first { $0.id == "build-run-42" }?.subtitle == nil)
+        #expect(source.askedRunIDs.isEmpty)
+    }
+
+    @Test func aSlowSourceDelaysNeitherTheSyncNorTheOtherBanners() async {
+        source.blocks = true
+        source.answer = FailureInsightRecord(category: .tests, headline: "Two login tests fail.")
+        let coordinator = makeCoordinator()
+
+        await sync(coordinator, to: failedAndSucceeded)
+
+        #expect(await center.posted.map(\.id) == ["build-run-43"])
+        await Task.yield()
+        source.release()
+        await coordinator.settleFailureBanners()
+        #expect(await center.posted.map(\.id).sorted() == ["build-run-42", "build-run-43"])
+        #expect(source.askedRunIDs == ["run-42"])
+    }
+
+    @Test func aMutedAppAndTheFirstSyncOfASessionAskNothing() async {
+        source.answer = FailureInsightRecord(category: .tests, headline: "Never shown.")
+
+        let muted = makeCoordinator(muting: ["p1"])
+        await sync(muted, to: snapshot([run(42, status: .failed), run(43, progress: .running, product: "p2")]))
+        await muted.settleFailureBanners()
+        #expect(source.askedRunIDs.isEmpty)
+        #expect(await center.posted.isEmpty)
+
+        let first = makeCoordinator()
+        await sync(first, to: failedAndSucceeded, withBaseline: false)
+        await first.settleFailureBanners()
+        #expect(source.askedRunIDs.isEmpty)
+        #expect(await center.posted.isEmpty)
+    }
+
+    @Test func aCanceledOrSucceededBuildNeverWaits() async {
+        source.answer = FailureInsightRecord(category: .tests, headline: "Never shown.")
+        let coordinator = makeCoordinator()
+
+        await sync(coordinator, to: snapshot([run(42), run(43, status: .canceled, product: "p2")]))
+        await coordinator.settleFailureBanners()
+
+        #expect(source.askedRunIDs.isEmpty)
+        #expect(await center.posted.map(\.id) == ["build-run-42"])
+    }
+}

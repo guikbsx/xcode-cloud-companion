@@ -39,6 +39,10 @@ nonisolated struct OverviewModel: Equatable, Sendable {
         let shade: Double
         /// Share of all the workflows' minutes, 0...1.
         let fraction: Double
+
+        static let placeholders: [WorkflowSegment] = [0.5, 0.32, 0.18].enumerated().map { index, fraction in
+            WorkflowSegment(id: "placeholder-\(index)", swatch: .gray, shade: 1, fraction: fraction)
+        }
     }
 
     struct WorkflowRow: Identifiable, Equatable, Sendable {
@@ -55,6 +59,14 @@ nonisolated struct OverviewModel: Equatable, Sendable {
         var shade = 1.0
 
         var id: String { "\(productKey)|\(workflow)" }
+
+        /// The rows of the “Cost by workflow” skeleton: names and figures of a typical length, none of them shown as text.
+        static let placeholders: [WorkflowRow] = [("Release", 14, 96.0), ("Main", 41, 64.0), ("Pull requests", 58, 31.0)].enumerated().map { index, row in
+            WorkflowRow(
+                productKey: "placeholder", product: "Cumulus", workflow: row.0, buildCount: row.1, totalMinutes: row.2, averageMinutes: row.2 / Double(row.1),
+                isEstimated: false, shade: max(0.35, 1 - 0.22 * Double(index))
+            )
+        }
     }
 
     /// How many workflows the Overview lists; the others share one neutral slice of the bar.

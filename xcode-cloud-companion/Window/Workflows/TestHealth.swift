@@ -56,6 +56,21 @@ nonisolated struct TestHealthReport: Equatable, Sendable {
 
     static let slowestCount = 10
 
+    /// The Tests section's skeleton: a sample of the size a workflow usually has, never shown as figures.
+    static let placeholder: TestHealthReport = {
+        var report = TestHealthReport(samples: [], eligibleBuilds: 12)
+        report.analyzedBuilds = 8
+        report.flaky = [FlakyTest(
+            id: "placeholder-flaky", className: "SettingsTests", name: "testSavingASettingKeepsItsValue()", actionName: "Test", failures: 2, runs: 8,
+            lastFailureRunID: "placeholder", lastFailureNumber: 41, lastFailureDate: nil, devices: ["iPhone 17"], differsBetweenDevices: false, flipsOnSameCommit: true
+        )]
+        report.slowest = [
+            SlowTest(id: "placeholder-slow-0", className: "SyncTests", name: "testAFullSyncReadsEveryProduct()", actionName: "Test", averageSecondsPerDevice: 42, share: 0.18),
+            SlowTest(id: "placeholder-slow-1", className: "UsageTests", name: "testTheCycleIsMeasuredBuildByBuild()", actionName: "Test", averageSecondsPerDevice: 31, share: 0.12),
+        ]
+        return report
+    }()
+
     var analyzedBuilds = 0
     /// Finished builds of the workflow that ran tests: what a full analysis would cover.
     var eligibleBuilds = 0

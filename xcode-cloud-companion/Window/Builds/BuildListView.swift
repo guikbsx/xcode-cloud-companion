@@ -12,6 +12,8 @@ struct BuildListView: View {
     /// The apps' icons and colours: a card names its app by its icon.
     var icons: AppIconStore?
     var palette = AppPalette()
+    /// Copies a failed build as text for an AI assistant; nil leaves it out of the card's menu.
+    var failureCopier: BuildFailureCopier?
     @State private var filter = BuildFilter.all
     @Environment(ProAccess.self) private var access: ProAccess?
     @State private var query = ""
@@ -28,6 +30,18 @@ struct BuildListView: View {
             row: row, now: now, swatch: palette.swatch(for: row.productKey ?? row.productName), artwork: artwork[row.productID],
             isSelected: row.id == navigation.selectedBuildID
         )
+    }
+
+    @ViewBuilder
+    private func failureMenu(for row: BuildRowData) -> some View {
+        if let failureCopier, let run = (buildStore.snapshot.runs + (older?.runs ?? [])).first(where: { $0.id == row.id }),
+           BuildFailurePrompt.isOffered(for: run) {
+            Button {
+                Task { await failureCopier.copy(run) }
+            } label: {
+                Label("Copy for AI", systemImage: "sparkles")
+            }
+        }
     }
 
     private func content(now: Date) -> some View {
@@ -49,6 +63,7 @@ struct BuildListView: View {
                                         card(row, now: now, artwork: artwork)
                                     }
                                     .buttonStyle(.plain)
+                                    .contextMenu { failureMenu(for: row) }
                                 }
                                 .id(row.id)
                             }
