@@ -23,7 +23,6 @@ enum MenuBarIcon {
         return image
     }
 
-    // Symbols load by name with `symbolName:`: the app icon is also called "logo".
     private static let symbol = NSImage(symbolName: "logo", bundle: .main, variableValue: 1)
     private static let badgedSymbol = NSImage(symbolName: "logo.badge", bundle: .main, variableValue: 1)
 
