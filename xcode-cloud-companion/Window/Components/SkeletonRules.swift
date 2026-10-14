@@ -8,6 +8,11 @@ nonisolated enum SkeletonRules {
         !hasRecord && (isLoading || !hasAttempted)
     }
 
+    /// The “Log Excerpt” card: the log is being downloaded or read, or the first look at the disk has not ended and nothing is known.
+    static func logExcerpt(hasOutcome: Bool, isWorking: Bool, hasAttempted: Bool) -> Bool {
+        isWorking || (!hasOutcome && !hasAttempted)
+    }
+
     /// The TestFlight card of a build: only a succeeded build of a workflow that ships to TestFlight has a build to list.
     static func testFlightCard(shipsToTestFlight: Bool, isSucceeded: Bool, hasBuilds: Bool, loadEnded: Bool) -> Bool {
         shipsToTestFlight && isSucceeded && !hasBuilds && !loadEnded
@@ -28,6 +33,11 @@ nonisolated enum SkeletonRules {
         isPending && !hasRows && actions.contains { $0.executionProgress == .complete }
     }
 
+    /// The TestFlight card of an app: its builds are being read for the first time. A read that ends with nothing, or fails, leaves no card.
+    static func testFlightBuilds(hasBuilds: Bool, isReading: Bool) -> Bool {
+        !hasBuilds && isReading
+    }
+
     /// The pill of the last TestFlight build of an app: a build is known to have gone there, its reading has not ended.
     static func testFlightPill(hasShippedRun: Bool, hasText: Bool, loadEnded: Bool) -> Bool {
         hasShippedRun && !hasText && !loadEnded
@@ -38,9 +48,19 @@ nonisolated enum SkeletonRules {
         hasPlan && isMeasuring
     }
 
+    /// The address row waits for the keychain's answer, then is the address or the empty field.
+    static func webhookAddress(hasLoaded: Bool) -> Bool {
+        !hasLoaded
+    }
+
     /// The state of Cumulus Pro and its actions, until StoreKit has been read once.
     static func proSettings(hasResolved: Bool) -> Bool {
         !hasResolved
+    }
+
+    /// The history of a test: the popover opened, the reading of the disk has not ended.
+    static func testHistory(hasRead: Bool) -> Bool {
+        !hasRead
     }
 
     /// What a workflow sheet reads from the workflow's own request: the workflow in view only has the sync's partial copy.

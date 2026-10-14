@@ -4,12 +4,15 @@ import SwiftUI
 struct NotificationsSettingsView: View {
     @Bindable var preferences: NotificationPreferences
     let coordinator: NotificationCoordinator
+    let webhook: WebhookService
     let accounts: AccountsModel
     /// Cumulus Pro; nil leaves every alert open.
     var pro: ProStore?
 
     private var hasStuckAlert: Bool { pro?.allows(.stuckBuildAlert) ?? true }
     private var hasEarlyAlerts: Bool { pro?.allows(.earlyUsageAlerts) ?? true }
+    private var hasSlowdownAlert: Bool { pro?.allows(.slowdownAlert) ?? true }
+    private var hasTestFlightTracking: Bool { pro?.allows(.testFlightTracking) ?? true }
 
     /// Why a setting is greyed: it is kept as it was, and waits for Pro.
     private var proNote: some View {
@@ -59,6 +62,54 @@ struct NotificationsSettingsView: View {
                 }
             }
             .disabled(!hasStuckAlert)
+            Section {
+                Toggle(isOn: $preferences.builds.slowdown) {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("A workflow’s successful builds got slower")
+                        Text("Judged on the last 30 successful builds: at least 15 % and a minute longer, over five builds or more. Said once for each slowdown.")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                }
+            } header: {
+                Text("When a workflow slows down")
+            } footer: {
+                if !hasSlowdownAlert {
+                    proNote
+                }
+            }
+            .disabled(!hasSlowdownAlert)
+            Section {
+                Toggle(isOn: $preferences.builds.testFlightAvailable) {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("A build is available to external testers")
+                        Text("Said once, when TestFlight puts a build in testing with an external group.")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                }
+                Toggle(isOn: $preferences.builds.testFlightExpiry) {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("The build external testers are on expires within a week")
+                        Text("Said once, unless a newer build has reached them.")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                }
+            } header: {
+                Text("TestFlight")
+            } footer: {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Cumulus asks App Store Connect about an app’s latest builds at most every 15 minutes while one is processing or waiting for its beta review, and once a day otherwise.")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                    if !hasTestFlightTracking {
+                        proNote
+                    }
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+            }
+            .disabled(!hasTestFlightTracking)
         } trailing: {
             Section("When an agent starts a build") {
                 Toggle(isOn: $preferences.builds.agentLaunches) {
@@ -97,6 +148,11 @@ struct NotificationsSettingsView: View {
                     }
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
+            }
+            ForEach(accounts.sessions) { session in
+                WebhookSettingsSection(
+                    session: session, service: webhook, showsName: accounts.hasSeveral, isPaused: accounts.isPaused(session), isOpen: webhook.isOpen
+                )
             }
             if accounts.sessions.isEmpty {
                 Section("Apps") {

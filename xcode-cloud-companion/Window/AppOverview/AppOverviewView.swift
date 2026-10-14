@@ -11,10 +11,13 @@ struct AppOverviewView: View {
     var testFlight: String?
     /// The TestFlight build is on its way: the pill stands as a skeleton of itself.
     var isTestFlightPending = false
+    /// The app's TestFlight card; nil leaves it out.
+    var testFlightCard: TestFlightCard.Content?
     var openSettings: () -> Void = {}
     var openWorkflow: (String) -> Void = { _ in }
     var openBuild: (String) -> Void = { _ in }
     var openReference: (AppReference) -> Void = { _ in }
+    @Environment(ProAccess.self) private var access: ProAccess?
 
     var body: some View {
         // Halves, not a main column and a side one: the table of workflows needs the whole width to stay a table.
@@ -29,6 +32,8 @@ struct AppOverviewView: View {
                 AppWorkflowsTable(model: model, swatch: swatch, showsMinutes: showsMinutes, now: now, openWorkflow: openWorkflow, openBuild: openBuild)
                     .detailPlacement(.full)
             }
+            testFlightSection
+                .detailPlacement(.full)
             if columns == .two {
                 if !model.references.isEmpty {
                     AppReferencesGroup(references: model.references, now: now, openReference: openReference)
@@ -49,6 +54,17 @@ struct AppOverviewView: View {
             }
         }
         .navigationTitle(model.displayName)
+    }
+
+    @ViewBuilder
+    private var testFlightSection: some View {
+        if model.shipsToTestFlight {
+            if !access.allows(.testFlightTracking) {
+                ProLockedCard(feature: .testFlightTracking)
+            } else if let testFlightCard {
+                TestFlightCard(content: testFlightCard, appName: model.displayName, swatch: swatch)
+            }
+        }
     }
 
     private var chart: some View {

@@ -105,6 +105,22 @@ nonisolated enum AppStoreConnectEndpoint {
         ])
     }
 
+    /// An app's newest TestFlight builds with their states, review, marketing version and groups, in one request. The
+    /// relations have to be named in `fields[builds]` to come with their identifiers; a page of 5 answers in about a second.
+    static func testFlightBuilds(appID: String) -> URL {
+        url(path: "/v1/builds", query: [
+            "filter[app]": appID,
+            "sort": "-uploadedDate",
+            "limit": "5",
+            "include": "buildBetaDetail,preReleaseVersion,betaAppReviewSubmission,betaGroups",
+            "fields[builds]": "version,uploadedDate,expirationDate,expired,processingState,buildBetaDetail,preReleaseVersion,betaAppReviewSubmission,betaGroups",
+            "fields[buildBetaDetails]": "internalBuildState,externalBuildState",
+            "fields[preReleaseVersions]": "version,platform",
+            "fields[betaAppReviewSubmissions]": "betaReviewState,submittedDate",
+            "fields[betaGroups]": "name,isInternalGroup",
+        ])
+    }
+
     /// Every app with one of its builds, for the icon that build carries. Apple picks the build, and not always the newest.
     static let appIcons: URL = url(path: "/v1/apps", query: [
         "include": "builds",

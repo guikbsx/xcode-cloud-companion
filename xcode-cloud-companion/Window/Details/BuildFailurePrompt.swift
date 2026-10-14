@@ -8,6 +8,7 @@ nonisolated struct BuildFailurePrompt: Sendable {
     static let maximumFailedTests = 30
     static let maximumMessageLength = 600
     static let previewLineCount = 7
+    static let maximumExcerptLines = 40
 
     static let instruction = """
     An Xcode Cloud build failed. Find the root cause and propose the smallest fix.
@@ -41,10 +42,17 @@ nonisolated struct BuildFailurePrompt: Sendable {
     var messageLimit = BuildFailurePrompt.maximumMessageLength
     /// A failed test told by its name and message alone, when there are too many to tell each in full.
     var compactTests = false
+    /// The lines of an unpacked log around its errors, when the log was already on this Mac.
+    let logExcerpt: LogSection?
+
+    struct LogSection: Sendable {
+        let actionName: String
+        let excerpt: LogExcerpt
+    }
 
     init(
         run: CIBuildRun, product: CIProduct?, workflow: CIWorkflow?, actions: [CIBuildAction], extras: BuildExtras?,
-        reference: CIBuildRun?, logFolders: [String: String] = [:]
+        reference: CIBuildRun?, logFolders: [String: String] = [:], logExcerpt: LogSection? = nil
     ) {
         self.run = run
         self.product = product
@@ -53,20 +61,21 @@ nonisolated struct BuildFailurePrompt: Sendable {
         self.extras = extras
         self.reference = reference
         self.logFolders = logFolders
+        self.logExcerpt = logExcerpt
     }
 
-    init(run: CIBuildRun, snapshot: BuildSnapshot, extras: BuildExtras?, logFolders: [String: String] = [:]) {
+    init(run: CIBuildRun, snapshot: BuildSnapshot, extras: BuildExtras?, logFolders: [String: String] = [:], logExcerpt: LogSection? = nil) {
         self.init(
             run: run, product: snapshot.product(id: run.productID), workflow: snapshot.workflow(id: run.workflowID),
             actions: snapshot.actionsByRunID[run.id] ?? [], extras: extras, reference: RegressionReport.reference(for: run, in: snapshot),
-            logFolders: logFolders
+            logFolders: logFolders, logExcerpt: logExcerpt
         )
     }
 
     // MARK: - Reading
 
     var text: String {
-        let sections = [Self.instruction, buildSection, actionsSection, errorsSection, testsSection, referenceSection, artifactsSection]
+        let sections = [Self.instruction, buildSection, actionsSection, errorsSection, testsSection, logExcerptSection, referenceSection, artifactsSection]
         return sections.compactMap(\.self).joined(separator: "\n\n") + "\n"
     }
 
@@ -201,6 +210,24 @@ nonisolated struct BuildFailurePrompt: Sendable {
             body: [devices.isEmpty ? nil : "Fails on: " + devices.joined(separator: ", "), Self.location(of: test.file), Self.message(test.message, limit: messageLimit)]
                 .compactMap(\.self)
         )
+    }
+
+    /// The errors of the log with three lines on each side, as many as fit in `maximumExcerptLines` lines of the log.
+    private var logExcerptSection: String? {
+        guard let logExcerpt, !logExcerpt.excerpt.findings.isEmpty else { return nil }
+        let excerpt = logExcerpt.excerpt
+        var blocks: [String] = []
+        var used = 0
+        for finding in excerpt.findings where used + finding.lines.count <= Self.maximumExcerptLines {
+            used += finding.lines.count
+            blocks.append(finding.lines.map { row in
+                let marker = row.number == finding.lineNumber ? ">" : " "
+                return "    \(marker) \(row.number)  \(Self.line(LogExcerptFormat.line(row.text)))"
+            }.joined(separator: "\n"))
+        }
+        let head = "Action \(Self.quoted(logExcerpt.actionName)), file \(Self.line(excerpt.fileName)) (\(excerpt.totalLines) lines). "
+            + "Lines marked > say an error; \(blocks.count) of \(excerpt.findings.count) shown."
+        return "## Log excerpt\n" + head + "\n\n" + blocks.joined(separator: "\n    ...\n")
     }
 
     private var referenceLine: String? {

@@ -16,6 +16,18 @@ enum Fixture {
         try load(name, withExtension: "csv")
     }
 
+    /// The lines of an anonymised excerpt of a real Xcode Cloud log, with the timestamp prefix they have in the archive.
+    static func logLines(_ name: String) throws -> [String] {
+        var lines = String(decoding: try load("log-\(name)", withExtension: "log"), as: UTF8.self).split(separator: "\n", omittingEmptySubsequences: false).map(String.init)
+        if lines.last == "" { lines.removeLast() }
+        return lines
+    }
+
+    static func logURL(_ name: String) throws -> URL {
+        guard let url = Bundle(for: BundleToken.self).url(forResource: "log-\(name)", withExtension: "log") else { throw Missing(name: name) }
+        return url
+    }
+
     private static func load(_ name: String, withExtension fileExtension: String) throws -> Data {
         guard let url = Bundle(for: BundleToken.self).url(forResource: name, withExtension: fileExtension) else {
             throw Missing(name: name)
@@ -89,6 +101,8 @@ final class TestAccounts {
     let registryStore: AccountRegistryStore
     /// The keychain of each account made so far, by account id.
     private(set) var credentials: [String: InMemoryCredentialsStore] = [:]
+    /// The webhook address of each account made so far, by account id: a keychain item of its own, in memory.
+    private(set) var webhookAddresses: [String: InMemoryWebhookAddressStore] = [:]
     /// What stands in for Apple: offline unless a test says otherwise, so no account ever reaches the network.
     var transport = MockTransport { _ in MockTransport.Reply(error: URLError(.notConnectedToInternet)) }
     private(set) lazy var model = makeModel()
@@ -117,6 +131,13 @@ final class TestAccounts {
         return store
     }
 
+    func webhookStore(_ accountID: String) -> InMemoryWebhookAddressStore {
+        if let store = webhookAddresses[accountID] { return store }
+        let store = InMemoryWebhookAddressStore()
+        webhookAddresses[accountID] = store
+        return store
+    }
+
     func paths(_ accountID: String) -> AccountPaths {
         AccountPaths(accountID: accountID, supportRoot: root.appending(path: "Support"), cachesRoot: root.appending(path: "Caches"))
     }
@@ -141,7 +162,8 @@ final class TestAccounts {
             buildStore: buildStore,
             usageStore: UsageStore(ledgerStore: UsageLedgerStore(fileURL: paths.usageLedger), watchedDirectory: nil),
             extrasStore: BuildExtrasStore(cache: BuildExtrasCache(directory: paths.buildDetails), client: { [buildStore] in await buildStore.detailClient() }),
-            defaults: defaults
+            defaults: defaults,
+            webhookAddresses: webhookStore(account.id)
         )
     }
 }

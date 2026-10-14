@@ -65,13 +65,17 @@ final class NavigationModel {
         case .build(let id): showBuild(id)
         case .overview: sidebarSelection = .overview
         case .references: sidebarSelection = .references
+        case .builds:
+            sidebarSelection = .allBuilds
+            selectedBuildID = nil
+        case .app(let productID): sidebarSelection = .product(productID)
         }
         return true
     }
 }
 
-/// `cumulus://build/<buildRunID>`, `cumulus://overview`, which may name its account (`?account=<id>`), and
-/// `cumulus://references`: read-only, no address ever launches or changes anything.
+/// `cumulus://build/<buildRunID>`, `cumulus://overview`, which may name its account (`?account=<id>`),
+/// `cumulus://references`, `cumulus://builds` (the list of all builds) and `cumulus://app/<productID>` (one app's overview): read-only, no address ever launches or changes anything.
 nonisolated enum CumulusURL {
     static let scheme = "cumulus"
 
@@ -81,10 +85,15 @@ nonisolated enum CumulusURL {
         case overview(accountID: String?)
         /// The view by branch and pull request of the account on screen.
         case references
+        /// The list of all builds, with no build open.
+        case builds
+        /// One app's overview, by its Xcode Cloud product; the app finds the account that holds it.
+        case app(String)
     }
 
     static let overview = URL(string: "\(scheme)://overview")
     static let references = URL(string: "\(scheme)://references")
+    static let builds = URL(string: "\(scheme)://builds")
 
     static func overview(accountID: String?) -> URL? {
         guard let accountID, Account.isValid(id: accountID) else { return overview }
@@ -94,6 +103,11 @@ nonisolated enum CumulusURL {
     static func build(id: String) -> URL? {
         guard isValid(id: id) else { return nil }
         return URL(string: "\(scheme)://build/\(id)")
+    }
+
+    static func app(productID: String) -> URL? {
+        guard isValid(id: productID) else { return nil }
+        return URL(string: "\(scheme)://app/\(productID)")
     }
 
     static func destination(of url: URL) -> Destination? {
@@ -106,6 +120,13 @@ nonisolated enum CumulusURL {
         }
         if url.host() == "references" {
             return parts.isEmpty ? .references : nil
+        }
+        if url.host() == "builds" {
+            return parts.isEmpty ? .builds : nil
+        }
+        if url.host() == "app" {
+            guard parts.count == 1, isValid(id: parts[0]) else { return nil }
+            return .app(parts[0])
         }
         guard url.host() == "build" else { return nil }
         guard parts.count == 1, isValid(id: parts[0]) else { return nil }

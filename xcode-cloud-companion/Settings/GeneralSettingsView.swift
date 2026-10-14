@@ -7,6 +7,7 @@ struct GeneralSettingsView: View {
     var accounts: AccountsModel?
     @AppStorage(ActivationPolicyCoordinator.showsInDockKey) private var showsInDock = true
     @AppStorage(FailureInsightFeature.settingKey) private var summarizesFailures = true
+    @AppStorage(BuildETAFeature.settingKey) private var showsTimeLeft = true
 
     var body: some View {
         // The app's own line goes across the pane, above the columns when there are two.
@@ -36,6 +37,16 @@ struct GeneralSettingsView: View {
                     VStack(alignment: .leading, spacing: 2) {
                         Text("Show in the Dock")
                         Text("While the Cumulus window is open. Takes effect the next time it opens.")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                }
+            }
+            Section("Menu Bar") {
+                Toggle(isOn: $showsTimeLeft) {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Show the time left in the menu bar")
+                        Text("From the median duration of the last 30 builds of the same workflow. It is an estimate.")
                             .font(.caption)
                             .foregroundStyle(.secondary)
                     }

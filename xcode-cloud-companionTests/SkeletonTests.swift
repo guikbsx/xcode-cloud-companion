@@ -18,6 +18,28 @@ struct SkeletonTests {
         #expect(!SkeletonRules.failureInsight(hasRecord: true, isLoading: true, hasAttempted: false), "a known record is shown")
     }
 
+    @Test func theLogExcerptCardIsASkeletonWhileTheLogIsDownloadedOrReadOrNotLookedAtYet() {
+        #expect(SkeletonRules.logExcerpt(hasOutcome: false, isWorking: false, hasAttempted: false), "from the first frame, while the disk is first looked at")
+        #expect(SkeletonRules.logExcerpt(hasOutcome: false, isWorking: true, hasAttempted: true), "the download")
+        #expect(SkeletonRules.logExcerpt(hasOutcome: true, isWorking: true, hasAttempted: true), "the reading, even over an earlier answer")
+        #expect(!SkeletonRules.logExcerpt(hasOutcome: false, isWorking: false, hasAttempted: true), "nothing came: the button")
+        #expect(!SkeletonRules.logExcerpt(hasOutcome: true, isWorking: false, hasAttempted: false), "an answer known from before is shown at once")
+    }
+
+    @Test func theLogExcerptComesFromTheFirstActionThatFailed() {
+        func action(_ id: String, _ status: CICompletionStatus?, started: Double, progress: CIExecutionProgress = .complete) -> CIBuildAction {
+            CIBuildAction(
+                id: id, buildRunID: "run", name: id, actionType: .build, startedDate: Date(timeIntervalSince1970: started), finishedDate: nil,
+                executionProgress: progress, completionStatus: status, isRequiredToPass: nil
+            )
+        }
+        let actions = [action("late", .failed, started: 30), action("ok", .succeeded, started: 5), action("first", .errored, started: 10), action("running", nil, started: 1, progress: .running)]
+
+        #expect(LogExcerptTarget.action(in: actions)?.id == "first")
+        #expect(LogExcerptTarget.action(in: [action("ok", .succeeded, started: 5), action("skipped", .skipped, started: 6)]) == nil)
+        #expect(LogExcerptTarget.action(in: []) == nil)
+    }
+
     @Test func theTestFlightCardNeedsASucceededBuildOfAWorkflowThatShips() {
         #expect(SkeletonRules.testFlightCard(shipsToTestFlight: true, isSucceeded: true, hasBuilds: false, loadEnded: false))
         #expect(!SkeletonRules.testFlightCard(shipsToTestFlight: false, isSucceeded: true, hasBuilds: false, loadEnded: false))

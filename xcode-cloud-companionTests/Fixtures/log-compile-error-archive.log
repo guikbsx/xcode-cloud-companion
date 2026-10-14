@@ -1,0 +1,78 @@
+2026-10-08T07:57:52.595643328Z	    builtin-copy -exclude .DS_Store -exclude CVS -exclude .svn -exclude .git -exclude .hg -resolve-src-symlinks /Volume [line shortened in the fixture]
+2026-10-08T07:57:52.595648925Z	
+2026-10-08T07:57:52.595653293Z	SwiftDriver\ Compilation acme normal arm64 com.apple.xcode.tools.swift.compiler (in target 'acme' from project 'acme')
+2026-10-08T07:57:52.595657884Z	    cd /Volumes/workspace/repository
+2026-10-08T07:57:52.595694307Z	    builtin-Swift-Compilation -- /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin [line shortened in the fixture]
+2026-10-08T07:57:52.595722286Z	
+2026-10-08T07:57:52.595726774Z	SwiftDriver\ Compilation acme normal arm64e com.apple.xcode.tools.swift.compiler (in target 'acme' from project 'acme')
+2026-10-08T07:57:52.595731311Z	    cd /Volumes/workspace/repository
+2026-10-08T07:57:52.595767014Z	    builtin-Swift-Compilation -- /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin [line shortened in the fixture]
+2026-10-08T07:57:52.595793545Z	
+2026-10-08T07:58:26.487522504Z	SwiftCompile normal arm64 Compiling\ ItemEntity.swift,\ ItemLogEntity.swift,\ PeerContentEntity.swift,\ NoteEntity.swif [line shortened in the fixture]
+2026-10-08T07:58:26.488826248Z	/Volumes/workspace/repository/acmeapp/Views/Components/Row/PanelFold.swift:72:22: error: value of type 'GeometryProxy' has no member 'reservedRegions'
+2026-10-08T07:58:26.488973358Z	70 |     private nonisolated static func fold(in proxy: GeometryProxy) -> PanelFold? {
+2026-10-08T07:58:26.488998240Z	71 |         guard #available(iOS 27.1, *) else { return nil }
+2026-10-08T07:58:26.489006716Z	72 |         return proxy.reservedRegions(kind: .division)
+2026-10-08T07:58:26.489014866Z	   |                      `- error: value of type 'GeometryProxy' has no member 'reservedRegions'
+2026-10-08T07:58:26.489087230Z	73 |             .first { $0.isActive }
+2026-10-08T07:58:26.489097610Z	74 |             .map { PanelFold(frame: $0.frame) }
+2026-10-08T07:58:26.489105678Z	
+2026-10-08T07:58:26.489132302Z	/Volumes/workspace/repository/acmeapp/Views/Components/Row/PanelHinge.swift:22:21: error: value of type 'PanelHingeAngleReader.Content' (aka '_ViewModifier_Content<PanelHingeAngleReader>') has no member 'onHingeChange'
+2026-10-08T07:58:26.489201825Z	20 |     func body(content: Content) -> some View {
+2026-10-08T07:58:26.489210120Z	21 |         if #available(iOS 27.1, *) {
+2026-10-08T07:58:26.489218295Z	22 |             content.onHingeChange(isEnabled: isEnabled) { oldContext, newContext in
+2026-10-08T07:58:26.489269912Z	   |                     `- error: value of type 'PanelHingeAngleReader.Content' (aka '_ViewModifier_Content<PanelHingeAngleReader>') has no member 'onHingeChange'
+2026-10-08T07:58:26.489404530Z	23 |                 guard let old = oldContext.hinge?.angle.degrees,
+2026-10-08T07:58:26.489433556Z	24 |                       let new = newContext.hinge?.angle.degrees else { return }
+2026-10-08T07:58:26.489450501Z	
+2026-10-08T07:58:26.489460415Z	/Volumes/workspace/repository/acmeapp/Views/Record/Camera/CameraPreview.swift:52:21: error: cannot find 'PreviewAccessory' in scope
+2026-10-08T07:58:26.489496877Z	 50 |             content
+2026-10-08T07:58:26.489518703Z	 51 |                 .sceneAccessory {
+2026-10-08T07:58:26.489540307Z	 52 |                     PreviewAccessory(isEnabled: $isEnabled, content: mirror)
+2026-10-08T07:58:26.489592171Z	    |                     `- error: cannot find 'PreviewAccessory' in scope
+2026-10-08T07:58:26.489627657Z	 53 |                         .onAvailabilityChange { isAvailable = $0 }
+2026-10-08T07:58:26.489657989Z	 54 |                 }
+2026-10-08T07:58:26.489667724Z	Failed frontend command:
+2026-10-08T07:58:26.489689197Z	
+2026-10-08T07:58:26.489698525Z	SwiftCompile normal arm64 (in target 'acme' from project 'acme')
+2026-10-08T07:58:26.489722539Z	    cd /Volumes/workspace/repository
+2026-10-08T07:58:26.489732839Z	    
+2026-10-08T07:58:26.490026515Z	/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swift-frontend -frontend -c -fil [line shortened in the fixture]
+2026-10-08T07:58:26.491770811Z	
+2026-10-08T07:58:26.495611743Z	SwiftCompile normal arm64e Compiling\ ItemEntity.swift,\ ItemLogEntity.swift,\ PeerContentEntity.swift,\ NoteEntity.swi [line shortened in the fixture]
+2026-10-08T07:58:26.500024066Z	/Volumes/workspace/repository/acmeapp/Views/Components/Row/PanelFold.swift:72:22: error: value of type 'GeometryProxy' has no member 'reservedRegions'
+2026-10-08T07:58:26.500056458Z	70 |     private nonisolated static func fold(in proxy: GeometryProxy) -> PanelFold? {
+2026-10-08T07:58:26.500065213Z	71 |         guard #available(iOS 27.1, *) else { return nil }
+2026-10-08T07:58:26.500070620Z	72 |         return proxy.reservedRegions(kind: .division)
+2026-10-08T07:58:26.500117246Z	   |                      `- error: value of type 'GeometryProxy' has no member 'reservedRegions'
+2026-10-08T07:58:26.500150531Z	73 |             .first { $0.isActive }
+2026-10-08T07:58:26.500184168Z	74 |             .map { PanelFold(frame: $0.frame) }
+2026-10-08T07:58:26.500201344Z	
+2026-10-08T07:58:26.500209434Z	/Volumes/workspace/repository/acmeapp/Views/Components/Row/PanelHinge.swift:22:21: error: value of type 'PanelHingeAngleReader.Content' (aka '_ViewModifier_Content<PanelHingeAngleReader>') has no member 'onHingeChange'
+2026-10-08T07:58:26.500221289Z	20 |     func body(content: Content) -> some View {
+2026-10-08T07:58:26.500226434Z	21 |         if #available(iOS 27.1, *) {
+2026-10-08T07:58:26.500231402Z	22 |             content.onHingeChange(isEnabled: isEnabled) { oldContext, newContext in
+2026-10-08T07:58:26.500237764Z	   |                     `- error: value of type 'PanelHingeAngleReader.Content' (aka '_ViewModifier_Content<PanelHingeAngleReader>') has no member 'onHingeChange'
+2026-10-08T07:58:26.500262256Z	23 |                 guard let old = oldContext.hinge?.angle.degrees,
+2026-10-08T07:58:26.500267703Z	24 |                       let new = newContext.hinge?.angle.degrees else { return }
+2026-10-08T07:58:26.500272788Z	
+2026-10-08T07:58:26.500278358Z	/Volumes/workspace/repository/acmeapp/Views/Record/Camera/CameraPreview.swift:52:21: error: cannot find 'PreviewAccessory' in scope
+2026-10-08T07:58:26.500285510Z	 50 |             content
+2026-10-08T07:58:26.500290101Z	 51 |                 .sceneAccessory {
+2026-10-08T07:58:26.500295282Z	 52 |                     PreviewAccessory(isEnabled: $isEnabled, content: mirror)
+2026-10-08T07:58:26.500302799Z	    |                     `- error: cannot find 'PreviewAccessory' in scope
+2026-10-08T07:58:26.500309830Z	 53 |                         .onAvailabilityChange { isAvailable = $0 }
+2026-10-08T07:58:26.500314498Z	 54 |                 }
+2026-10-08T07:58:26.500318939Z	Failed frontend command:
+...
+2026-10-08T07:58:26.512321299Z	PruneExplicitPrecompiledModules /Volumes/workspace/DerivedData/Build/Intermediates.noindex/ArchiveIntermediates/acme/In [line shortened in the fixture]
+2026-10-08T07:58:26.512328913Z	
+2026-10-08T07:58:26.512337765Z	PruneExplicitPrecompiledModules /Volumes/workspace/DerivedData/Build/Intermediates.noindex/ArchiveIntermediates/acme/In [line shortened in the fixture]
+2026-10-08T07:58:26.512345423Z	
+2026-10-08T07:58:26.512352964Z	PruneExplicitPrecompiledModules /Volumes/workspace/DerivedData/SDKExplicitPrecompiledModules
+2026-10-08T07:58:26.512360037Z	
+2026-10-08T07:58:26.512370916Z	Result bundle written to path:
+2026-10-08T07:58:26.512378454Z		/Volumes/workspace/resultbundle.xcresult
+2026-10-08T07:58:26.512384939Z	
+2026-10-08T07:58:26.512391571Z	** ARCHIVE FAILED **
+2026-10-08T07:58:26.512398922Z	

@@ -18,7 +18,8 @@ struct SettingsWindowTests {
         return SettingsWindowController(
             accounts: accounts.model, loginItem: LoginItemModel(loginItem: NoLoginItem()), notificationPreferences: preferences,
             notifications: NotificationCoordinator(center: MockNotificationCenter(), preferences: preferences, defaults: accounts.defaults),
-            pro: pro, purchase: ProPurchasePresenter(store: pro), defaults: accounts.defaults
+            pro: pro, purchase: ProPurchasePresenter(store: pro),
+            webhook: WebhookService(accounts: accounts.model, sender: UnreachableWebhookSender()), defaults: accounts.defaults
         )
     }
 
@@ -56,7 +57,8 @@ let smallest = try #require(window.delegate?.windowWillResize?(window, to: NSSiz
         let controller = SettingsWindowController(
             accounts: accounts.model, loginItem: LoginItemModel(loginItem: NoLoginItem()), notificationPreferences: preferences,
             notifications: NotificationCoordinator(center: MockNotificationCenter(), preferences: preferences, defaults: accounts.defaults),
-            pro: pro, purchase: ProPurchasePresenter(store: pro), defaults: accounts.defaults
+            pro: pro, purchase: ProPurchasePresenter(store: pro),
+            webhook: WebhookService(accounts: accounts.model, sender: UnreachableWebhookSender()), defaults: accounts.defaults
         )
         controller.show()
         let window = try #require(NSApp.windows.first { $0.contentViewController is NSTabViewController })

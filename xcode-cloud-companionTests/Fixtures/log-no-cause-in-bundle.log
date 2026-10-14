@@ -1,0 +1,18 @@
+2026-10-08T08:41:58.394908023Z	PruneExplicitPrecompiledModules /Volumes/workspace/DerivedData/Build/Intermediates.noindex/ArchiveIntermediates/acme/In [line shortened in the fixture]
+2026-10-08T08:41:58.394920837Z	
+2026-10-08T08:41:58.394925141Z	PruneExplicitPrecompiledModules /Volumes/workspace/DerivedData/SDKExplicitPrecompiledModules
+2026-10-08T08:41:58.394929470Z	
+2026-10-08T08:41:58.394933412Z	Result bundle written to path:
+2026-10-08T08:41:58.394947050Z		/Volumes/workspace/resultbundle.xcresult
+2026-10-08T08:41:58.394960479Z	
+2026-10-08T08:41:58.394965372Z	** ARCHIVE SUCCEEDED **
+2026-10-08T08:41:58.394969177Z	
+
+...
+2026-10-08T08:42:16.653163878Z	    userLocale = "en_US";
+2026-10-08T08:42:16.653165919Z	}
+2026-10-08T08:42:16.653168003Z	
+2026-10-08T08:42:16.653169883Z	
+2026-10-08T08:42:22.823115452Z	Exported acme to: /Volumes/workspace/appstoreexport
+2026-10-08T08:42:22.823148171Z	** EXPORT SUCCEEDED **
+2026-10-08T08:42:22.823151205Z	

@@ -60,6 +60,10 @@ struct WorkflowTestsSection: View {
         }
     }
 
+    private var access: TestHistoryAccess {
+        TestHistoryAccess(workflowID: workflowID, tests: model, openBuild: openBuild)
+    }
+
     @ViewBuilder
     private func flaky(_ report: TestHealthReport) -> some View {
         Text("Flaky tests").fontWeight(.semibold).padding(.top, 4)
@@ -67,27 +71,21 @@ struct WorkflowTestsSection: View {
             Text("No flaky test in the builds analyzed.").foregroundStyle(.secondary)
         }
         ForEach(report.flaky) { test in
-            Button {
-                openBuild(test.lastFailureRunID)
-            } label: {
-                HStack(alignment: .firstTextBaseline, spacing: 8) {
-                    Image(systemName: "dice").foregroundStyle(BuildStatus.errored.tint).font(.caption).accessibilityHidden(true)
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text([test.className, test.name].compactMap(\.self).joined(separator: ".")).font(.callout).lineLimit(2)
-                        Text(Self.facts(of: test)).font(.caption).foregroundStyle(.secondary)
-                        if !test.devices.isEmpty {
-                            Text(test.devices.formatted(.list(type: .and, width: .narrow))).font(.caption).foregroundStyle(.secondary)
-                        }
+            TestRowButton(
+                identity: TestHistory.Identity(actionName: test.actionName, className: test.className, name: test.name), access: access
+            ) {
+                Image(systemName: "dice").foregroundStyle(BuildStatus.errored.tint).font(.caption).accessibilityHidden(true)
+                VStack(alignment: .leading, spacing: 4) {
+                    Text([test.className, test.name].compactMap(\.self).joined(separator: ".")).font(.callout).lineLimit(2)
+                    if !test.recent.isEmpty {
+                        TestHistoryMiniStrip(outcomes: test.recent)
                     }
-                    Spacer(minLength: 8)
-                    Image(systemName: "chevron.right").font(.caption).foregroundStyle(.tertiary).accessibilityHidden(true)
+                    Text(Self.facts(of: test)).font(.caption).foregroundStyle(.secondary)
+                    if !test.devices.isEmpty {
+                        Text(test.devices.formatted(.list(type: .and, width: .narrow))).font(.caption).foregroundStyle(.secondary)
+                    }
                 }
-                .contentShape(.rect)
             }
-            .buttonStyle(.plain)
-            .accessibilityElement(children: .combine)
-            .accessibilityHint(Text("Opens the last build where it failed, on its Tests tab"))
-            .help("Open the last build where it failed")
         }
     }
 
@@ -96,7 +94,9 @@ struct WorkflowTestsSection: View {
         if !report.slowest.isEmpty {
             Text("Slowest tests").fontWeight(.semibold).padding(.top, 4)
             ForEach(report.slowest) { test in
-                HStack(alignment: .firstTextBaseline, spacing: 8) {
+                TestRowButton(
+                    identity: TestHistory.Identity(actionName: test.actionName, className: test.className, name: test.name), access: access
+                ) {
                     Image(systemName: "tortoise").foregroundStyle(.secondary).font(.caption).accessibilityHidden(true)
                     VStack(alignment: .leading, spacing: 2) {
                         Text([test.className, test.name].compactMap(\.self).joined(separator: ".")).font(.callout).lineLimit(2)
@@ -108,7 +108,6 @@ struct WorkflowTestsSection: View {
                         .font(.caption).foregroundStyle(.secondary)
                     }
                 }
-                .accessibilityElement(children: .combine)
             }
         }
     }
@@ -130,5 +129,34 @@ struct WorkflowTestsSection: View {
 
     private static func duration(_ seconds: Double) -> String {
         Duration.seconds(seconds).formatted(.units(allowed: [.minutes, .seconds, .milliseconds], width: .abbreviated, maximumUnitCount: 2))
+    }
+}
+
+/// A test of the section: a row that opens the history of the test in a popover anchored on it.
+private struct TestRowButton<Label: View>: View {
+    let identity: TestHistory.Identity
+    let access: TestHistoryAccess
+    @ViewBuilder let label: Label
+    @State private var isPresented = false
+
+    var body: some View {
+        Button {
+            isPresented = true
+        } label: {
+            HStack(alignment: .firstTextBaseline, spacing: 8) {
+                label
+                Spacer(minLength: 8)
+                Image(systemName: "chevron.right").font(.caption).foregroundStyle(.tertiary).accessibilityHidden(true)
+            }
+            .padding(.vertical, 4)
+            .padding(.horizontal, 8)
+            .contentShape(.rect)
+        }
+        .buttonStyle(.plain)
+        .background(isPresented ? Color.accentColor.opacity(0.12) : .clear, in: .rect(cornerRadius: 9))
+        .padding(.horizontal, -8)
+        .accessibilityElement(children: .combine)
+        .accessibilityHint(Text("Shows how this test went over the last builds"))
+        .testHistoryPopover(isPresented: $isPresented, identity: identity, access: access)
     }
 }

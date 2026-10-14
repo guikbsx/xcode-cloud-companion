@@ -1,0 +1,13 @@
+2026-09-15T14:34:56.618125791Z	─── Frontières d'architecture ───
+2026-09-15T14:34:56.753297264Z	[0;32m✓[0m GadgetDomain n'importe que Foundation
+2026-09-15T14:34:56.753584861Z	[0;32m✓[0m GadgetDomain ne déclare aucune dépendance
+2026-09-15T14:34:56.754007697Z	[0;32m✓[0m GadgetUI ne connaît pas GadgetData
+2026-09-15T14:34:56.754221566Z	[0;32m✓[0m Aucun DTO hors de GadgetData
+2026-09-15T14:34:56.754403500Z	[0;32m✓[0m Aucun singleton hors de l'exception documentée
+2026-09-15T14:34:56.754526919Z	
+2026-09-15T14:34:56.754950393Z	[0;32m[1mArchitecture : les 5 frontières tiennent.[0m
+2026-09-15T14:34:56.755370700Z	
+2026-09-15T14:34:56.755523032Z	─── Tests des packages ───
+2026-09-15T14:35:21.905393182Z	GadgetDomain : ✔ Test run with 150 tests in 19 suites passed after 0.010 seconds.
+2026-09-15T14:35:37.032059297Z	GadgetData : ✔ Test run with 61 tests in 8 suites passed after 0.232 seconds.
+2026-09-15T14:35:50.040225965Z	GadgetUI : ✘ Test run with 48 tests in 5 suites failed after 0.008 seconds with 15 issues.

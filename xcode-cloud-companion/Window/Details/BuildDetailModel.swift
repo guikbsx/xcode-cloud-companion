@@ -45,13 +45,17 @@ nonisolated struct BuildDetailModel: Equatable, Sendable {
     let shortSha: String?
     let frieze: [FriezeStep]
     let actions: [ActionRow]
+    /// “Estimated end around 2:36 PM (~4 min)” for a running build with enough history; nil otherwise.
+    let estimatedEnd: String?
+    /// The same, for VoiceOver.
+    let spokenEstimatedEnd: String?
     let info: [InfoField]
     let commit: CommitInfo?
     let issueCount: Int?
     let testFailureCount: Int?
     let appStoreConnectURL: URL
 
-    init(run: CIBuildRun, product: CIProduct?, workflow: CIWorkflow?, actions: [CIBuildAction], teamID: String?, now: Date, cost: BuildCost? = nil) {
+    init(run: CIBuildRun, product: CIProduct?, workflow: CIWorkflow?, actions: [CIBuildAction], teamID: String?, now: Date, cost: BuildCost? = nil, eta: BuildETA? = nil, locale: Locale = .autoupdatingCurrent) {
         id = run.id
         numberText = run.number.map { "#\($0)" } ?? "#?"
         status = BuildStatus(run: run)
@@ -68,6 +72,10 @@ nonisolated struct BuildDetailModel: Equatable, Sendable {
             : run.sourceBranchOrTag
         shortSha = run.sourceCommit?.shortSha
         appStoreConnectURL = AppStoreConnectLinks.build(appID: product?.appID, buildRunID: run.id, teamID: teamID)
+
+        let display = status == .running ? eta?.display(at: now) : nil
+        estimatedEnd = eta.flatMap { eta in display.map { BuildETAFormat.endLine(end: eta.expectedEnd, display: $0, locale: locale) } }
+        spokenEstimatedEnd = display.map { BuildETAFormat.spoken($0, locale: locale) }
 
         let ordered = Self.ordered(actions)
         self.frieze = ordered.map { action in
@@ -99,7 +107,7 @@ nonisolated struct BuildDetailModel: Equatable, Sendable {
 
     // MARK: - Actions
 
-    private static func ordered(_ actions: [CIBuildAction]) -> [CIBuildAction] {
+    static func ordered(_ actions: [CIBuildAction]) -> [CIBuildAction] {
         func rank(_ type: CIActionType?) -> Int {
             switch type {
             case .build?: 0
@@ -115,7 +123,7 @@ nonisolated struct BuildDetailModel: Equatable, Sendable {
         }
     }
 
-    private static func name(of action: CIBuildAction) -> String {
+    static func name(of action: CIBuildAction) -> String {
         if let name = action.name?.nilIfBlank { return name }
         switch action.actionType {
         case .build?: return String(localized: "Build")

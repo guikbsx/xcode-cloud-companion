@@ -16,8 +16,14 @@ nonisolated struct BuildNotificationRules: Sendable, Equatable {
     var mutedProductIDs: Set<String> = []
     /// A build started by `cumulus run` or an MCP tool: the user learns at once that an agent spent minutes.
     var agentLaunches = true
+    /// A workflow whose successful builds got slower, said once by the build that starts it.
+    var slowdown = true
+    /// A TestFlight build that external testers can install, said once.
+    var testFlightAvailable = true
+    /// The build external testers are on, a week from expiring, said once.
+    var testFlightExpiry = true
 
-    var notifiesAnything: Bool { succeeded || failed || canceled || stuck }
+    var notifiesAnything: Bool { succeeded || failed || canceled || stuck || slowdown || testFlightAvailable || testFlightExpiry }
 
     func includes(_ status: BuildStatus) -> Bool {
         switch status {

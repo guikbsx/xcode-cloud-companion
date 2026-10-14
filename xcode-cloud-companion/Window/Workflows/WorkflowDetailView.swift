@@ -9,6 +9,8 @@ struct WorkflowDetailView: View {
     var openBuildTests: (String) -> Void = { _ in }
     /// How the workflow's builds go over time, from the cache; nil leaves the section out.
     var trends: WorkflowTrends?
+    /// Since which build the workflow got slower, with its cause; nil when it did not.
+    var slowdown: WorkflowSlowdownModel?
     var openBuild: (String) -> Void = { _ in }
     /// Pauses or resumes this workflow; nil while the key is declared read-only.
     var togglePause: (() -> Void)?
@@ -90,7 +92,7 @@ struct WorkflowDetailView: View {
             if let trends {
                 Group {
                     if access.allows(.workflowTrends) {
-                        WorkflowTrendsSection(trends: trends, openBuild: openBuild)
+                        WorkflowTrendsSection(trends: trends, slowdown: slowdown, openBuild: openBuild)
                     } else {
                         ProLockedCard(feature: .workflowTrends)
                     }

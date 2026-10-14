@@ -110,6 +110,8 @@ nonisolated struct AppOverviewModel: Equatable, Sendable {
     let costliestRunID: String?
     /// The newest successful build of a workflow that hands its archive to TestFlight.
     let testFlightRun: CIBuildRun?
+    /// A workflow of the app hands its archive to TestFlight: the app has a TestFlight card.
+    let shipsToTestFlight: Bool
 
     /// `details` are the workflows as their own sheet read them, richer than the sync's: they win where both exist.
     /// `openPullRequests` is Apple's list when it is known; nil shows every pull request the builds name.
@@ -213,6 +215,7 @@ nonisolated struct AppOverviewModel: Equatable, Sendable {
         costliestRunID = costliestBuild.flatMap { cost in runs.first { $0.number == cost.buildNumber }?.id }
 
         let shipping = Set(known.filter(\.shipsToTestFlight).map(\.id))
+        shipsToTestFlight = !shipping.isEmpty
         testFlightRun = runs
             .filter { $0.completionStatus == .succeeded && $0.workflowID.map(shipping.contains) == true }
             .max { Self.order($0) < Self.order($1) }

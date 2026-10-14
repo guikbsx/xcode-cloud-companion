@@ -42,6 +42,8 @@ nonisolated struct TestHealthReport: Equatable, Sendable {
         let differsBetweenDevices: Bool
         /// It both failed and passed on one and the same commit.
         let flipsOnSameCommit: Bool
+        /// Its result in each of the last builds analyzed, oldest first: the strip of its row.
+        var recent: [TestHistory.Outcome] = []
     }
 
     struct SlowTest: Identifiable, Equatable, Sendable {
@@ -62,7 +64,8 @@ nonisolated struct TestHealthReport: Equatable, Sendable {
         report.analyzedBuilds = 8
         report.flaky = [FlakyTest(
             id: "placeholder-flaky", className: "SettingsTests", name: "testSavingASettingKeepsItsValue()", actionName: "Test", failures: 2, runs: 8,
-            lastFailureRunID: "placeholder", lastFailureNumber: 41, lastFailureDate: nil, devices: ["iPhone 17"], differsBetweenDevices: false, flipsOnSameCommit: true
+            lastFailureRunID: "placeholder", lastFailureNumber: 41, lastFailureDate: nil, devices: ["iPhone 17"], differsBetweenDevices: false, flipsOnSameCommit: true,
+            recent: [.passed, .passed, .failed, .passed, .mixed, .passed, .passed, .failed]
         )]
         report.slowest = [
             SlowTest(id: "placeholder-slow-0", className: "SyncTests", name: "testAFullSyncReadsEveryProduct()", actionName: "Test", averageSecondsPerDevice: 42, share: 0.18),
@@ -123,6 +126,13 @@ nonisolated struct TestHealthReport: Equatable, Sendable {
             }
         }
         flaky.sort { ($0.failures, $1.id) > ($1.failures, $0.id) }
+        let window = samples.sorted { Self.isEarlier($0, $1) }.suffix(TestHistory.maxBuilds)
+        flaky = flaky.map { test in
+            var test = test
+            let statuses = Dictionary(occurrences[test.id, default: []].map { ($0.sample.runID, $0.test.status) }, uniquingKeysWith: { first, _ in first })
+            test.recent = window.map { TestHistory.Outcome(statuses[$0.runID]) }
+            return test
+        }
         slowest = slow
             .sorted { ($0.averageSecondsPerDevice, $1.id) > ($1.averageSecondsPerDevice, $0.id) }
             .prefix(Self.slowestCount)
@@ -184,6 +194,19 @@ nonisolated struct TestHealthReader: Sendable {
             }
         }
         return TestHealthReport(samples: samples, eligibleBuilds: runs.count)
+    }
+
+    /// One test over the last builds whose results are on disk, newest first until thirty are read. Nothing is asked of Apple.
+    @concurrent func history(of identity: TestHistory.Identity, workflowID: String, in snapshot: BuildSnapshot) async -> TestHistory {
+        let runs = TestHealthReport.eligibleRuns(workflowID: workflowID, in: snapshot)
+        var entries: [TestHistory.Entry] = []
+        for run in runs where entries.count < TestHistory.maxBuilds {
+            let extras = await cache.load(runID: run.id)
+            if let entry = TestHistory.entry(of: run, actions: snapshot.actionsByRunID[run.id] ?? [], extras: extras, identity: identity) {
+                entries.append(entry)
+            }
+        }
+        return TestHistory(identity: identity, entries: entries, eligibleBuilds: runs.count)
     }
 
     /// The newest builds whose test results are not on disk yet.
@@ -249,6 +272,12 @@ final class WorkflowTestsModel {
         if reportWorkflowID == workflowID {
             report = fresh
         }
+    }
+
+    /// What is on disk about one test, right now. No request; nil without Pro.
+    func history(of identity: TestHistory.Identity, workflowID: String) async -> TestHistory? {
+        guard allowed() else { return nil }
+        return await reader.history(of: identity, workflowID: workflowID, in: snapshot())
     }
 
     func startAnalysis(workflowID: String) {

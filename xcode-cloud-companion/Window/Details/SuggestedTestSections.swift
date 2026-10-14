@@ -24,7 +24,8 @@ nonisolated struct SuggestedTestSections: Equatable, Sendable {
     let sections: [Section]
 
     /// Nil when there is nothing to suggest: no record, too few failed tests, or fewer than two groups whose tests are still in the build.
-    init?(record: FailureInsightRecord?, failed: [CITestResult]) {
+    init?(record: FailureInsightRecord?, failed: [CITestResult], actions: [CIBuildAction] = []) {
+        let actionNames = Dictionary(actions.map { ($0.id, $0.name ?? "") }, uniquingKeysWith: { first, _ in first })
         guard failed.count >= Self.minimumFailedTests, let groups = record?.groups, !groups.isEmpty else { return nil }
         var byIdentity: [FailureInsightRecord.TestIdentity: [CITestResult]] = [:]
         for result in failed { byIdentity[FailureInsightRecord.TestIdentity(result), default: []].append(result) }
@@ -36,21 +37,21 @@ nonisolated struct SuggestedTestSections: Equatable, Sendable {
             for identity in group.tests {
                 for result in byIdentity[identity] ?? [] where claimed.insert(result.id).inserted { members.append(result) }
             }
-            if !members.isEmpty { built.append(Section(id: "group-\(index)", title: group.title, rows: Self.rows(members))) }
+            if !members.isEmpty { built.append(Section(id: "group-\(index)", title: group.title, rows: Self.rows(members, actionNames: actionNames))) }
         }
         guard built.count >= FailureInsightValidator.minimumGroupCount else { return nil }
 
         let others = failed.filter { !claimed.contains($0.id) }
-        if !others.isEmpty { built.append(Section(id: "others", title: nil, rows: Self.rows(others))) }
+        if !others.isEmpty { built.append(Section(id: "others", title: nil, rows: Self.rows(others, actionNames: actionNames))) }
         sections = built
     }
 
-    private static func rows(_ results: [CITestResult]) -> [TestRow] {
+    private static func rows(_ results: [CITestResult], actionNames: [String: String]) -> [TestRow] {
         results
             .sorted {
                 let order = ($0.className ?? "").localizedStandardCompare($1.className ?? "")
                 return order == .orderedSame ? ($0.name ?? "").localizedStandardCompare($1.name ?? "") == .orderedAscending : order == .orderedAscending
             }
-            .map { TestsTabModel.row($0, destination: nil) }
+            .map { TestsTabModel.row($0, destination: nil, actionName: actionNames[$0.buildActionID]) }
     }
 }

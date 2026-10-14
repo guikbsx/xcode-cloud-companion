@@ -1,0 +1,53 @@
+2026-09-14T15:22:50.736797369Z	◇ Suite "suite 1" started.
+2026-09-14T15:22:50.736810536Z	◇ Test "test 1" started.
+2026-09-14T15:22:50.736814860Z	✔ Test "test 1" passed after 0.001 seconds.
+2026-09-14T15:22:50.736819150Z	◇ Test "test 2" started.
+2026-09-14T15:22:50.752656344Z	✔ Test "test 2" passed after 0.004 seconds.
+2026-09-14T15:22:50.752691300Z	◇ Test "test 3" started.
+2026-09-14T15:22:50.752699011Z	✔ Test "test 3" passed after 0.001 seconds.
+2026-09-14T15:22:50.752705737Z	◇ Test "test 4" started.
+2026-09-14T15:22:50.752712636Z	✔ Test "test 4" passed after 0.001 seconds.
+2026-09-14T15:22:50.752719385Z	◇ Test "test 5" started.
+2026-09-14T15:22:50.752726086Z	✔ Test "test 5" passed after 0.001 seconds.
+2026-09-14T15:22:50.752740609Z	✔ Suite "suite 1" passed after 0.006 seconds.
+2026-09-14T15:22:50.752747696Z	◇ Suite "Today - loading health data" started.
+2026-09-14T15:22:50.768570227Z	◇ Test "test 6" started.
+2026-09-14T15:22:50.768606360Z	2026-09-14 08:22:50.727418-0700 acme[2873:16748] [HealthKitMonitor] Fetched 0 workouts
+2026-09-14T15:22:50.768610771Z	2026-09-14 08:22:50.729157-0700 acme[2873:16748] [HealthKitMonitor] Fetched 0 sleep episodes
+2026-09-14T15:22:50.768614577Z	✔ Test "test 6" passed after 0.014 seconds.
+2026-09-14T15:22:50.768618910Z	◇ Test "test 7" started.
+2026-09-14T15:22:50.768622715Z	2026-09-14 08:22:50.730005-0700 acme[2873:16748] [HealthKitMonitor] HealthKit unavailable on this device
+2026-09-14T15:22:50.768626327Z	✔ Test "test 7" passed after 0.001 seconds.
+2026-09-14T15:22:50.768630232Z	◇ Test "The sample data set yields a usable score" started.
+2026-09-14T15:22:50.768633749Z	2026-09-14 08:22:50.731137-0700 acme[2873:16748] [HealthKitMonitor] Fetched 32 workouts
+2026-09-14T15:22:50.768637171Z	2026-09-14 08:22:50.736756-0700 acme[2873:16748] [HealthKitMonitor] Fetched 1 sleep episodes
+2026-09-14T15:22:50.786012752Z	✘ Test "The sample data set yields a usable score" recorded an issue at ScoreStoreTests.swift:49:25: Issue recorded
+2026-09-14T15:22:50.786066638Z	↳ The sample data does not allow a score to be shown.
+2026-09-14T15:22:50.786074197Z	✘ Test "The sample data set yields a usable score" failed after 0.008 seconds with 1 issue.
+2026-09-14T15:22:50.786081381Z	✘ Suite "Today - loading health data" failed after 0.024 seconds with 1 issue.
+2026-09-14T15:22:50.786086307Z	◇ Suite "suite 2" started.
+2026-09-14T15:22:50.786090767Z	◇ Test "test 8" started.
+2026-09-14T15:22:50.786095899Z	✔ Test "test 8" passed after 0.001 seconds.
+2026-09-14T15:22:50.786101470Z	◇ Test "test 9" started.
+2026-09-14T15:22:50.786108691Z	✔ Test "test 9" passed after 0.001 seconds.
+2026-09-14T15:22:50.786120478Z	◇ Test "test 10" started.
+2026-09-14T15:22:50.786126651Z	✔ Test "test 10" passed after 0.001 seconds.
+2026-09-14T15:22:50.786132667Z	◇ Test "test 11" started.
+...
+2026-09-14T15:22:51.242861178Z	◇ Test example() started.
+2026-09-14T15:22:51.242863818Z	✔ Test example() passed after 0.001 seconds.
+2026-09-14T15:22:51.242866734Z	✔ Suite acmeappTests passed after 0.001 seconds.
+2026-09-14T15:22:51.250926371Z	✘ Test run with 1086 tests in 137 suites failed after 32.541 seconds with 1 issue.
+2026-09-14T15:23:04.286375151Z	2026-09-14 08:23:03.515 xcodebuild[2534:12852] [MT] IDETestOperationsObserverDebug: 79.519 elapsed -- Testing started completed.
+2026-09-14T15:23:04.286560902Z	2026-09-14 08:23:03.515 xcodebuild[2534:12852] [MT] IDETestOperationsObserverDebug: 0.000 sec, +0.000 sec -- start
+2026-09-14T15:23:04.286640894Z	2026-09-14 08:23:03.515 xcodebuild[2534:12852] [MT] IDETestOperationsObserverDebug: 79.519 sec, +79.519 sec -- end
+2026-09-14T15:23:04.286655214Z	
+2026-09-14T15:23:04.286660202Z	Test session results, code coverage, and logs:
+2026-09-14T15:23:04.286665075Z		/Volumes/workspace/resultbundle.xcresult
+2026-09-14T15:23:04.286669295Z	
+2026-09-14T15:23:04.286672998Z	Failing tests:
+2026-09-14T15:23:04.286677222Z		ScoreStoreTests.sampleDataProducesUsableScore()
+2026-09-14T15:23:04.286681548Z	
+2026-09-14T15:23:04.286685343Z	** TEST EXECUTE FAILED **
+2026-09-14T15:23:04.286689405Z	
+2026-09-14T15:23:08.620597894Z	Testing started

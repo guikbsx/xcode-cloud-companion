@@ -3,6 +3,8 @@ import SwiftUI
 /// The Trends section of a workflow sheet: three figures over the newest finished builds, and a bar per build.
 struct WorkflowTrendsSection: View {
     let trends: WorkflowTrends
+    /// Set when the workflow's successful builds got slower from one build on; nil leaves the card out.
+    var slowdown: WorkflowSlowdownModel?
     /// Opens a build's sheet.
     let openBuild: (String) -> Void
 
@@ -41,11 +43,17 @@ struct WorkflowTrendsSection: View {
                         drift: trends.successDrift, lowerIsBetter: false
                     )
                 }
+                if let slowdown {
+                    slowdownHeader(slowdown)
+                }
                 if trends.bars.count > 1 {
-                    chart
+                    chart(slowdown: slowdown)
                     Text("Duration of each build, oldest first. Failed builds are in red. Click a bar to open the build.")
                         .font(.caption)
                         .foregroundStyle(.secondary)
+                }
+                if let slowdown {
+                    slowdownDetails(slowdown)
                 }
             }
         }
@@ -68,9 +76,123 @@ struct WorkflowTrendsSection: View {
         .accessibilityElement(children: .combine)
     }
 
-    private var chart: some View {
+    private func slowdownHeader(_ slowdown: WorkflowSlowdownModel) -> some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Text(WorkflowSlowdownText.title(since: slowdown.since)).fontWeight(.semibold)
+            HStack(alignment: .firstTextBaseline, spacing: 10) {
+                Text(WorkflowSlowdownText.headline(slowdown.slowdown))
+                    .font(.system(.title3, design: .rounded, weight: .bold))
+                CapsuleTag(text: WorkflowSlowdownText.increase(slowdown.slowdown), systemImage: "arrow.up", tint: BuildStatus.errored.tint)
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .accessibilityElement(children: .combine)
+    }
+
+    @ViewBuilder
+    private func slowdownDetails(_ slowdown: WorkflowSlowdownModel) -> some View {
+        let changes = Array(slowdown.slowdown.actions.prefix(Self.actionRows))
+        if !changes.isEmpty {
+            VStack(spacing: 0) {
+                ForEach(Array(changes.enumerated()), id: \.element.id) { offset, change in
+                    let isCause = offset == 0 && WorkflowSlowdownText.delta(change) != nil
+                    HStack(spacing: 10) {
+                        Text(change.name).fontWeight(isCause ? .bold : .regular).lineLimit(1)
+                        Spacer(minLength: 8)
+                        Text(WorkflowSlowdownText.change(change))
+                            .fontWeight(isCause ? .bold : .regular)
+                            .foregroundStyle(isCause ? Color.primary : Color.secondary)
+                            .monospacedDigit()
+                        Group {
+                            if isCause, let delta = WorkflowSlowdownText.delta(change) {
+                                CapsuleTag(text: delta, tint: BuildStatus.errored.tint)
+                            } else {
+                                Color.clear
+                            }
+                        }
+                        .frame(width: 64, alignment: .trailing)
+                    }
+                    .padding(.vertical, 7)
+                    .overlay(alignment: .top) { Divider() }
+                    .accessibilityElement(children: .combine)
+                }
+            }
+        }
+        HStack(spacing: 8) {
+            Button {
+                openBuild(slowdown.run.id)
+            } label: {
+                if let number = slowdown.buildNumber {
+                    Text("Open \(number)", comment: "Button that opens the build a slowdown starts at. The placeholder is its number, such as “#398”.")
+                } else {
+                    Text("Open the build")
+                }
+            }
+            .buttonStyle(.borderedProminent)
+            if let url = slowdown.commitURL {
+                Button("View commit") { NSWorkspace.shared.open(url) }
+                    .buttonStyle(.bordered)
+            }
+        }
+        .controlSize(.small)
+        if let extra = slowdown.extra {
+            Text(WorkflowSlowdownText.extraLine(extra))
+                .font(.caption)
+                .foregroundStyle(.secondary)
+        }
+    }
+
+    /// Rows of the action table: the cause leads, a few more show that the others stayed where they were.
+    private static let actionRows = 4
+
+    /// “#398 · a41c7e2 · “Add snapshot tests””
+    private func markerLabel(_ slowdown: WorkflowSlowdownModel) -> String {
+        var parts = [slowdown.buildNumber, slowdown.shortSHA].compactMap(\.self)
+        if let title = slowdown.commitTitle {
+            parts.append(String(localized: "“\(title)”", comment: "A commit's first line, in quotation marks"))
+        }
+        return UsageFormat.dotted(parts)
+    }
+
+    private func chart(slowdown: WorkflowSlowdownModel?) -> some View {
+        let marker = slowdown.flatMap { slowdown in trends.bars.firstIndex { $0.id == slowdown.run.id } }
+        return bars
+            .padding(.top, marker == nil ? 0 : 22)
+            .overlay {
+                if let slowdown, let marker {
+                    markerOverlay(index: marker, label: markerLabel(slowdown))
+                        .accessibilityHidden(true)
+                }
+            }
+    }
+
+    /// A dashed line between the last bar of the old level and the build that starts the new one, with that build named
+    /// above it on the side that has room.
+    private func markerOverlay(index: Int, label: String) -> some View {
+        GeometryReader { geometry in
+            let step = (geometry.size.width + Self.barSpacing) / CGFloat(trends.bars.count)
+            let x = max(0, CGFloat(index) * step - Self.barSpacing / 2)
+            let onLeft = x > geometry.size.width / 2
+            let room = max(0, (onLeft ? x : geometry.size.width - x) - 8)
+            Path { path in
+                path.move(to: CGPoint(x: x, y: 4))
+                path.addLine(to: CGPoint(x: x, y: geometry.size.height))
+            }
+            .stroke(Color.primary, style: StrokeStyle(lineWidth: 1, dash: [3, 3]))
+            Text(label)
+                .font(.caption.weight(.semibold))
+                .lineLimit(1)
+                .truncationMode(.tail)
+                .frame(width: room, alignment: onLeft ? .trailing : .leading)
+                .offset(x: onLeft ? x - 6 - room : x + 6)
+        }
+    }
+
+    private static let barSpacing: CGFloat = 3
+
+    private var bars: some View {
         let longest = trends.bars.map(\.seconds).max() ?? 1
-        return HStack(alignment: .bottom, spacing: 3) {
+        return HStack(alignment: .bottom, spacing: Self.barSpacing) {
             ForEach(trends.bars) { bar in
                 Button {
                     openBuild(bar.id)

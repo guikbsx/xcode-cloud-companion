@@ -1,0 +1,29 @@
+2026-10-09T14:53:21.558999396Z	          "self" : "https://developer-ci.corp.apple.com:443/services/v1/bundleIds/BUNDLEID01/relationships/profiles",
+2026-10-09T14:53:21.559003986Z	          "related" : "https://developer-ci.corp.apple.com:443/services/v1/bundleIds/BUNDLEID01/profiles"
+2026-10-09T14:53:21.559006560Z	        }
+2026-10-09T14:53:21.559008774Z	      }
+2026-10-09T14:53:21.559010887Z	    },
+2026-10-09T14:53:21.559013062Z	    "links" : {
+2026-10-09T14:53:21.559015723Z	      "self" : "https://developer-ci.corp.apple.com:443/services/v1/bundleIds/BUNDLEID01"
+2026-10-09T14:53:21.559018297Z	    }
+2026-10-09T14:53:21.559022304Z	  } ],
+2026-10-09T14:53:21.559024160Z	  "links" : {
+2026-10-09T14:53:21.559027488Z	    "self" : "https://developer-ci.corp.apple.com:443/services/v1/bundleIds?filter%5BbundleType%5D=bundle&filter%5Biden [line shortened in the fixture]
+2026-10-09T14:53:21.559030482Z	  },
+2026-10-09T14:53:21.559032346Z	  "meta" : {
+2026-10-09T14:53:21.559034298Z	    "paging" : {
+2026-10-09T14:53:21.559037053Z	      "total" : 1,
+2026-10-09T14:53:21.559039227Z	      "limit" : 200
+2026-10-09T14:53:21.559041379Z	    }
+2026-10-09T14:53:21.559043397Z	  }
+2026-10-09T14:53:21.559045419Z	}
+2026-10-09T14:53:21.559047410Z	
+2026-10-09T14:53:21.559049280Z	
+2026-10-09T14:53:21.559051879Z	error: exportArchive Automatic signing cannot register bundle identifier "devplaceholder.ABCDE12345.sample-app".
+2026-10-09T14:53:21.559061488Z	  Automatic signing cannot register bundle identifiers with Apple. Register your bundle identifier on https://developer.apple.com/account and then try again.
+2026-10-09T14:53:21.559064563Z	
+2026-10-09T14:53:21.559066981Z	error: exportArchive No profiles for 'devplaceholder.ABCDE12345.sample-app' were found
+2026-10-09T14:53:21.559074431Z	  Xcode couldn't find any Mac App Store provisioning profiles matching 'devplaceholder.ABCDE12345.sample-app'.
+2026-10-09T14:53:21.559077058Z	
+2026-10-09T14:53:21.559078932Z	** EXPORT FAILED **
+2026-10-09T14:53:21.559080959Z	

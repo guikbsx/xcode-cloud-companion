@@ -30,6 +30,17 @@ extension WidgetSnapshot.BuildState {
         }
     }
 
+    /// The shape in the dot of a build row, as the app draws it (`BuildStatus.systemImage`): the state never rests on colour alone.
+    var dotGlyph: String? {
+        switch self {
+        case .running, .finished: nil
+        case .succeeded: "checkmark"
+        case .failed: "xmark"
+        case .errored: "exclamationmark"
+        case .canceled, .skipped: "minus"
+        }
+    }
+
     var symbol: String {
         switch self {
         case .running: "arrow.triangle.2.circlepath.circle.fill"
@@ -52,9 +63,10 @@ extension WidgetSnapshot.Build {
         return UsageFormat.dotted(parts)
     }
 
-    /// “Failed · CI”: the state in words, then the workflow.
-    var stateLine: String {
-        UsageFormat.dotted([state.label, workflow].compactMap(\.self))
+    /// What VoiceOver reads for the row, since the dot that shows the state is hidden from it.
+    var spokenLine: String {
+        let age = date?.formatted(.relative(presentation: .named, unitsStyle: .wide))
+        return [title, state.label, workflow, age].compactMap(\.self).joined(separator: ", ")
     }
 }
 
@@ -122,12 +134,16 @@ struct BuildAge: View {
 
     var body: some View {
         if let date {
-            // One unit only: “5 min”, “1 hr”, “2 days”.
-            Text(.currentDate, format: .reference(to: date, allowedFields: [.minute, .hour, .day], maxFieldCount: 1))
+            Self.text(for: date)
                 .lineLimit(1)
                 .minimumScaleFactor(0.7)
                 .multilineTextAlignment(.trailing)
         }
+    }
+
+    /// One unit only: “5 min”, “1 hr”, “2 days”.
+    static func text(for date: Date) -> Text {
+        Text(.currentDate, format: .reference(to: date, allowedFields: [.minute, .hour, .day], maxFieldCount: 1))
     }
 }
 
@@ -228,31 +244,55 @@ struct CycleBar: View {
     }
 }
 
-/// A build on one line: its state as a dot, its name, its age.
+/// A build's state: a disc with its shape in white, a hollow ring while it runs.
+struct BuildStateDot: View {
+    static let size: CGFloat = 13
+    let state: WidgetSnapshot.BuildState
+
+    var body: some View {
+        Circle()
+            .fill(state == .running ? Color.clear : state.color)
+            .overlay {
+                if state == .running {
+                    Circle().strokeBorder(state.color, lineWidth: 2)
+                } else if let glyph = state.dotGlyph {
+                    Image(systemName: glyph).font(.system(size: 7.5, weight: .heavy)).foregroundStyle(.white)
+                }
+            }
+            .frame(width: Self.size, height: Self.size)
+            .accessibilityHidden(true)
+    }
+}
+
+/// A build on two lines: its state as a dot and its name on the whole width, then the workflow and the age.
 struct BuildRow: View {
     let build: WidgetSnapshot.Build
-    /// Off in the small widget, where the name needs the whole line: no state line under it, no age beside it.
-    var showsState = true
+    /// Off in the small widget, where the name needs the whole line: no line under it.
+    var showsDetails = true
 
     var body: some View {
         VStack(alignment: .leading, spacing: 1) {
             HStack(spacing: 6) {
-                Circle()
-                    .fill(build.state == .running ? Color.clear : build.state.color)
-                    .overlay { if build.state == .running { Circle().strokeBorder(build.state.color, lineWidth: 2) } }
-                    .frame(width: 9, height: 9)
-                    .accessibilityHidden(true)
-                Text(build.title).font(.caption.weight(.semibold)).lineLimit(1).layoutPriority(1)
-                Spacer(minLength: 4)
-                if showsState {
-                    BuildAge(date: build.date).font(.caption).foregroundStyle(.secondary)
-                }
+                BuildStateDot(state: build.state)
+                Text(build.title).font(.caption.weight(.semibold)).lineLimit(1)
             }
-            if showsState {
-                Text(build.stateLine).font(.caption2).foregroundStyle(.secondary).lineLimit(1).padding(.leading, 15)
+            if showsDetails, build.workflow != nil || build.date != nil {
+                HStack(spacing: 0) {
+                    if let workflow = build.workflow {
+                        Text(workflow).lineLimit(1)
+                        if build.date != nil { Text(verbatim: " • ").layoutPriority(1) }
+                    }
+                    if let date = build.date {
+                        BuildAge(date: date).layoutPriority(1)
+                    }
+                }
+                .font(.caption2)
+                .foregroundStyle(.secondary)
+                .padding(.leading, BuildStateDot.size + 6)
             }
         }
-        .accessibilityElement(children: .combine)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(build.spokenLine)
     }
 }
 
@@ -270,7 +310,7 @@ struct CycleRingSmallView: View {
                 VStack(spacing: 4) {
                     CycleRing(cycle: cycle).frame(maxWidth: .infinity, maxHeight: .infinity)
                     if let latest {
-                        BuildRow(build: latest, showsState: false)
+                        BuildRow(build: latest, showsDetails: false)
                     }
                     Text(cycle.usedLine)
                         .font(.caption2)
@@ -365,4 +405,70 @@ struct CycleAndBuildsView: View {
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
         }
     }
+}
+
+// MARK: - Previews
+
+private extension WidgetSnapshot {
+    /// Long names, every kind of state and ages in minutes, hours and days: what a narrow row has to hold.
+    static var previewLongNames: WidgetSnapshot {
+        let now = Date()
+        let green = Tint(red: 0.20, green: 0.62, blue: 0.40)
+        let blue = Tint(red: 0.29, green: 0.47, blue: 0.90)
+        var snapshot = Feed.sample
+        snapshot.builds = [
+            .init(id: "long-1", appID: "d", app: "Crossfit Hyrox Tracker", number: 12, workflow: "Default", state: .succeeded, date: now.addingTimeInterval(-300), durationSeconds: 540, tint: green),
+            .init(id: "long-2", appID: "e", app: "Cumulus", number: 7, workflow: "Release Candidate Archive", state: .failed, failedTests: 2, date: now.addingTimeInterval(-36_000), durationSeconds: 300, tint: blue),
+            .init(id: "long-3", appID: "d", app: "Crossfit Hyrox Tracker", number: 11, workflow: "Default", state: .errored, date: now.addingTimeInterval(-2 * 86_400), durationSeconds: 420, tint: green),
+        ]
+        return snapshot
+    }
+
+    static var previewMeasuring: WidgetSnapshot {
+        var snapshot = Feed.sample
+        snapshot.cycle?.isMeasuring = true
+        return snapshot
+    }
+
+    static var previewNoPlan: WidgetSnapshot {
+        var snapshot = Feed.sample
+        snapshot.cycle = nil
+        return snapshot
+    }
+}
+
+#Preview("Latest Build", as: .systemSmall) {
+    LatestBuildWidget()
+} timeline: {
+    FeedEntry(date: .now, snapshot: Feed.sample)
+    FeedEntry(date: .now, snapshot: .previewLongNames)
+    FeedEntry(date: .now, snapshot: .empty(at: .now))
+}
+
+#Preview("Cycle", as: .systemSmall) {
+    CycleRingWidget()
+} timeline: {
+    FeedEntry(date: .now, snapshot: Feed.sample)
+    FeedEntry(date: .now, snapshot: .previewMeasuring)
+    FeedEntry(date: .now, snapshot: .previewNoPlan)
+    FeedEntry(date: .now, snapshot: .empty(at: .now))
+}
+
+#Preview("Cycle and Builds", as: .systemMedium) {
+    CycleBarWidget()
+} timeline: {
+    FeedEntry(date: .now, snapshot: Feed.sample)
+    FeedEntry(date: .now, snapshot: .previewLongNames)
+    FeedEntry(date: .now, snapshot: .previewMeasuring)
+    FeedEntry(date: .now, snapshot: .previewNoPlan)
+    FeedEntry(date: .now, snapshot: .empty(at: .now))
+}
+
+#Preview("Cycle Ring and Builds", as: .systemMedium) {
+    CycleRingBuildsWidget()
+} timeline: {
+    FeedEntry(date: .now, snapshot: Feed.sample)
+    FeedEntry(date: .now, snapshot: .previewLongNames)
+    FeedEntry(date: .now, snapshot: .previewMeasuring)
+    FeedEntry(date: .now, snapshot: .empty(at: .now))
 }

@@ -1,0 +1,28 @@
+2026-10-13T20:35:58.281635224Z	    builtin-Swift-Compilation -- /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin [line shortened in the fixture]
+2026-10-13T20:35:58.281706095Z	
+2026-10-13T20:36:12.381328764Z	SwiftCompile normal x86_64 Compiling\ ServiceKitClient.swift,\ ServiceKitCredentials.swift,\ ServiceKitE [line shortened in the fixture]
+2026-10-13T20:36:12.381444086Z	
+2026-10-13T20:36:12.381453056Z	SwiftCompile normal x86_64 (in target 'sample' from project 'sample-app')
+2026-10-13T20:36:12.381460057Z	    cd /Volumes/workspace/repository
+2026-10-13T20:36:12.381471978Z	    
+2026-10-13T20:36:12.381478538Z	
+2026-10-13T20:36:12.381589273Z	SwiftCompile normal arm64 Compiling\ ServiceKitClient.swift,\ ServiceKitCredentials.swift,\ ServiceKitEn [line shortened in the fixture]
+2026-10-13T20:36:12.381656073Z	
+2026-10-13T20:36:12.381663042Z	SwiftCompile normal arm64 (in target 'sample' from project 'sample-app')
+2026-10-13T20:36:12.381669326Z	    cd /Volumes/workspace/repository
+2026-10-13T20:36:12.381684200Z	    
+2026-10-13T20:36:12.381691117Z	
+2026-10-13T20:36:12.381706836Z	SwiftDriverJobDiscovery normal x86_64 Compiling ServiceKitClient.swift, ServiceKitCredentials.swift, AppStore [line shortened in the fixture]
+2026-10-13T20:36:12.381742555Z	
+...
+2026-10-13T20:37:12.154464186Z	2026-10-13 13:37:12.128 xcodebuild[3671:20593]  IDEDistribution: App Store Connect request for store configuration fail [line shortened in the fixture]
+2026-10-13T20:37:12.154485093Z	2026-10-13 13:37:12.143 xcodebuild[3671:20559] [MT] DVTServices: Loading capabilities from Xcode Bundle.
+...
+2026-10-13T20:37:15.650153096Z	2026-10-13 13:37:14.593 xcodebuild[3671:20593]  DVTServices: Failed to create Capabilities directory in user data at "/ [line shortened in the fixture]
+2026-10-13T20:37:15.650242819Z	2026-10-13 13:37:14.593 xcodebuild[3671:20593]  DVTServices: Supported platform information is not available for "com.a [line shortened in the fixture]
+...
+2026-10-13T20:37:08.091700035Z	Result bundle written to path:
+2026-10-13T20:37:08.091705660Z		/Volumes/workspace/resultbundle.xcresult
+2026-10-13T20:37:08.091710358Z	
+2026-10-13T20:37:08.091715512Z	** ARCHIVE SUCCEEDED **
+2026-10-13T20:37:08.091720370Z	

@@ -89,6 +89,8 @@ struct TestsTabView: View {
     let state: ExtrasLoadState
     /// What the model suggested for this build; nil when the feature is not open for it.
     var insight: FailureInsightRecord?
+    /// Where a test's history is read; nil leaves the button out.
+    var history: TestHistoryAccess?
     let retry: () -> Void
 
     enum Arrangement: Hashable {
@@ -107,7 +109,7 @@ struct TestsTabView: View {
 
     var body: some View {
         let model = TestsTabModel(results: results, actions: actions, actionID: actionID, status: status, destination: destination)
-        let suggested = SuggestedTestSections(record: insight, failed: actions.flatMap { results[$0.id] ?? [] }.filter(\.status.isFailure))
+        let suggested = SuggestedTestSections(record: insight, failed: actions.flatMap { results[$0.id] ?? [] }.filter(\.status.isFailure), actions: actions)
         let isSkeleton = SkeletonRules.testsTab(isPending: state.isPending, hasResults: results.values.contains { !$0.isEmpty }, actions: actions)
         VStack(alignment: .leading, spacing: 12) {
             LoadStatusView(state: state, retry: retry)
@@ -152,7 +154,7 @@ struct TestsTabView: View {
             }
             VStack(alignment: .leading, spacing: 0) {
                 ForEach(TestRow.placeholders) { row in
-                    rowLabel(row).padding(.leading, 20).padding(.vertical, 2)
+                    rowLabel(row, showsHistory: false).padding(.leading, 20).padding(.vertical, 2)
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -315,13 +317,16 @@ struct TestsTabView: View {
         }
     }
 
-    private func rowLabel(_ row: TestRow) -> some View {
+    private func rowLabel(_ row: TestRow, showsHistory: Bool = true) -> some View {
         HStack(spacing: 8) {
             StatusBadge(status: row.status.buildStatus, size: 18)
             Text(row.name).font(.callout).lineLimit(1)
             Spacer()
             if let duration = row.duration {
                 Text(duration).font(.system(.caption, design: .monospaced)).foregroundStyle(.secondary)
+            }
+            if showsHistory, let history, let identity = row.identity {
+                TestHistoryButton(identity: identity, access: history)
             }
         }
         .padding(.vertical, 3)

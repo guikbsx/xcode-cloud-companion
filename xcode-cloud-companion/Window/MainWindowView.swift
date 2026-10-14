@@ -8,6 +8,8 @@ struct MainWindowRoot: View {
     let openSettings: () -> Void
     /// Cumulus Pro for this window; nil leaves every function open.
     var pro: ProAccess?
+    /// What Apple says of Xcode Cloud; nil (tests, previews) shows no notice.
+    var appleStatus: AppleStatusStore?
 
     var body: some View {
         Group {
@@ -24,6 +26,7 @@ struct MainWindowRoot: View {
             }
         }
         .environment(pro)
+        .environment(appleStatus)
         .toolbar {
             if accounts.hasSeveral {
                 ToolbarItem(placement: .navigation) {
@@ -122,7 +125,7 @@ struct MainWindowView: View {
                         scope: navigation.referenceScope.map(BuildListScope.reference) ?? BuildListScope(navigation.sidebarSelection),
                         back: navigation.referenceScope == nil ? nil : { navigation.referenceScope = nil },
                         older: session.windowStores.older, icons: icons, palette: palette,
-                        failureCopier: BuildFailureCopier(buildStore: buildStore, extrasStore: extrasStore, logOpener: logOpener)
+                        failureCopier: BuildFailureCopier(buildStore: buildStore, extrasStore: extrasStore, logOpener: logOpener, excerpts: session.windowStores.logExcerpts)
                     )
                 }
             }
@@ -221,7 +224,7 @@ struct MainWindowView: View {
                 run: run, buildStore: buildStore, extrasStore: extrasStore, artifactSaver: artifactSaver, onRebuild: rebuildAction(for: run),
                 teamID: settings.issuerID.isEmpty ? nil : settings.issuerID,
                 icons: icons, palette: palette,
-                openBuild: { navigation.selectedBuildID = $0 }, logOpener: logOpener, ledger: usageStore.ledger, insights: session.failureInsights, tab: $navigation.buildTab
+                openBuild: { navigation.selectedBuildID = $0 }, logOpener: logOpener, ledger: usageStore.ledger, insights: session.failureInsights, logExcerpts: session.windowStores.logExcerpts, testHistory: workflowTests, testFlight: session.testFlight, tab: $navigation.buildTab
             )
             .environment(\.sourceOpening, sourceOpening(for: run))
         } else if navigation.sidebarSelection == .overview {
@@ -252,6 +255,9 @@ struct MainWindowView: View {
                     navigation.selectedBuildID = id
                 },
                 trends: WorkflowTrends(runs: buildStore.snapshot.runs.filter { $0.workflowID == id }),
+                slowdown: access.allows(.workflowTrends)
+                    ? WorkflowSlowdownModel.make(workflowID: id, snapshot: buildStore.snapshot, ledger: usageStore.ledger, summary: usageSummary, now: Date())
+                    : nil,
                 openBuild: { navigation.selectedBuildID = $0 },
                 togglePause: canLaunch ? { withPro(.pauseWorkflow) { askToTogglePause(workflowID: id) } } : nil,
                 xcodeWarning: XcodeVersionCheck.warning(
@@ -261,6 +267,7 @@ struct MainWindowView: View {
                 editWorkflow: canLaunch && workflow.isLockedForEditing != true ? { withPro(.editWorkflow) { editTarget = WorkflowEditTarget(workflow: workflow) } } : nil,
                 workflowURL: AppStoreConnectLinks.workflow(appID: product?.appID, workflowID: id, teamID: settings.issuerID.isEmpty ? nil : settings.issuerID)
             )
+                .environment(\.sourceOpening, workflow.productID.map { sourceOpening(forProduct: $0) })
                 .task(id: id) {
                     await loadWorkflow(id)
                     workflowEndedID = id
@@ -280,6 +287,7 @@ struct MainWindowView: View {
                     hasShippedRun: model.testFlightRun != nil, hasText: testFlightText(for: model.testFlightRun) != nil,
                     loadEnded: model.testFlightRun.map { $0.id == testFlightEndedRunID } ?? false
                 ),
+                testFlightCard: testFlightCard(productID: id),
                 openSettings: openSettings,
                 openWorkflow: { navigation.sidebarSelection = .workflow($0) },
                 openBuild: { navigation.selectedBuildID = $0 },
@@ -302,6 +310,16 @@ struct MainWindowView: View {
             productID: productID, snapshot: buildStore.snapshot, details: workflowStore.workflowsByID, summary: usageSummary,
             openPullRequests: session.windowStores.references.openPullRequests, now: Date()
         )
+    }
+
+    /// What the app's TestFlight card shows: its builds as the store read them, the first read as a skeleton, or why there is nothing to read.
+    private func testFlightCard(productID: String) -> TestFlightCard.Content? {
+        let store = session.testFlight
+        if store.isForbidden { return .forbidden }
+        if let builds = store.reading(for: productID)?.builds, !builds.isEmpty {
+            return .rows(TestFlightCardModel.make(builds: builds, now: Date()))
+        }
+        return SkeletonRules.testFlightBuilds(hasBuilds: false, isReading: store.isReading(productID)) ? .loading : nil
     }
 
     /// The build an app last handed to TestFlight, as its own sheet read it; nil until it is known.
@@ -335,8 +353,12 @@ struct MainWindowView: View {
 
     /// Opens a build's files in Xcode from the app's local clone.
     private func sourceOpening(for run: CIBuildRun) -> SourceOpening {
-        let product = buildStore.snapshot.products.first { $0.id == run.productID }
-        let opener = SourceOpener(repositories: session.localRepositories, product: product?.name ?? run.productID, appName: product?.displayName ?? run.productID)
+        sourceOpening(forProduct: run.productID)
+    }
+
+    private func sourceOpening(forProduct productID: String) -> SourceOpening {
+        let product = buildStore.snapshot.products.first { $0.id == productID }
+        let opener = SourceOpener(repositories: session.localRepositories, product: product?.name ?? productID, appName: product?.displayName ?? productID)
         return SourceOpening { path, line in opener.open(path: path, line: line) }
     }
 

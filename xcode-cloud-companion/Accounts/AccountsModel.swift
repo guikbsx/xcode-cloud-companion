@@ -34,6 +34,8 @@ final class AccountsModel {
     private(set) var removalError: String?
     /// Called after each successful sync of an account, with its snapshot before and after.
     @ObservationIgnored var onSync: ((_ session: AccountSession, _ previous: BuildSnapshot, _ current: BuildSnapshot) -> Void)?
+    /// Called after each read of an app's TestFlight builds, for the banners.
+    @ObservationIgnored var onTestFlightRead: ((_ session: AccountSession, _ app: TestFlightApp, _ builds: [TestFlightBuild]) -> Void)?
     /// Called as soon as another account is on screen: what was selected in the window belonged to the one before.
     @ObservationIgnored var onSelectionChange: (() -> Void)?
 
@@ -243,7 +245,12 @@ final class AccountsModel {
         session.buildStore.onSync = { [weak self, weak session] previous, current in
             guard let self, let session else { return }
             Task { await session.readIconColors(in: current) }
+            Task { await session.testFlight.sync(snapshot: current) }
             onSync?(session, previous, current)
+        }
+        session.testFlight.onRead = { [weak self, weak session] app, builds in
+            guard let self, let session else { return }
+            onTestFlightRead?(session, app, builds)
         }
     }
 
@@ -391,7 +398,7 @@ final class AccountsModel {
         removalError = nil
         guard let session = session(id: id) else { return false }
         guard await session.erase() else {
-            removalError = session.settings.errorMessage
+            removalError = session.settings.errorMessage ?? session.webhook.errorMessage
             return false
         }
         guard let index = sessions.firstIndex(where: { $0.id == id }) else { return true }

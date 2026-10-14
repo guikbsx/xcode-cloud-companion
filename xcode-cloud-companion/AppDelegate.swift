@@ -21,12 +21,32 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     /// Nil under tests: nothing is written for the widgets then.
     private var widgetFeed: WidgetFeedWriter?
     private lazy var proPurchase = ProPurchasePresenter(store: pro)
-    private lazy var notifications = NotificationCoordinator(preferences: notificationPreferences, pro: pro)
+    /// Sends nothing under tests: the sender there never reaches a network.
+    private lazy var webhook = WebhookService(
+        accounts: accounts, sender: Self.isUnderTest ? UnreachableWebhookSender() : URLSessionWebhookSender(), pro: pro
+    )
+    private lazy var notifications = NotificationCoordinator(preferences: notificationPreferences, pro: pro, webhook: webhook)
+    /// Reads nothing under tests; a Debug build can pin its state with `XCC_APPLE_STATUS=incident|resolved`.
+    private lazy var appleStatus: AppleStatusStore = {
+        var pinned: [AppleStatusEvent]?
+        #if DEBUG
+        pinned = AppleStatusStore.pinnedEvents(named: ProcessInfo.processInfo.environment["XCC_APPLE_STATUS"], now: Date())
+        #endif
+        return AppleStatusStore(
+            fetcher: Self.isUnderTest || pinned != nil ? nil : URLSessionAppleStatusFetcher(),
+            notify: { [notifications] in await notifications.deliver($0) },
+            requestAuthorization: { [notifications] in await notifications.requestAuthorization() },
+            erroredBuilds: { [accounts] interval in
+                AppleStatusSchedule.erroredBuilds(in: accounts.activeSessions.map(\.buildStore.snapshot), during: interval)
+            },
+            pinned: pinned
+        )
+    }()
     private lazy var agentLaunches = AgentLaunchService(accounts: accounts, preferences: notificationPreferences, notify: { [notifications] in await notifications.deliver($0) })
     private var notificationResponder: NotificationResponder?
     private lazy var settingsWindowController = SettingsWindowController(
         accounts: accounts, loginItem: loginItemModel, notificationPreferences: notificationPreferences, notifications: notifications,
-        pro: pro, purchase: proPurchase
+        pro: pro, purchase: proPurchase, webhook: webhook
     )
     private let navigation = NavigationModel()
     private lazy var mainWindowController = MainWindowController(
@@ -34,7 +54,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         navigation: navigation,
         activation: ActivationPolicyCoordinator(app: NSApp),
         openSettings: { [weak self] in self?.openSettings() },
-        pro: pro, purchase: proPurchase
+        pro: pro, purchase: proPurchase, appleStatus: appleStatus
     )
     private var statusItemController: StatusItemController?
     private var ipcServer: IPCSocketServer?
@@ -63,7 +83,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         ))
         accounts.pro = pro
         accounts.onPausedSelection = { [weak self] in self?.presentCumulusPro(for: .multipleAccounts) }
-        statusItemController = StatusItemController(accounts: accounts, actions: menuActions())
+        statusItemController = StatusItemController(accounts: accounts, actions: menuActions(), appleStatus: appleStatus)
         accounts.onSelectionChange = { [weak self, navigation] in
             navigation.accountDidChange()
             self?.updateWidgets()
@@ -75,6 +95,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         pro.onRead = { entitlement in ProStatusStore().record(isActive: entitlement.isActive, now: Date()) }
         pro.start()
         startNotifications()
+        startTestFlightBanners()
         let workspaceCenter = NSWorkspace.shared.notificationCenter
         workspaceCenter.addObserver(self, selector: #selector(systemWillSleep), name: NSWorkspace.willSleepNotification, object: nil)
         workspaceCenter.addObserver(self, selector: #selector(systemDidWake), name: NSWorkspace.didWakeNotification, object: nil)
@@ -174,6 +195,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             let postsSample = ProcessInfo.processInfo.environment["XCC_NOTIFY"] != nil && !hasPostedSample
             if postsSample { hasPostedSample = true }
             #endif
+            let appleStatus = appleStatus
+            let accountID = session.id
+            Task { await appleStatus.buildsDidSync(accountID: accountID, previous: previous, current: current) }
             Task {
                 await notifications.buildsDidSync(account: account, previous: previous, current: current, summary: summary, insights: insights)
                 #if DEBUG
@@ -191,6 +215,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var hasPostedSample = false
     #endif
 
+    private func startTestFlightBanners() {
+        accounts.onTestFlightRead = { [weak self] session, app, builds in
+            guard let self else { return }
+            let account = NotificationAccount(id: session.id, name: accounts.hasSeveral ? session.name : nil)
+            let notifications = notifications
+            Task { await notifications.testFlightDidRead(account: account, app: app, builds: builds) }
+        }
+    }
+
     /// Opens what a `cumulus://` address names, in the account it belongs to: a build is looked up in every account.
     private func open(_ url: URL) {
         guard let destination = CumulusURL.destination(of: url) else { return }
@@ -205,7 +238,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                     await accounts.whenReady()
                     accounts.select(accountID)
                 }
-            case .references:
+            case .app(let productID):
+                await accounts.loadCaches()
+                if let owner = accounts.sessions.first(where: { $0.buildStore.snapshot.products.contains { $0.id == productID } }) {
+                    accounts.select(owner.id)
+                }
+            case .references, .builds:
                 break
             }
             navigation.open(url)
@@ -283,6 +321,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             },
             importUsageExport: { [weak self] in self?.importUsageExport() },
             openSettings: { [weak self] in self?.openSettings() },
+            openAppleStatusPage: { NSWorkspace.shared.open(AppleStatusSchedule.statusPage) },
             addAccount: { [weak self] in self?.addAccount() },
             openApp: { [weak self] in self?.openMainWindow() },
             openBuild: { [weak self] in self?.openBuild($0) }

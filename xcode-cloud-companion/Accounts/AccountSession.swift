@@ -14,7 +14,11 @@ final class AccountSession: Identifiable {
     let extrasStore: BuildExtrasStore
     /// The one-line summaries of failed builds, kept per build and language in the account's own folder.
     let failureInsights: FailureInsightStore
+    /// The latest TestFlight builds of the apps that ship there, kept in the account's folder.
+    let testFlight: TestFlightStore
     let paletteStore: AppPaletteStore
+    /// Where this account's alerts are also sent: an address in the keychain, and the events it is sent.
+    let webhook: WebhookSettingsModel
     /// How many icons gave their colour since launch: whoever draws the palette reads it, to draw again when it grows.
     private(set) var iconColorReadings = 0
     /// How many times a colour was chosen or given back since launch, read the same way.
@@ -34,7 +38,8 @@ final class AccountSession: Identifiable {
     init(
         account: Account, paths: AccountPaths, settings: SettingsModel, buildStore: BuildStore, usageStore: UsageStore,
         extrasStore: BuildExtrasStore, iconCache: AppIconCache? = nil, defaults: UserDefaults = .standard,
-        failureInsights: FailureInsightStore? = nil, modelStatus: @escaping () -> FailureInsightFeature.ModelStatus = { .current }
+        failureInsights: FailureInsightStore? = nil, webhookAddresses: any WebhookAddressStore = InMemoryWebhookAddressStore(),
+        modelStatus: @escaping () -> FailureInsightFeature.ModelStatus = { .current }
     ) {
         id = account.id
         name = account.name
@@ -48,9 +53,17 @@ final class AccountSession: Identifiable {
             service: FailureInsightService(generator: UnavailableInsightGenerator())
         )
         self.failureInsights = insights
+        testFlight = TestFlightStore(
+            cache: TestFlightCache(fileURL: paths.testFlight), client: { [buildStore] in await buildStore.detailClient() },
+            budget: { [buildStore] in
+                await buildStore.updateRateLimit()
+                return buildStore.rateLimit
+            }
+        )
         self.defaults = defaults
         self.iconCache = iconCache
         paletteStore = .account(account.id)
+        webhook = WebhookSettingsModel(accountID: account.id, store: webhookAddresses, defaults: defaults)
         localRepositories = LocalRepositories(accountID: account.id, defaults: defaults)
 
         settings.onCredentialsChange = { [buildStore] in
@@ -61,8 +74,10 @@ final class AccountSession: Identifiable {
                 model: modelStatus(), settingOn: FailureInsightFeature.isSettingOn(defaults), proAllows: self?.pro?.allows(.failureInsight) ?? true
             ) == .open
         }
-        settings.onReset = { [paths, usageStore] in
+        testFlight.allowed = { [weak self] in self?.pro?.allows(.testFlightTracking) ?? true }
+        settings.onReset = { [paths, usageStore, testFlight] in
             await insights.reset()
+            await testFlight.reset()
             await BuildExtrasCache(directory: paths.buildDetails).deleteAll()
             await WorkflowDetailsCache(directory: paths.workflowDetails).deleteAll()
             await AppIconCache(directory: paths.appIcons).deleteAll()
@@ -88,7 +103,8 @@ final class AccountSession: Identifiable {
             defaults: defaults,
             failureInsights: FailureInsightStore(
                 buildStore: buildStore, extrasStore: extrasStore, cache: FailureInsightCache(directory: paths.failureInsights), service: FailureInsightService()
-            )
+            ),
+            webhookAddresses: KeychainWebhookAddressStore(account: account.id)
         )
     }
 
@@ -166,6 +182,8 @@ final class AccountSession: Identifiable {
     /// Forgets the account: its key, then everything read or entered with it. If the keychain refuses, nothing else is
     /// touched and the account stays.
     func erase() async -> Bool {
+        // The webhook address first: once the key is gone the account would be forgotten while a secret stayed in the keychain.
+        guard await webhook.remove() else { return false }
         guard await settings.removeKey() else { return false }
         await buildStore.retire()
         usageStore.stop()

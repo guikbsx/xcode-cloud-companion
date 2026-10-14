@@ -8,11 +8,19 @@ nonisolated enum AccountDefaults {
     static let palette = "appPalette.assignments"
     static let usageAlertState = "notifications.usage.alertState"
     static let reportedStuckRunIDs = "notifications.builds.reportedStuckRunIDs"
+    /// The build that starts each workflow's slowdown already reported, by workflow ID.
+    static let reportedSlowdowns = "notifications.builds.reportedSlowdowns"
+    /// What was said of each app's TestFlight builds (a build reaching external testers, a coming expiry), by Xcode Cloud product.
+    static let testFlightAlertState = "notifications.testFlight.alertState"
+    /// The events sent to the account's webhook (the address itself is in the keychain, never here).
+    static let webhookEvents = "webhook.events"
+    /// What the account's webhook was already told of the plan in the cycle: kept apart from the banners, which have their own.
+    static let webhookUsageAlertState = "webhook.usageAlertState"
     /// Security-scoped bookmarks of the apps' local clones, by product name.
     static let localRepositories = "localRepositories"
 
     /// Every name an account has its own value for.
-    static let names = [planHours, resetAnchor, keyAccess, palette, usageAlertState, reportedStuckRunIDs, localRepositories]
+    static let names = [planHours, resetAnchor, keyAccess, palette, usageAlertState, reportedStuckRunIDs, reportedSlowdowns, testFlightAlertState, webhookEvents, webhookUsageAlertState, localRepositories]
 
     static func key(_ name: String, accountID: String) -> String {
         "account.\(accountID).\(name)"

@@ -357,4 +357,138 @@ struct LogOpenerTests {
         #expect(fetcher.addresses.withLock { $0.count } == 2)
         #expect(await transport.requests.count == 3)
     }
+
+    // MARK: - Fetching without opening, and the log excerpt
+
+    private func buildLogArchive() throws -> URL {
+        let log = "2026-10-08T07:58:26.1Z\tCompileSwift\n2026-10-08T07:58:26.2Z\t/Volumes/workspace/repository/App/File.swift:7:3: error: nope\n2026-10-08T07:58:26.3Z\t** ARCHIVE FAILED **\n"
+        return try TestZip.write([.init(name: "Acme Build 3 Logs for Archive/xcodebuild-archive.log", data: Data(log.utf8), deflated: true)])
+    }
+
+    private func store(_ opener: LogOpener, remaining: Int? = nil, allowed: Bool = true) -> LogExcerptStore {
+        LogExcerptStore(logOpener: opener, budget: { remaining.map { RateLimit(limit: 3600, remaining: $0) } }, allowed: { allowed })
+    }
+
+    @Test func fetchBringsTheLogsWithoutOpeningTheFinder() async throws {
+        defer { Task { [cache] in await cache.deleteAll() } }
+        let (opener, transport) = opener(FakeFetcher([.file(try logArchive())]))
+
+        let folder = await opener.fetch(action(), run: run(), knownArtifacts: nil, title: "Logs")
+
+        #expect(folder != nil)
+        #expect(revealed.folders.withLock { $0.isEmpty })
+        #expect(await transport.requests.count == 2)
+        #expect(await opener.fetch(action(), run: run(), knownArtifacts: nil, title: "Logs") == folder)
+        #expect(await transport.requests.count == 2)
+    }
+
+    @Test func fetchDownloadsOnlyTheArchiveItIsToldToChoose() async throws {
+        defer { Task { [cache] in await cache.deleteAll() } }
+        let (opener, transport) = opener(FakeFetcher([.file(try logArchive())]))
+        let known = [
+            CIArtifact(id: "art-build", buildActionID: "action-1", fileType: "LOG_BUNDLE", fileName: "Logs for Tests build-for-testing.zip", fileSize: 10, downloadURL: nil),
+            CIArtifact(id: "art-device", buildActionID: "action-1", fileType: "LOG_BUNDLE", fileName: "Logs for Tests test-without-building on iPhone 16 (default runtime).zip", fileSize: 10, downloadURL: nil),
+        ]
+
+        let folder = await opener.fetch(action(), run: run(), knownArtifacts: known, title: "Logs") { LogArchiveChoice.pick(from: $0, signals: .init(testFailureCount: 1, failedDevices: ["iPhone 16"])) }
+
+        #expect(folder != nil)
+        #expect(await transport.requests.compactMap { $0.url?.path() } == ["/v1/ciArtifacts/art-device"])
+    }
+
+    @Test func theExcerptIsReadFromTheLogOnceDownloadedAndNeverAskedForAgain() async throws {
+        defer { Task { [cache] in await cache.deleteAll() } }
+        let (opener, transport) = opener(FakeFetcher([.file(try buildLogArchive())]))
+        let store = store(opener)
+
+        await store.load(action(), hints: [])
+        #expect(store.outcome(for: "action-1") == .notOnThisMac)
+        #expect(await transport.requests.isEmpty)
+        #expect(!store.isWorking("action-1"))
+
+        await store.fetchAndLoad(action(), run: run(), title: "Acme #3 – Archive", knownArtifacts: nil, signals: .init(errorCount: 1), hints: [])
+
+        guard case .found(let excerpt)? = store.outcome(for: "action-1") else { Issue.record("no excerpt: \(String(describing: store.outcome(for: "action-1")))"); return }
+        #expect(excerpt.fileName == "xcodebuild-archive.log")
+        #expect(excerpt.findings.map(\.lineNumber) == [2])
+        #expect(revealed.folders.withLock { $0.isEmpty })
+        #expect(await transport.requests.count == 2)
+
+        await store.load(action(), hints: [])
+        let prompt = await store.excerptForPrompt(actions: [action()], extras: nil)
+        #expect(prompt?.actionName == "Test - iOS")
+        #expect(prompt?.excerpt == excerpt)
+        #expect(await transport.requests.count == 2)
+    }
+
+    @Test func aLogAlreadyUnpackedIsReadWithoutAnyRequest() async throws {
+        defer { Task { [cache] in await cache.deleteAll() } }
+        _ = try await cache.unpack(try buildLogArchive(), actionID: "action-1", name: "Acme #3 – Archive")
+        let (opener, transport) = opener(FakeFetcher([]))
+        let store = store(opener)
+
+        await store.load(action(), hints: [])
+
+        guard case .found(let excerpt)? = store.outcome(for: "action-1") else { Issue.record("no excerpt"); return }
+        #expect(excerpt.totalLines == 3)
+        #expect(await transport.requests.isEmpty)
+    }
+
+    @Test func withoutProNothingIsReadOrDownloaded() async throws {
+        defer { Task { [cache] in await cache.deleteAll() } }
+        _ = try await cache.unpack(try buildLogArchive(), actionID: "action-1", name: "Acme #3 – Archive")
+        let (opener, transport) = opener(FakeFetcher([.file(try buildLogArchive())]))
+        let store = store(opener, allowed: false)
+
+        await store.load(action(), hints: [])
+        await store.fetchAndLoad(action(), run: run(), title: "Logs", knownArtifacts: nil, signals: .init(), hints: [])
+
+        #expect(store.outcome(for: "action-1") == nil)
+        #expect(await store.excerptForPrompt(actions: [action()], extras: nil) == nil)
+        #expect(await transport.requests.isEmpty)
+    }
+
+    @Test func nothingIsDownloadedWhenTheHoursRequestsAreNearlySpent() async throws {
+        let (opener, transport) = opener(FakeFetcher([.file(try buildLogArchive())]))
+        let store = store(opener, remaining: SyncSchedule.criticalRemaining)
+
+        await store.fetchAndLoad(action(), run: run(), title: "Logs", knownArtifacts: nil, signals: .init(), hints: [])
+
+        guard case .failed(let message)? = store.outcome(for: "action-1") else { Issue.record("not refused"); return }
+        #expect(message.contains("hourly request limit"))
+        #expect(await transport.requests.isEmpty)
+        #expect(!store.isWorking("action-1"))
+    }
+
+    @Test func aFailedDownloadGivesTheButtonBackWithTheReason() async throws {
+        let (opener, _) = opener(FakeFetcher([.status(403), .status(403)]))
+        let store = store(opener)
+
+        await store.fetchAndLoad(action(), run: run(), title: "Logs", knownArtifacts: nil, signals: .init(), hints: [])
+
+        #expect(store.outcome(for: "action-1") == .failed("The link expired or is invalid (HTTP 403)."))
+        #expect(!store.isWorking("action-1"))
+        #expect(SkeletonRules.logExcerpt(hasOutcome: true, isWorking: false, hasAttempted: true) == false)
+    }
+
+    @Test func anActionWithoutALogArchiveSaysSo() async {
+        let (opener, _) = opener(FakeFetcher([]), listBody: Data(#"{"data": [{"type": "ciArtifacts", "id": "a", "attributes": {"fileType": "RESULT_BUNDLE"}}]}"#.utf8))
+        let store = store(opener)
+
+        await store.fetchAndLoad(action(), run: run(), title: "Logs", knownArtifacts: nil, signals: .init(), hints: [])
+
+        #expect(store.outcome(for: "action-1") == .noLog)
+    }
+
+    @Test func aLogWithoutAnErrorLineGivesNothingFound() async throws {
+        defer { Task { [cache] in await cache.deleteAll() } }
+        let archive = try TestZip.write([.init(name: "Acme/xcodebuild-archive.log", data: Data("2026-10-08T07:58:26.1Z\tall good\n".utf8))])
+        let (opener, _) = opener(FakeFetcher([.file(archive)]))
+        let store = store(opener)
+
+        await store.fetchAndLoad(action(), run: run(), title: "Logs", knownArtifacts: nil, signals: .init(), hints: [])
+
+        #expect(store.outcome(for: "action-1") == .nothing)
+        #expect(await store.excerptForPrompt(actions: [action()], extras: nil) == nil)
+    }
 }

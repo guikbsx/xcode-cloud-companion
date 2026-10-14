@@ -14,6 +14,9 @@ final class NotificationPreferences {
             defaults.set(builds.stuckFactor, forKey: Keys.stuckFactor)
             defaults.set(builds.mutedProductIDs.sorted(), forKey: Keys.mutedProductIDs)
             defaults.set(builds.agentLaunches, forKey: Keys.agentLaunches)
+            defaults.set(builds.slowdown, forKey: Keys.slowdown)
+            defaults.set(builds.testFlightAvailable, forKey: Keys.testFlightAvailable)
+            defaults.set(builds.testFlightExpiry, forKey: Keys.testFlightExpiry)
         }
     }
 
@@ -39,6 +42,9 @@ final class NotificationPreferences {
         builds.stuckFactor = BuildNotificationRules.stuckFactors.contains(factor) ? factor : BuildNotificationRules.defaultStuckFactor
         builds.mutedProductIDs = Set(defaults.stringArray(forKey: Keys.mutedProductIDs) ?? [])
         builds.agentLaunches = defaults.object(forKey: Keys.agentLaunches) as? Bool ?? builds.agentLaunches
+        builds.slowdown = defaults.object(forKey: Keys.slowdown) as? Bool ?? builds.slowdown
+        builds.testFlightAvailable = defaults.object(forKey: Keys.testFlightAvailable) as? Bool ?? builds.testFlightAvailable
+        builds.testFlightExpiry = defaults.object(forKey: Keys.testFlightExpiry) as? Bool ?? builds.testFlightExpiry
         self.builds = builds
         var usage = UsageAlertRules()
         usage.threshold75 = defaults.object(forKey: Keys.threshold75) as? Bool ?? usage.threshold75
@@ -67,6 +73,9 @@ final class NotificationPreferences {
         static let stuckFactor = "notifications.builds.stuckFactor"
         static let mutedProductIDs = "notifications.builds.mutedProductIDs"
         static let agentLaunches = "notifications.builds.agentLaunches"
+        static let slowdown = "notifications.builds.slowdown"
+        static let testFlightAvailable = "notifications.testFlight.available"
+        static let testFlightExpiry = "notifications.testFlight.expiry"
         static let threshold75 = "notifications.usage.threshold75"
         static let threshold90 = "notifications.usage.threshold90"
         static let pace = "notifications.usage.pace"

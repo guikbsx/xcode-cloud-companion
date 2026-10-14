@@ -8,6 +8,7 @@ struct SettingsRootView: View {
     let loginItem: LoginItemModel
     let notificationPreferences: NotificationPreferences
     let notifications: NotificationCoordinator
+    let webhook: WebhookService
     let agents: AgentsSettingsModel
     let pro: ProStore
     /// Opens the purchase sheet over this window.
@@ -80,7 +81,7 @@ struct SettingsRootView: View {
             GeneralSettingsView(loginItem: loginItem, accounts: accounts)
                 .navigationTitle(Text("General"))
         case .notifications:
-            NotificationsSettingsView(preferences: notificationPreferences, coordinator: notifications, accounts: accounts, pro: pro)
+            NotificationsSettingsView(preferences: notificationPreferences, coordinator: notifications, webhook: webhook, accounts: accounts, pro: pro)
                 .navigationTitle(Text("Notifications"))
         case .agents:
             AgentsSettingsView(model: agents, pro: pro, openPurchase: openPurchase)

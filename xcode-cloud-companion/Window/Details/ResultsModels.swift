@@ -48,6 +48,8 @@ nonisolated struct TestRow: Identifiable, Equatable, Sendable {
     let path: String?
     let line: Int?
     let devices: [CITestDeviceResult]
+    /// Which test this is across builds; nil where the row does not know its action.
+    var identity: TestHistory.Identity?
 
     /// The rows of the Tests tab's skeleton: names of a typical length, none of them detailed.
     static let placeholders: [TestRow] = [
@@ -86,6 +88,7 @@ nonisolated struct TestsTabModel: Equatable, Sendable {
         status: TestStatusFilter = .all, destination: String? = nil
     ) {
         let testActions = actions.filter { results[$0.id] != nil }
+        let actionNames = Dictionary(actions.map { ($0.id, $0.name ?? "") }, uniquingKeysWith: { first, _ in first })
         actionChoices = testActions.map { ActionChoice(id: $0.id, name: $0.name ?? "?") }
 
         let scoped = testActions.filter { actionID == nil || $0.id == actionID }.flatMap { results[$0.id] ?? [] }
@@ -105,7 +108,7 @@ nonisolated struct TestsTabModel: Equatable, Sendable {
                     className: className,
                     rows: results
                         .sorted { ($0.name ?? "") < ($1.name ?? "") }
-                        .map { Self.row($0, destination: destination) }
+                        .map { Self.row($0, destination: destination, actionName: actionNames[$0.buildActionID]) }
                 )
             }
             .sorted { lhs, rhs in
@@ -115,13 +118,14 @@ nonisolated struct TestsTabModel: Equatable, Sendable {
             }
     }
 
-    static func row(_ result: CITestResult, destination: String?) -> TestRow {
+    static func row(_ result: CITestResult, destination: String?, actionName: String? = nil) -> TestRow {
         let devices = destination.map { name in result.devices.filter { $0.deviceName == name } } ?? result.devices
         return TestRow(
             id: result.id, name: result.name ?? "?", status: result.status,
             duration: result.duration.map { Duration.seconds($0).formatted(.units(allowed: [.minutes, .seconds, .milliseconds], width: .abbreviated, maximumUnitCount: 2)) },
             message: result.message?.nilIfBlank,
-            location: result.file.flatMap(Self.location(of:)), path: result.file?.path, line: result.file?.lineNumber, devices: devices
+            location: result.file.flatMap(Self.location(of:)), path: result.file?.path, line: result.file?.lineNumber, devices: devices,
+            identity: actionName.map { TestHistory.Identity(result, actionName: $0) }
         )
     }
 

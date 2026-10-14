@@ -5,18 +5,24 @@ import Observation
 final class StatusItemController: NSObject, NSMenuDelegate {
     let statusItem: NSStatusItem
     private let accounts: AccountsModel
+    private let appleStatus: AppleStatusStore?
     private var actions: StatusMenuActions
     private let now: () -> Date
     private let defaults: UserDefaults
     private var clock: Task<Void, Never>?
+    /// Wakes the bar when the time left next changes; exists only while a build runs.
+    private var timeLeftTask: Task<Void, Never>?
+    private var settingsWatch: Task<Void, Never>?
 
     init(
         accounts: AccountsModel,
         actions: StatusMenuActions,
+        appleStatus: AppleStatusStore? = nil,
         defaults: UserDefaults = .standard,
         now: @escaping () -> Date = { Date() }
     ) {
         self.accounts = accounts
+        self.appleStatus = appleStatus
         self.actions = actions
         self.now = now
         self.defaults = defaults
@@ -32,15 +38,20 @@ final class StatusItemController: NSObject, NSMenuDelegate {
         statusItem.menu = menu
         followUsage()
         startClock()
+        followSettings()
     }
 
     isolated deinit {
         clock?.cancel()
+        timeLeftTask?.cancel()
+        settingsWatch?.cancel()
         NSStatusBar.system.removeStatusItem(statusItem)
     }
 
     var state: StatusMenuState {
-        Self.state(of: accounts, palette: accounts.selected?.paletteStore.load(from: defaults) ?? AppPalette(), now: now())
+        var current = Self.state(of: accounts, palette: accounts.selected?.paletteStore.load(from: defaults) ?? AppPalette(), now: now())
+        current.hasAppleIncident = appleStatus?.ongoingIncident(at: current.now) != nil
+        return current
     }
 
     /// What the menu shows: the selected account's builds and usage, and every account's name when there are several.
@@ -131,14 +142,54 @@ final class StatusItemController: NSObject, NSMenuDelegate {
         }
     }
 
+    /// The setting that shows the time left lives in the app's preferences: the bar follows it without a restart.
+    private func followSettings() {
+        settingsWatch = Task { [weak self] in
+            for await _ in NotificationCenter.default.notifications(named: UserDefaults.didChangeNotification) {
+                self?.refreshButton()
+            }
+        }
+    }
+
     private func refreshButton() {
         guard let button = statusItem.button else { return }
         let current = state
-        button.title = StatusMenuBuilder.buttonTitle(for: current.summary, isFirstSync: current.isFirstSync)
+        let timeLeft = timeLeft(at: current.now)
+        button.title = StatusMenuBuilder.buttonTitle(
+            for: current.summary, isFirstSync: current.isFirstSync,
+            timeLeft: timeLeft.flatMap { BuildETAFormat.barText(runningCount: $0.runningCount, display: $0.display) }
+        )
         let badge = currentBadge()
         let measuring = current.isFirstSync || current.measurement?.isMeasuring == true
         button.image = MenuBarIcon.image(badge: badge, measuring: measuring)
-        button.setAccessibilityLabel(MenuBarBadge.accessibilityLabel(for: badge))
+        let label = MenuBarBadge.accessibilityLabel(for: badge)
+        button.setAccessibilityLabel(timeLeft?.display.map { [label, BuildETAFormat.spoken($0)].formatted(.list(type: .and, width: .narrow)) } ?? label)
+        scheduleTimeLeftRefresh(timeLeft)
+    }
+
+    /// The builds running on every active account and when the nearest ends; nil when the setting is off.
+    private func timeLeft(at date: Date) -> RunningBuildsETA? {
+        guard BuildETAFeature.isOn(defaults) else { return nil }
+        #if DEBUG
+        // Shows the text without a running build: XCC_ETA=<minutes> (with XCC_BADGE=running for the dot).
+        if let minutes = ProcessInfo.processInfo.environment["XCC_ETA"].flatMap(Double.init), minutes > 0 {
+            return RunningBuildsETA(runningCount: 1, remaining: minutes * 60)
+        }
+        #endif
+        return RunningBuildsETA(snapshots: accounts.activeSessions.map(\.buildStore.snapshot), now: date)
+    }
+
+    /// The text changes once a minute at most: a task sleeps until it does, and only while a build runs.
+    private func scheduleTimeLeftRefresh(_ timeLeft: RunningBuildsETA?) {
+        timeLeftTask?.cancel()
+        timeLeftTask = nil
+        guard let timeLeft, timeLeft.runningCount > 0 else { return }
+        let delay = min(60, max(1, timeLeft.nextChange.map { $0.timeIntervalSince(now()) } ?? 60))
+        timeLeftTask = Task { [weak self] in
+            try? await Task.sleep(for: .seconds(delay))
+            guard !Task.isCancelled else { return }
+            self?.refreshButton()
+        }
     }
 
     private func currentBadge() -> MenuBarBadge? {

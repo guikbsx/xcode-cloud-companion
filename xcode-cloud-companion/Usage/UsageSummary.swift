@@ -278,8 +278,16 @@ nonisolated enum UsageCalculator {
     /// What one finished build cost, the way the cycle counts it: Apple's billed minutes when an export lists the build,
     /// otherwise the estimate. Nil while the build runs or while its test results are still on their way.
     static func cost(of run: CIBuildRun, in snapshot: BuildSnapshot, ledger: UsageLedger, now: Date) -> BuildCost? {
-        guard let number = run.number else { return nil }
         let productNames = Dictionary(snapshot.products.map { ($0.id, $0.name) }, uniquingKeysWith: { first, _ in first })
+        let ratios = WorkflowRatios(snapshot: snapshot, ledger: ledger, productNames: productNames, now: now)
+        return cost(of: run, in: snapshot, ledger: ledger, ratios: ratios, productNames: productNames, now: now)
+    }
+
+    /// The same, for many builds of one snapshot: the ratios are learned once by the caller.
+    static func cost(
+        of run: CIBuildRun, in snapshot: BuildSnapshot, ledger: UsageLedger, ratios: WorkflowRatios, productNames: [String: String], now: Date
+    ) -> BuildCost? {
+        guard let number = run.number else { return nil }
         let product = productNames[run.productID] ?? run.productID
         if let billed = ledger.billedBuild(product: product, buildNumber: number) {
             return BuildCost(product: product, buildNumber: number, workflow: run.workflowName, minutes: Double(billed.minutes), isEstimated: false)
@@ -287,7 +295,6 @@ nonisolated enum UsageCalculator {
         guard run.executionProgress == .complete,
               !(snapshot.actionsByRunID[run.id] ?? []).contains(where: snapshot.needsTestResults)
         else { return nil }
-        let ratios = WorkflowRatios(snapshot: snapshot, ledger: ledger, productNames: productNames, now: now)
         return BuildCost(
             product: product, buildNumber: number, workflow: run.workflowName,
             minutes: actionMinutes(of: run, in: snapshot, now: now) * ratios.ratio(product: product, workflow: run.workflowName), isEstimated: true

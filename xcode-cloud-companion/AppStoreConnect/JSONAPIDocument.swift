@@ -86,6 +86,13 @@ nonisolated struct JSONAPIIncludedResource: Decodable, Sendable {
         let isClosed: Bool?
         // builds
         let iconAssetToken: CIIconAssetToken?
+        // buildBetaDetails, betaAppReviewSubmissions, betaGroups, preReleaseVersions
+        let internalBuildState: String?
+        let externalBuildState: String?
+        let betaReviewState: String?
+        let submittedDate: Date?
+        let isInternalGroup: Bool?
+        let platform: String?
     }
 }
 

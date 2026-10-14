@@ -86,9 +86,18 @@ nonisolated enum ProFeature: String, CaseIterable, Sendable {
     /// The alerts at 75 % of the plan and on the pace. The alert at 90 % is free.
     case earlyUsageAlerts
     case stuckBuildAlert
+    /// The banner that says a workflow got slower. The card in the trends is `workflowTrends`.
+    case slowdownAlert
+    /// The alerts of the plan, of a stuck build and of a build's end, sent to a Slack, Discord or generic webhook.
+    case webhookAlerts
+    /// The TestFlight card of an app, the commit-to-testers timeline of a build, and the banners for a build that becomes
+    /// available to external testers or is about to expire. The card of a build's TestFlight builds stays free.
+    case testFlightTracking
     case regressions
     /// The summary line and the suggested groups, written on this Mac by Apple Intelligence.
     case failureInsight
+    /// The lines of the log around the error, in the card of a failed build.
+    case logExcerpt
     case testHealth
     case workflowTrends
     case workflowCostBreakdown

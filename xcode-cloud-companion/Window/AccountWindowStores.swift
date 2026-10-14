@@ -8,6 +8,7 @@ final class AccountWindowStores {
     let launcher: BuildLauncher
     let icons: AppIconStore
     let logOpener: LogOpener
+    let logExcerpts: LogExcerptStore
     let workflowTests: WorkflowTestsModel
     let pauser: WorkflowPauser
     let references: ReferencesStore
@@ -29,7 +30,9 @@ final class AccountWindowStores {
         artifactSaver = ArtifactSaver(client: client)
         launcher = BuildLauncher(client: client)
         icons = AppIconStore(cache: AppIconCache(directory: paths.appIcons))
-        logOpener = LogOpener(client: client, cache: LogCache(directory: paths.logs))
+        let logOpener = LogOpener(client: client, cache: LogCache(directory: paths.logs))
+        self.logOpener = logOpener
+        logExcerpts = LogExcerptStore(logOpener: logOpener, budget: budget, allowed: { allows(.logExcerpt) })
         workflowTests = WorkflowTestsModel(
             reader: TestHealthReader(cache: BuildExtrasCache(directory: paths.buildDetails)),
             snapshot: { [buildStore] in buildStore.snapshot },

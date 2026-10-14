@@ -1,12 +1,89 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "“%@”" : {
+      "comment" : "A commit's first line, in quotation marks",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "« %@ »"
+          }
+        }
+      }
+    },
+    "(optional)" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "(facultatif)"
+          }
+        }
+      }
+    },
+    "[DD Month YYYY]" : {
+      "comment" : "Placeholder of a date in the diagram of App Store Connect's usage page",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "[JJ mois AAAA]"
+          }
+        }
+      }
+    },
     "%@" : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "%@"
+          }
+        }
+      }
+    },
+    "%@ · %@" : {
+      "comment" : "Joins two parts of a line, such as a build's state and its duration. Keep the middle dot.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ · %2$@"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ · %2$@"
+          }
+        }
+      }
+    },
+    "%@ · %@ slowed down by %@" : {
+      "comment" : "Notification title: app name, workflow name, then how much longer its builds take.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ · %2$@ slowed down by %3$@"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ · %2$@ a ralenti de %3$@"
+          }
+        }
+      }
+    },
+    "%@ (latest)" : {
+      "comment" : "The newest public Xcode in the version menu",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ (dernière)"
           }
         }
       }
@@ -79,13 +156,36 @@
         }
       }
     },
-    "%@ (latest)" : {
-      "comment" : "The newest public Xcode in the version menu",
+    "%@ %@ is available to external testers" : {
+      "comment" : "Banner title: the first placeholder is an app's name, the second a version and build number such as “1.4 (412)”",
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ %2$@ is available to external testers"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%@ (dernière)"
+            "value" : "%1$@ %2$@ est disponible pour les testeurs externes"
+          }
+        }
+      }
+    },
+    "%@ → %@" : {
+      "comment" : "The median time of an action before, then after a workflow got slower. Keep the arrow.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ → %2$@"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ → %2$@"
           }
         }
       }
@@ -135,6 +235,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%1$@ tourne depuis %2$@, contre %3$@ d’habitude."
+          }
+        }
+      }
+    },
+    "%@ in %@" : {
+      "comment" : "VoiceOver: summary of a test's history, such as “4 failures and 2 flaky passes in 30 builds”",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ in %2$@"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ sur %2$@"
           }
         }
       }
@@ -220,6 +337,23 @@
                 }
               }
             }
+          }
+        }
+      }
+    },
+    "%@ median, against %@ before" : {
+      "comment" : "The median duration of a workflow since it got slower, then before. Both placeholders are durations such as “18 min”.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ median, against %2$@ before"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ en médiane, contre %2$@ avant"
           }
         }
       }
@@ -315,6 +449,23 @@
         }
       }
     },
+    "%@ on %@" : {
+      "comment" : "A test's mean time on one device, such as “1.8 s on iPhone 17”",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ on %2$@"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ sur %2$@"
+          }
+        }
+      }
+    },
     "%@ on %@: %@ is available." : {
       "comment" : "An app's workflow builds with an older Xcode: its version, the workflow's name, then the newest version",
       "localizations" : {
@@ -395,6 +546,17 @@
         }
       }
     },
+    "%@ running" : {
+      "comment" : "The action a build is on, such as “Test – iOS running”",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ en cours"
+          }
+        }
+      }
+    },
     "%@ this cycle" : {
       "comment" : "VoiceOver, a workflow's row: its minutes in the cycle",
       "localizations" : {
@@ -417,23 +579,6 @@
         }
       }
     },
-    "%@ · %@" : {
-      "comment" : "Joins two parts of a line, such as a build's state and its duration. Keep the middle dot.",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "%1$@ · %2$@"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%1$@ · %2$@"
-          }
-        }
-      }
-    },
     "%@, %@, %@" : {
       "localizations" : {
         "en" : {
@@ -446,6 +591,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%1$@, %2$@, %3$@"
+          }
+        }
+      }
+    },
+    "%@, build %lld" : {
+      "comment" : "VoiceOver: one square of a test's history, its state then the build number",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@, build %2$lld"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@, build %2$lld"
           }
         }
       }
@@ -463,6 +625,47 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%1$@ : %2$@"
+          }
+        }
+      }
+    },
+    "%@: the latest TestFlight build expires in %lld days" : {
+      "comment" : "Banner title: the first placeholder is an app's name, the second a number of days",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%1$@: the latest TestFlight build expires in %2$lld day"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%1$@: the latest TestFlight build expires in %2$lld days"
+                }
+              }
+            }
+          }
+        },
+        "fr" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%1$@ : le dernier build TestFlight expire dans %2$lld jour"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%1$@ : le dernier build TestFlight expire dans %2$lld jours"
+                }
+              }
+            }
           }
         }
       }
@@ -490,47 +693,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%1$lld / %2$lld"
-          }
-        }
-      }
-    },
-    "%lld Xcode Cloud apps found" : {
-      "comment" : "Number of Xcode Cloud apps the key gives access to",
-      "localizations" : {
-        "en" : {
-          "variations" : {
-            "plural" : {
-              "one" : {
-                "stringUnit" : {
-                  "state" : "translated",
-                  "value" : "%lld Xcode Cloud app found"
-                }
-              },
-              "other" : {
-                "stringUnit" : {
-                  "state" : "translated",
-                  "value" : "%lld Xcode Cloud apps found"
-                }
-              }
-            }
-          }
-        },
-        "fr" : {
-          "variations" : {
-            "plural" : {
-              "one" : {
-                "stringUnit" : {
-                  "state" : "translated",
-                  "value" : "%lld app Xcode Cloud trouvée"
-                }
-              },
-              "other" : {
-                "stringUnit" : {
-                  "state" : "translated",
-                  "value" : "%lld apps Xcode Cloud trouvées"
-                }
-              }
-            }
           }
         }
       }
@@ -707,11 +869,83 @@
       }
     },
     "%lld failures" : {
+      "comment" : "Number of builds where a test failed",
       "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld failure"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld failures"
+                }
+              }
+            }
+          }
+        },
         "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%lld échecs"
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld échec"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld échecs"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld flaky passes" : {
+      "comment" : "Number of builds where a test passed on some devices and failed on others",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld flaky pass"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld flaky passes"
+                }
+              }
+            }
+          }
+        },
+        "fr" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld passage instable"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld passages instables"
+                }
+              }
+            }
           }
         }
       }
@@ -940,6 +1174,47 @@
         }
       }
     },
+    "%lld Xcode Cloud apps found" : {
+      "comment" : "Number of Xcode Cloud apps the key gives access to",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld Xcode Cloud app found"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld Xcode Cloud apps found"
+                }
+              }
+            }
+          }
+        },
+        "fr" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld app Xcode Cloud trouvée"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld apps Xcode Cloud trouvées"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "%lld× the usual duration" : {
       "localizations" : {
         "fr" : {
@@ -950,12 +1225,130 @@
         }
       }
     },
-    "(optional)" : {
+    "< 1 min" : {
+      "comment" : "Estimated time left of a running build, when under a minute. Very short: it goes in the menu bar.",
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "(facultatif)"
+            "value" : "< 1 min"
+          }
+        }
+      }
+    },
+    "~%@ estimated" : {
+      "comment" : "What one scheduled build is expected to cost, from past builds",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "~%@ estimées"
+          }
+        }
+      }
+    },
+    "~%@ more per build, ~%@ over this cycle. Estimate." : {
+      "comment" : "What a slowdown adds to the compute hours. Both placeholders are durations. Keep the tildes: the figure is an estimate.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "~%1$@ more per build, ~%2$@ over this cycle. Estimate."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "~%1$@ de plus par build, soit ~%2$@ sur ce cycle. Estimation."
+          }
+        }
+      }
+    },
+    "~%@ over %@. Builds estimated from their actions, not yet in a usage export: %lld. The split below follows the same model." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "~%1$@ over %2$@. Builds estimated from their actions, not yet in a usage export: %3$lld. The split below follows the same model."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "~%1$@ sur %2$@. Builds estimés d’après leurs actions, pas encore dans un export d’utilisation : %3$lld. La répartition ci-dessous suit le même modèle."
+          }
+        }
+      }
+    },
+    "~%@ to come" : {
+      "comment" : "Total row of an app's workflows: estimated minutes of its scheduled builds until the cycle resets",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "~%@ à venir"
+          }
+        }
+      }
+    },
+    "≈ %@ by the end of the cycle" : {
+      "comment" : "What an app will have used when the cycle resets, at its current pace",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "≈ %@ au terme du cycle"
+          }
+        }
+      }
+    },
+    "a build" : {
+      "comment" : "A build whose number is unknown, in “Since a build, October 7”",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "un build"
+          }
+        }
+      }
+    },
+    "A build failed" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Un build a échoué"
+          }
+        }
+      }
+    },
+    "A build is available to external testers" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Un build est disponible pour les testeurs externes"
+          }
+        }
+      }
+    },
+    "A build seems stuck" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Un build semble bloqué"
+          }
+        }
+      }
+    },
+    "A build succeeded" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Un build a réussi"
           }
         }
       }
@@ -1020,6 +1413,16 @@
         }
       }
     },
+    "A Slack, Discord or any other address that takes a JSON message. Kept in the Keychain." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Une adresse Slack, Discord ou toute autre qui reçoit un message JSON. Gardée dans le trousseau."
+          }
+        }
+      }
+    },
     "A warning at 75 % of the plan, and when the pace will not last until the reset." : {
       "localizations" : {
         "fr" : {
@@ -1030,12 +1433,32 @@
         }
       }
     },
+    "A warning when a workflow starts taking noticeably longer, with the build it started at." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Un avertissement quand un workflow met nettement plus de temps, avec le build où cela a commencé."
+          }
+        }
+      }
+    },
     "A warning when an action runs far longer than it usually does." : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Une alerte quand une action dure bien plus longtemps que d’habitude."
+          }
+        }
+      }
+    },
+    "A workflow’s successful builds got slower" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Les builds réussis d’un workflow ont ralenti"
           }
         }
       }
@@ -1073,6 +1496,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Accès"
+          }
+        }
+      }
+    },
+    "According to Apple’s system status page." : {
+      "comment" : "Says where the notice about an incident comes from",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "D’après la page d’état des services d’Apple."
           }
         }
       }
@@ -1159,6 +1593,17 @@
         }
       }
     },
+    "After %@, external testers will have no build to install." : {
+      "comment" : "Banner body: the placeholder is a date such as “19 Oct”",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Après le %@, les testeurs externes n’auront plus de build à installer."
+          }
+        }
+      }
+    },
     "Agent" : {
       "localizations" : {
         "fr" : {
@@ -1212,6 +1657,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Les agents peuvent lancer trois builds par heure et par compte ; chacun consomme des heures de calcul."
+          }
+        }
+      }
+    },
+    "Alerts to a Webhook" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alertes vers un webhook"
           }
         }
       }
@@ -1480,12 +1935,12 @@
         }
       }
     },
-    "Apple Intelligence is turned off in System Settings." : {
+    "Apple accepted the launch; the build is not in the list yet." : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Apple Intelligence est désactivé dans Réglages Système."
+            "value" : "Apple a accepté le lancement ; le build n’est pas encore dans la liste."
           }
         }
       }
@@ -1496,16 +1951,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Apple a accepté le lancement. Le build n’est pas encore dans la liste : il apparaîtra à la prochaine synchronisation. Ne le relancez pas."
-          }
-        }
-      }
-    },
-    "Apple accepted the launch; the build is not in the list yet." : {
-      "localizations" : {
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Apple a accepté le lancement ; le build n’est pas encore dans la liste."
           }
         }
       }
@@ -1610,6 +2055,16 @@
         }
       }
     },
+    "Apple Intelligence is turned off in System Settings." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apple Intelligence est désactivé dans Réglages Système."
+          }
+        }
+      }
+    },
     "Apple is limiting this key’s requests. Cumulus tries again on its own." : {
       "comment" : "Tooltip of the refresh button, disabled after a 429.",
       "localizations" : {
@@ -1627,6 +2082,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Apple ne publie aucun chiffre de consommation par son API : la jauge a besoin de votre forfait et du jour de sa réinitialisation."
+          }
+        }
+      }
+    },
+    "Apple reported an incident on Xcode Cloud, from %@ to %@" : {
+      "comment" : "Title of the notice on a build that stopped during an incident Apple has since closed. Two times.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Apple reported an incident on Xcode Cloud, from %1$@ to %2$@"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apple a signalé un incident sur Xcode Cloud, de %1$@ à %2$@"
+          }
+        }
+      }
+    },
+    "Apple reports an incident on Xcode Cloud since %@" : {
+      "comment" : "Title of the notice on a build that stopped during an incident Apple has not closed. One time.",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apple signale un incident sur Xcode Cloud depuis %@"
           }
         }
       }
@@ -1661,6 +2144,16 @@
         }
       }
     },
+    "Apple’s hourly request limit is nearly spent: the log waits for the next hour." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La limite horaire de requêtes d’Apple est presque atteinte : le journal attend l’heure suivante."
+          }
+        }
+      }
+    },
     "Apple’s hourly request limit is reached. Nothing was changed; try again later." : {
       "localizations" : {
         "fr" : {
@@ -1691,6 +2184,16 @@
         }
       }
     },
+    "Apps · this cycle" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apps · ce cycle"
+          }
+        }
+      }
+    },
     "Apps of “%@”" : {
       "comment" : "Section title: the apps of one App Store Connect account",
       "localizations" : {
@@ -1702,22 +2205,23 @@
         }
       }
     },
-    "Apps · this cycle" : {
-      "localizations" : {
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Apps · ce cycle"
-          }
-        }
-      }
-    },
     "Archive" : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Archive"
+          }
+        }
+      }
+    },
+    "Archive succeeded" : {
+      "comment" : "First step of the TestFlight timeline",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Archive réussie"
           }
         }
       }
@@ -1763,12 +2267,39 @@
         }
       }
     },
+    "At %@ and %@, and when the pace will not last." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "At %1$@ and %2$@, and when the pace will not last."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "À %1$@ et à %2$@, et quand le rythme ne tiendra pas."
+          }
+        }
+      }
+    },
     "At the top of the page, note the plan's **number of hours** and the **reset date**." : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "En haut de la page, relevez le **nombre d’heures** du forfait et la **date de réinitialisation**."
+          }
+        }
+      }
+    },
+    "Attached to the “For AI” text" : {
+      "comment" : "Chip on the log excerpt: the text for an AI assistant carries it",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Joint au texte « Pour une IA »"
           }
         }
       }
@@ -1795,12 +2326,33 @@
       }
     },
     "Available" : {
-      "comment" : "Column of the usage gauge: minutes left in the cycle.",
+      "comment" : "State of a TestFlight build that testers can install",
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Disponible"
+          }
+        }
+      }
+    },
+    "Available to testers" : {
+      "comment" : "Last step of the TestFlight timeline",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Disponible pour les testeurs"
+          }
+        }
+      }
+    },
+    "Average time" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Durée moyenne"
           }
         }
       }
@@ -1821,6 +2373,45 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Revenir à l’icône"
+          }
+        }
+      }
+    },
+    "Based on %lld builds analyzed of %lld." : {
+      "comment" : "Foot of a test's history: how many builds it read among the finished builds of the workflow",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Based on %1$lld builds analyzed of %2$lld."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "D’après %1$lld builds analysés sur %2$lld."
+          }
+        }
+      }
+    },
+    "Began at %@" : {
+      "comment" : "The first failure of the failing streak a test is in: its build, its day, its commit",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Depuis %@"
+          }
+        }
+      }
+    },
+    "Beta review sent" : {
+      "comment" : "Step of the TestFlight timeline",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Revue bêta envoyée"
           }
         }
       }
@@ -1912,6 +2503,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Branche, tag ou pull request"
+          }
+        }
+      }
+    },
+    "branches" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "branches"
           }
         }
       }
@@ -2072,22 +2673,22 @@
         }
       }
     },
-    "Builds with Billed Minutes" : {
-      "localizations" : {
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Builds aux minutes facturées"
-          }
-        }
-      }
-    },
     "Builds with an older Xcode" : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Construit avec un Xcode plus ancien"
+          }
+        }
+      }
+    },
+    "Builds with Billed Minutes" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Builds aux minutes facturées"
           }
         }
       }
@@ -2142,6 +2743,16 @@
         }
       }
     },
+    "canceled" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "annulée"
+          }
+        }
+      }
+    },
     "Canceled" : {
       "comment" : "State of a build that was stopped.",
       "localizations" : {
@@ -2149,6 +2760,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Annulé"
+          }
+        }
+      }
+    },
+    "Change “%@”" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Modifier « %@ »"
           }
         }
       }
@@ -2169,16 +2790,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Changez le filtre ou la recherche pour en voir davantage."
-          }
-        }
-      }
-    },
-    "Change “%@”" : {
-      "localizations" : {
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Modifier « %@ »"
           }
         }
       }
@@ -2225,16 +2836,6 @@
         }
       }
     },
-    "Choose the local repository of %@." : {
-      "localizations" : {
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Choisissez le dépôt local de %@."
-          }
-        }
-      }
-    },
     "Choose the local repository of %@: the folder that holds %@." : {
       "localizations" : {
         "en" : {
@@ -2247,6 +2848,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Choisissez le dépôt local de %1$@ : le dossier qui contient %2$@."
+          }
+        }
+      }
+    },
+    "Choose the local repository of %@." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choisissez le dépôt local de %@."
           }
         }
       }
@@ -2472,6 +3083,16 @@
         }
       }
     },
+    "Copies the lines shown" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Copie les lignes affichées"
+          }
+        }
+      }
+    },
     "Copies the text for an AI assistant, loading the issues and test results first" : {
       "localizations" : {
         "fr" : {
@@ -2492,6 +3113,26 @@
         }
       }
     },
+    "Copy Excerpt" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Copier l’extrait"
+          }
+        }
+      }
+    },
+    "Copy for AI" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Copier pour une IA"
+          }
+        }
+      }
+    },
     "Copy Message" : {
       "localizations" : {
         "fr" : {
@@ -2508,16 +3149,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Copier le chemin"
-          }
-        }
-      }
-    },
-    "Copy for AI" : {
-      "localizations" : {
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Copier pour une IA"
           }
         }
       }
@@ -2615,52 +3246,12 @@
         }
       }
     },
-    "Cumulus Pro" : {
+    "Cumulus asks App Store Connect about an app’s latest builds at most every 15 minutes while one is processing or waiting for its beta review, and once a day otherwise." : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Cumulus Pro"
-          }
-        }
-      }
-    },
-    "Cumulus Pro ended on %@" : {
-      "localizations" : {
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Cumulus Pro a pris fin le %@"
-          }
-        }
-      }
-    },
-    "Cumulus Pro, lifetime" : {
-      "localizations" : {
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Cumulus Pro, à vie"
-          }
-        }
-      }
-    },
-    "Cumulus Pro, yearly" : {
-      "localizations" : {
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Cumulus Pro, annuel"
-          }
-        }
-      }
-    },
-    "Cumulus Pro…" : {
-      "localizations" : {
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Cumulus Pro…"
+            "value" : "Cumulus interroge App Store Connect sur les derniers builds d’une app au plus toutes les 15 minutes tant que l’un est en traitement ou attend sa revue bêta, et une fois par jour sinon."
           }
         }
       }
@@ -2725,12 +3316,112 @@
         }
       }
     },
+    "Cumulus Pro" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cumulus Pro"
+          }
+        }
+      }
+    },
+    "Cumulus Pro ended on %@" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cumulus Pro a pris fin le %@"
+          }
+        }
+      }
+    },
+    "Cumulus Pro, lifetime" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cumulus Pro, à vie"
+          }
+        }
+      }
+    },
+    "Cumulus Pro, yearly" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cumulus Pro, annuel"
+          }
+        }
+      }
+    },
+    "Cumulus Pro…" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cumulus Pro…"
+          }
+        }
+      }
+    },
+    "Cumulus reads Apple’s status page again every 5 minutes, for up to 12 hours, while it is open. Nothing is relaunched." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cumulus relit la page d’état d’Apple toutes les 5 minutes, pendant 12 heures au plus, tant qu’il est ouvert. Aucun build n’est relancé."
+          }
+        }
+      }
+    },
     "Cumulus reads your Xcode Cloud builds with an App Store Connect API key." : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Cumulus lit vos builds Xcode Cloud avec une clé API App Store Connect."
+          }
+        }
+      }
+    },
+    "Cumulus sends from this Mac: nothing leaves if it is off or if Cumulus is closed." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cumulus envoie depuis ce Mac : rien ne part s’il est éteint ou si Cumulus est fermé."
+          }
+        }
+      }
+    },
+    "Cumulus stops sending to it, and the address is deleted from the Keychain." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cumulus cesse d’y envoyer, et l’adresse est supprimée du trousseau."
+          }
+        }
+      }
+    },
+    "Cumulus will not ask again until it restarts." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cumulus ne redemandera pas avant son prochain démarrage."
+          }
+        }
+      }
+    },
+    "Cumulus will notify you when it’s back" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cumulus préviendra quand c’est rétabli"
           }
         }
       }
@@ -2779,6 +3470,16 @@
         }
       }
     },
+    "Current streak" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Série en cours"
+          }
+        }
+      }
+    },
     "Current version" : {
       "localizations" : {
         "fr" : {
@@ -2789,22 +3490,22 @@
         }
       }
     },
-    "Current workflow configuration: Apple doesn’t record the versions used by each build." : {
-      "localizations" : {
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Configuration actuelle du workflow : Apple n’enregistre pas les versions utilisées par chaque build."
-          }
-        }
-      }
-    },
     "Current workflow configuration: a build started by hand may have asked otherwise." : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Configuration actuelle du workflow : un build lancé à la main a pu demander autre chose."
+          }
+        }
+      }
+    },
+    "Current workflow configuration: Apple doesn’t record the versions used by each build." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Configuration actuelle du workflow : Apple n’enregistre pas les versions utilisées par chaque build."
           }
         }
       }
@@ -2962,6 +3663,17 @@
         }
       }
     },
+    "did not succeed" : {
+      "comment" : "VoiceOver: a step of the TestFlight timeline that failed",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "n’a pas réussi"
+          }
+        }
+      }
+    },
     "Differs between devices" : {
       "localizations" : {
         "fr" : {
@@ -3003,16 +3715,6 @@
         }
       }
     },
-    "Done" : {
-      "localizations" : {
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "OK"
-          }
-        }
-      }
-    },
     "Don’t start if every changed file matches" : {
       "localizations" : {
         "fr" : {
@@ -3023,12 +3725,43 @@
         }
       }
     },
+    "done" : {
+      "comment" : "VoiceOver: a step of the TestFlight timeline that happened",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "fait"
+          }
+        }
+      }
+    },
+    "Done" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "OK"
+          }
+        }
+      }
+    },
     "Download this action’s logs and open them in the Finder" : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Télécharger les journaux de cette action et les ouvrir dans le Finder"
+          }
+        }
+      }
+    },
+    "Downloads this action’s log, reads it on this Mac and looks for the error" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Télécharge le journal de cette action, le lit sur ce Mac et cherche l’erreur"
           }
         }
       }
@@ -3093,6 +3826,16 @@
         }
       }
     },
+    "Each app's latest TestFlight builds and their testers, the road from the commit to the testers, and a warning when a build reaches external testers or is about to expire." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Les derniers builds TestFlight de chaque app et leurs testeurs, le chemin du commit aux testeurs, et un avertissement quand un build atteint les testeurs externes ou va expirer."
+          }
+        }
+      }
+    },
     "Early Plan Alerts" : {
       "localizations" : {
         "fr" : {
@@ -3144,6 +3887,17 @@
         }
       }
     },
+    "ended" : {
+      "comment" : "VoiceOver: a step of the TestFlight timeline that is over because the build expired",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "terminé"
+          }
+        }
+      }
+    },
     "English or French. To pick another language for this app only, use System Settings." : {
       "localizations" : {
         "fr" : {
@@ -3174,6 +3928,17 @@
         }
       }
     },
+    "error" : {
+      "comment" : "Marks the line of the log that says an error",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "erreur"
+          }
+        }
+      }
+    },
     "Error" : {
       "comment" : "State of a build that ended on an Xcode Cloud error, not a test or compile failure.",
       "localizations" : {
@@ -3185,6 +3950,16 @@
         }
       }
     },
+    "Error: " : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Erreur : "
+          }
+        }
+      }
+    },
     "Estimated" : {
       "comment" : "Column of the usage gauge: minutes counted from build durations rather than from Apple's export.",
       "localizations" : {
@@ -3192,26 +3967,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Estimé"
-          }
-        }
-      }
-    },
-    "Estimated from the durations of the build’s actions, not Apple’s billing." : {
-      "localizations" : {
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Estimé d’après la durée des actions du build, pas d’après la facturation d’Apple."
-          }
-        }
-      }
-    },
-    "Estimated from your builds: import a usage export for Apple’s exact figure." : {
-      "localizations" : {
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Estimation d’après vos builds : importez un export d’utilisation pour le chiffre exact d’Apple."
           }
         }
       }
@@ -3256,12 +4011,92 @@
         }
       }
     },
+    "Estimated end around %@ (%@)" : {
+      "comment" : "Line of a running build: when it should end, then how long from now. The second argument is such as “~4 min”.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Estimated end around %1$@ (%2$@)"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fin estimée vers %1$@ (%2$@)"
+          }
+        }
+      }
+    },
+    "estimated end in %@" : {
+      "comment" : "Said by VoiceOver for a running build; the argument is a duration such as “4 minutes”",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "fin estimée dans %@"
+          }
+        }
+      }
+    },
+    "estimated end in less than a minute" : {
+      "comment" : "Said by VoiceOver for a running build that ends in under a minute",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "fin estimée dans moins d’une minute"
+          }
+        }
+      }
+    },
+    "Estimated from the durations of the build’s actions, not Apple’s billing." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Estimé d’après la durée des actions du build, pas d’après la facturation d’Apple."
+          }
+        }
+      }
+    },
+    "Estimated from your builds: import a usage export for Apple’s exact figure." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Estimation d’après vos builds : importez un export d’utilisation pour le chiffre exact d’Apple."
+          }
+        }
+      }
+    },
+    "event is usage_alert, build_stuck, build_failed, build_succeeded or test. app, workflow and build are left out when the alert has none, and account is sent only when Cumulus follows several accounts." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "event vaut usage_alert, build_stuck, build_failed, build_succeeded ou test. app, workflow et build sont omis quand l’alerte n’en a pas, et account n’est envoyé que si Cumulus suit plusieurs comptes."
+          }
+        }
+      }
+    },
     "Every cumulus command, for your terminal and your agents." : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Toutes les commandes cumulus, pour votre terminal et vos agents."
+          }
+        }
+      }
+    },
+    "every day" : {
+      "comment" : "Frequency of a scheduled workflow, in a caption",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "tous les jours"
           }
         }
       }
@@ -3276,12 +4111,34 @@
         }
       }
     },
+    "every hour" : {
+      "comment" : "Frequency of a scheduled workflow, in a caption",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "toutes les heures"
+          }
+        }
+      }
+    },
     "Every hour" : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Toutes les heures"
+          }
+        }
+      }
+    },
+    "every week" : {
+      "comment" : "Frequency of a scheduled workflow, in a caption",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "chaque semaine"
           }
         }
       }
@@ -3306,12 +4163,85 @@
         }
       }
     },
+    "Excerpt of the log" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Extrait du journal"
+          }
+        }
+      }
+    },
     "Expected failure" : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Échec attendu"
+          }
+        }
+      }
+    },
+    "Expired" : {
+      "comment" : "State of a TestFlight build that stopped working after 90 days",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Expiré"
+          }
+        }
+      }
+    },
+    "Expired on %@" : {
+      "comment" : "Beside a TestFlight build that stopped working; the placeholder is a date",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Expiré le %@"
+          }
+        }
+      }
+    },
+    "Expires in %lld days" : {
+      "comment" : "Beside a TestFlight build that stops working soon; the placeholder is a number of days",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Expires in %lld day"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Expires in %lld days"
+                }
+              }
+            }
+          }
+        },
+        "fr" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Expire dans %lld jour"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Expire dans %lld jours"
+                }
+              }
+            }
           }
         }
       }
@@ -3342,6 +4272,28 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Archive exportée"
+          }
+        }
+      }
+    },
+    "External testers" : {
+      "comment" : "Who a TestFlight build is for",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Testeurs externes"
+          }
+        }
+      }
+    },
+    "failed" : {
+      "comment" : "Under a step of the TestFlight timeline that did not succeed",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "échoué"
           }
         }
       }
@@ -3444,32 +4396,6 @@
         }
       }
     },
-    "Fetching test results (%lld/%lld)…" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Fetching test results (%1$lld/%2$lld)…"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Récupération des résultats de tests (%1$lld/%2$lld)…"
-          }
-        }
-      }
-    },
-    "Fetching test results (0/%lld)…" : {
-      "localizations" : {
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Récupération des résultats de tests (0/%lld)…"
-          }
-        }
-      }
-    },
     "Fetching test results · about %lld min left" : {
       "comment" : "Sidebar, while builds are measured: minutes until the usage figures are complete.",
       "localizations" : {
@@ -3507,6 +4433,32 @@
                 }
               }
             }
+          }
+        }
+      }
+    },
+    "Fetching test results (%lld/%lld)…" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Fetching test results (%1$lld/%2$lld)…"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Récupération des résultats de tests (%1$lld/%2$lld)…"
+          }
+        }
+      }
+    },
+    "Fetching test results (0/%lld)…" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Récupération des résultats de tests (0/%lld)…"
           }
         }
       }
@@ -3663,13 +4615,13 @@
         }
       }
     },
-    "Flaky Test" : {
-      "comment" : "Category of a failed build: tests that both passed and failed",
+    "Flaky" : {
+      "comment" : "A test that passed on some devices and failed on others in one build",
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Test instable"
+            "value" : "Instable"
           }
         }
       }
@@ -3680,6 +4632,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Tests instables et tests lents"
+          }
+        }
+      }
+    },
+    "Flaky Test" : {
+      "comment" : "Category of a failed build: tests that both passed and failed",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Test instable"
           }
         }
       }
@@ -3783,6 +4746,36 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Version gratuite"
+          }
+        }
+      }
+    },
+    "from another repository" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "depuis un autre dépôt"
+          }
+        }
+      }
+    },
+    "From the commit to the testers" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Du commit aux testeurs"
+          }
+        }
+      }
+    },
+    "From the median duration of the last 30 builds of the same workflow. It is an estimate." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "D’après la durée médiane des 30 derniers builds du même workflow. C’est une estimation."
           }
         }
       }
@@ -3920,6 +4913,16 @@
         }
       }
     },
+    "History" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Historique"
+          }
+        }
+      }
+    },
     "How much of the Xcode Cloud plan is used this cycle, as Cumulus estimates it." : {
       "localizations" : {
         "fr" : {
@@ -3951,12 +4954,12 @@
         }
       }
     },
-    "Import Usage Export…" : {
+    "If you read this, Cumulus alerts reach this channel." : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Importer un export d’utilisation…"
+            "value" : "Si vous lisez ceci, les alertes de Cumulus arrivent dans ce canal."
           }
         }
       }
@@ -3967,6 +4970,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Importer un export…"
+          }
+        }
+      }
+    },
+    "Import Usage Export…" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Importer un export d’utilisation…"
           }
         }
       }
@@ -4033,6 +5046,17 @@
         }
       }
     },
+    "In beta review" : {
+      "comment" : "State of a TestFlight build that the beta review is looking at",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "En revue bêta"
+          }
+        }
+      }
+    },
     "In Brief" : {
       "comment" : "Heading of the card that sums up a failed build in one sentence",
       "localizations" : {
@@ -4050,6 +5074,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "En bref, chargement"
+          }
+        }
+      }
+    },
+    "in progress" : {
+      "comment" : "Under a step of the TestFlight timeline that is under way",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "en cours"
           }
         }
       }
@@ -4096,6 +5131,16 @@
         }
       }
     },
+    "Install…" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Installer…"
+          }
+        }
+      }
+    },
     "Installed" : {
       "comment" : "Settings, Agents: the command or the skill is in place",
       "localizations" : {
@@ -4127,12 +5172,24 @@
         }
       }
     },
-    "Install…" : {
+    "Internal and external testers" : {
+      "comment" : "Who a TestFlight build is for",
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Installer…"
+            "value" : "Testeurs internes et externes"
+          }
+        }
+      }
+    },
+    "Internal testers" : {
+      "comment" : "Who a TestFlight build is for",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Testeurs internes"
           }
         }
       }
@@ -4208,12 +5265,42 @@
         }
       }
     },
+    "Judged on the last 30 successful builds: at least 15 % and a minute longer, over five builds or more. Said once for each slowdown." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Jugé sur les 30 derniers builds réussis : au moins 15 % et une minute de plus, sur cinq builds ou plus. Dit une seule fois par ralentissement."
+          }
+        }
+      }
+    },
     "Just lasts until the reset at this pace" : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Tient tout juste jusqu’à la réinitialisation à ce rythme"
+          }
+        }
+      }
+    },
+    "Kept in the Keychain" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gardée dans le trousseau"
+          }
+        }
+      }
+    },
+    "Key access" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Accès de la clé"
           }
         }
       }
@@ -4225,16 +5312,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "ID de la clé"
-          }
-        }
-      }
-    },
-    "Key access" : {
-      "localizations" : {
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Accès de la clé"
           }
         }
       }
@@ -4292,22 +5369,23 @@
         }
       }
     },
-    "Last Export Imported" : {
-      "localizations" : {
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Dernier export importé"
-          }
-        }
-      }
-    },
     "Last build" : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Dernier build"
+          }
+        }
+      }
+    },
+    "last build %@" : {
+      "comment" : "VoiceOver, a workflow's row: its last build's state, number and branch",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "dernier build %@"
           }
         }
       }
@@ -4349,12 +5427,32 @@
         }
       }
     },
+    "Last Export Imported" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dernier export importé"
+          }
+        }
+      }
+    },
     "Last export imported %@" : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Dernier export importé le %@"
+          }
+        }
+      }
+    },
+    "Last failure message" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dernier message d’échec"
           }
         }
       }
@@ -4375,6 +5473,47 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Dernière modification"
+          }
+        }
+      }
+    },
+    "Last send: could not be reached" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dernier envoi : injoignable"
+          }
+        }
+      }
+    },
+    "Last send: refused, %@" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dernier envoi : refusé, %@"
+          }
+        }
+      }
+    },
+    "Last send: sent" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dernier envoi : envoyé"
+          }
+        }
+      }
+    },
+    "last success #%lld" : {
+      "comment" : "Part of the summary of the “For AI” card: the number of the last build that succeeded",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "dernier succès #%lld"
           }
         }
       }
@@ -4459,16 +5598,6 @@
         }
       }
     },
-    "Launch this workflow" : {
-      "localizations" : {
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Lancer ce workflow"
-          }
-        }
-      }
-    },
     "Launch “%@”?" : {
       "localizations" : {
         "fr" : {
@@ -4479,12 +5608,39 @@
         }
       }
     },
+    "Launch this workflow" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lancer ce workflow"
+          }
+        }
+      }
+    },
     "Lifetime" : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "À vie"
+          }
+        }
+      }
+    },
+    "line %@ of %@" : {
+      "comment" : "Where a log excerpt is in its file, e.g. “line 1,536 of 2,870”",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "line %1$@ of %2$@"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ligne %1$@ sur %2$@"
           }
         }
       }
@@ -4648,6 +5804,27 @@
         }
       }
     },
+    "Log Excerpt" : {
+      "comment" : "Heading of the card that shows the lines of a log around the error of a failed build",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Extrait du journal"
+          }
+        }
+      }
+    },
+    "Log Excerpt, loading" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Extrait du journal, chargement"
+          }
+        }
+      }
+    },
     "Logs" : {
       "localizations" : {
         "fr" : {
@@ -4658,12 +5835,22 @@
         }
       }
     },
-    "MCP Server" : {
+    "macOS" : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Serveur MCP"
+            "value" : "macOS"
+          }
+        }
+      }
+    },
+    "macOS refused the change: %@" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "macOS a refusé la modification : %@"
           }
         }
       }
@@ -4694,6 +5881,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Démarrage manuel"
+          }
+        }
+      }
+    },
+    "MCP Server" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Serveur MCP"
           }
         }
       }
@@ -4749,7 +5946,29 @@
         }
       }
     },
+    "median duration %@" : {
+      "comment" : "VoiceOver, a workflow's row",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "durée médiane %@"
+          }
+        }
+      }
+    },
+    "Median duration, time in the queue and success rate over the last thirty builds, and since which build a workflow got slower." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Durée médiane, attente en file et taux de réussite sur les trente derniers builds, et depuis quel build un workflow a ralenti."
+          }
+        }
+      }
+    },
     "Median duration, time in the queue and success rate over the last thirty builds." : {
+      "extractionState" : "stale",
       "localizations" : {
         "fr" : {
           "stringUnit" : {
@@ -4770,6 +5989,16 @@
         }
       }
     },
+    "Menu Bar" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Barre des menus"
+          }
+        }
+      }
+    },
     "Merge this into %@, then restart %@." : {
       "localizations" : {
         "en" : {
@@ -4782,6 +6011,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Fusionnez ceci dans %1$@, puis relancez %2$@."
+          }
+        }
+      }
+    },
+    "Message format" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Format du message"
           }
         }
       }
@@ -4878,12 +6117,38 @@
         }
       }
     },
+    "Newest" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Le plus récent"
+          }
+        }
+      }
+    },
     "Next" : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Prochain"
+          }
+        }
+      }
+    },
+    "Next Error (%lld of %lld)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Next Error (%1$lld of %2$lld)"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Erreur suivante (%1$lld sur %2$lld)"
           }
         }
       }
@@ -4895,6 +6160,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Prochaine réinitialisation"
+          }
+        }
+      }
+    },
+    "next: %@" : {
+      "comment" : "VoiceOver, a workflow's row: when it next starts, or what starts it",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "prochain : %@"
           }
         }
       }
@@ -4919,6 +6195,16 @@
         }
       }
     },
+    "No action recorded yet." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aucune action enregistrée pour l’instant."
+          }
+        }
+      }
+    },
     "No API key" : {
       "localizations" : {
         "fr" : {
@@ -4935,37 +6221,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Aucune clé d’API n’est configurée."
-          }
-        }
-      }
-    },
-    "No Cumulus Pro purchase was found for this Apple Account." : {
-      "localizations" : {
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Aucun achat de Cumulus Pro n’a été trouvé pour ce compte Apple."
-          }
-        }
-      }
-    },
-    "No Xcode Cloud app yet." : {
-      "comment" : "Keep \"Xcode Cloud\", \"App Store Connect\" and \"TestFlight\" untranslated as product names.",
-      "localizations" : {
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Aucune app Xcode Cloud pour l’instant."
-          }
-        }
-      }
-    },
-    "No action recorded yet." : {
-      "localizations" : {
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Aucune action enregistrée pour l’instant."
           }
         }
       }
@@ -5000,6 +6255,17 @@
         }
       }
     },
+    "no build yet" : {
+      "comment" : "VoiceOver and table cell: the workflow has never built in what the app knows",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "aucun build"
+          }
+        }
+      }
+    },
     "No build yet" : {
       "localizations" : {
         "fr" : {
@@ -5030,6 +6296,16 @@
         }
       }
     },
+    "No Cumulus Pro purchase was found for this Apple Account." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aucun achat de Cumulus Pro n’a été trouvé pour ce compte Apple."
+          }
+        }
+      }
+    },
     "No earlier successful build of this workflow to compare with." : {
       "localizations" : {
         "fr" : {
@@ -5046,6 +6322,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Aucun test en échec ni nouveau problème par rapport au %@."
+          }
+        }
+      }
+    },
+    "No failure" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aucun échec"
           }
         }
       }
@@ -5086,6 +6372,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Aucun problème enregistré pour ce build."
+          }
+        }
+      }
+    },
+    "No line of this log reads as an error. Some failures leave none in the log." : {
+      "comment" : "In the log excerpt card, when the log holds no error line",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aucune ligne de ce journal ne ressemble à une erreur. Certains échecs n’en laissent aucune dans le journal."
           }
         }
       }
@@ -5170,16 +6467,6 @@
         }
       }
     },
-    "No usage export imported yet." : {
-      "localizations" : {
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Aucun export d’utilisation importé pour l’instant."
-          }
-        }
-      }
-    },
     "No usage export imported yet: every figure with a ~ is an estimate." : {
       "comment" : "Under an app's overview, when no billed minutes are known",
       "localizations" : {
@@ -5187,6 +6474,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Aucun export d’usage importé : chaque chiffre avec un ~ est une estimation."
+          }
+        }
+      }
+    },
+    "No usage export imported yet." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aucun export d’utilisation importé pour l’instant."
           }
         }
       }
@@ -5201,6 +6498,17 @@
         }
       }
     },
+    "No Xcode Cloud app yet." : {
+      "comment" : "Keep \"Xcode Cloud\", \"App Store Connect\" and \"TestFlight\" untranslated as product names.",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aucune app Xcode Cloud pour l’instant."
+          }
+        }
+      }
+    },
     "None" : {
       "localizations" : {
         "fr" : {
@@ -5211,22 +6519,22 @@
         }
       }
     },
+    "None of the builds analyzed holds this test." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aucun des builds analysés ne contient ce test."
+          }
+        }
+      }
+    },
     "Normally filled in on its own when you add the `.p8` file: its name, `AuthKey_<Key ID>.p8`, holds the Key ID. Type it only if the file was renamed." : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Normalement rempli tout seul quand vous ajoutez le fichier `.p8` : son nom, `AuthKey_<ID de la clé>.p8`, contient l’ID de la clé. Saisissez-le seulement si le fichier a été renommé."
-          }
-        }
-      }
-    },
-    "Not Now" : {
-      "localizations" : {
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Plus tard"
           }
         }
       }
@@ -5261,6 +6569,27 @@
         }
       }
     },
+    "Not Now" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Plus tard"
+          }
+        }
+      }
+    },
+    "Not run" : {
+      "comment" : "A build where the test did not run, or gave no verdict",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Non exécuté"
+          }
+        }
+      }
+    },
     "Not set" : {
       "localizations" : {
         "fr" : {
@@ -5277,6 +6606,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Pas encore mis à jour"
+          }
+        }
+      }
+    },
+    "not yet" : {
+      "comment" : "VoiceOver: a step of the TestFlight timeline that has not happened yet",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "pas encore"
           }
         }
       }
@@ -5352,12 +6692,72 @@
         }
       }
     },
+    "Notify Me When It’s Back" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Prévenir quand c’est rétabli"
+          }
+        }
+      }
+    },
+    "now" : {
+      "comment" : "Age of a build created less than a minute ago. Very short.",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "à l’instant"
+          }
+        }
+      }
+    },
     "Number, commit or name" : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Numéro, commit ou nom"
+          }
+        }
+      }
+    },
+    "of %@ · resets %@, in %@" : {
+      "comment" : "Under the time used: the plan, the reset date, and the time left until it",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "of %1$@ · resets %2$@, in %3$@"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "sur %@ · réinitialisation le %@, dans %@"
+          }
+        }
+      }
+    },
+    "of the %@ plan" : {
+      "comment" : "After an app's minutes: the size of the plan they are taken from",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "sur %@ de forfait"
+          }
+        }
+      }
+    },
+    "of the plan" : {
+      "comment" : "Under the percentage at the centre of the cycle's ring. Two or three words.",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "du forfait"
           }
         }
       }
@@ -5382,12 +6782,55 @@
         }
       }
     },
+    "Oldest" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Le plus ancien"
+          }
+        }
+      }
+    },
     "On" : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Activée"
+          }
+        }
+      }
+    },
+    "on pull request" : {
+      "comment" : "What starts a workflow: a change to a pull request. In a table cell.",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "à la pull request"
+          }
+        }
+      }
+    },
+    "on push" : {
+      "comment" : "What starts a workflow: a change pushed to a branch. Two words, in a table cell.",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "au push"
+          }
+        }
+      }
+    },
+    "on tag" : {
+      "comment" : "What starts a workflow: a new tag. Two words, in a table cell.",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "au tag"
           }
         }
       }
@@ -5452,6 +6895,16 @@
         }
       }
     },
+    "Only an address that starts with https:// is accepted." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Seule une adresse qui commence par https:// est acceptée."
+          }
+        }
+      }
+    },
     "Only the Account Holder or an Admin of the team can create a team key." : {
       "localizations" : {
         "fr" : {
@@ -5472,42 +6925,13 @@
         }
       }
     },
-    "Open Cumulus" : {
+    "Open %@" : {
+      "comment" : "Button that opens the build a slowdown starts at. The placeholder is its number, such as “#398”.",
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ouvrir Cumulus"
-          }
-        }
-      }
-    },
-    "Open Login Items…" : {
-      "localizations" : {
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ouvrir Ouverture…"
-          }
-        }
-      }
-    },
-    "Open Notification Settings…" : {
-      "localizations" : {
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ouvrir les réglages de notifications…"
-          }
-        }
-      }
-    },
-    "Open Usage ↗" : {
-      "localizations" : {
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ouvrir Utilisation ↗"
+            "value" : "Ouvrir %@"
           }
         }
       }
@@ -5518,6 +6942,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ouvrir à la connexion"
+          }
+        }
+      }
+    },
+    "Open Cumulus" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ouvrir Cumulus"
+          }
+        }
+      }
+    },
+    "Open Full Log" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ouvrir le journal complet"
           }
         }
       }
@@ -5553,6 +6997,46 @@
         }
       }
     },
+    "Open Last Failure" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ouvrir le dernier échec"
+          }
+        }
+      }
+    },
+    "Open Login Items…" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ouvrir Ouverture…"
+          }
+        }
+      }
+    },
+    "Open Notification Settings…" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ouvrir les réglages de notifications…"
+          }
+        }
+      }
+    },
+    "Open the build" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ouvrir le build"
+          }
+        }
+      }
+    },
     "Open the failing file in Xcode, at the right line, from your local clone." : {
       "localizations" : {
         "fr" : {
@@ -5574,6 +7058,7 @@
       }
     },
     "Open the last build where it failed" : {
+      "extractionState" : "stale",
       "localizations" : {
         "fr" : {
           "stringUnit" : {
@@ -5603,6 +7088,16 @@
         }
       }
     },
+    "Open Usage ↗" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ouvrir Utilisation ↗"
+          }
+        }
+      }
+    },
     "Opening a file from your local clone comes with Cumulus Pro" : {
       "localizations" : {
         "fr" : {
@@ -5613,12 +7108,33 @@
         }
       }
     },
+    "Opens the build on its Tests tab" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ouvre le build sur son onglet Tests"
+          }
+        }
+      }
+    },
     "Opens the last build where it failed, on its Tests tab" : {
+      "extractionState" : "stale",
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ouvre le dernier build où il a échoué, sur son onglet Tests"
+          }
+        }
+      }
+    },
+    "Opens the unpacked log in the Finder" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ouvre le journal décompressé dans le Finder"
           }
         }
       }
@@ -5664,6 +7180,17 @@
         }
       }
     },
+    "Other apps" : {
+      "comment" : "Legend of an app's cycle bar: what the account's other apps used",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Autres apps"
+          }
+        }
+      }
+    },
     "Other Color…" : {
       "localizations" : {
         "fr" : {
@@ -5680,17 +7207,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Autre dossier…"
-          }
-        }
-      }
-    },
-    "Other apps" : {
-      "comment" : "Legend of an app's cycle bar: what the account's other apps used",
-      "localizations" : {
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Autres apps"
           }
         }
       }
@@ -5736,17 +7252,6 @@
         }
       }
     },
-    "PR #%lld" : {
-      "comment" : "A pull request, in a build's line",
-      "localizations" : {
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "PR #%lld"
-          }
-        }
-      }
-    },
     "Passed" : {
       "localizations" : {
         "fr" : {
@@ -5773,6 +7278,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Mettre en pause"
+          }
+        }
+      }
+    },
+    "Pause “%@”?" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mettre « %@ » en pause ?"
           }
         }
       }
@@ -5807,12 +7322,23 @@
         }
       }
     },
-    "Pause “%@”?" : {
+    "Pause…" : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Mettre « %@ » en pause ?"
+            "value" : "Mettre en pause…"
+          }
+        }
+      }
+    },
+    "paused" : {
+      "comment" : "Beside a workflow of the sidebar that Apple says is paused. Lowercase, very short.",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "en pause"
           }
         }
       }
@@ -5837,6 +7363,17 @@
         }
       }
     },
+    "paused, needs Cumulus Pro" : {
+      "comment" : "VoiceOver, after the name of an account that is not followed without Cumulus Pro.",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "en pause, demande Cumulus Pro"
+          }
+        }
+      }
+    },
     "Paused, needs Cumulus Pro" : {
       "localizations" : {
         "fr" : {
@@ -5857,12 +7394,12 @@
         }
       }
     },
-    "Pause…" : {
+    "per year" : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Mettre en pause…"
+            "value" : "par an"
           }
         }
       }
@@ -5903,6 +7440,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Forfait épuisé · réinitialisation le %@"
+          }
+        }
+      }
+    },
+    "PR #%lld" : {
+      "comment" : "A pull request, in a build's line",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PR #%lld"
           }
         }
       }
@@ -5953,6 +7501,39 @@
         }
       }
     },
+    "Processing" : {
+      "comment" : "State of a TestFlight build that Apple is still processing",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "En traitement"
+          }
+        }
+      }
+    },
+    "Processing done" : {
+      "comment" : "Step of the TestFlight timeline",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Traitement terminé"
+          }
+        }
+      }
+    },
+    "Processing failed" : {
+      "comment" : "State of a TestFlight build whose processing failed",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Traitement échoué"
+          }
+        }
+      }
+    },
     "Products" : {
       "localizations" : {
         "fr" : {
@@ -5999,6 +7580,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Pull request mise à jour"
+          }
+        }
+      }
+    },
+    "pull requests" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "pull requests"
           }
         }
       }
@@ -6086,12 +7677,44 @@
         }
       }
     },
+    "Read on this Mac, in the log of this build. Nothing is sent." : {
+      "comment" : "Under the log excerpt",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lu sur ce Mac, dans le journal de ce build. Rien n’est envoyé."
+          }
+        }
+      }
+    },
     "Read only" : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Lecture seule"
+          }
+        }
+      }
+    },
+    "Reading TestFlight…" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lecture de TestFlight…"
+          }
+        }
+      }
+    },
+    "Ready" : {
+      "comment" : "State of a TestFlight build that is processed but in no group of testers yet",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Prêt"
           }
         }
       }
@@ -6174,6 +7797,28 @@
         }
       }
     },
+    "rejected" : {
+      "comment" : "Under a step of the TestFlight timeline that the beta review turned down",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "refusé"
+          }
+        }
+      }
+    },
+    "Rejected in beta review" : {
+      "comment" : "State of a TestFlight build the beta review turned down",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Refusé en revue bêta"
+          }
+        }
+      }
+    },
     "Remaining" : {
       "comment" : "Legend of the cycle's ring: the part of the plan not used yet",
       "localizations" : {
@@ -6233,6 +7878,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Supprimer le compte « %@ » et toutes ses données ?"
+          }
+        }
+      }
+    },
+    "Remove the webhook address?" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Retirer l’adresse du webhook ?"
           }
         }
       }
@@ -6298,6 +7953,16 @@
         }
       }
     },
+    "Replace…" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Remplacer…"
+          }
+        }
+      }
+    },
     "Repository" : {
       "localizations" : {
         "fr" : {
@@ -6359,6 +8024,16 @@
         }
       }
     },
+    "Results" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Résultats"
+          }
+        }
+      }
+    },
     "Resume" : {
       "localizations" : {
         "fr" : {
@@ -6369,22 +8044,22 @@
         }
       }
     },
-    "Resume Cumulus Pro…" : {
-      "localizations" : {
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Reprendre Cumulus Pro…"
-          }
-        }
-      }
-    },
     "Resume “%@”?" : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Réactiver « %@ » ?"
+          }
+        }
+      }
+    },
+    "Resume Cumulus Pro…" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reprendre Cumulus Pro…"
           }
         }
       }
@@ -6451,6 +8126,26 @@
         }
       }
     },
+    "Said once, unless a newer build has reached them." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Annoncé une fois, sauf si un build plus récent les a atteints."
+          }
+        }
+      }
+    },
+    "Said once, when TestFlight puts a build in testing with an external group." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Annoncé une fois, quand TestFlight met un build en test auprès d’un groupe externe."
+          }
+        }
+      }
+    },
     "Save" : {
       "localizations" : {
         "fr" : {
@@ -6491,12 +8186,23 @@
         }
       }
     },
-    "Select All" : {
+    "Search in the Log" : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Tout sélectionner"
+            "value" : "Chercher dans le journal"
+          }
+        }
+      }
+    },
+    "seen at %@" : {
+      "comment" : "Under a step of the TestFlight timeline: the time Cumulus noticed the step had happened, not a time Apple gave",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "vu à %@"
           }
         }
       }
@@ -6511,6 +8217,16 @@
         }
       }
     },
+    "Select All" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tout sélectionner"
+          }
+        }
+      }
+    },
     "Select an account" : {
       "localizations" : {
         "fr" : {
@@ -6521,12 +8237,43 @@
         }
       }
     },
-    "Set Your Plan’s Reset Date…" : {
+    "Send a Test" : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Saisir la date de réinitialisation du forfait…"
+            "value" : "Envoyer un essai"
+          }
+        }
+      }
+    },
+    "Send elsewhere too" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Envoyer aussi ailleurs"
+          }
+        }
+      }
+    },
+    "Send elsewhere too: “%@”" : {
+      "comment" : "Section title: where the alerts of one App Store Connect account also go",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Envoyer aussi ailleurs : « %@ »"
+          }
+        }
+      }
+    },
+    "Sending alerts elsewhere comes with Cumulus Pro. Your address and choices are kept." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Envoyer les alertes ailleurs est une fonction de Cumulus Pro. Votre adresse et vos choix sont conservés."
           }
         }
       }
@@ -6567,6 +8314,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Saisissez la date de réinitialisation de votre forfait pour voir la part de cette app dans le cycle."
+          }
+        }
+      }
+    },
+    "Set Your Plan’s Reset Date…" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Saisir la date de réinitialisation du forfait…"
           }
         }
       }
@@ -6665,6 +8422,16 @@
         }
       }
     },
+    "Show how this test went over the last builds" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Voir comment ce test s’est passé sur les derniers builds"
+          }
+        }
+      }
+    },
     "Show in Finder" : {
       "localizations" : {
         "fr" : {
@@ -6695,6 +8462,16 @@
         }
       }
     },
+    "Show the time left in the menu bar" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Afficher le temps restant dans la barre des menus"
+          }
+        }
+      }
+    },
     "Showing %lld of %lld. Type to narrow the list." : {
       "localizations" : {
         "en" : {
@@ -6707,6 +8484,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%1$lld affichés sur %2$lld. Tapez pour affiner la liste."
+          }
+        }
+      }
+    },
+    "Shows how this test went over the last builds" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Montre comment ce test s’est passé sur les derniers builds"
+          }
+        }
+      }
+    },
+    "Shows the next line of the log that says an error" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Montre la ligne suivante du journal qui dit une erreur"
           }
         }
       }
@@ -6742,12 +8539,67 @@
         }
       }
     },
+    "since %@" : {
+      "comment" : "After a state: how long a TestFlight build has been in it, such as “since 3h”",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "depuis %@"
+          }
+        }
+      }
+    },
+    "Since %@, %@: %@ went from %@ to %@." : {
+      "comment" : "Notification body: the build, the date, the action that slowed down most, then its median before and after.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Since %1$@, %2$@: %3$@ went from %4$@ to %5$@."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Depuis %1$@, le %2$@ : %3$@ est passé de %4$@ à %5$@."
+          }
+        }
+      }
+    },
+    "Since %@, %@: median from %@ to %@." : {
+      "comment" : "Notification body: the build, the date, then the median duration of the workflow before and after.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Since %1$@, %2$@: median from %3$@ to %4$@."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Depuis %1$@, le %2$@ : la médiane est passée de %3$@ à %4$@."
+          }
+        }
+      }
+    },
     "Since the last successful build" : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Depuis le dernier build réussi"
+          }
+        }
+      }
+    },
+    "skipped" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ignorée"
           }
         }
       }
@@ -6759,6 +8611,48 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ignoré"
+          }
+        }
+      }
+    },
+    "Slack gets { \"text\": … } and Discord { \"content\": … }. Any other address gets:" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Slack reçoit { \"text\": … } et Discord { \"content\": … }. Toute autre adresse reçoit :"
+          }
+        }
+      }
+    },
+    "Slowdown Alert" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alerte de ralentissement"
+          }
+        }
+      }
+    },
+    "Slower lately" : {
+      "comment" : "Title of the card that says a workflow got slower, when the date of the first slow build is unknown",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Plus lent récemment"
+          }
+        }
+      }
+    },
+    "Slower since %@" : {
+      "comment" : "Title of the card that says a workflow got slower. The placeholder is a date such as “October 7”.",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Plus lent depuis le %@"
           }
         }
       }
@@ -6895,6 +8789,17 @@
         }
       }
     },
+    "Status unknown" : {
+      "comment" : "State of a TestFlight build that Cumulus cannot tell",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "État inconnu"
+          }
+        }
+      }
+    },
     "Still to measure" : {
       "comment" : "Column of the usage gauge while the first figures are being measured.",
       "localizations" : {
@@ -6973,6 +8878,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Réussite"
+          }
+        }
+      }
+    },
+    "success rate %@" : {
+      "comment" : "VoiceOver, a workflow's row",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "taux de réussite %@"
           }
         }
       }
@@ -7059,6 +8975,16 @@
         }
       }
     },
+    "tags" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "tags"
+          }
+        }
+      }
+    },
     "Terms of Use" : {
       "localizations" : {
         "fr" : {
@@ -7079,16 +9005,6 @@
         }
       }
     },
-    "Test Connection" : {
-      "localizations" : {
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Tester la connexion"
-          }
-        }
-      }
-    },
     "Test actions without per-device results from Apple: %lld. Their time is counted whole, so the split by destination is incomplete." : {
       "localizations" : {
         "fr" : {
@@ -7099,12 +9015,32 @@
         }
       }
     },
+    "Test Connection" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tester la connexion"
+          }
+        }
+      }
+    },
     "Test failure" : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Échec de test"
+          }
+        }
+      }
+    },
+    "Test from Cumulus" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Essai depuis Cumulus"
           }
         }
       }
@@ -7125,6 +9061,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Résultats de test"
+          }
+        }
+      }
+    },
+    "Testers can install it from TestFlight." : {
+      "comment" : "Banner body: a TestFlight build became available to external testers",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Les testeurs peuvent l’installer depuis TestFlight."
           }
         }
       }
@@ -7159,6 +9106,16 @@
         }
       }
     },
+    "TestFlight Tracking" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Suivi de TestFlight"
+          }
+        }
+      }
+    },
     "TestFlight: build %@" : {
       "comment" : "Beside an app's name: the build number of its last TestFlight build",
       "localizations" : {
@@ -7177,6 +9134,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Tests"
+          }
+        }
+      }
+    },
+    "Tests · %@" : {
+      "comment" : "Cost of the tests on one destination, such as iPhone 17 Pro",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tests · %@"
           }
         }
       }
@@ -7221,114 +9189,12 @@
         }
       }
     },
-    "Tests · %@" : {
-      "comment" : "Cost of the tests on one destination, such as iPhone 17 Pro",
-      "localizations" : {
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Tests · %@"
-          }
-        }
-      }
-    },
     "Tests, not split by destination" : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Tests, non répartis par destination"
-          }
-        }
-      }
-    },
-    "The App Store could not be reached. Try again in a moment." : {
-      "localizations" : {
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "L’App Store est injoignable. Réessayez dans un instant."
-          }
-        }
-      }
-    },
-    "The App Store could not verify this purchase." : {
-      "localizations" : {
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "L’App Store n’a pas pu vérifier cet achat."
-          }
-        }
-      }
-    },
-    "The App Store did not give the prices. Check the connection, then try again." : {
-      "localizations" : {
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "L’App Store n’a pas donné les prix. Vérifiez la connexion, puis réessayez."
-          }
-        }
-      }
-    },
-    "The App Store gave an answer Cumulus does not know." : {
-      "localizations" : {
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "L’App Store a donné une réponse que Cumulus ne connaît pas."
-          }
-        }
-      }
-    },
-    "The Apple Intelligence model is still downloading." : {
-      "localizations" : {
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Le modèle d'Apple Intelligence est encore en téléchargement."
-          }
-        }
-      }
-    },
-    "The Issuer ID or the Key ID may not match the file, or the key was revoked. Check step 3." : {
-      "localizations" : {
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "L’Issuer ID ou l’ID de la clé ne correspond peut-être pas au fichier, ou la clé a été révoquée. Vérifiez l’étape 3."
-          }
-        }
-      }
-    },
-    "The MCP server %@" : {
-      "comment" : "Settings, Agents: last thing to add for an agent; the argument says it is optional",
-      "localizations" : {
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Le serveur MCP %@"
-          }
-        }
-      }
-    },
-    "The MCP server, for Claude Code, Codex, Xcode and Claude Desktop." : {
-      "localizations" : {
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Le serveur MCP, pour Claude Code, Codex, Xcode et Claude Desktop."
-          }
-        }
-      }
-    },
-    "The Xcode Cloud builds that are waiting or running right now." : {
-      "localizations" : {
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Les builds Xcode Cloud en attente ou en cours en ce moment."
           }
         }
       }
@@ -7400,12 +9266,83 @@
         }
       }
     },
+    "The App Store could not be reached. Try again in a moment." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "L’App Store est injoignable. Réessayez dans un instant."
+          }
+        }
+      }
+    },
+    "The App Store could not verify this purchase." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "L’App Store n’a pas pu vérifier cet achat."
+          }
+        }
+      }
+    },
+    "The App Store did not give the prices. Check the connection, then try again." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "L’App Store n’a pas donné les prix. Vérifiez la connexion, puis réessayez."
+          }
+        }
+      }
+    },
+    "The App Store gave an answer Cumulus does not know." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "L’App Store a donné une réponse que Cumulus ne connaît pas."
+          }
+        }
+      }
+    },
     "The app’s share of the cycle" : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "La part de l’app dans le cycle"
+          }
+        }
+      }
+    },
+    "The Apple Intelligence model is still downloading." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Le modèle d'Apple Intelligence est encore en téléchargement."
+          }
+        }
+      }
+    },
+    "The beta review passed." : {
+      "comment" : "Banner body: a TestFlight build became available after its beta review",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La revue bêta est passée."
+          }
+        }
+      }
+    },
+    "The build external testers are on expires within a week" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Le build des testeurs externes expire dans la semaine"
           }
         }
       }
@@ -7437,6 +9374,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "La commande %@"
+          }
+        }
+      }
+    },
+    "the commit" : {
+      "comment" : "Part of the summary of the “For AI” card: the text includes the build's commit",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "le commit"
           }
         }
       }
@@ -7487,6 +9435,78 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "La jauge et le pourcentage de la barre des menus apparaissent une fois tous les builds du cycle mesurés."
+          }
+        }
+      }
+    },
+    "The history of a test comes with Cumulus Pro" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "L’historique d’un test fait partie de Cumulus Pro"
+          }
+        }
+      }
+    },
+    "The incident reported by Apple is over." : {
+      "comment" : "Banner when Apple closes an incident on Xcode Cloud, with no build to count",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "L’incident signalé par Apple est clos."
+          }
+        }
+      }
+    },
+    "The incident reported by Apple is over. %lld builds stopped during that time." : {
+      "comment" : "Banner when Apple closes an incident on Xcode Cloud; the number is how many builds ended in error during it",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "The incident reported by Apple is over. %lld build stopped during that time."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "The incident reported by Apple is over. %lld builds stopped during that time."
+                }
+              }
+            }
+          }
+        },
+        "fr" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "L’incident signalé par Apple est clos. %lld build s’est arrêté pendant ce temps."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "L’incident signalé par Apple est clos. %lld builds se sont arrêtés pendant ce temps."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "The Issuer ID or the Key ID may not match the file, or the key was revoked. Check step 3." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "L’Issuer ID ou l’ID de la clé ne correspond peut-être pas au fichier, ou la clé a été révoquée. Vérifiez l’étape 3."
           }
         }
       }
@@ -7558,6 +9578,16 @@
         }
       }
     },
+    "The lines of the log around the error of a failed build, read on this Mac." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Les lignes du journal autour de l’erreur d’un build en échec, lues sur ce Mac."
+          }
+        }
+      }
+    },
     "The link expired or is invalid (HTTP %lld)." : {
       "localizations" : {
         "fr" : {
@@ -7598,6 +9628,48 @@
         }
       }
     },
+    "The log of this action is not on this Mac yet. Cumulus can download it and look for the line that says the error." : {
+      "comment" : "In the log excerpt card, before the log is downloaded",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Le journal de cette action n’est pas encore sur ce Mac. Cumulus peut le télécharger et chercher la ligne qui dit l’erreur."
+          }
+        }
+      }
+    },
+    "The MCP server %@" : {
+      "comment" : "Settings, Agents: last thing to add for an agent; the argument says it is optional",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Le serveur MCP %@"
+          }
+        }
+      }
+    },
+    "The MCP server, for Claude Code, Codex, Xcode and Claude Desktop." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Le serveur MCP, pour Claude Code, Codex, Xcode et Claude Desktop."
+          }
+        }
+      }
+    },
+    "The message is the banner’s title, its subtitle if it has one and its body, then the address of the build or of the Overview. It goes with a POST of JSON." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Le message reprend le titre de la bannière, son sous-titre s’il en a un et son corps, puis l’adresse du build ou de la Vue d’ensemble. Il part en POST, en JSON."
+          }
+        }
+      }
+    },
     "The most recent Xcode Cloud build Cumulus knows, of every app or of one." : {
       "localizations" : {
         "fr" : {
@@ -7624,6 +9696,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Le forfait risque d’être épuisé avant sa réinitialisation"
+          }
+        }
+      }
+    },
+    "The plan runs low" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Le forfait baisse"
+          }
+        }
+      }
+    },
+    "The plan, stuck build and build alerts sent to Slack, Discord or any webhook, while Cumulus runs." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Les alertes de forfait, de build bloqué et de build envoyées vers Slack, Discord ou tout webhook, tant que Cumulus tourne."
           }
         }
       }
@@ -7671,11 +9763,22 @@
       }
     },
     "The test that fails then passes on the same commit, and the ones that cost the most minutes." : {
+      "extractionState" : "stale",
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Le test qui échoue puis réussit sur le même commit, et ceux qui coûtent le plus de minutes."
+          }
+        }
+      }
+    },
+    "The test that fails then passes on the same commit, the ones that cost the most minutes, and how one test went over its last thirty builds." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Le test qui échoue puis réussit sur le même commit, ceux qui coûtent le plus de minutes, et l’histoire d’un test sur ses trente derniers builds."
           }
         }
       }
@@ -7710,6 +9813,16 @@
         }
       }
     },
+    "The Xcode Cloud builds that are waiting or running right now." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Les builds Xcode Cloud en attente ou en cours en ce moment."
+          }
+        }
+      }
+    },
     "The yearly subscription starts then. Nothing is charged before that date." : {
       "localizations" : {
         "fr" : {
@@ -7740,26 +9853,6 @@
         }
       }
     },
-    "This API key isn’t allowed to do that. Check its role, and that it is a team key." : {
-      "localizations" : {
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Cette clé d’API n’a pas le droit de faire cela. Vérifiez son rôle, et qu’il s’agit d’une clé d’équipe."
-          }
-        }
-      }
-    },
-    "This Mac does not support Apple Intelligence." : {
-      "localizations" : {
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ce Mac ne prend pas en charge Apple Intelligence."
-          }
-        }
-      }
-    },
     "This account is paused" : {
       "localizations" : {
         "fr" : {
@@ -7770,12 +9863,42 @@
         }
       }
     },
+    "This account is paused: nothing is sent for it until Cumulus Pro is back." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ce compte est en pause : rien n’est envoyé pour lui tant que Cumulus Pro n’est pas de retour."
+          }
+        }
+      }
+    },
+    "This action left no log to read." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cette action n’a laissé aucun journal à lire."
+          }
+        }
+      }
+    },
     "This alert comes with Cumulus Pro. Your setting is kept." : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Cette alerte vient avec Cumulus Pro. Votre réglage est conservé."
+          }
+        }
+      }
+    },
+    "This API key isn’t allowed to do that. Check its role, and that it is a team key." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cette clé d’API n’a pas le droit de faire cela. Vérifiez son rôle, et qu’il s’agit d’une clé d’équipe."
           }
         }
       }
@@ -7821,6 +9944,17 @@
         }
       }
     },
+    "This build stopped at %@." : {
+      "comment" : "Notice about an incident: when the build stopped. One time.",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ce build s’est arrêté à %@."
+          }
+        }
+      }
+    },
     "This cycle" : {
       "localizations" : {
         "fr" : {
@@ -7861,6 +9995,16 @@
         }
       }
     },
+    "This is not a web address." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ce n’est pas une adresse web."
+          }
+        }
+      }
+    },
     "This isn’t an Xcode Cloud usage export: missing %@." : {
       "comment" : "Keep \"Xcode Cloud\", \"App Store Connect\" and \"TestFlight\" untranslated as product names.",
       "localizations" : {
@@ -7868,6 +10012,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ce n’est pas un export d’utilisation Xcode Cloud : il manque %@."
+          }
+        }
+      }
+    },
+    "This key cannot read TestFlight." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cette clé ne peut pas lire TestFlight."
           }
         }
       }
@@ -7890,6 +10044,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Cette clé a été enregistrée par une autre version de l’app, et macOS ne laisse que celle-ci la supprimer. Dans Trousseau d’accès, supprimez « %@ », puis réessayez."
+          }
+        }
+      }
+    },
+    "This Mac does not support Apple Intelligence." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ce Mac ne prend pas en charge Apple Intelligence."
           }
         }
       }
@@ -7980,12 +10144,34 @@
         }
       }
     },
+    "today %@" : {
+      "comment" : "When a scheduled build next starts; the argument is a time",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "aujourd’hui %@"
+          }
+        }
+      }
+    },
     "Toggle Sidebar" : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Afficher ou masquer la barre latérale"
+          }
+        }
+      }
+    },
+    "tomorrow %@" : {
+      "comment" : "When a scheduled build next starts; the argument is a time",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "demain %@"
           }
         }
       }
@@ -8057,6 +10243,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Sans date"
+          }
+        }
+      }
+    },
+    "under way" : {
+      "comment" : "VoiceOver: a step of the TestFlight timeline that is happening",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "en cours"
           }
         }
       }
@@ -8142,6 +10339,17 @@
         }
       }
     },
+    "Uploaded" : {
+      "comment" : "Step of the TestFlight timeline: the build reached App Store Connect",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Envoyé"
+          }
+        }
+      }
+    },
     "Usage by app" : {
       "localizations" : {
         "fr" : {
@@ -8169,6 +10377,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Utilisé"
+          }
+        }
+      }
+    },
+    "used of" : {
+      "comment" : "Between the hours used and the plan's hours in the diagram",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "utilisées sur"
           }
         }
       }
@@ -8221,12 +10440,44 @@
         }
       }
     },
+    "View Status Page" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Voir la page d’état"
+          }
+        }
+      }
+    },
+    "waiting" : {
+      "comment" : "Under a step of the TestFlight timeline that has not happened yet",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "en attente"
+          }
+        }
+      }
+    },
     "Waiting for approval. Cumulus Pro opens as soon as the purchase is approved." : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "En attente d’approbation. Cumulus Pro s’ouvre dès que l’achat est approuvé."
+          }
+        }
+      }
+    },
+    "Waiting for beta review" : {
+      "comment" : "State of a TestFlight build sent to the beta review, which has not started",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "En attente de revue bêta"
           }
         }
       }
@@ -8241,12 +10492,45 @@
         }
       }
     },
+    "Waiting to start" : {
+      "comment" : "A build that Apple has not started yet",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "En attente de démarrage"
+          }
+        }
+      }
+    },
     "Warned at 75 % of the plan, on the pace, and when a build is stuck" : {
+      "extractionState" : "stale",
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Prévenu à 75 % du forfait, sur le rythme, et quand un build est bloqué"
+          }
+        }
+      }
+    },
+    "Warned at 75 % of the plan, on the pace, when a build is stuck and when a workflow slows down" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Prévenu à 75 % du forfait, sur le rythme, quand un build est bloqué et quand un workflow ralentit"
+          }
+        }
+      }
+    },
+    "Warned at 75 % of the plan, on the pace, when a build is stuck, when a workflow slows down or when a TestFlight build reaches testers or expires, and in Slack or a webhook" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Prévenu à 75 % du forfait, sur le rythme, quand un build est bloqué, qu’un workflow ralentit ou qu’un build TestFlight atteint les testeurs ou expire, et dans Slack ou un webhook"
           }
         }
       }
@@ -8261,22 +10545,12 @@
         }
       }
     },
-    "What Broke" : {
+    "Webhook address" : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ce qui a cassé"
-          }
-        }
-      }
-    },
-    "What Pro Adds" : {
-      "localizations" : {
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ce que Pro ajoute"
+            "value" : "Adresse du webhook"
           }
         }
       }
@@ -8291,12 +10565,32 @@
         }
       }
     },
+    "What Broke" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ce qui a cassé"
+          }
+        }
+      }
+    },
     "What broke, flaky tests, trends and what a workflow costs" : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ce qui a cassé, tests instables, tendances et coût d’un workflow"
+          }
+        }
+      }
+    },
+    "What Pro Adds" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ce que Pro ajoute"
           }
         }
       }
@@ -8337,6 +10631,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Quand un build semble bloqué"
+          }
+        }
+      }
+    },
+    "When a workflow slows down" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quand un workflow ralentit"
           }
         }
       }
@@ -8442,22 +10746,22 @@
         }
       }
     },
-    "Without Cumulus Pro, Cumulus follows your first account only. Nothing is erased: this account’s key, builds and settings are intact, and its sync starts again with Pro." : {
-      "localizations" : {
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Sans Cumulus Pro, Cumulus ne suit que votre premier compte. Rien n’est effacé : la clé, les builds et les réglages de ce compte sont intacts, et sa synchronisation reprend avec Pro."
-          }
-        }
-      }
-    },
     "Without an export, the usage shown is an estimate computed from the builds’ actions." : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Sans export, l’utilisation affichée est une estimation calculée d’après les actions des builds."
+          }
+        }
+      }
+    },
+    "Without Cumulus Pro, Cumulus follows your first account only. Nothing is erased: this account’s key, builds and settings are intact, and its sync starts again with Pro." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sans Cumulus Pro, Cumulus ne suit que votre premier compte. Rien n’est effacé : la clé, les builds et les réglages de ce compte sont intacts, et sa synchronisation reprend avec Pro."
           }
         }
       }
@@ -8534,6 +10838,17 @@
         }
       }
     },
+    "Xcode Cloud is back" : {
+      "comment" : "Title of the banner when an incident reported by Apple is over",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Xcode Cloud est rétabli"
+          }
+        }
+      }
+    },
     "Xcode Cloud Plan" : {
       "comment" : "Keep \"Xcode Cloud\", \"App Store Connect\" and \"TestFlight\" untranslated as product names.",
       "localizations" : {
@@ -8581,6 +10896,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Xcode Cloud démarre un build manuel et consomme des heures de calcul. Le workflow doit avoir une condition de démarrage manuel qui couvre ce tag. Cumulus ne peut pas l’annuler."
+          }
+        }
+      }
+    },
+    "Xcode Cloud: incident in progress at Apple" : {
+      "comment" : "Line of the menu while Apple reports an incident on Xcode Cloud",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Xcode Cloud : incident en cours chez Apple"
           }
         }
       }
@@ -8651,414 +10977,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Zoom"
-          }
-        }
-      }
-    },
-    "[DD Month YYYY]" : {
-      "comment" : "Placeholder of a date in the diagram of App Store Connect's usage page",
-      "localizations" : {
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "[JJ mois AAAA]"
-          }
-        }
-      }
-    },
-    "branches" : {
-      "localizations" : {
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "branches"
-          }
-        }
-      }
-    },
-    "canceled" : {
-      "localizations" : {
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "annulée"
-          }
-        }
-      }
-    },
-    "every day" : {
-      "comment" : "Frequency of a scheduled workflow, in a caption",
-      "localizations" : {
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "tous les jours"
-          }
-        }
-      }
-    },
-    "every hour" : {
-      "comment" : "Frequency of a scheduled workflow, in a caption",
-      "localizations" : {
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "toutes les heures"
-          }
-        }
-      }
-    },
-    "every week" : {
-      "comment" : "Frequency of a scheduled workflow, in a caption",
-      "localizations" : {
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "chaque semaine"
-          }
-        }
-      }
-    },
-    "from another repository" : {
-      "localizations" : {
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "depuis un autre dépôt"
-          }
-        }
-      }
-    },
-    "last build %@" : {
-      "comment" : "VoiceOver, a workflow's row: its last build's state, number and branch",
-      "localizations" : {
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "dernier build %@"
-          }
-        }
-      }
-    },
-    "last success #%lld" : {
-      "comment" : "Part of the summary of the “For AI” card: the number of the last build that succeeded",
-      "localizations" : {
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "dernier succès #%lld"
-          }
-        }
-      }
-    },
-    "macOS" : {
-      "localizations" : {
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "macOS"
-          }
-        }
-      }
-    },
-    "macOS refused the change: %@" : {
-      "localizations" : {
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "macOS a refusé la modification : %@"
-          }
-        }
-      }
-    },
-    "median duration %@" : {
-      "comment" : "VoiceOver, a workflow's row",
-      "localizations" : {
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "durée médiane %@"
-          }
-        }
-      }
-    },
-    "next: %@" : {
-      "comment" : "VoiceOver, a workflow's row: when it next starts, or what starts it",
-      "localizations" : {
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "prochain : %@"
-          }
-        }
-      }
-    },
-    "no build yet" : {
-      "comment" : "VoiceOver and table cell: the workflow has never built in what the app knows",
-      "localizations" : {
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "aucun build"
-          }
-        }
-      }
-    },
-    "now" : {
-      "comment" : "Age of a build created less than a minute ago. Very short.",
-      "localizations" : {
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "à l’instant"
-          }
-        }
-      }
-    },
-    "of %@ · resets %@, in %@" : {
-      "comment" : "Under the time used: the plan, the reset date, and the time left until it",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "of %1$@ · resets %2$@, in %3$@"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "sur %@ · réinitialisation le %@, dans %@"
-          }
-        }
-      }
-    },
-    "of the %@ plan" : {
-      "comment" : "After an app's minutes: the size of the plan they are taken from",
-      "localizations" : {
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "sur %@ de forfait"
-          }
-        }
-      }
-    },
-    "of the plan" : {
-      "comment" : "Under the percentage at the centre of the cycle's ring. Two or three words.",
-      "localizations" : {
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "du forfait"
-          }
-        }
-      }
-    },
-    "on pull request" : {
-      "comment" : "What starts a workflow: a change to a pull request. In a table cell.",
-      "localizations" : {
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "à la pull request"
-          }
-        }
-      }
-    },
-    "on push" : {
-      "comment" : "What starts a workflow: a change pushed to a branch. Two words, in a table cell.",
-      "localizations" : {
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "au push"
-          }
-        }
-      }
-    },
-    "on tag" : {
-      "comment" : "What starts a workflow: a new tag. Two words, in a table cell.",
-      "localizations" : {
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "au tag"
-          }
-        }
-      }
-    },
-    "paused" : {
-      "comment" : "Beside a workflow of the sidebar that Apple says is paused. Lowercase, very short.",
-      "localizations" : {
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "en pause"
-          }
-        }
-      }
-    },
-    "paused, needs Cumulus Pro" : {
-      "comment" : "VoiceOver, after the name of an account that is not followed without Cumulus Pro.",
-      "localizations" : {
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "en pause, demande Cumulus Pro"
-          }
-        }
-      }
-    },
-    "per year" : {
-      "localizations" : {
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "par an"
-          }
-        }
-      }
-    },
-    "pull requests" : {
-      "localizations" : {
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "pull requests"
-          }
-        }
-      }
-    },
-    "skipped" : {
-      "localizations" : {
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ignorée"
-          }
-        }
-      }
-    },
-    "success rate %@" : {
-      "comment" : "VoiceOver, a workflow's row",
-      "localizations" : {
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "taux de réussite %@"
-          }
-        }
-      }
-    },
-    "tags" : {
-      "localizations" : {
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "tags"
-          }
-        }
-      }
-    },
-    "the commit" : {
-      "comment" : "Part of the summary of the “For AI” card: the text includes the build's commit",
-      "localizations" : {
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "le commit"
-          }
-        }
-      }
-    },
-    "today %@" : {
-      "comment" : "When a scheduled build next starts; the argument is a time",
-      "localizations" : {
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "aujourd’hui %@"
-          }
-        }
-      }
-    },
-    "tomorrow %@" : {
-      "comment" : "When a scheduled build next starts; the argument is a time",
-      "localizations" : {
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "demain %@"
-          }
-        }
-      }
-    },
-    "used of" : {
-      "comment" : "Between the hours used and the plan's hours in the diagram",
-      "localizations" : {
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "utilisées sur"
-          }
-        }
-      }
-    },
-    "waiting" : {
-      "localizations" : {
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "en attente"
-          }
-        }
-      }
-    },
-    "~%@ estimated" : {
-      "comment" : "What one scheduled build is expected to cost, from past builds",
-      "localizations" : {
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "~%@ estimées"
-          }
-        }
-      }
-    },
-    "~%@ over %@. Builds estimated from their actions, not yet in a usage export: %lld. The split below follows the same model." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "~%1$@ over %2$@. Builds estimated from their actions, not yet in a usage export: %3$lld. The split below follows the same model."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "~%1$@ sur %2$@. Builds estimés d’après leurs actions, pas encore dans un export d’utilisation : %3$lld. La répartition ci-dessous suit le même modèle."
-          }
-        }
-      }
-    },
-    "~%@ to come" : {
-      "comment" : "Total row of an app's workflows: estimated minutes of its scheduled builds until the cycle resets",
-      "localizations" : {
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "~%@ à venir"
-          }
-        }
-      }
-    },
-    "≈ %@ by the end of the cycle" : {
-      "comment" : "What an app will have used when the cycle resets, at its current pace",
-      "localizations" : {
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "≈ %@ au terme du cycle"
           }
         }
       }

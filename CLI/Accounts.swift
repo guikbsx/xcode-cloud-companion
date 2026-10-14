@@ -127,6 +127,7 @@ nonisolated struct AccountPaths: Sendable, Equatable {
     var buildDetails: URL { support.appending(path: "BuildDetails") }
     var workflowDetails: URL { support.appending(path: "WorkflowDetails") }
     var failureInsights: URL { support.appending(path: "FailureInsights") }
+    var testFlight: URL { support.appending(path: "TestFlight.json") }
     var appIcons: URL { caches.appending(path: "AppIcons") }
     var logs: URL { caches.appending(path: "Logs") }
 

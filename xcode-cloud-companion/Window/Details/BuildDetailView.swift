@@ -16,6 +16,12 @@ struct BuildDetailView: View {
     var ledger: UsageLedger?
     /// The “In Brief” summaries of failed builds; without one the card and the suggested groups do not exist.
     var insights: FailureInsightStore?
+    /// The “Log Excerpt” card of a failed build; without it the card does not exist.
+    var logExcerpts: LogExcerptStore?
+    /// Reads the history of a test of this build's workflow; nil leaves the button out.
+    var testHistory: WorkflowTestsModel?
+    /// The latest TestFlight builds of the account's apps: with Cumulus Pro, the build's road to the testers is drawn from it.
+    var testFlight: TestFlightStore?
 
     @Binding var tab: BuildTab
     /// Bumped by “Compare with #n” beside the commit: the group below starts its comparison.
@@ -23,24 +29,27 @@ struct BuildDetailView: View {
     /// The build whose TestFlight builds have been asked for, answered or not.
     @State private var betaEndedRunID: String?
     @Environment(ProAccess.self) private var access: ProAccess?
+    @Environment(AppleStatusStore.self) private var appleStatus: AppleStatusStore?
     @AppStorage(FailureInsightFeature.settingKey) private var isInsightSettingOn = true
 
     var body: some View {
         TickingView(interval: Self.redrawInterval(for: run)) { now in
-            content(BuildDetailModel(
+            content(now: now, BuildDetailModel(
                 run: run,
                 product: buildStore.snapshot.products.first { $0.id == run.productID },
                 workflow: buildStore.snapshot.workflow(id: run.workflowID),
                 actions: buildStore.snapshot.actionsByRunID[run.id] ?? [],
                 teamID: teamID,
                 now: now,
-                cost: ledger.flatMap { UsageCalculator.cost(of: run, in: buildStore.snapshot, ledger: $0, now: now) }
+                cost: ledger.flatMap { UsageCalculator.cost(of: run, in: buildStore.snapshot, ledger: $0, now: now) },
+                eta: BuildETA(run: run, among: buildStore.snapshot.runs, now: now)
             ))
         }
         .task(id: run) {
             await extrasStore.loadBetaBuilds(for: run)
             betaEndedRunID = run.id
         }
+        .task(id: run.id) { await appleStatus?.sheetDidOpen(for: run) }
     }
 
     /// A running build's durations go on every second until a sync says it ended; a finished build only has its
@@ -49,8 +58,17 @@ struct BuildDetailView: View {
         run.executionProgress == .complete ? 60 : 1
     }
 
-    private func content(_ model: BuildDetailModel) -> some View {
+    private func content(now: Date, _ model: BuildDetailModel) -> some View {
         DetailScroll { columns in
+            if let appleStatus, let event = appleStatus.event(covering: run, at: now) {
+                AppleStatusBanner(
+                    banner: AppleStatusFormat.banner(for: event, stoppedAt: run.finishedDate, now: now),
+                    canWatch: event.isOngoing, isWatching: appleStatus.isWatching,
+                    openStatusPage: { NSWorkspace.shared.open(AppleStatusSchedule.statusPage) },
+                    watch: { appleStatus.startWatching(event) }
+                )
+                .detailPlacement(.full)
+            }
             // Read first on two columns as well: who the build is and how it went, then its context.
             identityCard(model, columns: columns)
                 .accessibilitySortPriority(columns == .two ? 1 : 0)
@@ -66,6 +84,14 @@ struct BuildDetailView: View {
                 BuildFailureCard(run: run, copier: BuildFailureCopier(buildStore: buildStore, extrasStore: extrasStore, logOpener: logOpener))
                     .id(run.id)
                     .detailPlacement(.side)
+                if let logExcerpts, let logOpener, let target = LogExcerptTarget.action(in: buildStore.snapshot.actionsByRunID[run.id] ?? []) {
+                    LogExcerptSection(
+                        run: run, action: target, actionName: model.actions.first { $0.id == target.id }?.name ?? target.name ?? "",
+                        title: logTitle(of: target.id, model: model), store: logExcerpts, logOpener: logOpener, extras: extrasStore.extras(for: run.id)
+                    )
+                    .id(run.id)
+                    .detailPlacement(.side)
+                }
             }
             if let commit = model.commit {
                 Group {
@@ -80,6 +106,8 @@ struct BuildDetailView: View {
             RegressionGroup(run: run, buildStore: buildStore, extrasStore: extrasStore, openBuild: openBuild, compareRequest: compareRequest).id(run.id)
                 .detailPlacement(.side)
             testFlightGroup
+                .detailPlacement(.side)
+            testFlightTimelineGroup(now: now)
                 .detailPlacement(.side)
             if columns == .two, !model.info.isEmpty {
                 facts(model, columns: [GridItem(.flexible(), alignment: .topLeading), GridItem(.flexible(), alignment: .topLeading)])
@@ -148,6 +176,13 @@ struct BuildDetailView: View {
                 }
             }
             .accessibilityElement(children: .combine)
+            if let estimatedEnd = model.estimatedEnd {
+                Label(estimatedEnd, systemImage: "clock")
+                    .font(.callout)
+                    .foregroundStyle(.secondary)
+                    .accessibilityElement(children: .ignore)
+                    .accessibilityLabel(Text(model.spokenEstimatedEnd ?? estimatedEnd))
+            }
             if columns == .two {
                 if !model.frieze.isEmpty {
                     Divider()
@@ -325,6 +360,21 @@ struct BuildDetailView: View {
         }
     }
 
+    /// “From the commit to the testers”, for a build that was handed to TestFlight and that the store has read.
+    @ViewBuilder
+    private func testFlightTimelineGroup(now: Date) -> some View {
+        if access.allows(.testFlightTracking), run.completionStatus == .succeeded, let testFlight,
+           let known = extrasStore.extras(for: run.id)?.betaBuilds?.lazy.compactMap({ testFlight.lookup(buildID: $0.id) }).first {
+            let archive = (buildStore.snapshot.actionsByRunID[run.id] ?? []).first { $0.actionType == .archive && $0.completionStatus == .succeeded }
+            TestFlightTimelineCard(
+                timeline: TestFlightTimeline.make(
+                    build: known.build, observation: known.observation, archiveFinished: archive?.finishedDate ?? run.finishedDate, now: now
+                ),
+                buildLabel: known.build.label
+            )
+        }
+    }
+
     @ViewBuilder
     private var testFlightGroup: some View {
         let known = extrasStore.extras(for: run.id)?.betaBuilds ?? []
@@ -386,7 +436,7 @@ struct BuildDetailView: View {
             case .tests:
                 TestsTabView(
                     results: extras?.testsByAction ?? [:], actions: actions, state: extrasStore.state(.tests, runID: run.id),
-                    insight: openInsight, retry: { Task { await extrasStore.loadTests(for: run, actions: actions) } }
+                    insight: openInsight, history: historyAccess, retry: { Task { await extrasStore.loadTests(for: run, actions: actions) } }
                 )
                 .task(id: run) { await extrasStore.loadTests(for: run, actions: actions) }
             case .problems:
@@ -403,6 +453,14 @@ struct BuildDetailView: View {
                 .task(id: run) { await extrasStore.loadArtifacts(for: run, actions: actions) }
             }
         }
+    }
+
+    private var historyAccess: TestHistoryAccess? {
+        guard let testHistory, let workflowID = run.workflowID else { return nil }
+        return TestHistoryAccess(workflowID: workflowID, tests: testHistory, openBuild: { id in
+            tab = .tests
+            openBuild(id)
+        })
     }
 
     /// What the Tests tab may use: the groups of this build, only while the feature is open.
@@ -428,11 +486,14 @@ struct BuildDetailView: View {
         return logOpener.offersLogs(for: action, knownArtifacts: knownArtifacts(of: actionID))
     }
 
+    private func logTitle(of actionID: String, model: BuildDetailModel) -> String {
+        let name = model.actions.first { $0.id == actionID }?.name ?? ""
+        return [[model.appName, model.numberText].compactMap(\.self).joined(separator: " "), name].filter { !$0.isEmpty }.joined(separator: " – ")
+    }
+
     private func openLogs(of actionID: String, model: BuildDetailModel) {
         guard let action = action(actionID) else { return }
-        let name = model.actions.first { $0.id == actionID }?.name ?? ""
-        let title = [[model.appName, model.numberText].compactMap(\.self).joined(separator: " "), name].filter { !$0.isEmpty }.joined(separator: " – ")
-        logOpener?.start(action, run: run, knownArtifacts: knownArtifacts(of: actionID), title: title)
+        logOpener?.start(action, run: run, knownArtifacts: knownArtifacts(of: actionID), title: logTitle(of: actionID, model: model))
     }
 
     @ViewBuilder

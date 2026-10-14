@@ -147,17 +147,26 @@ final class LogOpener {
     }
 
     func open(_ action: CIBuildAction, run: CIBuildRun, knownArtifacts: [CIArtifact]?, title: String) async {
-        guard !state(of: action.id).isBusy else { return }
+        guard let folder = await fetch(action, run: run, knownArtifacts: knownArtifacts, title: title) else { return }
+        reveal(folder)
+    }
+
+    /// Brings an action's logs into the cache and says where they are, without showing them. The same care as `open`: from
+    /// the cache for a finished build, otherwise one archive, picked by `choose` among the action's files.
+    func fetch(
+        _ action: CIBuildAction, run: CIBuildRun, knownArtifacts: [CIArtifact]?, title: String,
+        choose: ([CIArtifact]) -> CIArtifact? = LogOpener.logArchive(in:)
+    ) async -> URL? {
+        guard !state(of: action.id).isBusy else { return nil }
         // A finished build never changes: what was unpacked once is opened again without a word to Apple.
         if run.executionProgress == .complete, let folder = await cache.folder(actionID: action.id) {
             states[action.id] = .idle
-            reveal(folder)
-            return
+            return folder
         }
         states[action.id] = .preparing
         guard let client = await client() else {
             states[action.id] = .failed(String(localized: "No API key is set up."))
-            return
+            return nil
         }
         do {
             let artifacts: [CIArtifact]
@@ -166,10 +175,10 @@ final class LogOpener {
             } else {
                 artifacts = try await client.artifacts(buildActionID: action.id)
             }
-            guard let archive = Self.logArchive(in: artifacts) else {
+            guard let archive = choose(artifacts) else {
                 actionsWithoutLogs.insert(action.id)
                 states[action.id] = .idle
-                return
+                return nil
             }
             var result = try await fetchFresh(archive, client: client)
             if case .status = result {
@@ -179,12 +188,13 @@ final class LogOpener {
             switch result {
             case .status(let code):
                 states[action.id] = .failed(String(localized: "The link expired or is invalid (HTTP \(code))."))
+                return nil
             case .file(let file):
                 states[action.id] = .unpacking
                 let folder = try await cache.unpack(file, actionID: action.id, name: title)
                 try Task.checkCancellation()
                 states[action.id] = .idle
-                reveal(folder)
+                return folder
             }
         } catch is CancellationError {
             states[action.id] = .idle
@@ -199,6 +209,7 @@ final class LogOpener {
         } catch {
             states[action.id] = .failed(String(localized: "The download could not be completed."))
         }
+        return nil
     }
 
     nonisolated static func logArchive(in artifacts: [CIArtifact]) -> CIArtifact? {

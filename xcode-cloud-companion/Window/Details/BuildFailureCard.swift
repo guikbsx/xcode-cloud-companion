@@ -8,6 +8,8 @@ struct BuildFailureCopier {
     let buildStore: BuildStore
     let extrasStore: BuildExtrasStore
     var logOpener: LogOpener?
+    /// The log excerpt, for Cumulus Pro: added to the text only when the log is already unpacked.
+    var excerpts: LogExcerptStore?
 
     /// What is known now, with no request.
     func knownPrompt(for run: CIBuildRun) -> BuildFailurePrompt {
@@ -32,7 +34,12 @@ struct BuildFailureCopier {
         for action in actions where action.executionProgress == .complete {
             if let folder = await logOpener?.unpackedFolder(of: action.id) { folders[action.id] = folder.path(percentEncoded: false) }
         }
-        return BuildFailurePrompt(run: run, snapshot: buildStore.snapshot, extras: extrasStore.extras(for: run.id), logFolders: folders)
+        let extras = extrasStore.extras(for: run.id)
+        let excerpt = await excerpts?.excerptForPrompt(actions: actions, extras: extras)
+        return BuildFailurePrompt(
+            run: run, snapshot: buildStore.snapshot, extras: extras, logFolders: folders,
+            logExcerpt: excerpt.map { BuildFailurePrompt.LogSection(actionName: $0.actionName, excerpt: $0.excerpt) }
+        )
     }
 
     func copy(_ run: CIBuildRun) async {

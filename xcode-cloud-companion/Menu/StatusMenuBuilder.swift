@@ -6,6 +6,8 @@ struct StatusMenuActions {
     var openUsagePage: () -> Void = {}
     var importUsageExport: () -> Void = {}
     var openSettings: () -> Void = {}
+    /// Apple's system status page, from the line that reports an incident.
+    var openAppleStatusPage: () -> Void = {}
     /// Settings on the Accounts tab, with a new account's form open.
     var addAccount: () -> Void = {}
     var openApp: () -> Void = {}
@@ -35,6 +37,8 @@ struct StatusMenuState {
     /// Every account, when there are several: the rest of the state is the selected one's.
     var accounts: [AccountChoice] = []
     var selectedAccountID: String?
+    /// Apple reports an incident on Xcode Cloud that is still going on, as far as the last reading goes.
+    var hasAppleIncident = false
 
     /// The first synchronization of a key: nothing has been read yet.
     var isFirstSync: Bool { isSyncing && lastSync == nil }
@@ -72,6 +76,17 @@ enum StatusMenuBuilder {
         return title
     }
 
+    /// Said in words, with a tinted mark ahead of them that is not the only carrier.
+    static func appleIncidentItem(open: @escaping () -> Void) -> NSMenuItem {
+        let text = AppleStatusFormat.menuLine()
+        let item = NSMenuItem.action(text, handler: open)
+        let font = NSFont.menuFont(ofSize: 0)
+        let title = NSMutableAttributedString(string: "\u{25B2} ", attributes: [.font: font, .foregroundColor: NSColor.systemOrange])
+        title.append(NSAttributedString(string: text, attributes: [.font: font, .foregroundColor: NSColor.labelColor]))
+        item.attributedTitle = title
+        return item
+    }
+
     /// The row that switches accounts, above everything else; nil while there is one account only.
     static func accountSwitcher(for state: StatusMenuState, actions: StatusMenuActions) -> NSMenuItem? {
         guard state.accounts.count > 1 else { return nil }
@@ -107,6 +122,19 @@ enum StatusMenuBuilder {
         }
 
         var items: [NSMenuItem] = []
+
+        if state.hasAppleIncident {
+            items.append(appleIncidentItem(open: actions.openAppleStatusPage))
+            items.append(.separator())
+        }
+
+        let running = RunningBuildLine.lines(in: state.snapshot, now: state.now).prefix(RunningBuildLine.limit)
+        for line in running {
+            items.append(viewItem(RunningBuildHeaderView(line: line)))
+        }
+        if !running.isEmpty {
+            items.append(.separator())
+        }
 
         let measurement = state.summary?.measurement ?? state.measurement ?? MeasurementProgress()
         if state.isFirstSync || measurement.isMeasuring {
@@ -170,7 +198,9 @@ enum StatusMenuBuilder {
         return String(localized: "Updated \(UsageFormat.relative(lastSync, now: state.now))")
     }
 
-    static func buttonTitle(for summary: UsageSummary?, isFirstSync: Bool = false) -> String {
+    /// The percentage of the plan used; while builds run and `timeLeft` has something to say, that instead.
+    static func buttonTitle(for summary: UsageSummary?, isFirstSync: Bool = false, timeLeft: String? = nil) -> String {
+        if let timeLeft { return timeLeft }
         guard let summary else { return isFirstSync ? "…" : "" }
         return summary.measurement.isMeasuring ? "…" : UsageFormat.compactPercent(summary.writtenFractionUsed)
     }

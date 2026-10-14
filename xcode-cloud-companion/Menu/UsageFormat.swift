@@ -43,6 +43,10 @@ nonisolated enum UsageFormat {
         date.formatted(.dateTime.day().month(.abbreviated).hour().minute().locale(locale))
     }
 
+    static func time(_ date: Date, locale: Locale = .autoupdatingCurrent) -> String {
+        date.formatted(.dateTime.hour().minute().locale(locale))
+    }
+
     static func relative(_ date: Date, now: Date, locale: Locale = .autoupdatingCurrent) -> String {
         let formatter = RelativeDateTimeFormatter()
         formatter.locale = locale
