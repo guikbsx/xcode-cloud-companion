@@ -29,51 +29,91 @@ nonisolated enum UsageImportRouting {
     }
 }
 
-/// Reads the usage exports for every account: the ones waiting in Downloads, then the new ones as they arrive, and
-/// the ones picked by hand. Each is read once and goes to the account whose apps it lists.
+/// Reads the usage exports for every account: the ones waiting in the folder the user chose, then the new ones as they
+/// arrive, and the ones picked by hand. Each is read once and goes to the account whose apps it lists.
 final class UsageImporter {
     private let sessions: () -> [AccountSession]
     private let selected: () -> AccountSession?
-    private let watchedDirectory: URL?
+    private let folder: WatchedFolder
     private let now: () -> Date
     private var watcher: DirectoryWatcher?
+    /// The folder being watched, open to the sandbox until `release()`.
+    private var active: URL?
+    /// The URL whose sandbox access this importer holds.
+    private var accessed: URL?
+    private var isRunning = false
     private var isScanning = false
+    private var needsAnotherScan = false
 
     init(
         sessions: @escaping () -> [AccountSession],
         selected: @escaping () -> AccountSession?,
-        watchedDirectory: URL? = .downloadsDirectory,
+        folder: WatchedFolder,
         now: @escaping () -> Date = { Date() }
     ) {
         self.sessions = sessions
         self.selected = selected
-        self.watchedDirectory = watchedDirectory?.resolvingSymlinksInPath()
+        self.folder = folder
         self.now = now
     }
 
     func start() async {
+        isRunning = true
+        await follow()
+    }
+
+    func stop() {
+        isRunning = false
+        release()
+    }
+
+    /// The user chose another folder, or none: the old one is let go before the new one is read.
+    func folderDidChange() async {
+        guard isRunning else { return }
+        release()
+        await follow()
+    }
+
+    private func follow() async {
+        if active == nil, let url = folder.url {
+            accessed = url.startAccessingSecurityScopedResource() ? url : nil
+            active = url.resolvingSymlinksInPath()
+        }
         await scan()
-        guard let watchedDirectory, watcher == nil else { return }
-        watcher = DirectoryWatcher(url: watchedDirectory) { [weak self] in
+        guard watcher == nil, let active else { return }
+        watcher = DirectoryWatcher(url: active) { [weak self] in
             Task { await self?.scan() }
         }
     }
 
-    func stop() {
+    private func release() {
         watcher = nil
+        accessed?.stopAccessingSecurityScopedResource()
+        accessed = nil
+        active = nil
     }
 
     /// An export nobody chose is only imported when its apps say whose it is: otherwise it waits for a sync, or for the user.
     func scan() async {
-        guard let watchedDirectory, !isScanning else { return }
+        guard isRunning else { return }
+        guard !isScanning else {
+            needsAnotherScan = true
+            return
+        }
         isScanning = true
         defer { isScanning = false }
-        for file in await UsageExportFile.candidates(in: watchedDirectory) where !sessions().contains(where: { $0.usageStore.hasImported(file) }) {
-            guard let export = await read(file, reportingTo: selected()) else { continue }
-            if case .account(let id) = destination(of: export), let session = sessions().first(where: { $0.id == id }) {
-                await session.usageStore.record(export, from: file)
+        repeat {
+            needsAnotherScan = false
+            guard let directory = active else { return }
+            for file in await UsageExportFile.candidates(in: directory) where !sessions().contains(where: { $0.usageStore.hasImported(file) }) {
+                // The folder changed while this one was read: its files are no longer open.
+                guard active == directory else { break }
+                guard let export = await read(file, reportingTo: selected()) else { continue }
+                if case .account(let id) = destination(of: export), let session = sessions().first(where: { $0.id == id }) {
+                    await session.usageStore.record(export, from: file)
+                }
             }
-        }
+        } while needsAnotherScan
     }
 
     /// An export picked by hand goes to the account its apps belong to, and to the one it was picked from when they say

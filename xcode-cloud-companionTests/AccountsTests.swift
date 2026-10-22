@@ -181,7 +181,7 @@ struct AccountsModelTests {
 
     @Test func aKeychainThatRefusesTheKeyMakesNoAccount() async {
         let accounts = TestAccounts()
-        let refusing = AccountsModel(registryStore: accounts.registryStore, defaults: accounts.defaults, migration: nil, watchedDirectory: nil) { account in
+        let refusing = AccountsModel(registryStore: accounts.registryStore, defaults: accounts.defaults, migration: nil) { account in
             AccountSession(
                 account: account, paths: accounts.paths(account.id),
                 settings: SettingsModel(accountID: account.id, store: RefusingCredentialsStore(saving: false), defaults: accounts.defaults),

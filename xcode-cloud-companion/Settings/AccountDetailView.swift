@@ -165,6 +165,7 @@ struct AccountDetailView: View {
                 Label(message, systemImage: usage.lastImportFailed ? "exclamationmark.triangle.fill" : "checkmark.circle.fill")
                     .foregroundStyle(usage.lastImportFailed ? .red : .green)
             }
+            watchedFolderRow
             HStack {
                 Spacer()
                 Button("Import an Export…") { isImportingExport = true }
@@ -174,9 +175,41 @@ struct AccountDetailView: View {
         } footer: {
             VStack(alignment: .leading, spacing: 4) {
                 Text("Without an export, the usage shown is an estimate computed from the builds’ actions.")
-                Text("For Apple's exact figures: in **Xcode Cloud › Usage**, click **Export as CSV**. The app picks the file up from Downloads on its own.")
+                Text("For Apple's exact figures: in **Xcode Cloud › Usage**, click **Export as CSV**. Choose the folder you save it to, usually Downloads, and Cumulus imports it on its own.")
                 if accounts.hasSeveral {
                     Text("An export goes to the account whose apps it lists.")
+                }
+            }
+        }
+    }
+
+    /// The folder where exports are saved, shared by every account; nothing is read until the user picks one.
+    private var watchedFolderRow: some View {
+        let folder = accounts.watchedFolder
+        return LabeledContent("Watched Folder") {
+            HStack(spacing: 8) {
+                if let url = folder.url {
+                    Label {
+                        Text(url.lastPathComponent)
+                            .lineLimit(1)
+                            .truncationMode(.middle)
+                    } icon: {
+                        Image(nsImage: NSWorkspace.shared.icon(forFile: url.path(percentEncoded: false)))
+                            .resizable()
+                            .frame(width: 16, height: 16)
+                    }
+                    .help(url.path(percentEncoded: false))
+                } else {
+                    Text("No folder watched")
+                        .foregroundStyle(.secondary)
+                }
+                Button(folder.url == nil ? "Choose a Folder…" : "Change…") {
+                    if let picked = WatchedFolderPanel.choose() {
+                        folder.choose(picked)
+                    }
+                }
+                if folder.url != nil {
+                    Button("Stop Watching") { folder.forget() }
                 }
             }
         }

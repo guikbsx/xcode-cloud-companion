@@ -57,7 +57,7 @@ final class UsageStore {
 
     init(
         ledgerStore: UsageLedgerStore = UsageLedgerStore(),
-        watchedDirectory: URL? = .downloadsDirectory,
+        watchedDirectory: URL? = nil,
         now: @escaping () -> Date = { Date() }
     ) {
         self.ledgerStore = ledgerStore

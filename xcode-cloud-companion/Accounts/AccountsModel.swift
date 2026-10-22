@@ -53,9 +53,10 @@ final class AccountsModel {
     @ObservationIgnored private lazy var importer = UsageImporter(
         sessions: { [weak self] in self?.sessions ?? [] },
         selected: { [weak self] in self?.selected },
-        watchedDirectory: watchedDirectory
+        folder: watchedFolder
     )
-    private let watchedDirectory: URL?
+    /// Where the usage exports are saved, for every account; nothing is watched until the user chooses it.
+    let watchedFolder: WatchedFolder
     private var startup: Task<Void, Never>?
     private var registryWrite: Task<Void, Never>?
     private var isRunning = false
@@ -65,13 +66,16 @@ final class AccountsModel {
         registryStore: AccountRegistryStore = AccountRegistryStore(),
         defaults: UserDefaults = .standard,
         migration: AccountMigration? = AccountMigration(),
-        watchedDirectory: URL? = .downloadsDirectory,
+        watchedFolder: WatchedFolder? = nil,
         makeSession: ((Account) -> AccountSession)? = nil
     ) {
         self.registryStore = registryStore
         self.migration = migration
-        self.watchedDirectory = watchedDirectory
+        self.watchedFolder = watchedFolder ?? WatchedFolder(defaults: defaults)
         self.makeSession = makeSession ?? { AccountSession.live($0, defaults: defaults) }
+        self.watchedFolder.onChange = { [weak self] in
+            Task { await self?.importer.folderDidChange() }
+        }
         // Before the first account reads its plan: what was saved before accounts existed is its own.
         migration?.adoptPreferences(in: defaults)
     }

@@ -144,9 +144,13 @@ final class TestAccounts {
 
     /// Another model over the same folder and preferences, as after a restart of the app.
     func makeModel(migration: AccountMigration? = nil, watchedDirectory: URL? = nil) -> AccountsModel {
-        AccountsModel(registryStore: registryStore, defaults: defaults, migration: migration, watchedDirectory: watchedDirectory) { [self] account in
+        let model = AccountsModel(registryStore: registryStore, defaults: defaults, migration: migration) { [self] account in
             session(account)
         }
+        if let watchedDirectory {
+            model.watchedFolder.choose(watchedDirectory)
+        }
+        return model
     }
 
     private func session(_ account: Account) -> AccountSession {

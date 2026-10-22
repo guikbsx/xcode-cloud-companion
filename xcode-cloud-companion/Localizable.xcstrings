@@ -2825,6 +2825,16 @@
         }
       }
     },
+    "Choose a Folder…" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choisir un dossier…"
+          }
+        }
+      }
+    },
     "Choose a usage export downloaded from App Store Connect › Xcode Cloud › Usage." : {
       "comment" : "Keep \"Xcode Cloud\", \"App Store Connect\" and \"TestFlight\" untranslated as product names.",
       "localizations" : {
@@ -2832,6 +2842,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Choisissez un export d’utilisation téléchargé depuis App Store Connect › Xcode Cloud › Utilisation."
+          }
+        }
+      }
+    },
+    "Choose the folder where you save App Store Connect’s usage exports. Cumulus imports the ones it finds there." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choisissez le dossier où vous enregistrez les exports d’utilisation d’App Store Connect. Cumulus importe ceux qu’il y trouve."
           }
         }
       }
@@ -4709,13 +4729,13 @@
         }
       }
     },
-    "For Apple's exact figures: in **Xcode Cloud › Usage**, click **Export as CSV**. The app picks the file up from Downloads on its own." : {
+    "For Apple's exact figures: in **Xcode Cloud › Usage**, click **Export as CSV**. Choose the folder you save it to, usually Downloads, and Cumulus imports it on its own." : {
       "comment" : "Keep \"Xcode Cloud\", \"App Store Connect\" and \"TestFlight\" untranslated as product names.",
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Pour les chiffres exacts d’Apple : dans **Xcode Cloud › Utilisation**, cliquez sur **Exporter au format CSV**. L’app reprend le fichier dans Téléchargements toute seule."
+            "value" : "Pour les chiffres exacts d’Apple : dans **Xcode Cloud › Utilisation**, cliquez sur **Exporter au format CSV**. Choisissez le dossier où vous l’enregistrez, souvent Téléchargements, et Cumulus l’importe tout seul."
           }
         }
       }
@@ -6352,6 +6372,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Aucun test instable dans les builds analysés."
+          }
+        }
+      }
+    },
+    "No folder watched" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aucun dossier surveillé"
           }
         }
       }
@@ -8821,6 +8851,16 @@
         }
       }
     },
+    "Stop Watching" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Arrêter la surveillance"
+          }
+        }
+      }
+    },
     "Stopped: too few requests left this hour. Try again later." : {
       "localizations" : {
         "fr" : {
@@ -10541,6 +10581,27 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Avertissement"
+          }
+        }
+      }
+    },
+    "Watch" : {
+      "comment" : "Button of the panel that picks the folder where usage exports are saved",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Surveiller"
+          }
+        }
+      }
+    },
+    "Watched Folder" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dossier surveillé"
           }
         }
       }
