@@ -16,6 +16,8 @@ nonisolated struct BuildNotificationRules: Sendable, Equatable {
     var mutedProductIDs: Set<String> = []
     /// A build started by `cumulus run` or an MCP tool: the user learns at once that an agent spent minutes.
     var agentLaunches = true
+    /// A TestFlight build given to groups, taken from them or expired by `cumulus testflight` or an MCP tool.
+    var agentTestFlight = true
     /// A workflow whose successful builds got slower, said once by the build that starts it.
     var slowdown = true
     /// A TestFlight build that external testers can install, said once.

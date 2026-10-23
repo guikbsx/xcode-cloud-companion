@@ -12,6 +12,16 @@
         }
       }
     },
+    "“%@” receives every build by itself." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "« %@ » reçoit d’office tous les builds."
+          }
+        }
+      }
+    },
     "(optional)" : {
       "localizations" : {
         "fr" : {
@@ -579,6 +589,17 @@
         }
       }
     },
+    "%@ was not expired." : {
+      "comment" : "After a distribution: the previous build could not be expired; the placeholder is a build such as “1.4 (411)”",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ n’a pas été expiré."
+          }
+        }
+      }
+    },
     "%@, %@, %@" : {
       "localizations" : {
         "en" : {
@@ -950,6 +971,47 @@
         }
       }
     },
+    "%lld groups to add" : {
+      "comment" : "Foot of the TestFlight card: how many groups would be given the build; the placeholder is a number",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld group to add"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld groups to add"
+                }
+              }
+            }
+          }
+        },
+        "fr" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld groupe à ajouter"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld groupes à ajouter"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "%lld more in the tabs below" : {
       "localizations" : {
         "en" : {
@@ -1117,6 +1179,47 @@
         }
       }
     },
+    "%lld testers" : {
+      "comment" : "Beside a TestFlight group: how many testers it has; the placeholder is a number",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld tester"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld testers"
+                }
+              }
+            }
+          }
+        },
+        "fr" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld testeur"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld testeurs"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "%lld tests" : {
       "comment" : "Number of failed tests of a build, in the build list",
       "localizations" : {
@@ -1170,6 +1273,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%1$lld tests · %2$lld en échec"
+          }
+        }
+      }
+    },
+    "%lld to remove" : {
+      "comment" : "Foot of the TestFlight card: how many groups would lose the build; the placeholder is a number",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld à retirer"
           }
         }
       }
@@ -1383,6 +1497,16 @@
         }
       }
     },
+    "A distribution is already in progress." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Un envoi est déjà en cours."
+          }
+        }
+      }
+    },
     "A launch is already in progress." : {
       "localizations" : {
         "fr" : {
@@ -1419,6 +1543,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Une adresse Slack, Discord ou toute autre qui reçoit un message JSON. Gardée dans le trousseau."
+          }
+        }
+      }
+    },
+    "A TestFlight build was given to groups or expired by an agent" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Un build TestFlight a été donné à des groupes ou expiré par un agent"
           }
         }
       }
@@ -1625,6 +1759,22 @@
         }
       }
     },
+    "Agents already made %lld TestFlight changes in the last hour; the next is possible at %@." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Agents already made %1$lld TestFlight changes in the last hour; the next is possible at %2$@."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Les agents ont déjà fait %1$lld modifications TestFlight dans la dernière heure ; la prochaine sera possible à %2$@."
+          }
+        }
+      }
+    },
     "Agents already started %lld builds in the last hour; the next is possible at %@." : {
       "localizations" : {
         "en" : {
@@ -1647,6 +1797,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Les agents viennent avec Cumulus Pro"
+          }
+        }
+      }
+    },
+    "Agents may make ten such changes an hour per account; an expiration can’t be undone." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Les agents peuvent faire dix modifications de ce genre par heure et par compte ; une expiration ne se défait pas."
           }
         }
       }
@@ -1731,6 +1891,23 @@
         }
       }
     },
+    "Already done: %@. %@" : {
+      "comment" : "Before a message about a distribution that stopped half way; the first placeholder lists what Apple accepted, such as “the test notes, the new groups”",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Already done: %1$@. %2$@"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Déjà fait : %1$@. %2$@"
+          }
+        }
+      }
+    },
     "Always make a clean build" : {
       "localizations" : {
         "fr" : {
@@ -1758,6 +1935,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Une app manque ? Elle n’a pas encore de workflow Xcode Cloud, ou la clé n’a pas accès à cette équipe."
+          }
+        }
+      }
+    },
+    "An expiration can’t be undone." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Une expiration ne se défait pas."
+          }
+        }
+      }
+    },
+    "An expired build can’t be distributed." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Un build expiré ne se distribue plus."
           }
         }
       }
@@ -1935,6 +2132,16 @@
         }
       }
     },
+    "Apple accepted the change. The card shows it as soon as it can read the build." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apple a accepté le changement. La carte l’affichera dès qu’elle pourra relire le build."
+          }
+        }
+      }
+    },
     "Apple accepted the launch; the build is not in the list yet." : {
       "localizations" : {
         "fr" : {
@@ -1951,6 +2158,37 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Apple a accepté le lancement. Le build n’est pas encore dans la liste : il apparaîtra à la prochaine synchronisation. Ne le relancez pas."
+          }
+        }
+      }
+    },
+    "Apple beta review first" : {
+      "comment" : "Under a TestFlight group in the confirmation: its testers get the build after Apple's beta review\nUnder an external TestFlight group: its testers get a build after Apple's beta review",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Revue bêta d’Apple d’abord"
+          }
+        }
+      }
+    },
+    "Apple could not process this build, so it can’t be distributed." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apple n’a pas pu traiter ce build : il ne peut pas être distribué."
+          }
+        }
+      }
+    },
+    "Apple did not confirm the change, and the build could not be read back. Check it in App Store Connect before trying again." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apple n’a pas confirmé le changement, et le build n’a pas pu être relu. Vérifiez-le dans App Store Connect avant de réessayer."
           }
         }
       }
@@ -1975,12 +2213,42 @@
         }
       }
     },
+    "Apple did not confirm the change. The card now shows the groups as Apple has them; look them over before trying again." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apple n’a pas confirmé le changement. La carte montre maintenant les groupes tels qu’Apple les a ; vérifiez-les avant de réessayer."
+          }
+        }
+      }
+    },
     "Apple did not confirm the change. The sheet now shows the workflow as Apple has it; look it over before trying again." : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Apple n’a pas confirmé la modification. La feuille montre maintenant le workflow tel qu’Apple l’a ; relisez-le avant de réessayer."
+          }
+        }
+      }
+    },
+    "Apple did not confirm the expiration, and the build could not be read back. Check it in App Store Connect before trying again." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apple n’a pas confirmé l’expiration, et le build n’a pas pu être relu. Vérifiez-le dans App Store Connect avant de réessayer."
+          }
+        }
+      }
+    },
+    "Apple did not confirm the expiration. The card now shows the build as Apple has it; look it over before trying again." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apple n’a pas confirmé l’expiration. La carte montre maintenant le build tel qu’Apple le tient ; vérifiez-le avant de réessayer."
           }
         }
       }
@@ -2072,6 +2340,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Apple limite les requêtes de cette clé. Cumulus réessaie tout seul."
+          }
+        }
+      }
+    },
+    "Apple is still processing the build. The groups open when the processing ends." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apple traite encore le build. Les groupes s’ouvriront à la fin du traitement."
+          }
+        }
+      }
+    },
+    "Apple is waiting for your answer about encryption before any distribution." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apple attend votre réponse sur le chiffrement avant toute distribution."
           }
         }
       }
@@ -2170,6 +2458,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "La limite horaire de requêtes d’Apple est atteinte. Rien n’a démarré ; réessayez plus tard."
+          }
+        }
+      }
+    },
+    "Apple’s hourly request limit is reached. The build was not expired; try again later." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La limite horaire de requêtes d’Apple est atteinte. Le build n’a pas été expiré ; réessayez plus tard."
+          }
+        }
+      }
+    },
+    "Apple’s hourly request limit is reached. The rest was not sent; try again later." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La limite horaire de requêtes d’Apple est atteinte. Le reste n’a pas été envoyé ; réessayez plus tard."
           }
         }
       }
@@ -2336,6 +2644,17 @@
         }
       }
     },
+    "available right away" : {
+      "comment" : "Under a TestFlight group in the confirmation: its testers get the build at once",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "disponible tout de suite"
+          }
+        }
+      }
+    },
     "Available to testers" : {
       "comment" : "Last step of the TestFlight timeline",
       "localizations" : {
@@ -2353,6 +2672,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Durée moyenne"
+          }
+        }
+      }
+    },
+    "Awaiting review" : {
+      "comment" : "State of a TestFlight group's access: the beta review has not started",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "En attente de revue"
           }
         }
       }
@@ -2401,6 +2731,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Depuis %@"
+          }
+        }
+      }
+    },
+    "Beta review" : {
+      "comment" : "Chip of an external TestFlight group in the confirmation: Apple reviews the build first",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Revue bêta"
           }
         }
       }
@@ -2794,6 +3135,17 @@
         }
       }
     },
+    "Change the groups of %@?" : {
+      "comment" : "Confirmation title: the placeholder is a build such as “1.4 (412)”",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Modifier les groupes de %@ ?"
+          }
+        }
+      }
+    },
     "Change…" : {
       "localizations" : {
         "fr" : {
@@ -2893,11 +3245,22 @@
       }
     },
     "Claude Code, Codex and Xcode’s agents read what the app already knows: builds, tests, the plan. They start a build only when the key is set to Read + Build, three times an hour per account at most, and you are told each time." : {
+      "extractionState" : "stale",
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Claude Code, Codex et les agents d’Xcode lisent ce que l’app sait déjà : les builds, les tests, le forfait. Ils ne lancent un build que si la clé est en « Lecture + Build », trois fois par heure et par compte au plus, et vous en êtes prévenu à chaque fois."
+          }
+        }
+      }
+    },
+    "Claude Code, Codex and Xcode’s agents read what the app already knows: builds, tests, the plan. They start a build, give a TestFlight build to groups or expire one only when the key is set to Read + Build, within an hourly limit per account, and you are told each time." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Claude Code, Codex et les agents d’Xcode lisent ce que l’app sait déjà : les builds, les tests, le forfait. Ils ne lancent un build, ne donnent un build TestFlight à des groupes ou n’en expirent un que si la clé est en « Lecture + Build », dans une limite horaire par compte, et vous en êtes prévenu à chaque fois."
           }
         }
       }
@@ -3129,6 +3492,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Copier"
+          }
+        }
+      }
+    },
+    "Copy Build Number" : {
+      "comment" : "Menu item of the TestFlight card",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Copier le numéro de build"
           }
         }
       }
@@ -3724,6 +4098,16 @@
         }
       }
     },
+    "Distribute to a Group" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Distribuer à un groupe"
+          }
+        }
+      }
+    },
     "Distribution" : {
       "comment" : "Category of a failed build: exporting or uploading the build failed",
       "localizations" : {
@@ -4203,6 +4587,50 @@
         }
       }
     },
+    "Expire" : {
+      "comment" : "Button that expires a TestFlight build for good",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Expirer"
+          }
+        }
+      }
+    },
+    "Expire %@" : {
+      "comment" : "Checkbox of the confirmation that gives a build to groups: the placeholder is the previous build such as “1.4 (411)”",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Expirer %@"
+          }
+        }
+      }
+    },
+    "Expire %@?" : {
+      "comment" : "Confirmation title: the placeholder is an app and a build such as “Brioche 1.4 (412)”",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Expirer %@ ?"
+          }
+        }
+      }
+    },
+    "Expire This Build" : {
+      "comment" : "Button of the TestFlight card, beside Give Access: makes the build unavailable for testing for good, after a confirmation",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Expirer ce build"
+          }
+        }
+      }
+    },
     "Expired" : {
       "comment" : "State of a TestFlight build that stopped working after 90 days",
       "localizations" : {
@@ -4266,6 +4694,17 @@
         }
       }
     },
+    "Expiring…" : {
+      "comment" : "State of a TestFlight build while Apple expires it",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Expiration…"
+          }
+        }
+      }
+    },
     "Export %@" : {
       "localizations" : {
         "fr" : {
@@ -4292,6 +4731,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Archive exportée"
+          }
+        }
+      }
+    },
+    "External" : {
+      "comment" : "Heading of the external TestFlight groups",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Externes"
           }
         }
       }
@@ -4862,12 +5312,106 @@
         }
       }
     },
+    "Give %@ to %lld groups?" : {
+      "comment" : "Confirmation title: the first placeholder is a build such as “1.4 (412)”, the second a number of groups",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Give %1$@ to %2$lld group?"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Give %1$@ to %2$lld groups?"
+                }
+              }
+            }
+          }
+        },
+        "fr" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Donner %1$@ à %2$lld groupe ?"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Donner %1$@ à %2$lld groupes ?"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "Give a build to your TestFlight groups, or take it from them, without opening App Store Connect." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Donnez un build à vos groupes TestFlight, ou retirez-le-leur, sans ouvrir App Store Connect."
+          }
+        }
+      }
+    },
+    "Give a TestFlight build to groups, or expire it" : {
+      "comment" : "Settings, Agents: what an agent can do, third line",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Donner un build TestFlight à des groupes, ou l’expirer"
+          }
+        }
+      }
+    },
+    "Give Access" : {
+      "comment" : "Button that gives a TestFlight build to groups",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Donner accès"
+          }
+        }
+      }
+    },
+    "Given to %@" : {
+      "comment" : "Banner body: the placeholder lists the TestFlight groups an agent gave a build to",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Donné à %@"
+          }
+        }
+      }
+    },
     "Gray" : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Gris"
+          }
+        }
+      }
+    },
+    "Groups" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Groupes"
           }
         }
       }
@@ -5109,6 +5653,17 @@
         }
       }
     },
+    "In review" : {
+      "comment" : "State of a TestFlight group's access: the beta review is looking at the build",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "En revue"
+          }
+        }
+      }
+    },
     "In the keychain" : {
       "localizations" : {
         "fr" : {
@@ -5188,6 +5743,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Installée dans %@. Essayez « cumulus status » dans Terminal."
+          }
+        }
+      }
+    },
+    "Internal" : {
+      "comment" : "Heading of the internal TestFlight groups",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Internes"
           }
         }
       }
@@ -5855,6 +6421,17 @@
         }
       }
     },
+    "loses access to the build" : {
+      "comment" : "Under a TestFlight group in the confirmation: its testers can no longer install the build",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "n’aura plus accès au build"
+          }
+        }
+      }
+    },
     "macOS" : {
       "localizations" : {
         "fr" : {
@@ -6071,6 +6648,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Mixte"
+          }
+        }
+      }
+    },
+    "More Actions" : {
+      "comment" : "Accessibility label of the menu on the TestFlight card",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Plus d’actions"
           }
         }
       }
@@ -6386,6 +6974,16 @@
         }
       }
     },
+    "No group has this build." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aucun groupe n’a ce build."
+          }
+        }
+      }
+    },
     "No internet connection." : {
       "localizations" : {
         "fr" : {
@@ -6620,6 +7218,17 @@
         }
       }
     },
+    "Not sent" : {
+      "comment" : "State of a TestFlight build whose distribution Apple refused",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Non envoyé"
+          }
+        }
+      }
+    },
     "Not set" : {
       "localizations" : {
         "fr" : {
@@ -6681,6 +7290,16 @@
         }
       }
     },
+    "Nothing was changed." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rien n’a été changé."
+          }
+        }
+      }
+    },
     "Notifications" : {
       "comment" : "Settings tab",
       "localizations" : {
@@ -6728,6 +7347,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Prévenir quand c’est rétabli"
+          }
+        }
+      }
+    },
+    "Notify testers" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Prévenir les testeurs"
           }
         }
       }
@@ -6925,6 +7554,16 @@
         }
       }
     },
+    "Only a processed build can be expired." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Seul un build traité peut être expiré."
+          }
+        }
+      }
+    },
     "Only an address that starts with https:// is accepted." : {
       "localizations" : {
         "fr" : {
@@ -6941,6 +7580,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Seuls le titulaire du compte et les admins de l’équipe peuvent créer une clé d’équipe."
+          }
+        }
+      }
+    },
+    "Only when the account’s key is set to Read + Build, and ten changes an hour per account at most. An expiration can’t be undone. A notification tells you each time; Settings › Notifications can turn it off." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Seulement si la clé du compte est en « Lecture + Build », et dix modifications par heure et par compte au plus. Une expiration ne se défait pas. Une notification vous prévient à chaque fois ; elle se coupe dans Réglages › Notifications."
           }
         }
       }
@@ -6997,6 +7646,7 @@
       }
     },
     "Open in App Store Connect" : {
+      "comment" : "Menu item of the TestFlight card",
       "localizations" : {
         "fr" : {
           "stringUnit" : {
@@ -7053,6 +7703,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ouvrir les réglages de notifications…"
+          }
+        }
+      }
+    },
+    "Open Settings…" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ouvrir les Réglages…"
           }
         }
       }
@@ -7333,11 +7993,22 @@
       }
     },
     "Pause a workflow, change its Xcode version" : {
+      "extractionState" : "stale",
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Mettre un workflow en pause, changer sa version d’Xcode"
+          }
+        }
+      }
+    },
+    "Pause a workflow, change its Xcode version, give a build to your TestFlight groups" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mettre un workflow en pause, changer sa version d’Xcode, donner un build à vos groupes TestFlight"
           }
         }
       }
@@ -7785,6 +8456,17 @@
         }
       }
     },
+    "Receives every build" : {
+      "comment" : "Under an internal TestFlight group that gets every build by itself",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reçoit tous les builds"
+          }
+        }
+      }
+    },
     "Redeem a Code…" : {
       "localizations" : {
         "fr" : {
@@ -7838,6 +8520,17 @@
         }
       }
     },
+    "Rejected" : {
+      "comment" : "State of a TestFlight group's access: the beta review turned the build down",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Refusé"
+          }
+        }
+      }
+    },
     "Rejected in beta review" : {
       "comment" : "State of a TestFlight build the beta review turned down",
       "localizations" : {
@@ -7867,6 +8560,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Retirer"
+          }
+        }
+      }
+    },
+    "Remove Access" : {
+      "comment" : "Button that takes a TestFlight build from groups",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Retirer l’accès"
           }
         }
       }
@@ -7929,6 +8633,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Retirer…"
+          }
+        }
+      }
+    },
+    "Removed" : {
+      "comment" : "Chip of a TestFlight group in the confirmation: it loses the build",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Retiré"
           }
         }
       }
@@ -8100,6 +8815,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Réactiver…"
+          }
+        }
+      }
+    },
+    "Right away" : {
+      "comment" : "Chip of a TestFlight group in the confirmation: its testers get the build at once",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tout de suite"
           }
         }
       }
@@ -8304,6 +9030,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Envoyer les alertes ailleurs est une fonction de Cumulus Pro. Votre adresse et vos choix sont conservés."
+          }
+        }
+      }
+    },
+    "Sending…" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Envoi…"
           }
         }
       }
@@ -8830,6 +9566,47 @@
         }
       }
     },
+    "Still in testing for %lld groups. This can’t be undone." : {
+      "comment" : "Under the checkbox that expires the previous build; the placeholder is a number of groups",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Still in testing for %lld group. This can’t be undone."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Still in testing for %lld groups. This can’t be undone."
+                }
+              }
+            }
+          }
+        },
+        "fr" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Encore en test pour %lld groupe. Ne se défait pas."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Encore en test pour %lld groupes. Ne se défait pas."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "Still to measure" : {
       "comment" : "Column of the usage gauge while the first figures are being measured.",
       "localizations" : {
@@ -9025,6 +9802,58 @@
         }
       }
     },
+    "Take %@ from %lld groups?" : {
+      "comment" : "Confirmation title: the first placeholder is a build such as “1.4 (412)”, the second a number of groups",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Take %1$@ from %2$lld group?"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Take %1$@ from %2$lld groups?"
+                }
+              }
+            }
+          }
+        },
+        "fr" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Retirer %1$@ de %2$lld groupe ?"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Retirer %1$@ de %2$lld groupes ?"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "Taken from %@" : {
+      "comment" : "Banner body: the placeholder lists the TestFlight groups an agent took a build from",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Retiré de %@"
+          }
+        }
+      }
+    },
     "Terms of Use" : {
       "localizations" : {
         "fr" : {
@@ -9085,6 +9914,16 @@
         }
       }
     },
+    "Test notes" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Notes de test"
+          }
+        }
+      }
+    },
     "Test products" : {
       "localizations" : {
         "fr" : {
@@ -9132,6 +9971,39 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "TestFlight et App Store"
+          }
+        }
+      }
+    },
+    "TestFlight build expired by an agent" : {
+      "comment" : "Banner title: an agent expired a TestFlight build, which cannot be undone",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Build TestFlight expiré par un agent"
+          }
+        }
+      }
+    },
+    "TestFlight build given by an agent" : {
+      "comment" : "Banner title: an agent gave a TestFlight build to groups",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Build TestFlight donné par un agent"
+          }
+        }
+      }
+    },
+    "TestFlight groups changed by an agent" : {
+      "comment" : "Banner title: an agent took a TestFlight build from groups",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Groupes TestFlight modifiés par un agent"
           }
         }
       }
@@ -9235,6 +10107,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Tests, non répartis par destination"
+          }
+        }
+      }
+    },
+    "The %lld testers of %@ will no longer be able to install it." : {
+      "comment" : "Expire confirmation: the first placeholder is a number of testers, the second lists the groups that lose the build",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Les %lld testeurs de %@ ne pourront plus l’installer."
           }
         }
       }
@@ -9366,6 +10249,16 @@
         }
       }
     },
+    "The beta review in progress stops." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La revue bêta en cours s’arrête."
+          }
+        }
+      }
+    },
     "The beta review passed." : {
       "comment" : "Banner body: a TestFlight build became available after its beta review",
       "localizations" : {
@@ -9377,12 +10270,33 @@
         }
       }
     },
+    "the beta review request" : {
+      "comment" : "Part of a list of what a distribution already did",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "la demande de revue bêta"
+          }
+        }
+      }
+    },
     "The build external testers are on expires within a week" : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Le build des testeurs externes expire dans la semaine"
+          }
+        }
+      }
+    },
+    "The build’s test notes could not be read, so none was written." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Les notes de test du build n’ont pas pu être lues, donc aucune n’a été écrite."
           }
         }
       }
@@ -9475,6 +10389,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "La jauge et le pourcentage de la barre des menus apparaissent une fois tous les builds du cycle mesurés."
+          }
+        }
+      }
+    },
+    "The groups of the app could not be read from App Store Connect." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Les groupes de l’app n’ont pas pu être lus dans App Store Connect."
+          }
+        }
+      }
+    },
+    "The groups of the new build were updated." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Les groupes du nouveau build ont été mis à jour."
           }
         }
       }
@@ -9720,6 +10654,28 @@
         }
       }
     },
+    "the new groups" : {
+      "comment" : "Part of a list of what a distribution already did",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "les nouveaux groupes"
+          }
+        }
+      }
+    },
+    "the notification setting" : {
+      "comment" : "Part of a list of what a distribution already did",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "le réglage de notification"
+          }
+        }
+      }
+    },
     "The open pull requests couldn’t be read: closed ones may still show." : {
       "localizations" : {
         "fr" : {
@@ -9781,6 +10737,17 @@
         }
       }
     },
+    "the removed groups" : {
+      "comment" : "Part of a list of what a distribution already did",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "les groupes retirés"
+          }
+        }
+      }
+    },
     "The scheduled builds still to run this cycle, and what they are likely to cost." : {
       "localizations" : {
         "fr" : {
@@ -9802,6 +10769,27 @@
         }
       }
     },
+    "the test notes" : {
+      "comment" : "Part of a list of what a distribution already did",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "les notes de test"
+          }
+        }
+      }
+    },
+    "The test notes couldn’t be read, so they are left as they are." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Les notes de test n’ont pas pu être lues : elles restent telles quelles."
+          }
+        }
+      }
+    },
     "The test that fails then passes on the same commit, and the ones that cost the most minutes." : {
       "extractionState" : "stale",
       "localizations" : {
@@ -9819,6 +10807,28 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Le test qui échoue puis réussit sur le même commit, ceux qui coûtent le plus de minutes, et l’histoire d’un test sur ses trente derniers builds."
+          }
+        }
+      }
+    },
+    "The tester of %@ will no longer be able to install it." : {
+      "comment" : "Expire confirmation: the placeholder lists the groups that lose the build",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Le testeur de %@ ne pourra plus l’installer."
+          }
+        }
+      }
+    },
+    "The testers of %@ will no longer be able to install it." : {
+      "comment" : "Expire confirmation: the placeholder lists the groups that lose the build",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Les testeurs de %@ ne pourront plus l’installer."
           }
         }
       }
@@ -9893,6 +10903,16 @@
         }
       }
     },
+    "There is nothing to change." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Il n’y a rien à changer."
+          }
+        }
+      }
+    },
     "This account is paused" : {
       "localizations" : {
         "fr" : {
@@ -9909,6 +10929,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ce compte est en pause : rien n’est envoyé pour lui tant que Cumulus Pro n’est pas de retour."
+          }
+        }
+      }
+    },
+    "This account’s key is read-only: nothing was sent." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La clé de ce compte est en lecture seule : rien n’a été envoyé."
+          }
+        }
+      }
+    },
+    "This account’s key is read-only." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La clé de ce compte est en lecture seule."
           }
         }
       }
@@ -10056,6 +11096,26 @@
         }
       }
     },
+    "This key can’t distribute builds. It needs an Admin or App Manager key." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cette clé ne peut pas distribuer de builds. Il faut une clé Admin ou App Manager."
+          }
+        }
+      }
+    },
+    "This key can’t expire builds. It needs an Admin or App Manager key." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cette clé ne peut pas expirer de builds. Il faut une clé Admin ou App Manager."
+          }
+        }
+      }
+    },
     "This key cannot read TestFlight." : {
       "localizations" : {
         "fr" : {
@@ -10170,6 +11230,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Seuil"
+          }
+        }
+      }
+    },
+    "To complete" : {
+      "comment" : "State of a TestFlight build whose export compliance answer is missing",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "À compléter"
           }
         }
       }
@@ -10706,7 +11777,18 @@
         }
       }
     },
+    "When an agent acts" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quand un agent agit"
+          }
+        }
+      }
+    },
     "When an agent starts a build" : {
+      "extractionState" : "stale",
       "localizations" : {
         "fr" : {
           "stringUnit" : {

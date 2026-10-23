@@ -55,6 +55,7 @@ struct ProCommandTests {
 
     private static let locked: [[String]] = [
         ["accounts"], ["apps"], ["builds"], ["build", "Alpha#44"], ["workflows"], ["usage"], ["open", "Alpha#44"], ["refresh"], ["run", "CI", "--yes"],
+        ["testflight", "Alpha#44"], ["testflight", "give", "Alpha#44", "--group", "QA", "--yes"], ["testflight", "expire", "Alpha#44", "--yes"],
     ]
 
     @Test(arguments: locked)

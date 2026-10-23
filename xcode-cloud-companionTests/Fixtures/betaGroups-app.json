@@ -1,0 +1,60 @@
+{
+  "data": [
+    {
+      "type": "betaGroups",
+      "id": "a11ce009-0000-4000-8000-000000001009",
+      "attributes": {
+        "name": "Internal",
+        "isInternalGroup": true,
+        "hasAccessToAllBuilds": true,
+        "publicLinkEnabled": false
+      }
+    },
+    {
+      "type": "betaGroups",
+      "id": "a11ce00a-0000-4000-8000-00000000100a",
+      "attributes": {
+        "name": "External testers",
+        "isInternalGroup": false,
+        "hasAccessToAllBuilds": false,
+        "publicLinkEnabled": true
+      }
+    },
+    {
+      "type": "betaGroups",
+      "id": "a11ce00d-0000-4000-8000-00000000100d",
+      "attributes": {
+        "name": "Friends",
+        "isInternalGroup": false,
+        "hasAccessToAllBuilds": false,
+        "publicLinkEnabled": false
+      }
+    },
+    {
+      "type": "betaGroups",
+      "id": "a11ce00e-0000-4000-8000-00000000100e",
+      "attributes": {
+        "name": "QA",
+        "isInternalGroup": true,
+        "hasAccessToAllBuilds": false,
+        "publicLinkEnabled": false
+      }
+    },
+    {
+      "type": "betaGroups",
+      "id": "a11ce00f-0000-4000-8000-00000000100f",
+      "attributes": {
+        "isInternalGroup": false
+      }
+    }
+  ],
+  "links": {
+    "self": "https://api.appstoreconnect.apple.com/v1/apps/1000000001/betaGroups?limit=200"
+  },
+  "meta": {
+    "paging": {
+      "total": 5,
+      "limit": 200
+    }
+  }
+}

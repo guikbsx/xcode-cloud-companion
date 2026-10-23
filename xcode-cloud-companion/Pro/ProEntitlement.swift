@@ -93,6 +93,8 @@ nonisolated enum ProFeature: String, CaseIterable, Sendable {
     /// The TestFlight card of an app, the commit-to-testers timeline of a build, and the banners for a build that becomes
     /// available to external testers or is about to expire. The card of a build's TestFlight builds stays free.
     case testFlightTracking
+    /// Giving a build to TestFlight groups, and taking it from them, from the build's card.
+    case testFlightDistribution
     case regressions
     /// The summary line and the suggested groups, written on this Mac by Apple Intelligence.
     case failureInsight

@@ -92,6 +92,8 @@
 				Sync/BuildSnapshot.swift,
 				Sync/BuildSynchronizer.swift,
 				Sync/SharedContainer.swift,
+				TestFlight/TestFlightFiles.swift,
+				TestFlight/TestFlightModels.swift,
 				Usage/BilledUsage.swift,
 				Usage/DirectoryWatcher.swift,
 				Usage/UsageEstimator.swift,

@@ -90,6 +90,7 @@ nonisolated struct JSONAPIIncludedResource: Decodable, Sendable {
         let internalBuildState: String?
         let externalBuildState: String?
         let betaReviewState: String?
+        let autoNotifyEnabled: Bool?
         let submittedDate: Date?
         let isInternalGroup: Bool?
         let platform: String?

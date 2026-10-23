@@ -12,7 +12,7 @@ nonisolated struct MCPServer: Sendable {
     Every result carries meta.lastSuccessfulSync (how old the data is) and meta.appRunning; call `refresh` when it may be stale.
     Minutes are estimates computed by Cumulus, not official Apple figures, except fields named billed.
     Start with get_status or list_builds, then get_build with a reference such as MyApp#42 to see why a build failed.
-    No tool starts, cancels or changes a build.
+    Only start_build, give_testflight_build and expire_testflight_build write anything, and only when the user asked; no tool cancels a build.
     """
 
     enum ErrorCode {
@@ -92,6 +92,8 @@ nonisolated struct MCPServer: Sendable {
             case .query(let query): try await runner.run(query)
             case .refresh(let wait, let timeout): try await runner.refresh(wait: wait, timeout: timeout)
             case .launch(let command): try await runner.launch(runner.prepareLaunch(command))
+            case .testFlightGive(let command): try await runner.testFlightGive(runner.prepareTestFlightGive(command))
+            case .testFlightExpire(let command): try await runner.testFlightExpire(runner.prepareTestFlightExpire(command))
             }
             let structured = JSONValue(data: response.jsonData) ?? .null
             return Self.success(id: id, [

@@ -8,11 +8,11 @@ nonisolated enum CLIErrorCode: String, Codable, Sendable {
     case appUnreachable = "APP_UNREACHABLE"
     case timedOut = "TIMEOUT"
     case `internal` = "INTERNAL"
-    /// `run`: the key is read-only in the app, or Apple answered 403.
+    /// `run` and `testflight give` and `expire`: the key is read-only in the app, or Apple answered 403.
     case notAllowed = "NOT_ALLOWED"
-    /// `run`: the app's cap on launches by agents, or Apple's hourly request limit.
+    /// `run`: the app's cap on launches by agents; `testflight give` and `expire`: its cap on TestFlight changes; or Apple's hourly request limit.
     case rateLimited = "RATE_LIMITED"
-    /// `run`: Apple understood and refused (a paused workflow, a branch no condition covers); its words are the message.
+    /// `run`: Apple understood and refused (a paused workflow, a branch no condition covers); `testflight`: Apple refused, or the build's state does not allow it. Its words are the message.
     case refused = "REFUSED"
     /// Everything but `status` comes with Cumulus Pro.
     case proRequired = "PRO_REQUIRED"

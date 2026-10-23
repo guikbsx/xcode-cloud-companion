@@ -83,6 +83,26 @@ nonisolated enum CLIHelp {
                 "Cumulus allows three launches by agents an hour per account. The request is never repeated on its own.",
             ]
         ),
+        Topic(
+            name: "testflight", summary: "A build's TestFlight build and groups; give it to groups, take it from them, or expire it",
+            usage: "cumulus testflight <build> [--cached]\n       cumulus testflight give <build> [--group <name>]... [--remove <name>]... [--notes <text> --locale <fr-FR>] [--notify | --no-notify] [--yes]\n       cumulus testflight expire <build> [--yes]",
+            options: [
+                ("<build>", "App#42, a build number when only one app has it, or a build run id"),
+                ("--cached", "Only what the shared folder holds: never ask the app to read the TestFlight build and the groups"),
+                ("--group <name>", "give: a group to give the build to (repeat it); its name, any case, or its id"),
+                ("--remove <name>", "give: a group to take the build from (repeat it)"),
+                ("--notes <text>", "give: the “What to test” text for --locale; needs a --group"),
+                ("--locale <code>", "give: the language of --notes, such as en-US or fr-FR"),
+                ("--notify, --no-notify", "give: whether Apple tells the testers when the build reaches them (default: as the build is)"),
+                ("--yes", "Don’t ask for confirmation at the terminal"),
+            ],
+            example: "cumulus testflight give MyApp#42 --group QA --remove Friends",
+            notes: [
+                "An external group gets the build after Apple’s beta review. A group that receives every build by itself cannot be named.",
+                "An expiration cannot be undone. The key must be set to “Read + Build” in Cumulus › Settings › Accounts, and Apple needs an Admin or App Manager key.",
+                "Cumulus allows ten such changes by agents an hour per account. Nothing is sent twice: after an unclear answer, read the build again.",
+            ]
+        ),
         Topic(name: "open", summary: "Open a build in the Cumulus app", usage: "cumulus open <build>", example: "cumulus open MyApp#42"),
         Topic(
             name: "mcp", summary: "Serve these commands to AI agents over MCP (stdio)", usage: "cumulus mcp [--verbose]",
@@ -98,7 +118,7 @@ nonisolated enum CLIHelp {
     ]
 
     /// The commands that read one account's cache: each answers for another account when asked.
-    private static let accountCommands: Set<String> = ["status", "apps", "builds", "build", "workflows", "usage", "refresh", "open"]
+    private static let accountCommands: Set<String> = ["status", "apps", "builds", "build", "workflows", "usage", "refresh", "testflight", "open"]
     private static let accountOption = ("--account <name>", "Answer for this account instead of the one shown in the app")
 
     static var overview: String {

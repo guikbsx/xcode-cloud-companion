@@ -16,6 +16,9 @@ final class AccountSession: Identifiable {
     let failureInsights: FailureInsightStore
     /// The latest TestFlight builds of the apps that ship there, kept in the account's folder.
     let testFlight: TestFlightStore
+    /// The TestFlight groups of those apps, and what gives a build to them.
+    let testFlightGroups: TestFlightGroupsStore
+    let testFlightDistributor: TestFlightDistributor
     let paletteStore: AppPaletteStore
     /// Where this account's alerts are also sent: an address in the keychain, and the events it is sent.
     let webhook: WebhookSettingsModel
@@ -60,6 +63,17 @@ final class AccountSession: Identifiable {
                 return buildStore.rateLimit
             }
         )
+        let groups = TestFlightGroupsStore(
+            cache: BetaGroupsCache(fileURL: paths.testFlightGroups), client: { [buildStore] in await buildStore.detailClient() },
+            budget: { [buildStore] in
+                await buildStore.updateRateLimit()
+                return buildStore.rateLimit
+            }
+        )
+        testFlightGroups = groups
+        testFlightDistributor = TestFlightDistributor(
+            client: { [buildStore] in await buildStore.detailClient() }, reread: { [testFlight] in await testFlight.reread(buildID: $0) }
+        )
         self.defaults = defaults
         self.iconCache = iconCache
         paletteStore = .account(account.id)
@@ -75,9 +89,13 @@ final class AccountSession: Identifiable {
             ) == .open
         }
         testFlight.allowed = { [weak self] in self?.pro?.allows(.testFlightTracking) ?? true }
+        groups.allowed = { [weak self] in self?.pro?.allows(.testFlightDistribution) ?? true }
+        testFlightDistributor.allowed = { [weak self] in self?.pro?.allows(.testFlightDistribution) ?? true }
+        testFlightDistributor.isKeyWritable = { [weak settings] in settings?.keyAccess == .canLaunch }
         settings.onReset = { [paths, usageStore, testFlight] in
             await insights.reset()
             await testFlight.reset()
+            await groups.reset()
             await BuildExtrasCache(directory: paths.buildDetails).deleteAll()
             await WorkflowDetailsCache(directory: paths.workflowDetails).deleteAll()
             await AppIconCache(directory: paths.appIcons).deleteAll()

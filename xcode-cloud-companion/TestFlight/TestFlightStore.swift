@@ -1,35 +1,6 @@
 import Foundation
 import Observation
 
-/// Every app's last reading, in one file of the account's folder: it goes with the account.
-nonisolated struct TestFlightFile: Codable, Sendable, Equatable {
-    static let currentVersion = 1
-
-    var schemaVersion = TestFlightFile.currentVersion
-    /// By Xcode Cloud product.
-    var readings: [String: TestFlightReading] = [:]
-}
-
-nonisolated struct TestFlightCache: Sendable {
-    var fileURL: URL
-
-    @concurrent func load() async -> TestFlightFile? {
-        guard let data = try? Data(contentsOf: fileURL), let file = try? JSONDecoder().decode(TestFlightFile.self, from: data),
-              file.schemaVersion == TestFlightFile.currentVersion
-        else { return nil }
-        return file
-    }
-
-    @concurrent func save(_ file: TestFlightFile) async {
-        try? FileManager.default.createDirectory(at: fileURL.deletingLastPathComponent(), withIntermediateDirectories: true)
-        try? JSONEncoder().encode(file).write(to: fileURL, options: [.atomic])
-    }
-
-    @concurrent func delete() async {
-        try? FileManager.default.removeItem(at: fileURL)
-    }
-}
-
 /// The TestFlight builds of the account's apps: asked for after a sync that succeeded, when the pace of `TestFlightCadence`
 /// allows it, and kept in the account's folder with the times Cumulus saw a build change. Cumulus Pro: without it nothing
 /// is asked. A key that Apple says cannot read TestFlight is not asked again until the app is restarted.
@@ -52,6 +23,8 @@ final class TestFlightStore {
     private var hasLoadedCache = false
     private var isSyncing = false
     private var failures: [String: Date] = [:]
+    /// The apps as the last sync named them, for the banners a read of one build may bring.
+    private var apps: [String: TestFlightApp] = [:]
 
     init(
         cache: TestFlightCache, client: @escaping () async -> AppStoreConnectClient?, budget: @escaping () async -> RateLimit?,
@@ -79,6 +52,34 @@ final class TestFlightStore {
         return nil
     }
 
+    /// The builds the last read named for an App Store Connect app, newest first.
+    func builds(forAppID appID: String) -> [TestFlightBuild] {
+        readings.values.first { $0.appID == appID }?.builds ?? []
+    }
+
+    /// The App Store Connect app a known build belongs to.
+    func appID(ofBuild buildID: String) -> String? {
+        readings.values.first { $0.build(id: buildID) != nil }?.appID
+    }
+
+    /// Reads one build again, whatever the pace: what a distribution did. It replaces the build in its app's reading, or joins
+    /// it, and dates what changed like any other read. Nothing is asked without Cumulus Pro, for a key that cannot read
+    /// TestFlight, or for a build no reading knows. Returns the build as Apple has it; nil when it could not be read.
+    func reread(buildID: String) async -> TestFlightBuild? {
+        guard allowed(), !isForbidden, let productID = readings.first(where: { $0.value.build(id: buildID) != nil })?.key,
+              let known = readings[productID], let client = await client()
+        else { return nil }
+        reading.insert(productID)
+        defer { reading.remove(productID) }
+        guard let build = try? await client.testFlightBuild(id: buildID) else { return nil }
+        var builds = known.builds.filter { $0.id != buildID } + [build]
+        builds.sort { ($0.uploadedDate ?? .distantPast) > ($1.uploadedDate ?? .distantPast) }
+        readings[productID] = TestFlightReading.following(known, appID: known.appID, builds: builds, at: now())
+        await cache.save(TestFlightFile(readings: readings))
+        if let app = apps[productID] { onRead?(app, builds) }
+        return build
+    }
+
     /// Brings back what the last session read, so that nothing is asked again before its time.
     func loadCache() async {
         guard !hasLoadedCache else { return }
@@ -97,6 +98,7 @@ final class TestFlightStore {
         defer { isSyncing = false }
 
         let apps = TestFlightApp.shipping(in: snapshot)
+        self.apps = Dictionary(apps.map { ($0.productID, $0) }, uniquingKeysWith: { first, _ in first })
         let remaining = await budget()?.remaining
         for app in apps {
             let moment = now()

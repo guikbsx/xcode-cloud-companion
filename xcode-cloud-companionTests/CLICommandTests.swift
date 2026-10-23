@@ -403,6 +403,34 @@ struct CLICommandTests {
         #expect(usage["resetDate"] as? String == "2026-11-01T00:00:00Z")
     }
 
+    @Test func theTestFlightAnswersAreTheirKeys() async throws {
+        let service = FakeIPCService()
+        await service.set(giveResult: IPCResult(written: true, addedGroups: ["Beta"], removedGroups: [], unchangedGroups: [], steps: ["addGroups"], refreshed: true))
+        let (socket, path) = try await IPCTestSocket.server(service)
+        var environment = try await CLIFixture.environment()
+        environment.socketPath = path
+        try await TestFlightFixture.write(to: environment)
+
+        // The keys are the contract agents read: a change here is a breaking change.
+        let (read, _) = try CLIFixture.json(await CumulusCLI.run(arguments: ["testflight", "Alpha#43", "--json"], environment: environment))
+        let object = try #require(read as? [String: Any])
+        #expect(Set(object.keys) == ["app", "build", "buildRunID", "groups", "reference"])
+        #expect(Set((object["build"] as? [String: Any] ?? [:]).keys) == [
+            "buildNumber", "daysLeft", "expirationDate", "externalState", "id", "internalState", "label", "needsExportCompliance", "notifiesTesters",
+            "platform", "processingState", "status", "uploadedDate", "version",
+        ])
+        #expect(Set(((object["groups"] as? [[String: Any]])?.first ?? [:]).keys) == ["hasBuild", "id", "kind", "name", "receivesEveryBuild", "testerCount"])
+
+        let (give, _) = try CLIFixture.json(await CumulusCLI.run(arguments: ["testflight", "give", "Alpha#43", "--group", "Beta", "--yes", "--json"], environment: environment))
+        let change = try #require(give as? [String: Any])
+        #expect(Set(change.keys) == ["action", "added", "app", "appLaunched", "build", "buildRunID", "changed", "notifiesTesters", "reference", "removed", "steps", "unchanged"])
+        #expect(Set((change["build"] as? [String: Any] ?? [:]).keys) == Set((object["build"] as? [String: Any] ?? [:]).keys), "the build after the write has the shape of the one before")
+
+        let (expire, _) = try CLIFixture.json(await CumulusCLI.run(arguments: ["testflight", "expire", "Alpha#43", "--yes", "--json"], environment: environment))
+        #expect(Set((expire as? [String: Any] ?? [:]).keys) == ["action", "app", "appLaunched", "buildRunID", "changed", "reference"])
+        await socket.stop()
+    }
+
     @Test func beforeTheFirstSyncTheMetaSaysNull() async throws {
         var snapshot = CLIFixture.snapshot
         snapshot.lastSuccessfulSync = nil

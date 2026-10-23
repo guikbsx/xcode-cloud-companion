@@ -22,6 +22,8 @@ struct BuildDetailView: View {
     var testHistory: WorkflowTestsModel?
     /// The latest TestFlight builds of the account's apps: with Cumulus Pro, the build's road to the testers is drawn from it.
     var testFlight: TestFlightStore?
+    /// What gives the build to TestFlight groups; without it the card does not exist.
+    var distribution: TestFlightDistributionAccess?
 
     @Binding var tab: BuildTab
     /// Bumped by “Compare with #n” beside the commit: the group below starts its comparison.
@@ -106,6 +108,8 @@ struct BuildDetailView: View {
             RegressionGroup(run: run, buildStore: buildStore, extrasStore: extrasStore, openBuild: openBuild, compareRequest: compareRequest).id(run.id)
                 .detailPlacement(.side)
             testFlightGroup
+                .detailPlacement(.side)
+            testFlightDistributionGroup(now: now)
                 .detailPlacement(.side)
             testFlightTimelineGroup(now: now)
                 .detailPlacement(.side)
@@ -375,6 +379,40 @@ struct BuildDetailView: View {
         }
     }
 
+    /// The build's TestFlight build that the store has read, and the app it belongs to: what the card of groups is made from.
+    private var distributable: (build: TestFlightBuild, appID: String)? {
+        guard run.completionStatus == .succeeded, buildStore.snapshot.workflow(id: run.workflowID)?.shipsToTestFlight == true, let testFlight,
+              let known = extrasStore.extras(for: run.id)?.betaBuilds?.lazy.compactMap({ testFlight.lookup(buildID: $0.id) }).first,
+              let appID = testFlight.appID(ofBuild: known.build.id)
+        else { return nil }
+        return (known.build, appID)
+    }
+
+    /// Whether the card of groups stands in place of the plain TestFlight card: Cumulus Pro, a build the store has read, and
+    /// groups to show or still on their way.
+    private var showsDistribution: Bool {
+        guard access.allows(.testFlightDistribution), let distribution, let distributable else { return false }
+        let groups = distribution.groups
+        return !(groups.groups(for: distributable.appID) ?? []).isEmpty || !groups.hasAttempted(distributable.appID)
+    }
+
+    /// Giving the build to groups: the card, or the way to Pro where it would be.
+    @ViewBuilder
+    private func testFlightDistributionGroup(now: Date) -> some View {
+        if showsDistribution, let distribution, let distributable {
+            TestFlightDistributionCard(
+                build: distributable.build, appID: distributable.appID,
+                appName: buildStore.snapshot.product(id: run.productID)?.displayName, access: distribution,
+                teamID: teamID, now: now
+            )
+            .id(run.id)
+        } else if !access.allows(.testFlightDistribution), run.completionStatus == .succeeded,
+                  buildStore.snapshot.workflow(id: run.workflowID)?.shipsToTestFlight == true,
+                  !(extrasStore.extras(for: run.id)?.betaBuilds ?? []).isEmpty {
+            ProLockedCard(feature: .testFlightDistribution)
+        }
+    }
+
     @ViewBuilder
     private var testFlightGroup: some View {
         let known = extrasStore.extras(for: run.id)?.betaBuilds ?? []
@@ -382,7 +420,7 @@ struct BuildDetailView: View {
             shipsToTestFlight: buildStore.snapshot.workflow(id: run.workflowID)?.shipsToTestFlight ?? false,
             isSucceeded: run.completionStatus == .succeeded, hasBuilds: !known.isEmpty, loadEnded: betaEndedRunID == run.id
         )
-        if !known.isEmpty || isSkeleton {
+        if (!known.isEmpty && !showsDistribution) || isSkeleton {
             VStack(alignment: .leading, spacing: 8) {
                 Text("TestFlight")
                     .font(.caption2.weight(.semibold))

@@ -1,0 +1,15 @@
+{
+  "data": [
+    { "type": "betaTesters", "id": "a11ce010-0000-4000-8000-000000001010" },
+    { "type": "betaTesters", "id": "a11ce011-0000-4000-8000-000000001011" }
+  ],
+  "links": {
+    "self": "https://api.appstoreconnect.apple.com/v1/betaGroups/a11ce00a-0000-4000-8000-00000000100a/relationships/betaTesters?limit=200"
+  },
+  "meta": {
+    "paging": {
+      "total": 128,
+      "limit": 200
+    }
+  }
+}

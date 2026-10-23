@@ -57,6 +57,31 @@ nonisolated enum CumulusCLI {
             } catch {
                 return failure(error, format: invocation.format, environment: environment)
             }
+        case .testFlightGive(let command):
+            do throws(CLIFailure) {
+                let runner = CLIQueryRunner(environment: environment, account: invocation.account)
+                let plan = try await runner.prepareTestFlightGive(command)
+                // At a terminal, a person confirms what changes who can test a build; in a pipe or over MCP, the agent already decided.
+                if environment.isTerminal, !command.yes, !environment.confirm(plan.question) {
+                    return CLIResult(stdout: "Nothing changed.\n")
+                }
+                let response = try await runner.testFlightGive(plan)
+                return CLIResult(stdout: render(response, format: invocation.format, environment: environment))
+            } catch {
+                return failure(error, format: invocation.format, environment: environment)
+            }
+        case .testFlightExpire(let command):
+            do throws(CLIFailure) {
+                let runner = CLIQueryRunner(environment: environment, account: invocation.account)
+                let plan = try await runner.prepareTestFlightExpire(command)
+                if environment.isTerminal, !command.yes, !environment.confirm(plan.question) {
+                    return CLIResult(stdout: "Nothing changed.\n")
+                }
+                let response = try await runner.testFlightExpire(plan)
+                return CLIResult(stdout: render(response, format: invocation.format, environment: environment))
+            } catch {
+                return failure(error, format: invocation.format, environment: environment)
+            }
         case .open(let reference):
             do throws(CLIFailure) {
                 let scope = try await CLIAccountScope.resolve(invocation.account, in: environment.directory)
@@ -248,6 +273,13 @@ nonisolated struct CLIQueryRunner: Sendable {
         case .usage(let breakdown):
             let (output, estimate) = builder.usage(breakdown)
             (report, isEstimate) = (.usage(output), estimate)
+        case .testFlight(let reference, let fetch):
+            let found = try await testFlightKnowledge(reference: reference, scope: scope, snapshot: data.snapshot, startingApp: false, fetch: fetch)
+            let name = found.product?.name ?? found.run.productID
+            let output = Self.testFlightOutput(
+                run: found.run, product: found.product, reference: found.run.number.map { "\(name)#\($0)" }, knowledge: found.knowledge, now: now
+            )
+            (report, isEstimate) = (.testFlight(output), false)
         }
         return CLIResponse(
             report: report,

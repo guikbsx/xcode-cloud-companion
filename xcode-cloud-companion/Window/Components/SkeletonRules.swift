@@ -38,6 +38,11 @@ nonisolated enum SkeletonRules {
         !hasBuilds && isReading
     }
 
+    /// The groups of the card that gives a build to them: none is known yet, and the first read of the app's groups has not ended.
+    static func testFlightGroups(hasGroups: Bool, hasAttempted: Bool) -> Bool {
+        !hasGroups && !hasAttempted
+    }
+
     /// The pill of the last TestFlight build of an app: a build is known to have gone there, its reading has not ended.
     static func testFlightPill(hasShippedRun: Bool, hasText: Bool, loadEnded: Bool) -> Bool {
         hasShippedRun && !hasText && !loadEnded

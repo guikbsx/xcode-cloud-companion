@@ -111,11 +111,19 @@ struct NotificationsSettingsView: View {
             }
             .disabled(!hasTestFlightTracking)
         } trailing: {
-            Section("When an agent starts a build") {
+            Section("When an agent acts") {
                 Toggle(isOn: $preferences.builds.agentLaunches) {
                     VStack(alignment: .leading, spacing: 2) {
                         Text("A build was started by `cumulus run` or an MCP tool")
                         Text("Agents may start three builds an hour per account; each one uses compute hours.")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                }
+                Toggle(isOn: $preferences.builds.agentTestFlight) {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("A TestFlight build was given to groups or expired by an agent")
+                        Text("Agents may make ten such changes an hour per account; an expiration can’t be undone.")
                             .font(.caption)
                             .foregroundStyle(.secondary)
                     }

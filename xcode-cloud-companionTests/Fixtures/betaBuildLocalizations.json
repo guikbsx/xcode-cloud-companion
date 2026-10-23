@@ -1,0 +1,22 @@
+{
+  "data": [
+    {
+      "type": "betaBuildLocalizations",
+      "id": "a11ce012-0000-4000-8000-000000001012",
+      "attributes": {
+        "locale": "en-US",
+        "whatsNew": "New queue widget. Please try dark mode."
+      }
+    },
+    {
+      "type": "betaBuildLocalizations",
+      "id": "a11ce013-0000-4000-8000-000000001013",
+      "attributes": {
+        "locale": "fr-FR"
+      }
+    }
+  ],
+  "links": {
+    "self": "https://api.appstoreconnect.apple.com/v1/builds/a11ce007-0000-4000-8000-000000001007/betaBuildLocalizations?limit=50"
+  }
+}

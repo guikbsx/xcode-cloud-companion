@@ -5,7 +5,7 @@ description: Use this skill whenever the task involves Xcode Cloud builds or usa
 
 # `cumulus`
 
-`cumulus` is the command-line side of Cumulus, a macOS menu bar app that watches a team's Xcode Cloud builds and usage. The command reads the cache the app keeps, so it is fast, works offline, and costs nothing of the App Store Connect API rate limit. It is read-only: no command starts, cancels or changes a build.
+`cumulus` is the command-line side of Cumulus, a macOS menu bar app that watches a team's Xcode Cloud builds and usage. The command reads the cache the app keeps, so it is fast, works offline, and costs nothing of the App Store Connect API rate limit. Besides reading, it can start a build (`cumulus run`) and change who can test a TestFlight build (`cumulus testflight give`, `cumulus testflight expire`), and only when the user asked; nothing cancels a build.
 
 ## Find the command
 
@@ -30,6 +30,9 @@ If none exists, tell the user to install the command from **Cumulus › Settings
 | `cumulus usage [--by-app \| --by-workflow \| --daily]` | Minutes of the cycle, broken down |
 | `cumulus refresh [--wait] [--timeout <seconds>]` | Asks the app to sync with App Store Connect now |
 | `cumulus run <workflow> [--branch <name> \| --tag <name> \| --pr <number>] [--clean] [--yes]` | Starts a build of a workflow through the app; answers with the new build's `reference` |
+| `cumulus testflight <build> [--cached]` | The TestFlight build that an Xcode Cloud build delivered (state, expiry) and the groups of its app, with whether the build is in each |
+| `cumulus testflight give <build> [--group <name>]... [--remove <name>]... [--notes <text> --locale <fr-FR>] [--notify \| --no-notify] [--yes]` | Gives the TestFlight build to groups of testers and takes it from others, in one call |
+| `cumulus testflight expire <build> [--yes]` | Expires the TestFlight build, for good |
 | `cumulus open <build>` | Opens the build in the Cumulus app, for the user to look at |
 
 - `<app>` is an app's name, bundle ID or product id. Case does not matter.
@@ -50,6 +53,7 @@ If none exists, tell the user to install the command from **Cumulus › Settings
 - **Do not retry a failed command blindly.** Read `error.code` and `error.suggestions` on standard error; see `references/output-contract.md`.
 - **Start a build only when the user asked for one.** `cumulus run` (and the `start_build` tool) spends compute hours of the user's plan: never call it to retry on your own, and never in a loop. The app allows three launches by agents an hour per account (`RATE_LIMITED`, exit 8), and the key must be set to “Read + Build” in Cumulus (`NOT_ALLOWED`, exit 7). Apple's own refusal comes back as `REFUSED` with its words. At a terminal the command asks the person to confirm; pass `--yes` only when they already did. Then follow the build with `cumulus build <reference>`. If the launch ends in `INTERNAL` because Apple did not confirm it, or with an empty `buildRunID`, a build may well have started: do not launch again; run `cumulus refresh --wait --json`, then `cumulus builds --limit 1 --json`, and tell the user what you see.
 
+- **Change TestFlight only when the user asked.** `cumulus testflight give` and `cumulus testflight expire` (and the `give_testflight_build` and `expire_testflight_build` tools) change who can install a build: never call them on your own initiative, and never in a loop. **An expiration cannot be undone.** Call `cumulus testflight <build> --json` first and use the group names it lists (any case; a name two groups share is `AMBIGUOUS`, an unknown one `NOT_FOUND` with the names that exist). An internal group gets the build at once; an external group gets it after Apple's beta review, which Cumulus asks for when needed. Groups that "receive every build" cannot be named. The app allows ten such changes (give or expire) an hour per account (`RATE_LIMITED`, exit 8, apart from the three launches of `run`), the key must be set to “Read + Build” in Cumulus (`NOT_ALLOWED`, exit 7; Apple also needs an Admin or App Manager key), and Apple's own refusal comes back as `REFUSED` with its words. Nothing is ever sent twice: after `INTERNAL` ("Apple did not confirm the change") or `TIMEOUT`, do not try again; run `cumulus testflight <build> --json` and tell the user what Apple has. At a terminal the command asks the person to confirm; pass `--yes` only when they already did.
 - **Cumulus Pro.** Without it, only `cumulus status` answers: every other command exits 9 with `PRO_REQUIRED`, and every MCP tool returns the same error as a result with `isError: true`. Do not retry and do not look for another way to read the cache: tell the user that the answer needs Cumulus Pro, which they start or restore in Cumulus › Settings › Cumulus Pro.
 
 ## Typical flows
@@ -57,12 +61,14 @@ If none exists, tell the user to install the command from **Cumulus › Settings
 - *"Why did my last build fail?"* - `cumulus builds --failed --limit 1 --json`, then `cumulus build <reference> --json`.
 - *"Is the build of the branch I just pushed done?"* - `cumulus refresh --wait --json`, then `cumulus builds --branch <name> --limit 1 --json` and match `commit.sha` to the commit.
 - *"Is my pull request green?"* - `cumulus builds --pr <number> --limit 1 --json`: its `status`, then `cumulus build <reference> --json` if it failed.
+- *"Is build 412 available to the testers?"* - `cumulus builds --app <app> --limit 1 --json` for the `reference`, then `cumulus testflight <reference> --json`: `build.status`, then `groups[].hasBuild`.
+- *"Give this build to QA"* (the user asked) - `cumulus testflight <reference> --json` to check the groups, then `cumulus testflight give <reference> --group QA --yes --json`; read `added`, `unchanged` and `build.status` in the answer.
 - *"How much of the plan is left?"* - `cumulus status --json`: `usage.remainingMinutes`, `usage.resetDate`, `usage.projectedMinutes`.
 - *"Which workflow eats the minutes?"* - `cumulus usage --by-workflow --json`.
 
 ## MCP instead of the command
 
-The same answers are available as MCP tools (`get_status`, `list_apps`, `list_builds`, `get_build`, `list_workflows`, `get_usage`, `refresh`, `start_build`, `list_accounts`) by running `cumulus mcp`, a stdio server. When those tools are present in the session, use them rather than the shell: they return the same JSON. To register the server:
+The same answers are available as MCP tools (`get_status`, `list_apps`, `list_builds`, `get_build`, `list_workflows`, `get_usage`, `refresh`, `start_build`, `get_testflight`, `give_testflight_build`, `expire_testflight_build`, `list_accounts`) by running `cumulus mcp`, a stdio server. When those tools are present in the session, use them rather than the shell: they return the same JSON. To register the server:
 
 - Claude Code: `claude mcp add --scope user cumulus -- /Applications/Cumulus.app/Contents/Helpers/cumulus mcp`
 - Codex: `codex mcp add cumulus -- /Applications/Cumulus.app/Contents/Helpers/cumulus mcp`

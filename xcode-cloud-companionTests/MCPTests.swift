@@ -34,7 +34,7 @@ struct MCPServerTests {
         #expect(result["serverInfo"] == ["name": "cumulus", "title": "Cumulus", "version": "1.0"])
         let instructions = try #require(result["instructions"]?.stringValue)
         #expect(instructions.split(separator: "\n").count <= 5)
-        for phrase in ["cache", "meta.lastSuccessfulSync", "refresh", "estimates", "No tool starts, cancels or changes a build"] {
+        for phrase in ["cache", "meta.lastSuccessfulSync", "refresh", "estimates", "no tool cancels a build"] {
             #expect(instructions.contains(phrase))
         }
     }
@@ -104,7 +104,7 @@ struct MCPServerTests {
 
     // MARK: - Tools
 
-    @Test func theEightToolsAreDescribedForAnAgent() async throws {
+    @Test func theTwelveToolsAreDescribedForAnAgent() async throws {
         let server = try await server()
         let tools = try #require(try await reply(#"{"jsonrpc":"2.0","id":1,"method":"tools/list"}"#, from: server)["result"]?["tools"])
         guard case .array(let list) = tools else {
@@ -112,19 +112,26 @@ struct MCPServerTests {
             return
         }
 
-        #expect(list.compactMap { $0["name"]?.stringValue } == ["get_status", "list_apps", "list_builds", "get_build", "list_workflows", "get_usage", "refresh", "start_build", "list_accounts"])
+        #expect(list.compactMap { $0["name"]?.stringValue } == ["get_status", "list_apps", "list_builds", "get_build", "list_workflows", "get_usage", "refresh", "start_build", "get_testflight", "give_testflight_build", "expire_testflight_build", "list_accounts",
+        ])
+        let writers: Set<String> = ["start_build", "give_testflight_build", "expire_testflight_build"]
         for tool in list {
             #expect((tool["description"]?.stringValue?.count ?? 0) > 80)
             #expect(tool["inputSchema"]?["type"] == "object" && tool["inputSchema"]?["additionalProperties"] == false)
-            #expect(tool["annotations"]?["destructiveHint"] == false && tool["annotations"]?["idempotentHint"] == .bool(tool["name"] != "start_build"))
-            #expect(tool["annotations"]?["readOnlyHint"] == .bool(tool["name"] != "refresh" && tool["name"] != "start_build"))
+            let name = tool["name"]?.stringValue ?? ""
+            #expect(tool["annotations"]?["destructiveHint"] == .bool(name == "expire_testflight_build"), "only an expiration cannot be undone")
+            #expect(tool["annotations"]?["idempotentHint"] == .bool(!writers.contains(name)))
+            #expect(tool["annotations"]?["readOnlyHint"] == .bool(name != "refresh" && !writers.contains(name)))
         }
         let builds = list[2]["inputSchema"]
         #expect(Set(builds?["properties"]?.objectValue?.keys ?? [:].keys) == ["account", "app", "branch", "failed", "limit", "pull_request", "running", "since"])
         // Every tool that reads an account takes its name; the one that lists the accounts does not.
         #expect(list.dropLast().allSatisfy { $0["inputSchema"]?["properties"]?["account"]?["type"] == "string" })
-        #expect(list[8]["inputSchema"]?["properties"] == [:])
+        #expect(list[11]["inputSchema"]?["properties"] == [:])
         #expect(list[7]["inputSchema"]?["required"] == ["workflow"])
+        #expect(list[8]["inputSchema"]?["required"] == ["reference"] && list[10]["inputSchema"]?["required"] == ["reference"])
+        #expect(Set(list[9]["inputSchema"]?["properties"]?.objectValue?.keys ?? [:].keys) == ["account", "groups", "locale", "notes", "notify", "reference", "remove_groups"])
+        #expect(list[9]["inputSchema"]?["properties"]?["groups"] == ["type": "array", "items": ["type": "string"], "description": "Names of the groups to give the build to."])
         #expect(builds?["properties"]?["limit"] == ["type": "integer", "minimum": 1, "maximum": 100, "default": 10, "description": "How many builds to return."])
         #expect(builds?["required"] == [])
         #expect(list[3]["inputSchema"]?["required"] == ["reference"])
@@ -226,6 +233,57 @@ struct MCPServerTests {
         let refused = try await call("start_build", #"{"workflow":"CI"}"#, on: server)
         #expect(refused["isError"] == true && (refused["content"]?.compactString ?? "").contains("NOT_ALLOWED"))
         await socket.stop()
+    }
+
+    @Test func theTestFlightToolsGoThroughTheAppLikeTheCommand() async throws {
+        let service = FakeIPCService()
+        let (socket, path) = try await IPCTestSocket.server(service)
+        var environment = try await CLIFixture.environment()
+        environment.socketPath = path
+        try await TestFlightFixture.write(to: environment)
+        let server = try await server(environment)
+
+        let read = try await call("get_testflight", #"{"reference":"Alpha#43"}"#, on: server)
+        #expect(read["isError"] == false && read["structuredContent"]?["data"]?["build"]?["status"] == "available")
+        #expect(read["structuredContent"]?["data"]?["groups"]?.compactString.contains("\"hasBuild\":true") == true)
+
+        let gave = try await call("give_testflight_build", #"{"reference":"Alpha#43","groups":["beta"],"remove_groups":"QA","notes":"Try it","locale":"en-US","notify":false}"#, on: server)
+        #expect(gave["isError"] == false && gave["structuredContent"]?["data"]?["action"] == "give")
+        #expect(await service.gives == [IPCTestFlightGiveRequest(
+            testFlightBuildID: "tf-412", addGroupIDs: ["g-beta"], removeGroupIDs: ["g-qa"], notes: "Try it", locale: "en-US", notify: false, accountID: "default"
+        )])
+
+        let expired = try await call("expire_testflight_build", #"{"reference":"Alpha#43"}"#, on: server)
+        #expect(expired["isError"] == false && expired["structuredContent"]?["data"]?["action"] == "expire")
+        #expect(await service.expirations == [IPCTestFlightExpireRequest(testFlightBuildID: "tf-412", accountID: "default")])
+
+        func code(_ name: String, _ arguments: String) async throws -> JSONValue? {
+            errorCode(try await reply(#"{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"\#(name)","arguments":\#(arguments)}}"#, from: server))
+        }
+        #expect(try await code("give_testflight_build", #"{"reference":"Alpha#43"}"#) == -32602)
+        #expect(try await code("give_testflight_build", #"{"groups":["QA"]}"#) == -32602)
+        #expect(try await code("give_testflight_build", #"{"reference":"Alpha#43","groups":["QA"],"remove_groups":["qa"]}"#) == -32602)
+        #expect(try await code("give_testflight_build", #"{"reference":"Alpha#43","groups":["QA"],"notes":"x"}"#) == -32602)
+        #expect(try await code("give_testflight_build", #"{"reference":"Alpha#43","remove_groups":["QA"],"notify":true}"#) == -32602)
+        #expect(try await code("give_testflight_build", #"{"reference":"Alpha#43","groups":[3]}"#) == -32602)
+        #expect(try await code("expire_testflight_build", "{}") == -32602)
+        #expect(try await code("expire_testflight_build", #"{"reference":"Alpha#43","groups":["QA"]}"#) == -32602)
+        #expect(await service.gives.count == 1)
+        #expect(await service.expirations.count == 1)
+
+        await service.set(expireResult: IPCResult(reason: IPCTestFlightReason.capReached, message: "Next at 15:00.", written: false))
+        let capped = try await call("expire_testflight_build", #"{"reference":"Alpha#43"}"#, on: server)
+        #expect(capped["isError"] == true && capped["content"]?.compactString.contains("RATE_LIMITED") == true)
+        await socket.stop()
+    }
+
+    @Test func withoutProTheTestFlightToolsAreRefusedAsResults() async throws {
+        let server = try await server(try await CLIFixture.environment(pro: false))
+
+        for (name, arguments) in [("get_testflight", #"{"reference":"Alpha#43"}"#), ("give_testflight_build", #"{"reference":"Alpha#43","groups":["QA"]}"#), ("expire_testflight_build", #"{"reference":"Alpha#43"}"#)] {
+            let result = try await call(name, arguments, on: server)
+            #expect(result["isError"] == true && result["content"]?.compactString.contains("PRO_REQUIRED") == true, "\(name)")
+        }
     }
 
     @Test func whatAToolCannotAnswerIsAResultTheModelReads() async throws {

@@ -39,11 +39,14 @@ nonisolated enum TestFlightText {
     }
 
     /// The state, and how long a build has waited for its beta review.
-    static func statusLine(of build: TestFlightBuild, now: Date, locale: Locale = .autoupdatingCurrent) -> String {
+    /// `expiredSeenAt` is when Cumulus saw the build expire; it stands in for an expiry date that has not come yet, which is what a
+    /// build expired by hand may still carry.
+    static func statusLine(of build: TestFlightBuild, now: Date, expiredSeenAt: Date? = nil, locale: Locale = .autoupdatingCurrent) -> String {
         let status = build.status(at: now)
         switch status {
         case .expired:
-            return expired(on: build.expirationDate, locale: locale)
+            let date = build.expirationDate.flatMap { $0 <= now ? $0 : nil } ?? expiredSeenAt
+            return expired(on: date, locale: locale)
         case .waitingForReview, .inReview:
             return UsageFormat.dotted([Self.status(status), build.reviewSubmittedDate.map { since($0, now: now, locale: locale) }].compactMap(\.self), locale: locale)
         default:

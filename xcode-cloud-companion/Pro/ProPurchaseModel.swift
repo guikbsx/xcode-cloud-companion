@@ -9,7 +9,7 @@ nonisolated enum ProBenefit: CaseIterable, Sendable {
         switch self {
         case .alerts: [.earlyUsageAlerts, .stuckBuildAlert, .slowdownAlert, .testFlightTracking, .webhookAlerts]
         case .diagnostics: [.regressions, .failureInsight, .logExcerpt, .testHealth, .workflowTrends, .workflowCostBreakdown, .upcomingBuilds, .appOverview, .olderBuilds, .openInXcode]
-        case .workflows: [.pauseWorkflow, .editWorkflow]
+        case .workflows: [.pauseWorkflow, .editWorkflow, .testFlightDistribution]
         case .agents: [.commandLine, .mcpServer]
         case .accounts: [.multipleAccounts]
         }
@@ -19,7 +19,7 @@ nonisolated enum ProBenefit: CaseIterable, Sendable {
         switch self {
         case .alerts: String(localized: "Warned at 75 % of the plan, on the pace, when a build is stuck, when a workflow slows down or when a TestFlight build reaches testers or expires, and in Slack or a webhook")
         case .diagnostics: String(localized: "What broke, flaky tests, trends and what a workflow costs")
-        case .workflows: String(localized: "Pause a workflow, change its Xcode version")
+        case .workflows: String(localized: "Pause a workflow, change its Xcode version, give a build to your TestFlight groups")
         case .agents: String(localized: "The cumulus command and the MCP server for your agents")
         case .accounts: String(localized: "Several App Store Connect accounts")
         }

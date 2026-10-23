@@ -32,13 +32,16 @@ struct PillButtonStyle: ButtonStyle {
     let isSelected: Bool
 
     func makeBody(configuration: Configuration) -> some View {
-        configuration.label
+        // Plain colours: the semantic `.background` style as ink left the labels of pills that were not selected blank once
+        // another tab had been chosen (XCO-178).
+        let ink = isSelected ? Color(nsColor: .windowBackgroundColor) : Color.primary
+        return configuration.label
             .font(.callout.weight(isSelected ? .semibold : .regular))
             .padding(.horizontal, 12)
             .padding(.vertical, 5)
-            .foregroundStyle(isSelected ? AnyShapeStyle(.background) : AnyShapeStyle(.primary))
+            .foregroundStyle(ink)
             // The counter of a pill follows the pill's own ink.
-            .tint(isSelected ? Color(nsColor: .windowBackgroundColor) : Color.primary)
+            .tint(ink)
             .background(isSelected ? AnyShapeStyle(Color.primary) : AnyShapeStyle(Color.primary.opacity(0.07)), in: .capsule)
             .opacity(configuration.isPressed ? 0.7 : 1)
             .contentShape(.capsule)

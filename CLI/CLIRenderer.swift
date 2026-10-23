@@ -18,6 +18,8 @@ nonisolated struct CLIRenderer: Sendable {
         case .usage(let usage): sections = self.usage(usage)
         case .refresh(let refresh): sections = self.refresh(refresh)
         case .launch(let launch): sections = self.launch(launch)
+        case .testFlight(let testFlight): sections = self.testFlight(testFlight)
+        case .testFlightChange(let change): sections = self.testFlightChange(change)
         }
         sections.append(footer(response.meta))
         return sections.filter { !$0.isEmpty }.joined(separator: "\n")
@@ -93,6 +95,84 @@ nonisolated struct CLIRenderer: Sendable {
             return [line + "\n", "It is not in the list yet. See it with: cumulus refresh --wait, then cumulus builds --limit 1\n"]
         }
         return [line + "\n", "Follow it with: cumulus build \(launch.reference ?? launch.buildRunID)\n"]
+    }
+
+    private func testFlightFields(_ build: TestFlightOutput.Build) -> [(String, String)] {
+        var status = build.status
+        if let days = build.daysLeft {
+            status += ", expires in \(days) day\(days == 1 ? "" : "s")"
+        }
+        var fields: [(String, String)] = [("TestFlight", "\(build.label)  \(status)")]
+        if let uploaded = build.uploadedDate {
+            fields.append(("Uploaded", CLIText.date(uploaded, calendar: calendar)))
+        }
+        if let expiration = build.expirationDate {
+            fields.append(("Expires", CLIText.date(expiration, calendar: calendar)))
+        }
+        fields.append(("Internal", build.internalState))
+        fields.append(("External", build.externalState))
+        if let review = build.betaReview {
+            fields.append(("Beta review", review))
+        }
+        if let notifies = build.notifiesTesters {
+            fields.append(("Notifies testers", notifies ? "yes" : "no"))
+        }
+        if build.needsExportCompliance {
+            fields.append(("Note", "Apple waits for the answer about encryption before any tester gets this build."))
+        }
+        return fields
+    }
+
+    private func testFlight(_ output: TestFlightOutput) -> [String] {
+        var fields: [(String, String)] = [("Build", output.reference ?? output.buildRunID), ("App", output.app)]
+        fields += output.build.map(testFlightFields) ?? [("TestFlight", "no build known")]
+        var sections = [CLIText.fields(fields)]
+        if let groups = output.groups {
+            var table = CLITable(headers: ["GROUP", "KIND", "TESTERS", "HAS BUILD"], rightAligned: [2], uncut: [0])
+            table.rows = groups.map { group in
+                [
+                    group.name, group.kind, group.testerCount.map(String.init) ?? "-",
+                    group.hasBuild ? (group.receivesEveryBuild ? "yes (always)" : "yes") : "-",
+                ]
+            }
+            sections.append(groups.isEmpty ? "No group.\n" : table.render(width: width))
+        }
+        if let hint = output.hint {
+            sections.append(hint + "\n")
+        }
+        return sections
+    }
+
+    private func testFlightChange(_ change: TestFlightChangeOutput) -> [String] {
+        let label = change.build?.label
+        let build = [change.app, label].compactMap(\.self).joined(separator: " ")
+        var lines: [String] = []
+        if change.action == "expire" {
+            lines.append(change.changed ? "Expired \(build.isEmpty ? change.app : build)." : "Nothing to do: \(build.isEmpty ? change.app : build) is already expired.")
+        } else if change.changed {
+            if let added = change.added, !added.isEmpty { lines.append("Gave \(build) to \(CLITestFlightWords.list(added)).") }
+            if let removed = change.removed, !removed.isEmpty { lines.append("Took \(build) from \(CLITestFlightWords.list(removed)).") }
+            if let steps = change.steps, steps.contains("betaReview") { lines.append("Sent the build to Apple's beta review.") }
+            if lines.isEmpty { lines.append("Changed \(build).") }
+        } else {
+            lines.append("Nothing to change: the groups are already as asked.")
+        }
+        if let unchanged = change.unchanged, !unchanged.isEmpty, change.changed {
+            lines.append("Already as asked: \(CLITestFlightWords.list(unchanged)).")
+        }
+        if change.appLaunched {
+            lines[0] = "Cumulus was not running: it has been started. " + lines[0]
+        }
+        var sections = [lines.joined(separator: "\n") + "\n"]
+        if let message = change.message {
+            sections.append(message + "\n")
+        }
+        if change.changed, change.build == nil {
+            sections.append("The new state could not be read back. See it with: cumulus testflight \(change.reference ?? change.buildRunID)\n")
+        } else if let build = change.build {
+            sections.append(CLIText.fields(testFlightFields(build)))
+        }
+        return sections
     }
 
     private func usage(_ usage: UsageReportOutput) -> [String] {

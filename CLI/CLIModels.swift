@@ -320,6 +320,77 @@ nonisolated struct LaunchOutput: Equatable, Sendable, Encodable {
     var appLaunched: Bool
 }
 
+/// A build's TestFlight build and the groups of its app: what `cumulus testflight` answers.
+nonisolated struct TestFlightOutput: Equatable, Sendable, Encodable {
+    struct Build: Equatable, Sendable, Encodable {
+        var id: String
+        /// “1.4 (412)”.
+        var label: String
+        var version: String?
+        var buildNumber: String?
+        var platform: String?
+        /// One word: `processing`, `processingFailed`, `waitingForReview`, `inReview`, `rejected`, `available`, `ready`, `expired`, `unknown`.
+        var status: String
+        var processingState: String
+        var internalState: String
+        var externalState: String
+        /// The beta review of the build, when it was sent to it.
+        var betaReview: String?
+        var uploadedDate: Date?
+        var expirationDate: Date?
+        /// Days before the build stops working; absent once expired or when Apple gave no date.
+        var daysLeft: Int?
+        /// Whether Apple tells the testers by itself when the build reaches them.
+        var notifiesTesters: Bool?
+        /// Apple waits for the answer about encryption before any tester gets the build.
+        var needsExportCompliance: Bool
+    }
+
+    struct Group: Equatable, Sendable, Encodable {
+        var id: String
+        var name: String
+        /// `internal` or `external`.
+        var kind: String
+        /// An internal group that gets every build by itself: it is neither given a build nor taken from.
+        var receivesEveryBuild: Bool
+        var testerCount: Int?
+        /// Whether the build is in the group.
+        var hasBuild: Bool
+    }
+
+    /// The Xcode Cloud build, as `cumulus build` takes it.
+    var buildRunID: String
+    var reference: String?
+    var app: String
+    /// Absent when Cumulus knows no TestFlight build for it.
+    var build: Build?
+    /// The groups of the app; absent when Cumulus has not read them.
+    var groups: [Group]?
+    var hint: String?
+}
+
+/// What `cumulus testflight give` and `cumulus testflight expire` did.
+nonisolated struct TestFlightChangeOutput: Equatable, Sendable, Encodable {
+    /// `give` or `expire`.
+    var action: String
+    var buildRunID: String
+    var reference: String?
+    var app: String
+    /// Names of the groups the build was given to, taken from, and the ones that were already as asked.
+    var added: [String]?
+    var removed: [String]?
+    var unchanged: [String]?
+    /// What Apple accepted: `notes`, `notification`, `addGroups`, `removeGroups`, `betaReview`.
+    var steps: [String]?
+    var notifiesTesters: Bool?
+    /// False when the request asked for nothing that was not already so.
+    var changed: Bool
+    /// The TestFlight build as Apple has it after the write; absent when it could not be read back.
+    var build: TestFlightOutput.Build?
+    var appLaunched: Bool
+    var message: String?
+}
+
 nonisolated enum CLIReport: Equatable, Sendable {
     case accounts([AccountOutput])
     case status(StatusOutput)
@@ -330,6 +401,8 @@ nonisolated enum CLIReport: Equatable, Sendable {
     case usage(UsageReportOutput)
     case refresh(RefreshOutput)
     case launch(LaunchOutput)
+    case testFlight(TestFlightOutput)
+    case testFlightChange(TestFlightChangeOutput)
 }
 
 nonisolated struct CLIResponse: Equatable, Sendable {
@@ -347,6 +420,8 @@ nonisolated struct CLIResponse: Equatable, Sendable {
         case .usage(let value): CLIJSON.data(CLIEnvelope(data: value, meta: meta))
         case .refresh(let value): CLIJSON.data(CLIEnvelope(data: value, meta: meta))
         case .launch(let value): CLIJSON.data(CLIEnvelope(data: value, meta: meta))
+        case .testFlight(let value): CLIJSON.data(CLIEnvelope(data: value, meta: meta))
+        case .testFlightChange(let value): CLIJSON.data(CLIEnvelope(data: value, meta: meta))
         }
     }
 

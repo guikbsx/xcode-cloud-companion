@@ -40,11 +40,11 @@ On standard error, with a non-zero exit code:
 | 2 | `USAGE` | Unknown command, option or value | Read `cumulus help <command>` |
 | 3 | `NO_CACHE` | The app never synced, or has no API key | Ask the user to open Cumulus and add their App Store Connect API key |
 | 4 | `APP_UNREACHABLE` | `refresh` could not reach or start the app | Ask the user to open Cumulus |
-| 5 | `NOT_FOUND`, `AMBIGUOUS` | No app, build or account matches, or several do | `suggestions` lists what exists or the candidates; pick one and retry |
+| 5 | `NOT_FOUND`, `AMBIGUOUS` | No app, build, group or account matches, or several do | `suggestions` lists what exists or the candidates; pick one and retry |
 | 6 | `TIMEOUT` | `refresh --wait` waited past `--timeout`, or `run` got no answer | The sync goes on in the app; run `cumulus status` later. After `run`, check `cumulus builds --limit 1` before anything else |
-| 7 | `NOT_ALLOWED` | `run`: the key is read-only in the app, or Apple answered 403 | Ask the user to set the key to “Read + Build” in Cumulus › Settings › Accounts; do not retry |
-| 8 | `RATE_LIMITED` | `run`: three launches by agents already this hour, or Apple's hourly limit | Ask the user to start the build from the app, or wait |
-| 1 | `REFUSED` | `run`: Apple refused the build; its words are in `message` | Report them; do not retry |
+| 7 | `NOT_ALLOWED` | `run`, `testflight give`, `testflight expire`: the key is read-only in the app, or Apple answered 403 | Ask the user to set the key to “Read + Build” in Cumulus › Settings › Accounts (TestFlight also needs an Admin or App Manager key); do not retry |
+| 8 | `RATE_LIMITED` | `run`: three launches by agents already this hour; `testflight give` and `expire`: ten changes already this hour; or Apple's hourly limit | Ask the user to make the change from the app, or wait |
+| 1 | `REFUSED` | `run`, `testflight give`, `testflight expire`: Apple refused, or the TestFlight build is in a state that does not allow it (still processing, expired); the words are in `message` | Report them; do not retry |
 | 9 | `PRO_REQUIRED` | Cumulus Pro is not active: every command but `status` is refused, and every MCP tool | Tell the user that this needs Cumulus Pro (Cumulus › Settings › Cumulus Pro); do not retry. `cumulus status` still answers, for the first account only: with `--account` naming another one, it is refused too (that account is paused in the app). If `message` says the app has not said yet, ask them to open Cumulus |
 
 Through MCP, the same `error` object comes back as the text of a result with `isError: true`.
@@ -124,6 +124,20 @@ While `measurement.isMeasuring` is true, the app is still reading the test resul
 
 Errors on standard error: `NOT_ALLOWED` (exit 7: the key is read-only in the app, or Apple answered 403), `RATE_LIMITED` (exit 8: the app's cap of three launches by agents an hour per account, or Apple's hourly limit), `REFUSED` (exit 1: Apple refused, its words in `message`; a paused workflow, a source no manual condition covers), `NOT_FOUND` (no such workflow, branch, tag or open pull request), `USAGE` (no source given and no earlier build to take the branch from). Never retry `run` on your own after any of these.
 
+## `testflight`
+
+`cumulus testflight <build>` — `data`: `buildRunID`, `reference` (`App#42`), `app`, `build`, `groups`, `hint`.
+
+- `build` (absent when Cumulus knows no TestFlight build for the Xcode Cloud build; then `hint` says why): `id`, `label` (`1.4 (412)`), `version`, `buildNumber`, `platform`, `status` (one word: `processing`, `processingFailed`, `waitingForReview`, `inReview`, `rejected`, `available`, `ready`, `expired`, `unknown`), `processingState`, `internalState`, `externalState` (`processing`, `readyForSubmission`, `waitingForReview`, `inReview`, `rejected`, `approved`, `ready`, `testing`, `expired`, `missingCompliance`, `unknown`), `betaReview` (only once the build was sent to the beta review), `uploadedDate`, `expirationDate`, `daysLeft` (until it stops working; absent once expired), `notifiesTesters` (whether Apple tells the testers by itself), `needsExportCompliance`.
+- `groups` (absent until the app read the groups of the app): `id`, `name`, `kind` (`internal` or `external`), `receivesEveryBuild` (an internal group that gets every build by itself: it can be neither named in `give` nor taken from), `testerCount` (when known), `hasBuild`.
+- The command reads what the app keeps. When the shared folder lacks the TestFlight build or the groups, the running app reads them once; `--cached` never asks it.
+
+`cumulus testflight give` and `cumulus testflight expire` — `data`: `action` (`give` or `expire`), `buildRunID`, `reference`, `app`, `changed` (false when the groups were already as asked, or the build already expired: nothing was sent), and for `give` `added`, `removed` and `unchanged` (group names), `steps` (what Apple accepted: `notes`, `notification`, `addGroups`, `removeGroups`, `betaReview`), `build` (the TestFlight build as Apple has it after the write, as above; absent when it could not be read back), `notifiesTesters`, `appLaunched`, `message`.
+
+`--group` and `--remove` repeat, one name each; a group is named once in the whole command. `--notes` needs `--locale` and at least one `--group`; `--notify` and `--no-notify` need one too.
+
+Errors on standard error: `NOT_ALLOWED` (exit 7), `RATE_LIMITED` (exit 8: ten changes an hour per account, give and expire together), `REFUSED` (exit 1), `NOT_FOUND` or `AMBIGUOUS` (exit 5: no such build, no TestFlight build for it, or a group name unknown or shared by two groups; `suggestions` lists the groups that exist), `USAGE` (exit 2: a group that receives every build by itself, or arguments that do not go together), `INTERNAL` (exit 1: Apple did not confirm the change). **Never retry after any of these**: run `cumulus testflight <build> --json` and read what Apple has. Without Cumulus Pro: `PRO_REQUIRED`, exit 9.
+
 ## MCP tools
 
 `cumulus mcp` serves the same answers over the Model Context Protocol (stdio). Each tool returns the JSON above as text and as `structuredContent`.
@@ -140,4 +154,7 @@ Every tool except `list_accounts` also takes `account`, an account's name: the s
 | `get_usage` | `breakdown`: `summary`, `byApp`, `byWorkflow`, `daily` | `usage` |
 | `refresh` | `wait` (default true), `timeoutSeconds` (default 120) | `refresh` |
 | `start_build` | `workflow` (required), `branch`, `tag`, `pull_request`, `clean` | `run` |
+| `get_testflight` | `reference` (required), `fetchDetails` (default true) | `testflight <build>` |
+| `give_testflight_build` | `reference` (required), `groups`, `remove_groups` (lists of group names), `notes`, `locale`, `notify` | `testflight give` |
+| `expire_testflight_build` | `reference` (required) | `testflight expire` |
 | `list_accounts` | - | `accounts` |

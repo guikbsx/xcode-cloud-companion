@@ -132,7 +132,7 @@ struct AgentsSettingsView: View {
                 VStack(alignment: .leading, spacing: 2) {
                     Text("Connect an agent to Cumulus")
                         .font(.headline)
-                    Text("Claude Code, Codex and Xcode’s agents read what the app already knows: builds, tests, the plan. They start a build only when the key is set to Read + Build, three times an hour per account at most, and you are told each time.")
+                    Text("Claude Code, Codex and Xcode’s agents read what the app already knows: builds, tests, the plan. They start a build, give a TestFlight build to groups or expire one only when the key is set to Read + Build, within an hourly limit per account, and you are told each time.")
                         .font(.callout)
                         .foregroundStyle(.secondary)
                         .fixedSize(horizontal: false, vertical: true)
@@ -362,6 +362,17 @@ struct AgentsSettingsView: View {
                 }
             } icon: {
                 Image(systemName: "play").foregroundStyle(.secondary)
+            }
+            Label {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Give a TestFlight build to groups, or expire it", comment: "Settings, Agents: what an agent can do, third line")
+                    Text("Only when the account’s key is set to Read + Build, and ten changes an hour per account at most. An expiration can’t be undone. A notification tells you each time; Settings › Notifications can turn it off.")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+            } icon: {
+                Image(systemName: "paperplane").foregroundStyle(.secondary)
             }
         }
     }

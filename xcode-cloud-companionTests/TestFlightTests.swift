@@ -45,7 +45,8 @@ struct TestFlightDecodingTests {
         #expect(newest.expirationDate == iso("2027-02-17T20:38:53Z"))
         #expect(newest.processing == .valid && newest.internalState == .testing && newest.externalState == .testing)
         #expect(newest.review == .approved && newest.reviewSubmittedDate == iso("2026-11-19T20:41:24Z"))
-        #expect(newest.groups == [internalGroup, externalGroup])
+        #expect(newest.groups.map(\.name) == ["Internal", "External testers"] && newest.groups.map(\.isInternal) == [true, false])
+        #expect(newest.groups.map(\.id) == ["a11ce009-0000-4000-8000-000000001009", "a11ce00a-0000-4000-8000-00000000100a"], "the identifiers of the groups come with the build")
         #expect(newest.isAvailableToExternalTesters(at: now))
 
         let third = try #require(builds.last)
@@ -88,7 +89,7 @@ struct TestFlightDecodingTests {
             "betaAppReviewSubmission": {"data": {"type": "betaAppReviewSubmissions", "id": "b1"}},
             "betaGroups": {"data": [{"type": "betaGroups", "id": "g1"}, {"type": "betaGroups", "id": "gone"}]}}}],
          "included": [
-          {"type": "buildBetaDetails", "id": "b1", "attributes": {"internalBuildState": "MISSING_EXPORT_COMPLIANCE", "externalBuildState": "FUTURE_STATE"}},
+          {"type": "buildBetaDetails", "id": "b1", "attributes": {"internalBuildState": "SOMETHING_ELSE", "externalBuildState": "FUTURE_STATE"}},
           {"type": "betaAppReviewSubmissions", "id": "b1", "attributes": {"betaReviewState": "SOMETHING"}},
           {"type": "betaGroups", "id": "g1", "attributes": {"name": "Friends"}}]}
         """#
@@ -97,7 +98,7 @@ struct TestFlightDecodingTests {
         let build = try #require(document.testFlightBuilds.first)
 
         #expect(build.processing == .unknown && build.internalState == .unknown && build.externalState == .unknown && build.review == .unknown)
-        #expect(build.groups == [TestFlightGroup(name: "Friends", isInternal: false)], "a group Apple did not include is left out")
+        #expect(build.groups == [TestFlightGroup(name: "Friends", isInternal: false, id: "g1")], "a group Apple did not include is left out")
         #expect(build.status(at: now) == .unknown)
         #expect(build.uploadedDate == nil && build.expirationDate == nil && build.daysLeft(at: now) == nil)
     }

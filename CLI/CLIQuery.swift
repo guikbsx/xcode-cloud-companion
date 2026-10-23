@@ -33,6 +33,9 @@ nonisolated enum CLIQuery: Equatable, Sendable {
     case build(reference: String, fetch: Bool)
     case workflows(app: String?)
     case usage(UsageBreakdown)
+    /// A build's TestFlight build, its state and the groups of its app. `fetch` asks the running app to read what the shared
+    /// folder lacks.
+    case testFlight(reference: String, fetch: Bool)
 }
 
 nonisolated enum CLIReference {

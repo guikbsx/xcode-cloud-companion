@@ -224,7 +224,7 @@ struct MainWindowView: View {
                 run: run, buildStore: buildStore, extrasStore: extrasStore, artifactSaver: artifactSaver, onRebuild: rebuildAction(for: run),
                 teamID: settings.issuerID.isEmpty ? nil : settings.issuerID,
                 icons: icons, palette: palette,
-                openBuild: { navigation.selectedBuildID = $0 }, logOpener: logOpener, ledger: usageStore.ledger, insights: session.failureInsights, logExcerpts: session.windowStores.logExcerpts, testHistory: workflowTests, testFlight: session.testFlight, tab: $navigation.buildTab
+                openBuild: { navigation.selectedBuildID = $0 }, logOpener: logOpener, ledger: usageStore.ledger, insights: session.failureInsights, logExcerpts: session.windowStores.logExcerpts, testHistory: workflowTests, testFlight: session.testFlight, distribution: distributionAccess, tab: $navigation.buildTab
             )
             .environment(\.sourceOpening, sourceOpening(for: run))
         } else if navigation.sidebarSelection == .overview {
@@ -349,6 +349,13 @@ struct MainWindowView: View {
 
     private var canLaunch: Bool {
         settings.keyAccess == .canLaunch
+    }
+
+    private var distributionAccess: TestFlightDistributionAccess {
+        TestFlightDistributionAccess(
+            groups: session.testFlightGroups, distributor: session.testFlightDistributor, testFlight: session.testFlight, canWrite: canLaunch,
+            openSettings: openSettings, notAllowed: { [settings] in settings.keyAccess = .readOnly }
+        )
     }
 
     /// Opens a build's files in Xcode from the app's local clone.

@@ -35,6 +35,12 @@ nonisolated struct AppIPCService: IPCService {
     var loadBuildDetails: @MainActor @Sendable (String) async -> Bool = { _ in false }
     /// Starts a build for the command; `AgentLaunchService` in the app.
     var launchBuild: @MainActor @Sendable (IPCLaunchRequest) async -> IPCResult = { _ in IPCResult(reason: IPCLaunchReason.failed, launched: false) }
+    /// Reads a build's TestFlight build and the groups of its app into the shared folder; `AgentTestFlightService` in the app.
+    var loadTestFlight: @MainActor @Sendable (String) async -> IPCResult = { _ in IPCResult(loaded: false) }
+    /// Gives a TestFlight build to groups and takes it from others for the command.
+    var giveTestFlight: @MainActor @Sendable (IPCTestFlightGiveRequest) async -> IPCResult = { _ in IPCResult(reason: IPCTestFlightReason.failed, written: false) }
+    /// Expires a TestFlight build for the command.
+    var expireTestFlight: @MainActor @Sendable (IPCTestFlightExpireRequest) async -> IPCResult = { _ in IPCResult(reason: IPCTestFlightReason.failed, written: false) }
 
     func ping(accountID: String?) async -> IPCResult {
         guard let sync = await sync(accountID) else {
@@ -78,6 +84,18 @@ nonisolated struct AppIPCService: IPCService {
 
     func launch(_ request: IPCLaunchRequest) async -> IPCResult {
         await launchBuild(request)
+    }
+
+    func testFlightLoad(buildRunID: String) async -> IPCResult {
+        await loadTestFlight(buildRunID)
+    }
+
+    func testFlightGive(_ request: IPCTestFlightGiveRequest) async -> IPCResult {
+        await giveTestFlight(request)
+    }
+
+    func testFlightExpire(_ request: IPCTestFlightExpireRequest) async -> IPCResult {
+        await expireTestFlight(request)
     }
 
     private func waitForSyncToEnd(_ sync: any RefreshableSync) async {

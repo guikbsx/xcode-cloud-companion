@@ -6,6 +6,8 @@ nonisolated struct MCPTool: Sendable {
         case query(CLIQuery)
         case refresh(wait: Bool, timeout: TimeInterval?)
         case launch(LaunchCommand)
+        case testFlightGive(TestFlightGiveCommand)
+        case testFlightExpire(TestFlightExpireCommand)
     }
 
     struct InvalidArguments: Error, Equatable, Sendable {
@@ -18,8 +20,10 @@ nonisolated struct MCPTool: Sendable {
     var properties: [String: JSONValue] = [:]
     var required: [String] = []
     var readOnly = true
-    /// False for the one tool that starts a build: calling it twice starts two.
+    /// False for the tools that write: calling `start_build` twice starts two builds.
     var idempotent = true
+    /// True for the tool whose effect cannot be undone: an expired TestFlight build stays expired.
+    var destructive = false
     /// Every tool that reads an account's cache takes `account`, to answer for another one than the app shows.
     var takesAccount = true
     var makeCall: @Sendable (Arguments, Date) throws(InvalidArguments) -> Call
@@ -49,7 +53,7 @@ nonisolated struct MCPTool: Sendable {
             "annotations": [
                 "title": .string(title),
                 "readOnlyHint": .bool(readOnly),
-                "destructiveHint": false,
+                "destructiveHint": .bool(destructive),
                 "idempotentHint": .bool(idempotent),
                 "openWorldHint": false,
             ],
@@ -82,6 +86,22 @@ nonisolated struct MCPTool: Sendable {
             case .int(let value)?: return Double(value)
             case .double(let value)?: return value
             default: throw InvalidArguments(message: "'\(key)' must be a number.")
+            }
+        }
+
+        /// A list of strings; a lone string is read as a list of one.
+        func strings(_ key: String) throws(InvalidArguments) -> [String] {
+            switch values[key] {
+            case nil, .null?: return []
+            case .string(let value)?: return [value]
+            case .array(let items)?:
+                var strings: [String] = []
+                for item in items {
+                    guard case .string(let value) = item else { throw InvalidArguments(message: "'\(key)' must be a list of strings.") }
+                    strings.append(value)
+                }
+                return strings
+            default: throw InvalidArguments(message: "'\(key)' must be a list of strings.")
             }
         }
 
@@ -269,6 +289,100 @@ nonisolated enum MCPTools {
                     throw MCPTool.InvalidArguments(message: "Pass one of 'branch', 'tag' and 'pull_request'.")
                 }
                 return .launch(launch)
+            }
+        ),
+        MCPTool(
+            name: "get_testflight", title: "Get a build's TestFlight build",
+            description: """
+            The TestFlight build that an Xcode Cloud build delivered: its state (`processing`, `waitingForReview`, `inReview`, `available`, `ready`, `expired`...), \
+            when it expires, whether Apple notifies testers, and the groups of the app with their tester counts and whether the build is in each. \
+            Call it before give_testflight_build or expire_testflight_build to know the groups' exact names, and after one to see what Apple has. \
+            When the shared folder lacks the TestFlight build or the groups, the running Cumulus app reads them once.
+            """,
+            properties: [
+                "reference": ["type": "string", "description": "The Xcode Cloud build: App#42, a build number when only one app has it, or a build run id."],
+                "fetchDetails": ["type": "boolean", "default": true, "description": "False to answer from the shared folder only, without asking the app to read the TestFlight build and the groups."],
+            ],
+            required: ["reference"],
+            makeCall: { arguments, _ throws(MCPTool.InvalidArguments) in
+                guard let reference = try arguments.string("reference"), !reference.isEmpty else {
+                    throw MCPTool.InvalidArguments(message: "'reference' is required.")
+                }
+                return .query(.testFlight(reference: reference, fetch: try arguments.bool("fetchDetails") ?? true))
+            }
+        ),
+        MCPTool(
+            name: "give_testflight_build", title: "Give a TestFlight build to groups",
+            description: """
+            Gives the TestFlight build of an Xcode Cloud build to groups of testers and takes it from other groups, through the Cumulus app, in one call. \
+            Use the group names get_testflight lists (any case). An internal group gets the build at once; an external group gets it after Apple's beta review, \
+            which Cumulus asks for when needed. Optional test notes (`notes` with their `locale`) are written for the testers, and `notify` says whether Apple tells them. \
+            Call it only when the user asked for this change, and never retry on your own: after an error or an unclear answer, call get_testflight to see what Apple has. \
+            Cumulus allows ten such changes (this tool and expire_testflight_build) an hour per account, the key must be set to "Read + Build" in the app and be an Admin or App Manager key.
+            """,
+            properties: [
+                "reference": ["type": "string", "description": "The Xcode Cloud build: App#42, a build number when only one app has it, or a build run id."],
+                "groups": ["type": "array", "items": ["type": "string"], "description": "Names of the groups to give the build to."],
+                "remove_groups": ["type": "array", "items": ["type": "string"], "description": "Names of the groups to take the build from."],
+                "notes": ["type": "string", "maxLength": 4000, "description": "The \"What to test\" text for `locale`. Only with `groups`."],
+                "locale": ["type": "string", "description": "The language of `notes`, such as en-US or fr-FR. Required with `notes`."],
+                "notify": ["type": "boolean", "description": "Whether Apple tells the testers when the build reaches them. Omit it to leave the build's setting. Only with `groups`."],
+            ],
+            required: ["reference"],
+            readOnly: false,
+            idempotent: false,
+            makeCall: { arguments, _ throws(MCPTool.InvalidArguments) in
+                guard let reference = try arguments.string("reference"), !reference.trimmingCharacters(in: .whitespaces).isEmpty else {
+                    throw MCPTool.InvalidArguments(message: "'reference' is required.")
+                }
+                let add = try arguments.strings("groups")
+                let remove = try arguments.strings("remove_groups")
+                guard !(add + remove).isEmpty, (add + remove).allSatisfy({ !$0.trimmingCharacters(in: .whitespaces).isEmpty }) else {
+                    throw MCPTool.InvalidArguments(message: "Pass at least one group name in 'groups' or 'remove_groups'.")
+                }
+                let folded = (add + remove).map { $0.trimmingCharacters(in: .whitespaces).lowercased() }
+                guard Set(folded).count == folded.count else {
+                    throw MCPTool.InvalidArguments(message: "A group is named twice: give the build to a group or take it from it, not both.")
+                }
+                var command = TestFlightGiveCommand(build: reference, add: add, remove: remove, notify: try arguments.bool("notify"), yes: true)
+                let notes = try arguments.string("notes")?.trimmingCharacters(in: .whitespacesAndNewlines)
+                let locale = try arguments.string("locale")
+                if notes != nil || locale != nil {
+                    guard let notes, !notes.isEmpty, let locale, !locale.isEmpty, locale.allSatisfy({ $0.isASCII && ($0.isLetter || $0.isNumber || $0 == "-") }) else {
+                        throw MCPTool.InvalidArguments(message: "'notes' and 'locale' go together: text, and a language such as fr-FR.")
+                    }
+                    guard notes.count <= IPCTestFlightGiveRequest.maximumNotesLength else {
+                        throw MCPTool.InvalidArguments(message: "'notes' takes at most \(IPCTestFlightGiveRequest.maximumNotesLength) characters.")
+                    }
+                    command.notes = notes
+                    command.locale = locale
+                }
+                guard !add.isEmpty || (command.notes == nil && command.notify == nil) else {
+                    throw MCPTool.InvalidArguments(message: "'notes' and 'notify' go with 'groups': they apply when the build is given to a group.")
+                }
+                return .testFlightGive(command)
+            }
+        ),
+        MCPTool(
+            name: "expire_testflight_build", title: "Expire a TestFlight build",
+            description: """
+            Expires the TestFlight build of an Xcode Cloud build, through the Cumulus app: testers can no longer install it and the beta review in progress stops. \
+            An expiration cannot be undone. Call it only when the user explicitly asked to expire this build, never to clean up on your own initiative, and never retry: \
+            after an error or an unclear answer, call get_testflight. Cumulus allows ten changes (this tool and give_testflight_build) an hour per account, \
+            the key must be set to "Read + Build" in the app and be an Admin or App Manager key.
+            """,
+            properties: [
+                "reference": ["type": "string", "description": "The Xcode Cloud build: App#42, a build number when only one app has it, or a build run id."],
+            ],
+            required: ["reference"],
+            readOnly: false,
+            idempotent: false,
+            destructive: true,
+            makeCall: { arguments, _ throws(MCPTool.InvalidArguments) in
+                guard let reference = try arguments.string("reference"), !reference.trimmingCharacters(in: .whitespaces).isEmpty else {
+                    throw MCPTool.InvalidArguments(message: "'reference' is required.")
+                }
+                return .testFlightExpire(TestFlightExpireCommand(build: reference, yes: true))
             }
         ),
         MCPTool(

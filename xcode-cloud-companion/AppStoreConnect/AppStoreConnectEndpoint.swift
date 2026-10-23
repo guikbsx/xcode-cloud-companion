@@ -114,11 +114,67 @@ nonisolated enum AppStoreConnectEndpoint {
             "limit": "5",
             "include": "buildBetaDetail,preReleaseVersion,betaAppReviewSubmission,betaGroups",
             "fields[builds]": "version,uploadedDate,expirationDate,expired,processingState,buildBetaDetail,preReleaseVersion,betaAppReviewSubmission,betaGroups",
-            "fields[buildBetaDetails]": "internalBuildState,externalBuildState",
+            "fields[buildBetaDetails]": "internalBuildState,externalBuildState,autoNotifyEnabled",
             "fields[preReleaseVersions]": "version,platform",
             "fields[betaAppReviewSubmissions]": "betaReviewState,submittedDate",
             "fields[betaGroups]": "name,isInternalGroup",
         ])
+    }
+
+    /// One TestFlight build as `testFlightBuilds` reads it, to see what a distribution did.
+    static func testFlightBuild(id: String) -> URL {
+        url(path: "/v1/builds/\(id)", query: [
+            "include": "buildBetaDetail,preReleaseVersion,betaAppReviewSubmission,betaGroups",
+            "fields[builds]": "version,uploadedDate,expirationDate,expired,processingState,buildBetaDetail,preReleaseVersion,betaAppReviewSubmission,betaGroups",
+            "fields[buildBetaDetails]": "internalBuildState,externalBuildState,autoNotifyEnabled",
+            "fields[preReleaseVersions]": "version,platform",
+            "fields[betaAppReviewSubmissions]": "betaReviewState,submittedDate",
+            "fields[betaGroups]": "name,isInternalGroup",
+        ])
+    }
+
+    /// The TestFlight groups of an app, internal and external.
+    static func betaGroups(appID: String) -> URL {
+        url(path: "/v1/apps/\(appID)/betaGroups", query: [
+            "fields[betaGroups]": "name,isInternalGroup,hasAccessToAllBuilds,publicLinkEnabled",
+            "limit": String(maximumPageSize),
+        ])
+    }
+
+    /// The testers of a group, by identifier only: the page's total is the number the card shows.
+    static func betaGroupTesters(groupID: String) -> URL {
+        url(path: "/v1/betaGroups/\(groupID)/relationships/betaTesters", query: ["limit": String(maximumPageSize)])
+    }
+
+    /// The fourth write: the groups a build is given to (`POST`) or taken from (`DELETE`), several in one request.
+    static func buildBetaGroups(buildID: String) -> URL {
+        url(path: "/v1/builds/\(buildID)/relationships/betaGroups", query: [:])
+    }
+
+    /// The test notes of a build, one per language.
+    static func betaBuildLocalizations(buildID: String) -> URL {
+        url(path: "/v1/builds/\(buildID)/betaBuildLocalizations", query: [
+            "fields[betaBuildLocalizations]": "locale,whatsNew",
+            "limit": "50",
+        ])
+    }
+
+    static let createBetaBuildLocalization: URL = url(path: "/v1/betaBuildLocalizations", query: [:])
+
+    static func betaBuildLocalization(id: String) -> URL {
+        url(path: "/v1/betaBuildLocalizations/\(id)", query: [:])
+    }
+
+    /// The beta detail of a build, where Apple keeps whether it tells the testers by itself.
+    static func buildBetaDetail(id: String) -> URL {
+        url(path: "/v1/buildBetaDetails/\(id)", query: [:])
+    }
+
+    static let createBetaAppReviewSubmission: URL = url(path: "/v1/betaAppReviewSubmissions", query: [:])
+
+    /// The fifth write: `PATCH` on a build, which only ever carries `expired: true`.
+    static func updateBuild(id: String) -> URL {
+        url(path: "/v1/builds/\(id)", query: [:])
     }
 
     /// Every app with one of its builds, for the icon that build carries. Apple picks the build, and not always the newest.

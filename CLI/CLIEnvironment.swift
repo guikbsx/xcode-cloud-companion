@@ -14,9 +14,9 @@ nonisolated enum CLIExitCode {
     static let appUnreachable: Int32 = 4
     static let notFound: Int32 = 5
     static let timedOut: Int32 = 6
-    /// `run`: the key is read-only, or Apple refused the write.
+    /// `run` and `testflight`: the key is read-only, or Apple refused the write.
     static let notAllowed: Int32 = 7
-    /// `run`: the app's cap on launches by agents, or Apple's hourly limit.
+    /// `run`: the app's cap on launches by agents; `testflight`: its cap on changes; or Apple's hourly limit.
     static let rateLimited: Int32 = 8
     /// Every command but `status`: Cumulus Pro is not active.
     static let proRequired: Int32 = 9

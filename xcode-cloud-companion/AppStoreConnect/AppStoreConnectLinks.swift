@@ -29,6 +29,13 @@ nonisolated enum AppStoreConnectLinks {
         return teamPage(path, teamID: teamID) ?? URL(string: "https://appstoreconnect.apple.com/\(path)") ?? home
     }
 
+    /// An app's TestFlight page, where groups and builds are managed; without an app ID, App Store Connect's home.
+    static func testFlight(appID: String?, teamID: String?) -> URL {
+        guard let appID, isIdentifier(appID) else { return home }
+        let path = "apps/\(appID)/testflight"
+        return teamPage(path, teamID: teamID) ?? URL(string: "https://appstoreconnect.apple.com/\(path)") ?? home
+    }
+
     private static func teamPage(_ path: String, teamID: String?) -> URL? {
         guard let teamID = teamID?.trimmingCharacters(in: .whitespacesAndNewlines), isIdentifier(teamID) else { return nil }
         return URL(string: "https://appstoreconnect.apple.com/teams/\(teamID.lowercased())/\(path)")

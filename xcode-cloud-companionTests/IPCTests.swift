@@ -18,6 +18,36 @@ actor FakeIPCService: IPCService {
         self.launchResult = launchResult
     }
 
+    var testFlightLoadResult = IPCResult(loaded: true)
+    var giveResult = IPCResult(written: true, addedGroups: ["QA"], removedGroups: [], unchangedGroups: [], steps: ["addGroups"], refreshed: false)
+    var expireResult = IPCResult(written: true, refreshed: false)
+    private(set) var testFlightLoads: [String] = []
+    private(set) var gives: [IPCTestFlightGiveRequest] = []
+    private(set) var expirations: [IPCTestFlightExpireRequest] = []
+
+    func set(giveResult: IPCResult) {
+        self.giveResult = giveResult
+    }
+
+    func set(expireResult: IPCResult) {
+        self.expireResult = expireResult
+    }
+
+    func testFlightLoad(buildRunID: String) async -> IPCResult {
+        testFlightLoads.append(buildRunID)
+        return testFlightLoadResult
+    }
+
+    func testFlightGive(_ request: IPCTestFlightGiveRequest) async -> IPCResult {
+        gives.append(request)
+        return giveResult
+    }
+
+    func testFlightExpire(_ request: IPCTestFlightExpireRequest) async -> IPCResult {
+        expirations.append(request)
+        return expireResult
+    }
+
     func launch(_ request: IPCLaunchRequest) async -> IPCResult {
         launches.append(request)
         return launchResult

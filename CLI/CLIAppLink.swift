@@ -99,6 +99,113 @@ nonisolated struct CLIAppLink: Sendable {
         }
     }
 
+    static let testFlightLoadTimeout: TimeInterval = 60
+    static let testFlightWriteTimeout: TimeInterval = 120
+
+    /// Asks the app to read a build's TestFlight build and the groups of its app into the shared folder; false when it is not
+    /// running (and was not to be started) or could not.
+    func testFlightLoad(buildRunID: String, startingApp: Bool) async -> Bool {
+        guard let client else { return false }
+        if startingApp {
+            guard (try? await startAppIfNeeded(client)) != nil else { return false }
+        } else {
+            guard await client.ping() != nil else { return false }
+        }
+        let request = IPCRequest(id: UUID().uuidString, method: IPCMethod.testFlightLoad, params: IPCRequest.Params(buildRunID: buildRunID))
+        return (try? await client.send(request, timeout: Self.testFlightLoadTimeout))?.loaded ?? false
+    }
+
+    /// Asks the app to give a TestFlight build to groups and take it from others; the app's answer, or why it would not.
+    func testFlightGive(_ request: IPCTestFlightGiveRequest) async throws(CLIFailure) -> (result: IPCResult, appLaunched: Bool) {
+        try await testFlightWrite(method: IPCMethod.testFlightGive, params: request.params, action: "change the groups of")
+    }
+
+    func testFlightExpire(_ request: IPCTestFlightExpireRequest) async throws(CLIFailure) -> (result: IPCResult, appLaunched: Bool) {
+        try await testFlightWrite(method: IPCMethod.testFlightExpire, params: request.params, action: "expire")
+    }
+
+    private func testFlightWrite(method: String, params: IPCRequest.Params, action: String) async throws(CLIFailure) -> (result: IPCResult, appLaunched: Bool) {
+        guard let client else { throw CLIFailure.appUnreachable }
+        let launched = try await startAppIfNeeded(client)
+        let ipc = IPCRequest(id: UUID().uuidString, method: method, params: params)
+        let result: IPCResult
+        do {
+            result = try await client.send(ipc, timeout: Self.testFlightWriteTimeout)
+        } catch .timedOut {
+            throw CLIFailure(
+                code: .timedOut, message: "The app did not answer in time.",
+                suggestions: ["Run 'cumulus testflight <build>' to see what Apple has before trying again: the change may have gone through."]
+            )
+        } catch {
+            throw CLIFailure.appUnreachable
+        }
+        guard result.reason == nil else { throw Self.testFlightFailure(for: result, action: action) }
+        return (result, launched)
+    }
+
+    static func testFlightFailure(for result: IPCResult, action: String = "change") -> CLIFailure {
+        let detail = result.message.map { " \($0)" } ?? ""
+        switch result.reason {
+        case IPCTestFlightReason.noCredentials?:
+            return CLIFailure(code: .noCache, message: "Cumulus has no App Store Connect API key for this account.", suggestions: ["Open the Cumulus app and add your key in Settings."])
+        case IPCTestFlightReason.unknownAccount?:
+            return CLIFailure(code: .notFound, message: "Cumulus no longer has this account.", suggestions: ["Run 'cumulus accounts' to list the accounts."])
+        case IPCTestFlightReason.paused?:
+            return CLIFailure(
+                code: .proRequired, message: "This account is paused: without Cumulus Pro, Cumulus follows its first account only.",
+                suggestions: ["Ask the user to open Cumulus › Settings › Cumulus Pro to follow several accounts."]
+            )
+        case IPCTestFlightReason.notAllowed?:
+            return CLIFailure(
+                code: .notAllowed, message: "The key may not \(action) TestFlight builds.\(detail)",
+                suggestions: ["Set the key to “Read + Build” in Cumulus › Settings › Accounts. Apple also needs an Admin or App Manager key."]
+            )
+        case IPCTestFlightReason.capReached?:
+            return CLIFailure(
+                code: .rateLimited, message: "Cumulus refused: agents already made their share of TestFlight changes this hour.\(detail)",
+                suggestions: ["Ask the user to make the change from the app, or try again later."]
+            )
+        case IPCTestFlightReason.rateLimited?:
+            return CLIFailure(code: .rateLimited, message: "Apple’s hourly request limit is reached.\(detail)", suggestions: ["Run 'cumulus testflight <build>' to see what was changed, then try again later."])
+        case IPCTestFlightReason.unknownBuild?:
+            return CLIFailure(
+                code: .notFound, message: "The app does not know this TestFlight build any more.",
+                suggestions: ["Run 'cumulus refresh --wait', then 'cumulus testflight <build>'."]
+            )
+        case IPCTestFlightReason.unknownGroup?:
+            return CLIFailure(
+                code: .notFound, message: "A group is unknown to the app, or two groups share its name.\(detail)",
+                suggestions: (result.names ?? []).map { "Known group: \($0)" } + ["Run 'cumulus testflight <build>' to list the groups."]
+            )
+        case IPCTestFlightReason.groupNotChoosable?:
+            return CLIFailure(code: .usage, message: "An internal group that receives every build by itself is neither given a build nor taken from.\(detail)")
+        case IPCTestFlightReason.groupsUnreadable?:
+            return CLIFailure(
+                code: .internal, message: "The groups of this app could not be read from App Store Connect.\(detail)",
+                suggestions: ["Check that the key can read TestFlight, then try again."]
+            )
+        case IPCTestFlightReason.buildNotReady?:
+            return CLIFailure(code: .refused, message: "The build is not in a state that allows it.\(detail)", suggestions: ["Run 'cumulus testflight <build>' to see its state."])
+        case IPCTestFlightReason.refused?:
+            return CLIFailure(
+                code: .refused, message: "Apple refused.\(detail)",
+                suggestions: ["Nothing more was sent. Run 'cumulus testflight <build>' to see what Apple has."]
+            )
+        case IPCTestFlightReason.uncertain?:
+            return CLIFailure(
+                code: .internal, message: "Apple did not confirm the change.\(detail)",
+                suggestions: ["Do not try again yet: run 'cumulus testflight <build>' to see the groups and the state as Apple has them."]
+            )
+        case IPCTestFlightReason.proRequired?:
+            return CLIFailure(
+                code: .proRequired, message: "Cumulus Pro is required to change TestFlight builds from an agent.",
+                suggestions: ["Ask the user to open Cumulus › Settings › Cumulus Pro."]
+            )
+        default:
+            return CLIFailure(code: .internal, message: "The change could not be made.\(detail)")
+        }
+    }
+
     func refresh(wait: Bool, timeout: TimeInterval?) async throws(CLIFailure) -> (output: RefreshOutput, lastSuccessfulSync: Date?) {
         guard let client else { throw CLIFailure.appUnreachable }
         let launched = try await startAppIfNeeded(client)

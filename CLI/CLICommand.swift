@@ -13,6 +13,8 @@ nonisolated enum CLICommand: Equatable, Sendable {
     case open(reference: String)
     case refresh(wait: Bool, timeout: TimeInterval?)
     case launch(LaunchCommand)
+    case testFlightGive(TestFlightGiveCommand)
+    case testFlightExpire(TestFlightExpireCommand)
     case mcp(verbose: Bool)
 
     /// `status` answers without Cumulus Pro, and so does what reads no build: help, version, the cache's place. The
@@ -20,7 +22,7 @@ nonisolated enum CLICommand: Equatable, Sendable {
     var needsPro: Bool {
         switch self {
         case .help, .version, .cacheInfo, .mcp, .query(.status): false
-        case .query, .open, .refresh, .launch: true
+        case .query, .open, .refresh, .launch, .testFlightGive, .testFlightExpire: true
         }
     }
 }
@@ -36,6 +38,25 @@ nonisolated struct LaunchCommand: Equatable, Sendable {
     var yes = false
 }
 
+/// `cumulus testflight give`: groups to give a build's TestFlight build to and to take it from, by name (or Apple's identifier).
+nonisolated struct TestFlightGiveCommand: Equatable, Sendable {
+    var build: String
+    var add: [String] = []
+    var remove: [String] = []
+    var notes: String?
+    var locale: String?
+    /// nil leaves the build's setting as it is.
+    var notify: Bool?
+    /// `--yes`: no question at the terminal. In a pipe or over MCP there is nobody to ask: the agent decided.
+    var yes = false
+}
+
+/// `cumulus testflight expire`: makes the build's TestFlight build unavailable for testing, for good.
+nonisolated struct TestFlightExpireCommand: Equatable, Sendable {
+    var build: String
+    var yes = false
+}
+
 nonisolated struct CLIInvocation: Equatable, Sendable {
     var command: CLICommand
     /// Nil lets the output decide: a table on a terminal, JSON into a pipe.
@@ -46,11 +67,13 @@ nonisolated struct CLIInvocation: Equatable, Sendable {
 
 nonisolated enum CLIParser {
     /// The commands the help lists, in its order.
-    static let commandNames = ["status", "accounts", "apps", "builds", "build", "workflows", "usage", "refresh", "run", "open", "mcp", "version", "help"]
+    static let commandNames = ["status", "accounts", "apps", "builds", "build", "workflows", "usage", "refresh", "run", "testflight", "open", "mcp", "version", "help"]
 
     private struct Scan {
         var flags: Set<String> = []
         var values: [String: String] = [:]
+        /// The options that may be repeated, in the order given.
+        var lists: [String: [String]] = [:]
         var positionals: [String] = []
     }
 
@@ -162,6 +185,27 @@ nonisolated enum CLIParser {
                 launch.pullRequest = number
             }
             command = .launch(launch)
+        case "testflight":
+            switch rest.first {
+            case "give":
+                scan = try self.scan(
+                    Array(rest.dropFirst()), command: name, flags: ["--notify", "--no-notify", "--yes"], values: ["--notes", "--locale"],
+                    lists: ["--group", "--remove"], positionals: 1
+                )
+                command = .testFlightGive(try testFlightGive(scan))
+            case "expire":
+                scan = try self.scan(Array(rest.dropFirst()), command: name, flags: ["--yes"], positionals: 1)
+                guard let build = scan.positionals.first else {
+                    throw usage("'cumulus testflight expire' takes a build: App#42 or a build run id.", "Run 'cumulus builds' to list recent builds.")
+                }
+                command = .testFlightExpire(TestFlightExpireCommand(build: build, yes: scan.flags.contains("--yes")))
+            default:
+                scan = try self.scan(rest, command: name, flags: ["--cached"], positionals: 1)
+                guard let reference = scan.positionals.first else {
+                    throw usage("'cumulus testflight' takes a build: App#42 or a build run id.", "Run 'cumulus builds' to list recent builds.")
+                }
+                command = .query(.testFlight(reference: reference, fetch: !scan.flags.contains("--cached")))
+            }
         case "open":
             scan = try self.scan(rest, command: name, positionals: 1)
             guard let reference = scan.positionals.first else {
@@ -183,16 +227,58 @@ nonisolated enum CLIParser {
         return CLIInvocation(command: command, format: format, account: scan.values["--account"])
     }
 
+    private static func testFlightGive(_ scan: Scan) throws(CLIFailure) -> TestFlightGiveCommand {
+        guard let build = scan.positionals.first else {
+            throw usage("'cumulus testflight give' takes a build: App#42 or a build run id.", "Run 'cumulus builds' to list recent builds.")
+        }
+        let add = scan.lists["--group"] ?? []
+        let remove = scan.lists["--remove"] ?? []
+        guard !(add + remove).isEmpty else {
+            throw usage("Name at least one group: --group <name> to give the build to it, --remove <name> to take it from it.", "Run 'cumulus testflight \(build)' to list the groups.")
+        }
+        guard (add + remove).allSatisfy({ !$0.trimmingCharacters(in: .whitespaces).isEmpty }) else {
+            throw usage("--group and --remove take a group's name.")
+        }
+        let folded = (add + remove).map { $0.trimmingCharacters(in: .whitespaces).lowercased() }
+        guard Set(folded).count == folded.count else {
+            throw usage("A group is named twice: give the build to a group or take it from it, not both.")
+        }
+        var command = TestFlightGiveCommand(build: build, add: add, remove: remove, yes: scan.flags.contains("--yes"))
+        let wantsNotes = scan.values["--notes"] != nil || scan.values["--locale"] != nil
+        if wantsNotes {
+            guard let notes = scan.values["--notes"]?.trimmingCharacters(in: .whitespacesAndNewlines), !notes.isEmpty, let locale = scan.values["--locale"],
+                  !locale.isEmpty, locale.allSatisfy({ $0.isASCII && ($0.isLetter || $0.isNumber || $0 == "-") })
+            else {
+                throw usage("--notes and --locale go together: --notes <text> --locale <fr-FR>.")
+            }
+            guard notes.count <= IPCTestFlightGiveRequest.maximumNotesLength else {
+                throw usage("--notes takes at most \(IPCTestFlightGiveRequest.maximumNotesLength) characters.")
+            }
+            command.notes = notes
+            command.locale = locale
+        }
+        guard !(scan.flags.contains("--notify") && scan.flags.contains("--no-notify")) else {
+            throw usage("Choose one of --notify and --no-notify.")
+        }
+        if scan.flags.contains("--notify") { command.notify = true }
+        if scan.flags.contains("--no-notify") { command.notify = false }
+        guard !add.isEmpty || (command.notes == nil && command.notify == nil) else {
+            throw usage("--notes, --notify and --no-notify go with --group: they apply when the build is given to a group.")
+        }
+        return command
+    }
+
     private static func usage(_ message: String, _ suggestions: String...) -> CLIFailure {
         CLIFailure(code: .usage, message: message, suggestions: suggestions)
     }
 
     private static func scan(
-        _ arguments: [String], command: String, flags: Set<String> = [], values: Set<String> = [], positionals: Int = 0, takesAccount: Bool = true
+        _ arguments: [String], command: String, flags: Set<String> = [], values: Set<String> = [], lists: Set<String> = [], positionals: Int = 0,
+        takesAccount: Bool = true
     ) throws(CLIFailure) -> Scan {
         let flags = flags.union(["--json", "--table"])
         // Every command that reads an account's cache answers for the one on screen unless another is named.
-        let values = takesAccount ? values.union(["--account"]) : values
+        let values = (takesAccount ? values.union(["--account"]) : values).union(lists)
         var scan = Scan()
         var index = 0
         var optionsEnded = false
@@ -212,13 +298,19 @@ nonisolated enum CLIParser {
             if flags.contains(name), parts.count == 1 {
                 scan.flags.insert(name)
             } else if values.contains(name) {
+                let value: String
                 if parts.count == 2 {
-                    scan.values[name] = parts[1]
+                    value = parts[1]
                 } else if index < arguments.count {
-                    scan.values[name] = arguments[index]
+                    value = arguments[index]
                     index += 1
                 } else {
                     throw usage("\(name) takes a value.", "Run 'cumulus help \(command)' for its options.")
+                }
+                if lists.contains(name) {
+                    scan.lists[name, default: []].append(value)
+                } else {
+                    scan.values[name] = value
                 }
             } else {
                 throw usage("Unknown option '\(name)' for 'cumulus \(command)'.", "Run 'cumulus help \(command)' for its options.")
