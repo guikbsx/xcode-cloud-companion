@@ -79,6 +79,9 @@ struct MainWindowView: View {
     private var workflowTests: WorkflowTestsModel { session.windowStores.workflowTests }
     private var pauser: WorkflowPauser { session.windowStores.pauser }
     private var palette: AppPalette { session.palette(for: buildStore.snapshot, summary: usageSummary) }
+    private var failureCopier: BuildFailureCopier {
+        BuildFailureCopier(buildStore: buildStore, extrasStore: extrasStore, logOpener: logOpener, excerpts: session.windowStores.logExcerpts)
+    }
 
     var body: some View {
         switch contentState {
@@ -114,7 +117,10 @@ struct MainWindowView: View {
                 }
         } content: {
             Group {
-                if navigation.sidebarSelection == .references, navigation.referenceScope == nil {
+                if navigation.sidebarSelection == .overview {
+                    // The Overview is a page of its own: the list of builds steps aside until something else is picked.
+                    Color.clear
+                } else if navigation.sidebarSelection == .references, navigation.referenceScope == nil {
                     ReferencesListView(
                         buildStore: buildStore, store: session.windowStores.references, open: { navigation.referenceScope = $0 },
                         icons: icons, palette: palette
@@ -122,14 +128,20 @@ struct MainWindowView: View {
                 } else {
                     BuildListView(
                         buildStore: buildStore, navigation: navigation,
-                        scope: navigation.referenceScope.map(BuildListScope.reference) ?? BuildListScope(navigation.sidebarSelection),
-                        back: navigation.referenceScope == nil ? nil : { navigation.referenceScope = nil },
+                        scope: navigation.daySlice.map { BuildListScope.workflowDay($0.workflowID, $0.day) }
+                            ?? navigation.referenceScope.map(BuildListScope.reference) ?? BuildListScope(navigation.sidebarSelection),
+                        back: navigation.daySlice != nil ? { navigation.sidebarSelection = .overview }
+                            : navigation.referenceScope == nil ? nil : { navigation.referenceScope = nil },
+                        backTitle: navigation.daySlice != nil ? "Overview" : "Branches and pull requests",
                         older: session.windowStores.older, icons: icons, palette: palette,
-                        failureCopier: BuildFailureCopier(buildStore: buildStore, extrasStore: extrasStore, logOpener: logOpener, excerpts: session.windowStores.logExcerpts)
+                        failureCopier: failureCopier
                     )
                 }
             }
-            .navigationSplitViewColumnWidth(min: 280, ideal: 340, max: 460)
+            .navigationSplitViewColumnWidth(
+                min: navigation.sidebarSelection == .overview ? 0 : 280, ideal: navigation.sidebarSelection == .overview ? 0 : 340,
+                max: navigation.sidebarSelection == .overview ? 0 : 460
+            )
         } detail: {
             detail
         }
@@ -228,22 +240,37 @@ struct MainWindowView: View {
             )
             .environment(\.sourceOpening, sourceOpening(for: run))
         } else if navigation.sidebarSelection == .overview {
-            OverviewView(
-                summary: usageSummary, palette: palette, usage: usageStore,
-                openSettings: openSettings,
-                openUsagePage: { NSWorkspace.shared.open(AppStoreConnectLinks.xcodeCloudUsage(teamID: settings.issuerID)) },
-                importExport: importUsageExport,
-                displayNames: buildStore.snapshot.displayNames, artwork: icons.artwork(in: buildStore.snapshot, by: \.name),
-                breakdown: { row in
-                    settings.plan.map {
-                        WorkflowCostBreakdown(
-                            product: row.productKey, workflow: row.workflow, snapshot: buildStore.snapshot, ledger: usageStore.ledger, plan: $0, now: Date()
-                        )
-                    }
-                },
-                forecast: forecast,
-                openWorkflow: { navigation.sidebarSelection = .workflow($0) }
-            )
+            OverviewScreen(
+                session: session, palette: palette, summary: usageSummary, artwork: icons.artwork(in: buildStore.snapshot, by: \.id),
+                actions: OverviewScreenActions(
+                    openBuild: { navigation.showBuild($0) },
+                    openWorkflow: { navigation.sidebarSelection = .workflow($0) },
+                    openApp: { navigation.sidebarSelection = .product($0) },
+                    openSettings: openSettings,
+                    copyForAI: { id in
+                        guard let run = buildStore.snapshot.runs.first(where: { $0.id == id }) else { return }
+                        await failureCopier.copy(run)
+                    },
+                    showDay: { navigation.showDay(workflowID: $0, day: $1) }
+                )
+            ) {
+                OverviewView(
+                    summary: usageSummary, palette: palette, usage: usageStore,
+                    openSettings: openSettings,
+                    openUsagePage: { NSWorkspace.shared.open(AppStoreConnectLinks.xcodeCloudUsage(teamID: settings.issuerID)) },
+                    importExport: importUsageExport,
+                    displayNames: buildStore.snapshot.displayNames, artwork: icons.artwork(in: buildStore.snapshot, by: \.name),
+                    breakdown: { row in
+                        settings.plan.map {
+                            WorkflowCostBreakdown(
+                                product: row.productKey, workflow: row.workflow, snapshot: buildStore.snapshot, ledger: usageStore.ledger, plan: $0, now: Date()
+                            )
+                        }
+                    },
+                    forecast: forecast,
+                    openWorkflow: { navigation.sidebarSelection = .workflow($0) }
+                )
+            }
         } else if case .workflow(let id) = navigation.sidebarSelection, let workflow = workflowStore.workflow(id: id) ?? buildStore.snapshot.workflow(id: id) {
             let product = buildStore.snapshot.products.first { $0.id == workflow.productID }
             WorkflowDetailView(

@@ -48,6 +48,28 @@ struct BuildListModelTests {
         return BuildListModel(snapshot: snapshot, scope: scope, filter: filter, query: query, now: now, calendar: paris, locale: english)
     }
 
+    @Test func aWorkflowDayListsThatWorkflowsBuildsOfThatDayOnly() {
+        // 23:30 UTC on Wednesday is 01:30 on Thursday in Paris: the day of the second and third runs.
+        let list = model(
+            [
+                run(1, created: "2026-10-07T12:00:00Z"), run(2, created: "2026-10-07T23:30:00Z"), run(3, created: "2026-10-08T09:00:00Z"),
+                run(4, workflow: "other", created: "2026-10-08T10:00:00Z"), run(5, created: "2026-10-09T09:00:00Z"),
+            ],
+            scope: .workflowDay("w", date("2026-10-08T12:00:00Z"))
+        )
+
+        #expect(list.rows.map(\.number) == [3, 2])
+        #expect(list.title == "Release · Thursday, October 8")
+        #expect(list.emptyReason == nil)
+    }
+
+    @Test func aWorkflowDayWithoutBuildsIsEmpty() {
+        let list = model([run(1, created: "2026-10-07T12:00:00Z")], scope: .workflowDay("w", date("2026-10-08T12:00:00Z")))
+
+        #expect(list.rows.isEmpty)
+        #expect(list.emptyReason == .noBuilds)
+    }
+
     @Test func buildsAreGroupedByDayInTheUsersTimeZoneAroundMidnight() {
         // 23:50 UTC on Wednesday is 01:50 on Thursday in Paris, so yesterday; 22:10 UTC Thursday is 00:10 Friday: today.
         let list = model([

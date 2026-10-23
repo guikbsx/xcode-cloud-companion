@@ -165,3 +165,20 @@ struct DetailScroll<Content: View>: View {
         .onGeometryChange(for: DetailColumns.self) { DetailColumns(width: $0.size.width) } action: { columns = $0 }
     }
 }
+
+/// The same groups on one or two columns, for a block inside a page that scrolls by itself: it measures its own width.
+struct DetailColumnsBlock<Content: View>: View {
+    var spacing: CGFloat = 18
+    var sideWidth: CGFloat? = DetailColumns.sideWidth
+    var equalHeights = false
+    @ViewBuilder var content: (DetailColumns) -> Content
+    @State private var columns = DetailColumns.one
+
+    var body: some View {
+        DetailColumnsLayout(columns: columns, spacing: spacing, sideWidth: sideWidth, equalHeights: equalHeights) {
+            content(columns)
+        }
+        // A sheet's threshold counts its margins; this block has none of its own.
+        .onGeometryChange(for: DetailColumns.self) { DetailColumns(width: $0.size.width + 2 * DetailColumns.margin) } action: { columns = $0 }
+    }
+}

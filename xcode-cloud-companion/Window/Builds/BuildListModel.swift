@@ -119,6 +119,8 @@ nonisolated enum BuildListScope: Hashable, Sendable {
     case product(String)
     case workflow(String)
     case reference(AppReference)
+    /// The builds of a workflow created on one day (the start of that day): the Overview's “See the day”.
+    case workflowDay(String, Date)
 
     init(_ selection: SidebarSelection) {
         switch selection {
@@ -169,6 +171,14 @@ nonisolated struct BuildListModel: Equatable, Sendable {
             case .pullRequest(let number): title = String(localized: "PR #\(number)", comment: "A pull request, in a build's line")
             }
             scoped = allRuns.filter { $0.productID == reference.productID && ReferencesModel.key(of: $0) == reference.key }
+        case .workflowDay(let id, let day):
+            let words = OverviewDayWords(locale: locale, calendar: calendar)
+            let start = calendar.startOfDay(for: day)
+            title = UsageFormat.dotted([workflows[id]?.name ?? String(localized: "All builds"), words.longDay(start)], locale: locale)
+            scoped = allRuns.filter { run in
+                guard run.workflowID == id, let date = run.createdDate ?? run.startedDate else { return false }
+                return calendar.startOfDay(for: date) == start
+            }
         }
 
         let rows = scoped

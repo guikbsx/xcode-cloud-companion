@@ -10,6 +10,13 @@ enum SidebarSelection: Hashable {
     case workflow(String)
 }
 
+/// One day of one workflow: what the Overview's “See the day” lists.
+nonisolated struct WorkflowDay: Hashable, Sendable {
+    let workflowID: String
+    /// The start of the day.
+    let day: Date
+}
+
 /// The tabs of a build sheet.
 nonisolated enum BuildTab: Hashable, Sendable {
     case actions, tests, problems, artifacts
@@ -24,6 +31,7 @@ final class NavigationModel {
             if oldValue != sidebarSelection {
                 selectedBuildID = nil
                 referenceScope = nil
+                daySlice = nil
             }
         }
     }
@@ -34,23 +42,39 @@ final class NavigationModel {
             if oldValue != referenceScope { selectedBuildID = nil }
         }
     }
+    /// Under “All builds”, the day of a workflow that the Overview asked to see: the middle column lists those builds alone.
+    var daySlice: WorkflowDay? {
+        didSet {
+            if oldValue != daySlice { selectedBuildID = nil }
+        }
+    }
     /// The tab the build sheet shows; it stays as the user left it from one build to the next.
     var buildTab = BuildTab.actions
 
     /// Every build is in "All builds", whatever app or workflow was picked before.
     func showBuild(_ id: String, tab: BuildTab? = nil) {
         sidebarSelection = .allBuilds
+        daySlice = nil
         selectedBuildID = id
         if let tab {
             buildTab = tab
         }
     }
 
+    /// The builds a workflow ran on one day, in the list of builds, with none of them open.
+    func showDay(workflowID: String, day: Date) {
+        sidebarSelection = .allBuilds
+        selectedBuildID = nil
+        daySlice = WorkflowDay(workflowID: workflowID, day: day)
+    }
+
     /// Another account is on screen: an app, a workflow or a build of the one before means nothing in it.
     func accountDidChange() {
         switch sidebarSelection {
         case .product, .workflow: sidebarSelection = .allBuilds
-        case .overview, .allBuilds: selectedBuildID = nil
+        case .overview, .allBuilds:
+            selectedBuildID = nil
+            daySlice = nil
         case .references:
             selectedBuildID = nil
             referenceScope = nil
@@ -68,6 +92,7 @@ final class NavigationModel {
         case .builds:
             sidebarSelection = .allBuilds
             selectedBuildID = nil
+            daySlice = nil
         case .app(let productID): sidebarSelection = .product(productID)
         }
         return true

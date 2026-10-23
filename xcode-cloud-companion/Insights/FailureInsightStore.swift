@@ -65,6 +65,18 @@ final class FailureInsightStore {
         await cache.save(record, runID: run.id, language: language)
     }
 
+    /// Brings into memory the records already on disk for these builds, while the function is open. It asks the model for
+    /// nothing and reads no issue and no test result: a build without a record stays without one.
+    func loadCached(runIDs: [String]) async {
+        guard isOpen() else { return }
+        let language = language()
+        for id in runIDs where records[id] == nil {
+            if let cached = await cache.load(runID: id, language: language), records[id] == nil {
+                records[id] = cached
+            }
+        }
+    }
+
     /// Forgets what is in memory and on disk, when the account loses its key.
     func reset() async {
         records = [:]

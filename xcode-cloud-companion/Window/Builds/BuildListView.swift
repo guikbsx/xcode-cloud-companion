@@ -5,8 +5,9 @@ struct BuildListView: View {
     let buildStore: BuildStore
     @Bindable var navigation: NavigationModel
     var scope = BuildListScope.allBuilds
-    /// Set while the list is one reference's: the way back to the references.
+    /// Set while the list is one reference's or one day's: the way back, and what it is called.
     var back: (() -> Void)?
+    var backTitle: LocalizedStringKey = "Branches and pull requests"
     /// Builds past the cache's window, read on request at the foot of the list.
     var older: OlderBuildsStore?
     /// The apps' icons and colours: a card names its app by its icon.
@@ -86,7 +87,7 @@ struct BuildListView: View {
                 VStack(spacing: 0) {
                     if let back {
                         Button(action: back) {
-                            Label("Branches and pull requests", systemImage: "chevron.left")
+                            Label(backTitle, systemImage: "chevron.left")
                         }
                         .buttonStyle(.plain)
                         .foregroundStyle(CumulusStyle.accent)
@@ -133,7 +134,7 @@ struct BuildListView: View {
         case .workflow(let id):
             let productID = snapshot.workflow(id: id)?.productID ?? snapshot.runs.first { $0.workflowID == id }?.productID
             return productID.map { [$0] }
-        case .reference: return nil
+        case .reference, .workflowDay: return nil
         }
     }
 

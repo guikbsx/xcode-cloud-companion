@@ -48,6 +48,12 @@ nonisolated enum SkeletonRules {
         hasShippedRun && !hasText && !loadEnded
     }
 
+    /// The mosaic of the Overview: the account's first sync or its first measure of the builds is still going on, so the days
+    /// cannot be told yet.
+    static func overviewMosaic(isMeasuring: Bool, isFirstSync: Bool) -> Bool {
+        isMeasuring || isFirstSync
+    }
+
     /// The cycle card at the top of the sidebar: the plan and its reset date are set, the first measure is under way.
     static func sidebarCycle(hasPlan: Bool, isMeasuring: Bool) -> Bool {
         hasPlan && isMeasuring

@@ -74,24 +74,39 @@ nonisolated enum BuildNotificationPlanner {
     static func stuck(in snapshot: BuildSnapshot, rules: BuildNotificationRules, alreadyReported: Set<String>, now: Date) -> [StuckBuild] {
         guard rules.stuck else { return [] }
         return snapshot.runs.compactMap { run in
-            guard run.executionProgress != .complete, !alreadyReported.contains(run.id), !rules.mutedProductIDs.contains(run.productID) else { return nil }
-            for action in snapshot.actionsByRunID[run.id] ?? [] where action.executionProgress == .running {
-                guard let started = action.startedDate, let usual = usualSeconds(of: action, run: run, in: snapshot) else { continue }
-                let elapsed = now.timeIntervalSince(started)
-                guard elapsed >= max(usual * Double(rules.stuckFactor), usual + minimumOverrun) else { continue }
-                return StuckBuild(runID: run.id, notification: LocalNotification(
-                    id: "stuck-\(run.id)",
-                    title: String(localized: "\(appName(of: run, in: snapshot)) #\(number(of: run)) may be stuck", comment: "Notification title: app name, then build number."),
-                    body: String(
-                        localized: "\(action.name ?? "?") has been running for \(UsageFormat.minutes(elapsed / 60)), usually \(UsageFormat.minutes(usual / 60)).",
-                        comment: "Notification body: action name, time it has run, its usual duration."
-                    ),
-                    url: CumulusURL.build(id: run.id),
-                    thread: run.productID
-                ))
-            }
-            return nil
+            guard run.executionProgress != .complete, !alreadyReported.contains(run.id), !rules.mutedProductIDs.contains(run.productID),
+                  let overrun = overrun(of: run, in: snapshot, factor: rules.stuckFactor, now: now)
+            else { return nil }
+            return StuckBuild(runID: run.id, notification: LocalNotification(
+                id: "stuck-\(run.id)",
+                title: String(localized: "\(appName(of: run, in: snapshot)) #\(number(of: run)) may be stuck", comment: "Notification title: app name, then build number."),
+                body: String(
+                    localized: "\(overrun.action.name ?? "?") has been running for \(UsageFormat.minutes(overrun.elapsed / 60)), usually \(UsageFormat.minutes(overrun.usual / 60)).",
+                    comment: "Notification body: action name, time it has run, its usual duration."
+                ),
+                url: CumulusURL.build(id: run.id),
+                thread: run.productID
+            ))
         }
+    }
+
+    /// The running action of an unfinished build that has outlasted its usual duration by far: the rule of the stuck-build
+    /// banner, which the Overview applies too.
+    nonisolated struct Overrun: Sendable, Equatable {
+        let action: CIBuildAction
+        let elapsed: TimeInterval
+        let usual: TimeInterval
+    }
+
+    static func overrun(of run: CIBuildRun, in snapshot: BuildSnapshot, factor: Int, now: Date) -> Overrun? {
+        guard run.executionProgress != .complete else { return nil }
+        for action in snapshot.actionsByRunID[run.id] ?? [] where action.executionProgress == .running {
+            guard let started = action.startedDate, let usual = usualSeconds(of: action, run: run, in: snapshot) else { continue }
+            let elapsed = now.timeIntervalSince(started)
+            guard elapsed >= max(usual * Double(factor), usual + minimumOverrun) else { continue }
+            return Overrun(action: action, elapsed: elapsed, usual: usual)
+        }
+        return nil
     }
 
     /// The median time the same action took when it succeeded in the same workflow; nil below three samples.

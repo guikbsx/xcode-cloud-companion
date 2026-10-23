@@ -1,7 +1,7 @@
 import SwiftUI
 import UniformTypeIdentifiers
 
-/// The cycle at a glance: the gauge of the menu, then the minutes by app and by workflow.
+/// The details of the cycle, folded under the Overview's figure: the gauge of the menu, then the minutes by app and by workflow.
 struct OverviewView: View {
     let summary: UsageSummary?
     let palette: AppPalette
@@ -26,9 +26,7 @@ struct OverviewView: View {
     var body: some View {
         let model = summary.map { OverviewModel(summary: $0, palette: palette, displayNames: displayNames) }
         let isMeasuring = summary?.measurement.isMeasuring ?? false
-        return DetailScroll { columns in
-            Text("Overview").font(.system(size: 30, weight: .bold, design: .rounded))
-                .detailPlacement(.full)
+        return DetailColumnsBlock { columns in
             if let summary, let model {
                 CycleRingGroup(summary: summary, model: model, artwork: artwork)
                 details(model, columns: columns, isMeasuring: isMeasuring)
@@ -58,7 +56,6 @@ struct OverviewView: View {
                 importLine
             }
         }
-        .navigationTitle("Overview")
         .fileImporter(isPresented: $isImporting, allowedContentTypes: [.commaSeparatedText]) { result in
             if case .success(let url) = result {
                 Task { await importExport(url) }

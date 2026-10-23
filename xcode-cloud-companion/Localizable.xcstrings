@@ -1,8 +1,19 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "  Daily outcome of builds, by workflow. %lld days up to %@." : {
+      "comment" : "Caption of the Overview's figure. The placeholders are a number of days and a date such as “Thursday, October 23”. Keep the two spaces at the start.",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "  Issue quotidienne des builds, par workflow. %lld jours jusqu’au %@."
+          }
+        }
+      }
+    },
     "“%@”" : {
-      "comment" : "A commit's first line, in quotation marks",
+      "comment" : "A commit's first line, in quotation marks\nIn the bubble of a day of the Overview: the sentence of “In brief” about a failed build, between quotation marks. Use the quotation marks of the language.",
       "localizations" : {
         "fr" : {
           "stringUnit" : {
@@ -43,6 +54,17 @@
         }
       }
     },
+    "**No build** in the last %lld days." : {
+      "comment" : "Headline of the Overview when the account has no build in the period the mosaic covers. Put the words for “No build” between the double asterisks, which are not shown. The placeholder is a number of days.",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Aucun build** ces %lld derniers jours."
+          }
+        }
+      }
+    },
     "%@" : {
       "localizations" : {
         "fr" : {
@@ -70,6 +92,17 @@
         }
       }
     },
+    "%@ · %@ has %@." : {
+      "comment" : "Small note about flaky tests. The placeholders are the app, the workflow and a count such as “2 flaky tests”. Keep the middle dot.",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ · %@ compte %@."
+          }
+        }
+      }
+    },
     "%@ · %@ slowed down by %@" : {
       "comment" : "Notification title: app name, workflow name, then how much longer its builds take.",
       "localizations" : {
@@ -83,6 +116,28 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%1$@ · %2$@ a ralenti de %3$@"
+          }
+        }
+      }
+    },
+    "%@ · %@ slowed down by %@ since %@." : {
+      "comment" : "Small note: the app, the workflow, how much longer its builds take, and the build from which. Keep the middle dot.",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ · %@ a ralenti de %@ depuis %@."
+          }
+        }
+      }
+    },
+    "%@ · %@ uses %@; %@ is available." : {
+      "comment" : "Small note: a workflow stays on an older Xcode. The placeholders are the app, the workflow, its Xcode version and the newest one. Keep the middle dot.",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ · %@ utilise %@ ; %@ est disponible."
           }
         }
       }
@@ -166,6 +221,17 @@
         }
       }
     },
+    "%@ %@ has been waiting for Apple’s beta review %@." : {
+      "comment" : "Small note about a TestFlight build in the beta review queue. The placeholders are the app, the version and build number such as “1.4 (412)”, and how long, such as “for 2 days”.",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ %@ attend la revue bêta d’Apple %@."
+          }
+        }
+      }
+    },
     "%@ %@ is available to external testers" : {
       "comment" : "Banner title: the first placeholder is an app's name, the second a version and build number such as “1.4 (412)”",
       "localizations" : {
@@ -179,6 +245,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%1$@ %2$@ est disponible pour les testeurs externes"
+          }
+        }
+      }
+    },
+    "%@ %@: the latest build for external testers expires %@." : {
+      "comment" : "Small note about a TestFlight build that stops working soon. The placeholders are the app, the version and build number such as “2.1 (87)”, and when, such as “in 5 days”.",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ %@ : le dernier build des testeurs externes expire %@."
           }
         }
       }
@@ -210,6 +287,17 @@
         }
       }
     },
+    "%@ apps are **broken**." : {
+      "comment" : "Headline of the Overview when workflows of several apps fail on their latest build. The placeholder is a number in words, such as “Two”. Put the word for “broken” between the double asterisks, which are not shown.",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ apps sont **cassées**."
+          }
+        }
+      }
+    },
     "%@ at a glance" : {
       "comment" : "Title of the locked app overview. The placeholder is an app’s name.",
       "localizations" : {
@@ -221,6 +309,28 @@
         }
       }
     },
+    "%@ failed on %@." : {
+      "comment" : "Says a workflow failed on its latest build. The placeholders are the workflow’s name and a build number such as “#205”.",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ a échoué sur %@."
+          }
+        }
+      }
+    },
+    "%@ finishes around **%@**." : {
+      "comment" : "Headline of the Overview while a build runs. The placeholders are the build, such as “Brioche #412”, and a time such as “2:36 PM”, put forward between the double asterisks, which are not shown.",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ finit vers **%@**."
+          }
+        }
+      }
+    },
     "%@ free trial" : {
       "comment" : "Under the yearly price. The placeholder is a length such as “1 month”.",
       "localizations" : {
@@ -228,6 +338,28 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Essai gratuit de %@"
+          }
+        }
+      }
+    },
+    "%@ has been **broken** %@." : {
+      "comment" : "Headline of the Overview when a workflow fails on its latest builds. The first placeholder is the app’s name, the second how long, such as “since yesterday” or “for two days”. Put the word for “broken” between the double asterisks, which are not shown.",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ est **cassé** %@."
+          }
+        }
+      }
+    },
+    "%@ has been running for **%@**." : {
+      "comment" : "Headline of the Overview when a build runs far longer than usual. The placeholders are the build, such as “Brioche #412”, and a duration put forward between the double asterisks, which are not shown.",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ tourne depuis **%@**."
           }
         }
       }
@@ -245,6 +377,28 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%1$@ tourne depuis %2$@, contre %3$@ d’habitude."
+          }
+        }
+      }
+    },
+    "%@ has been running for %@." : {
+      "comment" : "Small note about a build that runs far longer than usual. The placeholders are the build and a duration.",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ tourne depuis %@."
+          }
+        }
+      }
+    },
+    "%@ has failed since %@, %@ times in a row." : {
+      "comment" : "Says a workflow keeps failing. The placeholders are the workflow’s name, the build number of its first failure such as “#203”, and a number of times in words, such as “three”.",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ échoue depuis %@, %@ fois de suite."
           }
         }
       }
@@ -283,6 +437,39 @@
         }
       }
     },
+    "%@ is **broken**." : {
+      "comment" : "Headline of the Overview when several workflows of one app fail on their latest build. The placeholder is the app’s name. Put the word for “broken” between the double asterisks, which are not shown.",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ est **cassé**."
+          }
+        }
+      }
+    },
+    "%@ is **running**." : {
+      "comment" : "Headline of the Overview while a build runs and no end can be estimated. Put the word for “running” between the double asterisks, which are not shown.",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ **tourne**."
+          }
+        }
+      }
+    },
+    "%@ is **waiting** in the queue." : {
+      "comment" : "Headline of the Overview while the only build is queued at Apple. Put the word for “waiting” between the double asterisks, which are not shown.",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ **attend** en file."
+          }
+        }
+      }
+    },
     "%@ is available" : {
       "comment" : "Tooltip on a workflow that builds with an older Xcode; the argument is “Xcode 27.1”",
       "localizations" : {
@@ -290,6 +477,94 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%@ est disponible"
+          }
+        }
+      }
+    },
+    "%@ is running" : {
+      "comment" : "In the line at the top of the Overview: a build is running and no end can be estimated. The placeholder is the build, such as “Brioche #412”.",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ est en cours"
+          }
+        }
+      }
+    },
+    "%@ is running too." : {
+      "comment" : "Under the headline about a running build: another build runs",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ tourne aussi."
+          }
+        }
+      }
+    },
+    "%@ is running, %@ left (estimate)." : {
+      "comment" : "Under the headline about a running build: the action it is on, then the time left such as “~4 min”",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ est en cours, il reste %@ (estimé)."
+          }
+        }
+      }
+    },
+    "%@ is running, ends around %@ (%@)" : {
+      "comment" : "In the line at the top of the Overview: a build is running. The placeholders are the build such as “Brioche #412”, a time such as “2:36 PM” and the time left such as “~4 min”.",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ est en cours, fin vers %@ (%@)"
+          }
+        }
+      }
+    },
+    "%@ is running." : {
+      "comment" : "Under the headline about a running build: the action it is on",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ est en cours."
+          }
+        }
+      }
+    },
+    "%@ is slowing down since **%@**." : {
+      "comment" : "Headline of the Overview when a workflow’s builds got longer. The placeholders are the app’s name and a date such as “October 7”, put forward between the double asterisks, which are not shown.",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ ralentit depuis le **%@**."
+          }
+        }
+      }
+    },
+    "%@ is waiting in the queue" : {
+      "comment" : "In the line at the top of the Overview: a build is queued at Apple. The placeholder is the build, such as “Brioche #412”.",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ attend en file"
+          }
+        }
+      }
+    },
+    "%@ is waiting in the queue." : {
+      "comment" : "Under the headline about a running build: another build is queued",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ attend en file."
           }
         }
       }
@@ -306,6 +581,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%1$@ n’est pas dans %2$@. Une autre branche y est extraite, ou le clone est ailleurs : changez-le dans Réglages › Comptes."
+          }
+        }
+      }
+    },
+    "%@ left (estimate)." : {
+      "comment" : "Under the headline about a running build: the time left, such as “~4 min”",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Il reste %@ (estimé)."
           }
         }
       }
@@ -347,6 +633,17 @@
                 }
               }
             }
+          }
+        }
+      }
+    },
+    "%@ median" : {
+      "comment" : "VoiceOver, about a workflow of the Overview: its median build time. The placeholder is a duration such as “18 min”.",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ en médiane"
           }
         }
       }
@@ -413,6 +710,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%1$@ utilisés sur %2$@ (%3$@). Le cycle se réinitialise le %4$@."
+          }
+        }
+      }
+    },
+    "%@ of the cycle" : {
+      "comment" : "VoiceOver, about a workflow of the Overview: the minutes it used this cycle. The placeholder is a duration.",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ du cycle"
           }
         }
       }
@@ -567,6 +875,17 @@
         }
       }
     },
+    "%@ succeeded over 7 days" : {
+      "comment" : "VoiceOver, about a workflow of the Overview. The placeholder is a percentage.",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ de réussite sur 7 jours"
+          }
+        }
+      }
+    },
     "%@ this cycle" : {
       "comment" : "VoiceOver, a workflow's row: its minutes in the cycle",
       "localizations" : {
@@ -600,6 +919,50 @@
         }
       }
     },
+    "%@ went from %@ to %@ since %@." : {
+      "comment" : "Under the headline about a slowdown: the action, its median before and after, and the build from which",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ est passé de %@ à %@ depuis %@."
+          }
+        }
+      }
+    },
+    "%@ went from %@ to %@." : {
+      "comment" : "Which action of a workflow got longer: its name, then its median before and after",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ est passé de %@ à %@."
+          }
+        }
+      }
+    },
+    "%@, %@" : {
+      "comment" : "VoiceOver label of a build line in the bubble of a day of the Overview. The placeholders are the state such as “Failed” and the line such as “#203 · 02:00 · 18 min · Tests”.\nVoiceOver: an app and one of its workflows, such as “Sextant, Nightly”",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@, %@"
+          }
+        }
+      }
+    },
+    "%@, %@ succeeded." : {
+      "comment" : "Under the headline when everything passes. The placeholders are a count of builds such as “46 builds this week” and a percentage.",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@, %@ réussis."
+          }
+        }
+      }
+    },
     "%@, %@, %@" : {
       "localizations" : {
         "en" : {
@@ -612,6 +975,69 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%1$@, %2$@, %3$@"
+          }
+        }
+      }
+    },
+    "%@, %@. %@" : {
+      "comment" : "VoiceOver label of the bubble of a day of the Overview. The placeholders are the app and workflow such as “Sextant · Nightly”, the day such as “Tuesday, October 21” and the sentence such as “1 build, failed”.",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@, %@. %@"
+          }
+        }
+      }
+    },
+    "%@, and %lld more" : {
+      "comment" : "In the line at the top of the Overview: the first running build, then how many others run or wait. The placeholders are the first part of the line and a number.",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%@, and %lld more"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%@, and %lld more"
+                }
+              }
+            }
+          }
+        },
+        "fr" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%@, et %lld autre"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%@, et %lld autres"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%@, at this cycle’s pace. Estimate." : {
+      "comment" : "Under the headline about the plan running out. The placeholder is how long before the reset, such as “3 days before the reset”. The figure is an estimate.",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@, au rythme de ce cycle. Estimation."
           }
         }
       }
@@ -634,7 +1060,7 @@
       }
     },
     "%@: %@" : {
-      "comment" : "Apple's refusal: its title, then its detail",
+      "comment" : "Apple's refusal: its title, then its detail\nVoiceOver reading of a row of the Overview's mosaic. The placeholders are the workflow and its facts.",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -687,6 +1113,17 @@
                 }
               }
             }
+          }
+        }
+      }
+    },
+    "%@. Opens the build." : {
+      "comment" : "VoiceOver label of the running build in the line at the top of the Overview. The placeholder is the line.",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@. Ouvre le build."
           }
         }
       }
@@ -791,6 +1228,206 @@
                 "stringUnit" : {
                   "state" : "translated",
                   "value" : "%lld builds non mesurés, estimés d’après leur durée"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld builds stopped since." : {
+      "comment" : "How many builds ended in error during an Apple incident. The placeholder is a number.",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld build stopped since."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld builds stopped since."
+                }
+              }
+            }
+          }
+        },
+        "fr" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld build s’est arrêté depuis."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld builds se sont arrêtés depuis."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld builds this week" : {
+      "comment" : "A number of builds in the last seven days",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld build this week"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld builds this week"
+                }
+              }
+            }
+          }
+        },
+        "fr" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld build cette semaine"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld builds cette semaine"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld builds, %lld failures" : {
+      "comment" : "In the bubble of a day of the Overview's mosaic: several builds of the day failed, others did not. The placeholders are the number of builds and the number that failed, both two or more.",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld builds, %lld échecs"
+          }
+        }
+      }
+    },
+    "%lld builds, %lld in progress" : {
+      "comment" : "In the bubble of a day of the Overview's mosaic: some builds are running or waiting in the queue, none failed. The placeholders are the number of builds (two or more) and the number in progress.",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld builds, %lld en cours"
+          }
+        }
+      }
+    },
+    "%lld builds, %lld succeeded" : {
+      "comment" : "In the bubble of a day of the Overview's mosaic: some builds succeeded and the others were canceled or skipped. The placeholders are the number of builds (two or more) and the number that succeeded.",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld builds, %lld réussis"
+          }
+        }
+      }
+    },
+    "%lld builds, 1 failure" : {
+      "comment" : "In the bubble of a day of the Overview's mosaic: one build of the day failed, the others did not. The placeholder is the number of builds, two or more.",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld builds, 1 échec"
+          }
+        }
+      }
+    },
+    "%lld builds, all failed" : {
+      "comment" : "In the bubble of a day of the Overview's mosaic: every build of the day failed. The placeholder is the number of builds, two or more.",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld builds, tous en échec"
+          }
+        }
+      }
+    },
+    "%lld builds, all succeeded" : {
+      "comment" : "In the bubble of a day of the Overview's mosaic: every build of the day succeeded. The placeholder is the number of builds, two or more.",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld builds, tous réussis"
+          }
+        }
+      }
+    },
+    "%lld builds, none finished" : {
+      "comment" : "In the bubble of a day of the Overview's mosaic: every build of the day was canceled or skipped. The placeholder is the number of builds, two or more.",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld builds, aucun terminé"
+          }
+        }
+      }
+    },
+    "%lld days before the reset" : {
+      "comment" : "How long before the plan resets it runs out. The placeholder is a number of days.",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld day before the reset"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld days before the reset"
+                }
+              }
+            }
+          }
+        },
+        "fr" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld jour avant la réinitialisation"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld jours avant la réinitialisation"
                 }
               }
             }
@@ -971,6 +1608,47 @@
         }
       }
     },
+    "%lld flaky tests" : {
+      "comment" : "A number of tests that pass and fail without a code change",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld flaky test"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld flaky tests"
+                }
+              }
+            }
+          }
+        },
+        "fr" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld test instable"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld tests instables"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "%lld groups to add" : {
       "comment" : "Foot of the TestFlight card: how many groups would be given the build; the placeholder is a number",
       "localizations" : {
@@ -1005,6 +1683,47 @@
                 "stringUnit" : {
                   "state" : "translated",
                   "value" : "%lld groupes à ajouter"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld more builds are running or queued." : {
+      "comment" : "Under the headline about a running build: how many other builds are running or queued. The placeholder is a number.",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld more build is running or queued."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld more builds are running or queued."
+                }
+              }
+            }
+          }
+        },
+        "fr" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld autre build est en cours ou en file."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld autres builds sont en cours ou en file."
                 }
               }
             }
@@ -1081,6 +1800,47 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%1$lld requêtes sur %2$lld restantes cette heure"
+          }
+        }
+      }
+    },
+    "%lld other workflows are on an older Xcode." : {
+      "comment" : "Under a note about an old Xcode: how many other workflows are too. The placeholder is a number.",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld other workflow is on an older Xcode."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld other workflows are on an older Xcode."
+                }
+              }
+            }
+          }
+        },
+        "fr" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld autre workflow utilise un Xcode plus ancien."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld autres workflows utilisent un Xcode plus ancien."
+                }
+              }
+            }
           }
         }
       }
@@ -1339,6 +2099,47 @@
         }
       }
     },
+    "+%lld more" : {
+      "comment" : "After two test names: how many more there are",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "+%lld more"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "+%lld more"
+                }
+              }
+            }
+          }
+        },
+        "fr" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "+%lld autre"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "+%lld autres"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "< 1 min" : {
       "comment" : "Estimated time left of a running build, when under a minute. Very short: it goes in the menu bar.",
       "localizations" : {
@@ -1416,8 +2217,62 @@
         }
       }
     },
+    "1 build, failed" : {
+      "comment" : "In the bubble of a day of the Overview's mosaic: the only build of the day failed.",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "1 build, en échec"
+          }
+        }
+      }
+    },
+    "1 build, in progress" : {
+      "comment" : "In the bubble of a day of the Overview's mosaic: the only build of the day is running or waiting in the queue.",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "1 build, en cours"
+          }
+        }
+      }
+    },
+    "1 build, not finished" : {
+      "comment" : "In the bubble of a day of the Overview's mosaic: the only build of the day was canceled or skipped.",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "1 build, sans issue"
+          }
+        }
+      }
+    },
+    "1 build, succeeded" : {
+      "comment" : "In the bubble of a day of the Overview's mosaic: the only build of the day succeeded.",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "1 build, réussi"
+          }
+        }
+      }
+    },
+    "1 to 4+" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "1 à 4+"
+          }
+        }
+      }
+    },
     "a build" : {
-      "comment" : "A build whose number is unknown, in “Since a build, October 7”",
+      "comment" : "A build whose number is unknown, in “Since a build, October 7”\nA build whose number is unknown, in “since a build”",
       "localizations" : {
         "fr" : {
           "stringUnit" : {
@@ -1613,6 +2468,17 @@
         }
       }
     },
+    "about %@ of the cycle" : {
+      "comment" : "VoiceOver, about a workflow of the Overview: the minutes it used this cycle, estimated. The placeholder is a duration.",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "environ %@ du cycle"
+          }
+        }
+      }
+    },
     "About Cumulus" : {
       "localizations" : {
         "fr" : {
@@ -1635,7 +2501,7 @@
       }
     },
     "According to Apple’s system status page." : {
-      "comment" : "Says where the notice about an incident comes from",
+      "comment" : "Says where a note about an incident comes from\nSays where the notice about an incident comes from",
       "localizations" : {
         "fr" : {
           "stringUnit" : {
@@ -1871,6 +2737,16 @@
         }
       }
     },
+    "all succeeded" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "tout réussi"
+          }
+        }
+      }
+    },
     "Allow Notifications…" : {
       "localizations" : {
         "fr" : {
@@ -2015,6 +2891,17 @@
         }
       }
     },
+    "and %lld more" : {
+      "comment" : "At the foot of the build lines in the bubble of a day of the Overview: how many builds are not listed.",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "et %lld de plus"
+          }
+        }
+      }
+    },
     "App" : {
       "localizations" : {
         "fr" : {
@@ -2128,6 +3015,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "App Store Connect a envoyé une réponse inattendue."
+          }
+        }
+      }
+    },
+    "Apple" : {
+      "comment" : "Label above a small note on the Overview: an incident at Apple. Short, shown in capitals.",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apple"
           }
         }
       }
@@ -2391,6 +3289,17 @@
         }
       }
     },
+    "Apple reports an **incident** on Xcode Cloud." : {
+      "comment" : "Headline of the Overview while Apple’s status page lists an incident on Xcode Cloud. Put the word for “incident” between the double asterisks, which are not shown.",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apple signale un **incident** sur Xcode Cloud."
+          }
+        }
+      }
+    },
     "Apple reports an incident on Xcode Cloud since %@" : {
       "comment" : "Title of the notice on a build that stopped during an incident Apple has not closed. One time.",
       "localizations" : {
@@ -2398,6 +3307,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Apple signale un incident sur Xcode Cloud depuis %@"
+          }
+        }
+      }
+    },
+    "Apple reports an incident on Xcode Cloud since %@." : {
+      "comment" : "Small note while Apple’s status page lists an incident. The placeholder is a time such as “2:10 PM”.",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apple signale un incident sur Xcode Cloud depuis %@."
           }
         }
       }
@@ -2591,6 +3511,16 @@
         }
       }
     },
+    "at least one failure" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "au moins un échec"
+          }
+        }
+      }
+    },
     "At the top of the page, note the plan's **number of hours** and the **reset date**." : {
       "localizations" : {
         "fr" : {
@@ -2724,6 +3654,17 @@
         }
       }
     },
+    "before: %@" : {
+      "comment" : "In the drawer of a workflow in the Overview, under “Slowdown”: the median build time before it got slower. The placeholder is a duration such as “~8 min 40”. Keep the tilde.",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "avant : %@"
+          }
+        }
+      }
+    },
     "Began at %@" : {
       "comment" : "The first failure of the failing streak a test is in: its build, its day, its commit",
       "localizations" : {
@@ -2794,6 +3735,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Bleu"
+          }
+        }
+      }
+    },
+    "both" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "les deux"
           }
         }
       }
@@ -2898,6 +3849,17 @@
         }
       }
     },
+    "Broken" : {
+      "comment" : "Label above a small note on the Overview: a workflow fails. Short, shown in capitals.",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cassé"
+          }
+        }
+      }
+    },
     "Build" : {
       "localizations" : {
         "fr" : {
@@ -2970,6 +3932,27 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Builds analysés : %1$lld sur %2$lld. Seuls comptent les builds dont les résultats de tests ont été chargés, parmi les builds terminés que Cumulus conserve (environ un mois)."
+          }
+        }
+      }
+    },
+    "Builds appear here as soon as a workflow runs." : {
+      "comment" : "Under the headline of the Overview when the account has no recent build",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Les builds apparaissent ici dès qu’un workflow tourne."
+          }
+        }
+      }
+    },
+    "builds of the day" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "builds du jour"
           }
         }
       }
@@ -3306,6 +4289,16 @@
         }
       }
     },
+    "Collapsed" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Replié"
+          }
+        }
+      }
+    },
     "Color" : {
       "comment" : "Context menu of an app in the sidebar: the row of colours to give the app",
       "localizations" : {
@@ -3527,6 +4520,17 @@
         }
       }
     },
+    "Copy for an AI" : {
+      "comment" : "Button on the Overview’s headline: copies a failed build as text for an AI assistant",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Copier pour une IA"
+          }
+        }
+      }
+    },
     "Copy Message" : {
       "localizations" : {
         "fr" : {
@@ -3676,6 +4680,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Cumulus n’a encore aucun build. Ouvrez l’app et ajoutez votre clé API App Store Connect."
+          }
+        }
+      }
+    },
+    "Cumulus is **reading** your builds." : {
+      "comment" : "Headline of the Overview before any build was read. Put the word for “reading” between the double asterisks, which are not shown.",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cumulus **lit** vos builds."
           }
         }
       }
@@ -3940,6 +4955,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Cycle"
+          }
+        }
+      }
+    },
+    "Cycle\nestimated" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cycle\nestimé"
+          }
+        }
+      }
+    },
+    "Cycle Details" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Le détail du cycle"
           }
         }
       }
@@ -4210,6 +5245,83 @@
         }
       }
     },
+    "Durations of %@ over %lld days" : {
+      "comment" : "VoiceOver label of the drawer of a workflow in the Overview. The placeholders are the workflow and a number of days.",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Durées de %@ sur %lld jours"
+          }
+        }
+      }
+    },
+    "Durations of %@ over %lld days, down %@ over the last %lld days" : {
+      "comment" : "VoiceOver label of the drawer of a workflow in the Overview when its median time fell. The placeholders are the workflow, a number of days, a percentage and a number of days.",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Durées de %@ sur %lld jours, en baisse de %@ sur les %lld derniers jours"
+          }
+        }
+      }
+    },
+    "Durations of %@ over %lld days, no successful build" : {
+      "comment" : "VoiceOver label of the drawer of a workflow in the Overview when no build succeeded in the period. The placeholders are the workflow and a number of days.",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Durées de %@ sur %lld jours, aucun build réussi"
+          }
+        }
+      }
+    },
+    "Durations of %@ over %lld days, stable over the last %lld days" : {
+      "comment" : "VoiceOver label of the drawer of a workflow in the Overview when its median time did not move. The placeholders are the workflow and two numbers of days.",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Durées de %@ sur %lld jours, stables sur les %lld derniers jours"
+          }
+        }
+      }
+    },
+    "Durations of %@ over %lld days, up %@" : {
+      "comment" : "VoiceOver label of the drawer of a workflow in the Overview when it got slower and the day is unknown. The placeholders are the workflow, a number of days and a percentage such as “38 %”.",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Durées de %@ sur %lld jours, en hausse de %@"
+          }
+        }
+      }
+    },
+    "Durations of %@ over %lld days, up %@ over the last %lld days" : {
+      "comment" : "VoiceOver label of the drawer of a workflow in the Overview when its median time rose. The placeholders are the workflow, a number of days, a percentage and a number of days.",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Durées de %@ sur %lld jours, en hausse de %@ sur les %lld derniers jours"
+          }
+        }
+      }
+    },
+    "Durations of %@ over %lld days, up %@ since %@" : {
+      "comment" : "VoiceOver label of the drawer of a workflow in the Overview when it got slower. The placeholders are the workflow, a number of days, a percentage such as “38 %” and a date such as “October 7”.",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Durées de %@ sur %lld jours, en hausse de %@ depuis le %@"
+          }
+        }
+      }
+    },
     "Each alert is sent once per cycle. The figure is an estimate until a recent usage export is imported, and the alert says so." : {
       "localizations" : {
         "fr" : {
@@ -4328,6 +5440,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Saisir la clé"
+          }
+        }
+      }
+    },
+    "Enter your plan" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Indiquez votre forfait"
           }
         }
       }
@@ -4567,12 +5689,44 @@
         }
       }
     },
+    "Everything is **passing** %@." : {
+      "comment" : "Headline of the Overview when every workflow’s latest build succeeded. The placeholder is how long, such as “for 9 days” or “since yesterday”. Put the word for “passing” between the double asterisks, which are not shown.",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tout **passe** %@."
+          }
+        }
+      }
+    },
+    "Everything is **passing**." : {
+      "comment" : "Headline of the Overview when every workflow’s latest build succeeded. Put the word for “passing” between the double asterisks, which are not shown.",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tout **passe**."
+          }
+        }
+      }
+    },
     "Excerpt of the log" : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Extrait du journal"
+          }
+        }
+      }
+    },
+    "Expanded" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Déplié"
           }
         }
       }
@@ -4785,6 +5939,28 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Builds en échec"
+          }
+        }
+      }
+    },
+    "failing" : {
+      "comment" : "VoiceOver, about a workflow of the Overview: its latest builds fail",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "en échec"
+          }
+        }
+      }
+    },
+    "failing %@" : {
+      "comment" : "VoiceOver, about a workflow of the Overview. The placeholder is how long, such as “for three days” or “since yesterday”.",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "en échec %@"
           }
         }
       }
@@ -5003,6 +6179,17 @@
         }
       }
     },
+    "Fig. 1" : {
+      "comment" : "Number of the figure of the Overview, in bold before its caption",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fig. 1"
+          }
+        }
+      }
+    },
     "Figures with a ~ are estimates computed from the builds’ durations, not Apple’s billing. Import an export for exact minutes." : {
       "localizations" : {
         "fr" : {
@@ -5118,6 +6305,7 @@
       }
     },
     "Flaky tests" : {
+      "comment" : "Label above a small note on the Overview: tests that pass and fail without a code change. Short, shown in capitals.",
       "localizations" : {
         "fr" : {
           "stringUnit" : {
@@ -5157,6 +6345,17 @@
         }
       }
     },
+    "for %@" : {
+      "comment" : "How long a workflow has been failing, today. The placeholder is a number of hours, such as “3 hr”.",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "depuis %@"
+          }
+        }
+      }
+    },
     "For %@" : {
       "comment" : "Settings, Agents: title of what to install for the agent picked",
       "localizations" : {
@@ -5164,6 +6363,58 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Pour %@"
+          }
+        }
+      }
+    },
+    "for %@ days" : {
+      "comment" : "How long a workflow has been failing, two days or more. The placeholder is a number in words, such as “two”.",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "depuis %@ jours"
+          }
+        }
+      }
+    },
+    "for %lld days" : {
+      "comment" : "How long something has lasted. The placeholder is a number of days.",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "for %lld day"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "for %lld days"
+                }
+              }
+            }
+          }
+        },
+        "fr" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "depuis %lld jour"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "depuis %lld jours"
+                }
+              }
+            }
           }
         }
       }
@@ -5186,6 +6437,28 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Pour les chiffres exacts d’Apple : dans **Xcode Cloud › Utilisation**, cliquez sur **Exporter au format CSV**. Choisissez le dossier où vous l’enregistrez, souvent Téléchargements, et Cumulus l’importe tout seul."
+          }
+        }
+      }
+    },
+    "for less than an hour" : {
+      "comment" : "How long a workflow has been failing: under an hour",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "depuis moins d’une heure"
+          }
+        }
+      }
+    },
+    "for over %lld days" : {
+      "comment" : "How long everything has passed, with no failure in all the builds known. The placeholder is the number of days the builds cover.",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "depuis plus de %lld jours"
           }
         }
       }
@@ -5216,6 +6489,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Version gratuite"
+          }
+        }
+      }
+    },
+    "from %@" : {
+      "comment" : "In the drawer of a workflow in the Overview, under “Slowdown”: the day of the first build that was slower, after a percentage such as “+38 %”. The placeholder is a date such as “Oct 7”.",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "depuis le %@"
           }
         }
       }
@@ -5457,6 +6741,16 @@
         }
       }
     },
+    "Hide durations" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Masquer les durées"
+          }
+        }
+      }
+    },
     "Hide Others" : {
       "localizations" : {
         "fr" : {
@@ -5581,6 +6875,47 @@
                 "stringUnit" : {
                   "state" : "translated",
                   "value" : "%1$lld builds importés depuis %2$@."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "in %lld days" : {
+      "comment" : "When a TestFlight build stops working. The placeholder is a number of days.",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "in %lld day"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "in %lld days"
+                }
+              }
+            }
+          }
+        },
+        "fr" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "dans %lld jour"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "dans %lld jours"
                 }
               }
             }
@@ -5801,6 +7136,17 @@
         }
       }
     },
+    "It resets on %@." : {
+      "comment" : "Under the headline about a spent plan. The placeholder is a date.",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Réinitialisation le %@."
+          }
+        }
+      }
+    },
     "It tells the agent when to use the command and how to read its answers." : {
       "localizations" : {
         "fr" : {
@@ -5857,6 +7203,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Jugé sur les 30 derniers builds réussis : au moins 15 % et une minute de plus, sur cinq builds ou plus. Dit une seule fois par ralentissement."
+          }
+        }
+      }
+    },
+    "Just before the reset" : {
+      "comment" : "How long before the plan resets it runs out: the same day",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Juste avant la réinitialisation"
           }
         }
       }
@@ -6533,6 +7890,16 @@
         }
       }
     },
+    "Median\nduration" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Durée\nmédiane"
+          }
+        }
+      }
+    },
     "Median duration" : {
       "localizations" : {
         "fr" : {
@@ -6582,6 +7949,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Attente médiane en file : %@"
+          }
+        }
+      }
+    },
+    "Median time per day, %lld days" : {
+      "comment" : "Caption of the curve in the drawer of a workflow in the Overview. The placeholder is the number of days, such as 35.",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Durée médiane par jour, %lld jours"
           }
         }
       }
@@ -6853,12 +8231,44 @@
         }
       }
     },
+    "no build" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "aucun build"
+          }
+        }
+      }
+    },
     "No build is running." : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Aucun build en cours."
+          }
+        }
+      }
+    },
+    "No build that day" : {
+      "comment" : "In the bubble of a day of the Overview's mosaic: the workflow had no build on that day.",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aucun build ce jour-là"
+          }
+        }
+      }
+    },
+    "No build this week." : {
+      "comment" : "Under the headline when everything passes but nothing ran in the last seven days",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aucun build cette semaine."
           }
         }
       }
@@ -7071,6 +8481,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Aucun dossier de skills à l’emplacement %@. Créez-le d’abord, ou choisissez un autre dossier."
+          }
+        }
+      }
+    },
+    "No successful build in this period" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aucun build réussi sur la période"
           }
         }
       }
@@ -7604,6 +9024,17 @@
         }
       }
     },
+    "Open #%lld" : {
+      "comment" : "Button in the bubble of a day of the Overview: opens a build. The placeholder is its number, such as “203”.\nButton on the Overview’s headline: opens a build. The placeholder is its number.",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ouvrir #%lld"
+          }
+        }
+      }
+    },
     "Open %@" : {
       "comment" : "Button that opens the build a slowdown starts at. The placeholder is its number, such as “#398”.",
       "localizations" : {
@@ -7621,6 +9052,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ouvrir à la connexion"
+          }
+        }
+      }
+    },
+    "Open build" : {
+      "comment" : "Button in the bubble of a day of the Overview: opens the build, whose number is unknown.",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ouvrir le build"
           }
         }
       }
@@ -7718,6 +9160,7 @@
       }
     },
     "Open the build" : {
+      "comment" : "Button on the Overview’s headline: opens the build it talks about",
       "localizations" : {
         "fr" : {
           "stringUnit" : {
@@ -7764,6 +9207,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ouvrir la pull request"
+          }
+        }
+      }
+    },
+    "Open the workflow" : {
+      "comment" : "Button on the Overview’s headline: opens a workflow",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ouvrir le workflow"
           }
         }
       }
@@ -7952,6 +9406,17 @@
         }
       }
     },
+    "passing" : {
+      "comment" : "VoiceOver, about a workflow of the Overview: its latest build succeeded",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "tout passe"
+          }
+        }
+      }
+    },
     "Paste" : {
       "localizations" : {
         "fr" : {
@@ -8034,7 +9499,7 @@
       }
     },
     "paused" : {
-      "comment" : "Beside a workflow of the sidebar that Apple says is paused. Lowercase, very short.",
+      "comment" : "Beside a workflow of the sidebar that Apple says is paused. Lowercase, very short.\nVoiceOver, about a workflow of the Overview: it is paused",
       "localizations" : {
         "fr" : {
           "stringUnit" : {
@@ -8135,12 +9600,65 @@
         }
       }
     },
+    "Plan" : {
+      "comment" : "Label above a small note on the Overview: the Xcode Cloud plan. Short, shown in capitals.",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Forfait"
+          }
+        }
+      }
+    },
+    "Plan %@ of %@" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Forfait %@ sur %@"
+          }
+        }
+      }
+    },
+    "Plan %@ of %@, estimated" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Forfait %@ sur %@, estimé"
+          }
+        }
+      }
+    },
     "Plan used up · resets %@" : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Forfait épuisé · réinitialisation le %@"
+          }
+        }
+      }
+    },
+    "Plan: %@ of %@" : {
+      "comment" : "VoiceOver label of the plan in the line at the top of the Overview. The placeholders are the minutes used and the plan, such as “17 hr 40 min” and “25 hr”.",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Forfait : %@ sur %@"
+          }
+        }
+      }
+    },
+    "Plan: about %@ of %@, estimated" : {
+      "comment" : "VoiceOver label of the plan in the line at the top of the Overview when the minutes are an estimate. The placeholders are the minutes used and the plan.",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Forfait : environ %@ sur %@, estimé"
           }
         }
       }
@@ -8326,6 +9844,27 @@
         }
       }
     },
+    "queued" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "en file"
+          }
+        }
+      }
+    },
+    "Queued" : {
+      "comment" : "In a line of the bubble of a day of the Overview: the build waits in the queue. Very short.",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "En file"
+          }
+        }
+      }
+    },
     "Queued for" : {
       "localizations" : {
         "fr" : {
@@ -8405,6 +9944,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Lecture de TestFlight…"
+          }
+        }
+      }
+    },
+    "Reading your builds…" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lecture des builds…"
           }
         }
       }
@@ -8840,6 +10389,16 @@
         }
       }
     },
+    "running" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "en cours"
+          }
+        }
+      }
+    },
     "Running" : {
       "comment" : "State of a build in progress.",
       "localizations" : {
@@ -8878,6 +10437,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Épuisé vers le %@ à ce rythme"
+          }
+        }
+      }
+    },
+    "Runs out around %@, %@ (estimate)." : {
+      "comment" : "Small note about the plan running out. The placeholders are a date and how long before the reset, such as “3 days before the reset”.",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Épuisé vers le %@, %@ (estimé)."
           }
         }
       }
@@ -8948,6 +10518,28 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Chercher dans le journal"
+          }
+        }
+      }
+    },
+    "See the day" : {
+      "comment" : "Button in the bubble of a day of the Overview: shows the list of the day's builds of this workflow.",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Voir la journée"
+          }
+        }
+      }
+    },
+    "See the status page" : {
+      "comment" : "Button on the Overview’s headline: opens Apple’s system status page",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Voir la page d’état"
           }
         }
       }
@@ -9178,6 +10770,16 @@
         }
       }
     },
+    "Show durations" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Afficher les durées"
+          }
+        }
+      }
+    },
     "Show Full Text" : {
       "localizations" : {
         "fr" : {
@@ -9264,6 +10866,16 @@
         }
       }
     },
+    "Shows the minutes by app and workflow, the scheduled builds and the usage export" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Affiche les minutes par app et par workflow, les builds planifiés et l’export d’usage"
+          }
+        }
+      }
+    },
     "Shows the next line of the log that says an error" : {
       "localizations" : {
         "fr" : {
@@ -9305,6 +10917,17 @@
         }
       }
     },
+    "since #%lld" : {
+      "comment" : "In the drawer of a workflow in the Overview, under “Slowdown”: the number of the first build that was slower. The placeholder is a build number such as “398”.",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "depuis #%lld"
+          }
+        }
+      }
+    },
     "since %@" : {
       "comment" : "After a state: how long a TestFlight build has been in it, such as “since 3h”",
       "localizations" : {
@@ -9312,6 +10935,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "depuis %@"
+          }
+        }
+      }
+    },
+    "since %@, #%lld" : {
+      "comment" : "In the drawer of a workflow in the Overview, under “Slowdown”: the day and the number of the first build that was slower. The placeholders are a date such as “Oct 7” and a build number such as “398”.",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "depuis le %@, #%lld"
           }
         }
       }
@@ -9350,12 +10984,45 @@
         }
       }
     },
+    "Since %@, according to Apple’s system status page." : {
+      "comment" : "Under the headline about an Apple incident. The placeholder is a time such as “2:10 PM”.",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Depuis %@, d’après la page d’état des services d’Apple."
+          }
+        }
+      }
+    },
     "Since the last successful build" : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Depuis le dernier build réussi"
+          }
+        }
+      }
+    },
+    "since yesterday" : {
+      "comment" : "How long a workflow has been failing: it started yesterday",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "depuis hier"
+          }
+        }
+      }
+    },
+    "since: %@" : {
+      "comment" : "In the drawer of a workflow in the Overview, under “Slowdown”: the median build time since it got slower. The placeholder is a duration such as “~12 min”. Keep the tilde.",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "depuis : %@"
           }
         }
       }
@@ -9387,6 +11054,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Slack reçoit { \"text\": … } et Discord { \"content\": … }. Toute autre adresse reçoit :"
+          }
+        }
+      }
+    },
+    "Slowdown" : {
+      "comment" : "Label above a small note on the Overview: a workflow got slower. Short, shown in capitals.\nSmall title over the level change in the drawer of a workflow in the Overview",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ralentissement"
           }
         }
       }
@@ -9648,6 +11326,17 @@
         }
       }
     },
+    "Stuck" : {
+      "comment" : "Label above a small note on the Overview: a build runs far too long. Short, shown in capitals.",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bloqué"
+          }
+        }
+      }
+    },
     "Stuck Build Alert" : {
       "localizations" : {
         "fr" : {
@@ -9689,6 +11378,16 @@
         }
       }
     },
+    "Success\n7 d" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Réussite\n7 j"
+          }
+        }
+      }
+    },
     "Success rate" : {
       "localizations" : {
         "fr" : {
@@ -9706,6 +11405,36 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "taux de réussite %@"
+          }
+        }
+      }
+    },
+    "Success rate and median duration: last 7 days." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Réussite et durée médiane : 7 derniers jours."
+          }
+        }
+      }
+    },
+    "Success rate and median duration: last 7 days. Cycle minutes: since the reset, estimated, not official." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Réussite et durée médiane : 7 derniers jours. Minutes du cycle : depuis la réinitialisation, estimées, non officielles."
+          }
+        }
+      }
+    },
+    "Success rate and median duration: last 7 days. Cycle minutes: since the reset." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Réussite et durée médiane : 7 derniers jours. Minutes du cycle : depuis la réinitialisation."
           }
         }
       }
@@ -9956,6 +11685,7 @@
       }
     },
     "TestFlight" : {
+      "comment" : "Label above a small note on the Overview. Short, shown in capitals.",
       "localizations" : {
         "fr" : {
           "stringUnit" : {
@@ -10522,6 +12252,17 @@
         }
       }
     },
+    "The last %lld days are on their way; the mosaic fills in as they arrive." : {
+      "comment" : "Under the headline before any build was read. The placeholder is a number of days.",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Les %lld derniers jours arrivent ; la mosaïque se remplit au fur et à mesure."
+          }
+        }
+      }
+    },
     "The last 30 builds" : {
       "localizations" : {
         "fr" : {
@@ -10634,6 +12375,28 @@
         }
       }
     },
+    "The median went from %@ to %@ since %@." : {
+      "comment" : "Under the headline about a slowdown: the workflow’s median before and after, and the build from which",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La médiane est passée de %@ à %@ depuis %@."
+          }
+        }
+      }
+    },
+    "The median went from %@ to %@." : {
+      "comment" : "How much longer a workflow’s builds take: its median before and after",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La médiane est passée de %@ à %@."
+          }
+        }
+      }
+    },
     "The message is the banner’s title, its subtitle if it has one and its body, then the address of the build or of the Overview. It goes with a POST of JSON." : {
       "localizations" : {
         "fr" : {
@@ -10686,6 +12449,17 @@
         }
       }
     },
+    "The plan is **used up**." : {
+      "comment" : "Headline of the Overview when the Xcode Cloud plan is spent. Put the words for “used up” between the double asterisks, which are not shown.",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Le forfait est **épuisé**."
+          }
+        }
+      }
+    },
     "The plan may run out before it resets" : {
       "localizations" : {
         "fr" : {
@@ -10702,6 +12476,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Le forfait baisse"
+          }
+        }
+      }
+    },
+    "The plan will run out on **%@**." : {
+      "comment" : "Headline of the Overview when the plan runs out before the cycle ends at the current pace. The placeholder is a date such as “November 2”, put forward between the double asterisks, which are not shown.",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Le forfait sera épuisé le **%@**."
           }
         }
       }
@@ -11503,6 +13288,39 @@
         }
       }
     },
+    "Used up, resets on %@ (estimate)." : {
+      "comment" : "Small note about a spent plan. The placeholder is the reset date.",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Épuisé, réinitialisation le %@ (estimé)."
+          }
+        }
+      }
+    },
+    "Usually, %@ finishes in %@." : {
+      "comment" : "Under a build that runs long. The placeholders are the workflow’s name and its usual duration.",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "D’habitude, %@ finit en %@."
+          }
+        }
+      }
+    },
+    "Usually, %@ takes %@." : {
+      "comment" : "Under a build that runs long. The placeholders are the name of the action it is on and its usual duration.",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "D’habitude, %@ prend %@."
+          }
+        }
+      }
+    },
     "Version %@" : {
       "comment" : "The app's version, in Settings",
       "localizations" : {
@@ -11951,6 +13769,7 @@
       }
     },
     "Xcode" : {
+      "comment" : "Label above a small note on the Overview: an old Xcode version. Short, shown in capitals.",
       "localizations" : {
         "fr" : {
           "stringUnit" : {
