@@ -12,6 +12,143 @@
         }
       }
     },
+    "%lld builds running" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld build running"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld builds running"
+                }
+              }
+            }
+          }
+        },
+        "fr" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld build en cours"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld builds en cours"
+                }
+              }
+            }
+          }
+        }
+      },
+      "comment" : "Said by VoiceOver for the block that heads the build list"
+    },
+    "and %lld more running" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "and %lld other running"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "and %lld others running"
+                }
+              }
+            }
+          }
+        },
+        "fr" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "et %lld autre en cours"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "et %lld autres en cours"
+                }
+              }
+            }
+          }
+        }
+      },
+      "comment" : "Under the rings of the running builds: the others, listed below. “and 2 more running”"
+    },
+    "ends ~%@" : {
+      "comment" : "When a running build should end, in a few words: “ends ~2:49 PM”. It goes under a ring and in a legend.",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "fin vers %@"
+          }
+        }
+      }
+    },
+    "In queue" : {
+      "comment" : "A build that waits for Apple to start it, in the legend of the running builds",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "En file"
+          }
+        }
+      }
+    },
+    "In queue for %@" : {
+      "comment" : "A build that waits for Apple to start it; the argument is a duration such as “3 min”",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "En file depuis %@"
+          }
+        }
+      }
+    },
+    "Show the builds that are running" : {
+      "comment" : "Help of the line “and 2 more running”: it filters the list on the running builds",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Afficher les builds en cours"
+          }
+        }
+      }
+    },
+    "started %@" : {
+      "comment" : "When a running build with no estimate started: “started 2:36 PM”. Very short. It goes under a ring.",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "depuis %@"
+          }
+        }
+      }
+    },
     "“%@”" : {
       "comment" : "A commit's first line, in quotation marks\nIn the bubble of a day of the Overview: the sentence of “In brief” about a failed build, between quotation marks. Use the quotation marks of the language.",
       "localizations" : {
@@ -217,6 +354,39 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%1$@ #%2$@ a été annulé"
+          }
+        }
+      }
+    },
+    "%@ %@ canceled" : {
+      "comment" : "Said by VoiceOver for an action of a build that was canceled: its name, its time",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ %2$@ annulée"
+          }
+        }
+      }
+    },
+    "%@ %@ errored" : {
+      "comment" : "Said by VoiceOver for an action of a build that ended in an error on Apple's side: its name, its time",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ %2$@ en erreur"
+          }
+        }
+      }
+    },
+    "%@ %@ failed" : {
+      "comment" : "Said by VoiceOver for an action of a build that failed: its name, its time",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ %2$@ en échec"
           }
         }
       }
@@ -665,6 +835,17 @@
         }
       }
     },
+    "%@ not run" : {
+      "comment" : "Said by VoiceOver for an action of a build that did not run",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ non lancée"
+          }
+        }
+      }
+    },
     "%@ of %@" : {
       "comment" : "Cycle card of the sidebar: the compute time used, then the plan, such as “13 hr, 37 min of 25 hr”",
       "localizations" : {
@@ -871,6 +1052,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%@ en cours"
+          }
+        }
+      }
+    },
+    "%@ running for %@" : {
+      "comment" : "Said by VoiceOver for the action of a build that is running: its name, the time it has been running",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ en cours depuis %2$@"
           }
         }
       }
@@ -1436,6 +1628,7 @@
       }
     },
     "%lld errors" : {
+      "comment" : "Errors, on a closed part of a build's detail card",
       "localizations" : {
         "en" : {
           "variations" : {
@@ -1476,6 +1669,7 @@
       }
     },
     "%lld failed" : {
+      "comment" : "Failed tests, on a closed part of a build's detail card",
       "localizations" : {
         "fr" : {
           "stringUnit" : {
@@ -1690,6 +1884,47 @@
         }
       }
     },
+    "%lld launched" : {
+      "comment" : "How many of a build's actions started, when some never did",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld launched"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld launched"
+                }
+              }
+            }
+          }
+        },
+        "fr" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld lancée"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld lancées"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "%lld more builds are running or queued." : {
       "comment" : "Under the headline about a running build: how many other builds are running or queued. The placeholder is a number.",
       "localizations" : {
@@ -1771,6 +2006,23 @@
         }
       }
     },
+    "%lld of %lld" : {
+      "comment" : "Actions of a running build that have ended, out of all of them",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld of %2$lld"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld sur %2$lld"
+          }
+        }
+      }
+    },
     "%lld of %lld in place" : {
       "comment" : "Settings, Agents: how many of the things an agent needs are installed",
       "localizations" : {
@@ -1800,6 +2052,46 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%1$lld requêtes sur %2$lld restantes cette heure"
+          }
+        }
+      }
+    },
+    "%lld other failed tests" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld other failed test"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld other failed tests"
+                }
+              }
+            }
+          }
+        },
+        "fr" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld autre test en échec"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld autres tests en échec"
+                }
+              }
+            }
           }
         }
       }
@@ -1838,6 +2130,47 @@
                 "stringUnit" : {
                   "state" : "translated",
                   "value" : "%lld autres workflows utilisent un Xcode plus ancien."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld passed" : {
+      "comment" : "Passed tests, on a closed part of a build's detail card",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld passed"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld passed"
+                }
+              }
+            }
+          }
+        },
+        "fr" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld réussi"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld réussis"
                 }
               }
             }
@@ -2048,6 +2381,47 @@
         }
       }
     },
+    "%lld warnings" : {
+      "comment" : "Warnings, on a closed part of a build's detail card",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld warning"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld warnings"
+                }
+              }
+            }
+          }
+        },
+        "fr" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld avertissement"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld avertissements"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "%lld Xcode Cloud apps found" : {
       "comment" : "Number of Xcode Cloud apps the key gives access to",
       "localizations" : {
@@ -2082,6 +2456,88 @@
                 "stringUnit" : {
                   "state" : "translated",
                   "value" : "%lld apps Xcode Cloud trouvées"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld actions" : {
+      "comment" : "Number of actions of a build, on a closed part of its detail card",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld action"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld actions"
+                }
+              }
+            }
+          }
+        },
+        "fr" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld action"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld actions"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld artifacts" : {
+      "comment" : "Number of files a build produced, on a closed part of its detail card",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld artifact"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld artifacts"
+                }
+              }
+            }
+          }
+        },
+        "fr" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld artefact"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld artefacts"
                 }
               }
             }
@@ -3880,6 +4336,16 @@
         }
       }
     },
+    "Build Details" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Détail du build"
+          }
+        }
+      }
+    },
     "Build products" : {
       "localizations" : {
         "fr" : {
@@ -5056,16 +5522,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Destination"
-          }
-        }
-      }
-    },
-    "Details" : {
-      "localizations" : {
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Détails"
           }
         }
       }
@@ -6771,6 +7227,16 @@
         }
       }
     },
+    "Hides this part" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Replie cette partie"
+          }
+        }
+      }
+    },
     "History" : {
       "localizations" : {
         "fr" : {
@@ -7588,6 +8054,17 @@
         }
       }
     },
+    "longer than usual" : {
+      "comment" : "Said by VoiceOver for a running build whose current action has outlasted its usual duration",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "plus long que d’habitude"
+          }
+        }
+      }
+    },
     "Line %lld of the usage export can’t be read." : {
       "localizations" : {
         "fr" : {
@@ -8161,6 +8638,17 @@
         }
       }
     },
+    "no artifacts" : {
+      "comment" : "Foot of a build's detail card, in lowercase: the build produced no file",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "aucun artefact"
+          }
+        }
+      }
+    },
     "No" : {
       "localizations" : {
         "fr" : {
@@ -8280,6 +8768,60 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "aucun build"
+          }
+        }
+      }
+    },
+    "no errors" : {
+      "comment" : "A failed build's issues, on a closed part of its detail card: no error",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "aucune erreur"
+          }
+        }
+      }
+    },
+    "no failures" : {
+      "comment" : "A build's tests, on a closed part of its detail card: none failed",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "aucun échec"
+          }
+        }
+      }
+    },
+    "no issues" : {
+      "comment" : "Foot of a build's detail card, in lowercase: the build has no issue to list",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "aucun problème"
+          }
+        }
+      }
+    },
+    "no tests in this workflow" : {
+      "comment" : "Foot of a build's detail card, in lowercase",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "aucun test dans ce workflow"
+          }
+        }
+      }
+    },
+    "not launched" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "non lancée"
           }
         }
       }
@@ -8501,6 +9043,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Aucun tag n’a été trouvé pour ce workflow."
+          }
+        }
+      }
+    },
+    "No test failed." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aucun test n’a échoué."
           }
         }
       }
@@ -9540,6 +10092,17 @@
         }
       }
     },
+    "pending" : {
+      "comment" : "A part of a running build's detail card that cannot have anything to show yet",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "en attente"
+          }
+        }
+      }
+    },
     "Paused, needs Cumulus Pro" : {
       "localizations" : {
         "fr" : {
@@ -10390,6 +10953,7 @@
       }
     },
     "running" : {
+      "comment" : "State of a running build, in lowercase",
       "localizations" : {
         "fr" : {
           "stringUnit" : {
@@ -10770,6 +11334,16 @@
         }
       }
     },
+    "Show Failed Tests Only" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "N’afficher que les tests en échec"
+          }
+        }
+      }
+    },
     "Show durations" : {
       "localizations" : {
         "fr" : {
@@ -10830,6 +11404,46 @@
         }
       }
     },
+    "Show the %lld passed tests" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Show the passed test"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Show the %lld passed tests"
+                }
+              }
+            }
+          }
+        },
+        "fr" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Afficher le test réussi"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Afficher les %lld tests réussis"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "Show the time left in the menu bar" : {
       "localizations" : {
         "fr" : {
@@ -10867,6 +11481,7 @@
       }
     },
     "Shows the minutes by app and workflow, the scheduled builds and the usage export" : {
+      "extractionState" : "stale",
       "localizations" : {
         "fr" : {
           "stringUnit" : {
@@ -10892,6 +11507,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Affiche le texte entier, après avoir chargé les problèmes et les résultats de tests"
+          }
+        }
+      }
+    },
+    "Shows this part" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Déplie cette partie"
           }
         }
       }
@@ -11527,6 +12152,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "tags"
+          }
+        }
+      }
+    },
+    "tests not run" : {
+      "comment" : "Foot of a build's detail card, in lowercase: the build stopped before its tests",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "tests non lancés"
           }
         }
       }

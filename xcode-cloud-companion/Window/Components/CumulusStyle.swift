@@ -42,4 +42,11 @@ extension View {
             .background(.background.opacity(0.7), in: .rect(cornerRadius: CumulusStyle.groupRadius))
             .overlay(RoundedRectangle(cornerRadius: CumulusStyle.groupRadius).strokeBorder(.quaternary))
     }
+
+    /// The same group without inner margins, for one whose rows reach its edges; what sticks out of the corners is cut.
+    func cumulusFlatGroup() -> some View {
+        clipShape(.rect(cornerRadius: CumulusStyle.groupRadius))
+            .background(.background.opacity(0.7), in: .rect(cornerRadius: CumulusStyle.groupRadius))
+            .overlay(RoundedRectangle(cornerRadius: CumulusStyle.groupRadius).strokeBorder(.quaternary))
+    }
 }

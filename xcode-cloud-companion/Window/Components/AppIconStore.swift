@@ -32,6 +32,12 @@ nonisolated struct AppIconCache: Sendable {
         return data
     }
 
+    /// What is already on the disk, with no request and no waiting: nil when the icon was never fetched.
+    func cachedImageData(appID: String, icon: CIAppIcon) -> Data? {
+        guard Self.isSafe(appID) else { return nil }
+        return try? Data(contentsOf: directory.appending(path: "\(appID)-\(Self.fingerprint(of: icon)).png"))
+    }
+
     @concurrent func deleteAll() async {
         try? FileManager.default.removeItem(at: directory)
     }
@@ -53,6 +59,21 @@ nonisolated struct AppIconCache: Sendable {
 struct AppArtwork {
     let image: NSImage
     let isMacIcon: Bool
+}
+
+extension AppIconCache {
+    /// The icons of some products as they are on the disk, by product ID. Nothing is fetched: a product whose icon is not
+    /// there yet is left out, and keeps its initial.
+    func cachedArtwork(of productIDs: some Sequence<String>, in snapshot: BuildSnapshot) -> [String: AppArtwork] {
+        var result: [String: AppArtwork] = [:]
+        for productID in productIDs {
+            guard let appID = snapshot.product(id: productID)?.appID, let icon = snapshot.appIcons[appID],
+                  let data = cachedImageData(appID: appID, icon: icon), let image = NSImage(data: data)
+            else { continue }
+            result[productID] = AppArtwork(image: image, isMacIcon: icon.isMacIcon)
+        }
+        return result
+    }
 }
 
 /// The icons the window shows, by app ID. An app without one keeps its coloured initial.

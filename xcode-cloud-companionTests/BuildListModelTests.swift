@@ -88,6 +88,16 @@ struct BuildListModelTests {
         #expect(list.rows.map(\.number) == [2, 3, 1])
     }
 
+    @Test func onlyTheListOfAllBuildsMixesApps() {
+        let reference = AppReference(productID: "p", key: .branchOrTag("main"))
+
+        #expect(BuildListScope.allBuilds.mixesApps)
+        #expect(!BuildListScope.product("p").mixesApps)
+        #expect(!BuildListScope.workflow("w").mixesApps)
+        #expect(!BuildListScope.reference(reference).mixesApps)
+        #expect(!BuildListScope.workflowDay("w", Date(timeIntervalSince1970: 0)).mixesApps)
+    }
+
     @Test func theScopeNarrowsTheListAndNamesIt() {
         let runs = [run(1, product: "a", created: "2026-10-08T10:00:00Z"), run(2, product: "b", workflow: nil, created: "2026-10-08T11:00:00Z")]
 
@@ -129,15 +139,28 @@ struct BuildListModelTests {
         #expect(rows.map(\.commitTitle) == ["Fix the CSV import", nil, nil])
         #expect(rows[0].facts == "Release · main" && rows[0].age(now: now) == "20m")
 
-        let card = BuildCard(row: rows[0], now: now, swatch: .blue, artwork: nil, isSelected: false)
-        #expect(card.title == "Fix the CSV import" && card.prefix == "#1" && card.statusText == "Failed · 3 tests")
+        let ring = BuildRing(run: named, in: BuildSnapshot(runs: [named]), now: now, locale: english)
+        let card = BuildRow(row: rows[0], ring: ring, now: now, swatch: .blue)
+        #expect(card.title == "Fix the CSV import" && card.prefix == "#1" && card.statusText == "3 tests")
         #expect(card.spokenLabel == "Fix the CSV import, #1, Failed · 3 tests" && card.spokenValue == "Alpha · Release · main")
 
-        // No message from Apple: the card keeps saying how the build went, once.
-        let fallback = BuildCard(row: rows[1], now: now, swatch: .blue, artwork: nil, isSelected: false)
+        // No message from Apple: the row keeps saying how the build went, once.
+        let fallback = BuildRow(row: rows[1], ring: ring, now: now, swatch: .blue)
         #expect(fallback.title == "Succeeded · TestFlight" && fallback.statusText == nil)
-        #expect(String(BuildCard.line(prefix: "#1", statusText: "Failed", facts: "Release · main", tint: nil).characters) == "#1 · Failed · Release · main")
-        #expect(String(BuildCard.line(prefix: "#2", statusText: nil, facts: "Release · main", tint: nil).characters) == "#2 · Release · main")
+        #expect(String(BuildRow.line(prefix: "#1", statusText: "3 tests", facts: "Release · main", tint: nil).characters) == "#1 · 3 tests · Release · main")
+        #expect(String(BuildRow.line(prefix: "#2", statusText: nil, facts: "Release · main", tint: nil).characters) == "#2 · Release · main")
+    }
+
+    @Test func aRowWritesTheStateOnlyWhenItIsNotASuccess() {
+        func named(_ number: Int, _ status: CICompletionStatus, tests: Int? = nil) -> CIBuildRun {
+            var build = run(number, created: "2026-10-08T22:10:00Z", status: status, testFailures: tests, sha: "abc123\(number)")
+            build.sourceCommit?.message = "Fix"
+            return build
+        }
+        let rows = model([named(1, .failed, tests: 3), named(2, .succeeded), named(3, .errored), named(4, .canceled)]).rows
+            .sorted { ($0.number ?? 0) < ($1.number ?? 0) }
+        #expect(rows.map(\.rowStatusWord) == ["3 tests", nil, "Error", "Canceled"])
+        #expect(BuildStatus.failed.rowWord(failedTests: 0) == "Failed")
     }
 
     @Test func searchFindsACommitByItsMessage() {

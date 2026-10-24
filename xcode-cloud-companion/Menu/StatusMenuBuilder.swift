@@ -23,6 +23,8 @@ struct StatusMenuState {
     var summary: UsageSummary?
     var snapshot: BuildSnapshot = .empty
     var palette = AppPalette()
+    /// The icons of the running builds' apps that are already on the disk, by product ID: filled when the menu opens.
+    var appArtwork: [String: AppArtwork] = [:]
     var lastSync: Date?
     var syncStartedAt: Date?
     var isSyncing: Bool
@@ -130,7 +132,7 @@ enum StatusMenuBuilder {
 
         let running = RunningBuildLine.lines(in: state.snapshot, now: state.now).prefix(RunningBuildLine.limit)
         for line in running {
-            items.append(viewItem(RunningBuildHeaderView(line: line)))
+            items.append(viewItem(RunningBuildHeaderView(line: line, swatch: state.palette.swatch(for: line.paletteKey), artwork: state.appArtwork[line.productID])))
         }
         if !running.isEmpty {
             items.append(.separator())

@@ -123,7 +123,7 @@ struct MainWindowView: View {
                 } else if navigation.sidebarSelection == .references, navigation.referenceScope == nil {
                     ReferencesListView(
                         buildStore: buildStore, store: session.windowStores.references, open: { navigation.referenceScope = $0 },
-                        icons: icons, palette: palette
+                        palette: palette, icons: icons
                     )
                 } else {
                     BuildListView(
@@ -133,7 +133,7 @@ struct MainWindowView: View {
                         back: navigation.daySlice != nil ? { navigation.sidebarSelection = .overview }
                             : navigation.referenceScope == nil ? nil : { navigation.referenceScope = nil },
                         backTitle: navigation.daySlice != nil ? "Overview" : "Branches and pull requests",
-                        older: session.windowStores.older, icons: icons, palette: palette,
+                        older: session.windowStores.older, palette: palette, icons: icons,
                         failureCopier: failureCopier
                     )
                 }
@@ -236,7 +236,7 @@ struct MainWindowView: View {
                 run: run, buildStore: buildStore, extrasStore: extrasStore, artifactSaver: artifactSaver, onRebuild: rebuildAction(for: run),
                 teamID: settings.issuerID.isEmpty ? nil : settings.issuerID,
                 icons: icons, palette: palette,
-                openBuild: { navigation.selectedBuildID = $0 }, logOpener: logOpener, ledger: usageStore.ledger, insights: session.failureInsights, logExcerpts: session.windowStores.logExcerpts, testHistory: workflowTests, testFlight: session.testFlight, distribution: distributionAccess, tab: $navigation.buildTab
+                openBuild: { navigation.selectedBuildID = $0 }, logOpener: logOpener, ledger: usageStore.ledger, insights: session.failureInsights, logExcerpts: session.windowStores.logExcerpts, testHistory: workflowTests, testFlight: session.testFlight, distribution: distributionAccess, parts: navigation.buildParts
             )
             .environment(\.sourceOpening, sourceOpening(for: run))
         } else if navigation.sidebarSelection == .overview {
@@ -277,8 +277,8 @@ struct MainWindowView: View {
                 model: WorkflowDetailModel(workflow: workflow, productName: product?.displayName), tests: workflowTests,
                 isLoading: SkeletonRules.workflowSheet(isCached: workflowStore.workflow(id: id) != nil, loadEnded: workflowEndedID == id),
                 openBuildTests: { id in
-                    // The build stays in its workflow's list: only the sheet and its tab change.
-                    navigation.buildTab = .tests
+                    // The build stays in its workflow's list: only the sheet changes, on its tests.
+                    navigation.buildParts.show(.tests, ofRun: id)
                     navigation.selectedBuildID = id
                 },
                 trends: WorkflowTrends(runs: buildStore.snapshot.runs.filter { $0.workflowID == id }),

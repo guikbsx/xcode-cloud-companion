@@ -111,17 +111,25 @@ nonisolated struct RunningBuildsETA: Equatable, Sendable {
         self.nextChange = nextChange
     }
 
-    /// One snapshot's running builds, those that end first at the head, those with no estimate after them.
+    /// One snapshot's running builds, those that end first at the head, those with no estimate after them, those still queued last.
     static func entries(in snapshot: BuildSnapshot, now: Date) -> [Entry] {
         let entries = snapshot.runs
             .filter { $0.executionProgress == .running || $0.executionProgress == .pending }
             .map { Entry(run: $0, eta: BuildETA(run: $0, among: snapshot.runs, now: now)) }
-        return entries.sorted { lhs, rhs in
-            switch (lhs.eta, rhs.eta) {
-            case let (left?, right?): left.expectedEnd < right.expectedEnd
-            case (_?, nil): true
-            case (nil, _?): false
-            case (nil, nil): (lhs.run.createdDate ?? .distantPast, lhs.run.number ?? 0) < (rhs.run.createdDate ?? .distantPast, rhs.run.number ?? 0)
+        return entries.sorted(by: precedes)
+    }
+
+    /// The order of the builds in the menu bar, the menu and the list: the nearest end first, then those with no estimate, queued ones last.
+    static func precedes(_ lhs: Entry, _ rhs: Entry) -> Bool {
+        switch (lhs.eta, rhs.eta) {
+        case let (left?, right?): left.expectedEnd < right.expectedEnd
+        case (_?, nil): true
+        case (nil, _?): false
+        case (nil, nil):
+            if (lhs.run.executionProgress == .pending) != (rhs.run.executionProgress == .pending) {
+                rhs.run.executionProgress == .pending
+            } else {
+                (lhs.run.createdDate ?? .distantPast, lhs.run.number ?? 0) < (rhs.run.createdDate ?? .distantPast, rhs.run.number ?? 0)
             }
         }
     }

@@ -145,24 +145,43 @@ nonisolated struct DetailColumnsLayout: Layout {
     }
 }
 
+/// Where a sheet is asked to scroll to: a view of its content by identifier. The serial tells a new request for the same view from the old one.
+struct DetailScrollTarget: Equatable {
+    let id: AnyHashable
+    let serial: Int
+}
+
 /// A sheet's scrolling content, told how many columns its own width allows: the width of the sheet's column, not the
 /// window's, so hiding the sidebar or widening the list of builds counts too.
 struct DetailScroll<Content: View>: View {
     var spacing: CGFloat = 18
     var sideWidth: CGFloat? = DetailColumns.sideWidth
     var equalHeights = false
+    /// A view of the content to bring to the top, once the layout has settled; `didScroll` tells that it was.
+    var scrollTarget: DetailScrollTarget?
+    var didScroll: (DetailScrollTarget) -> Void = { _ in }
     @ViewBuilder var content: (DetailColumns) -> Content
     /// Only the mode is kept, not the width: resizing redraws the sheet when the threshold is crossed, not at every point.
     @State private var columns = DetailColumns.one
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
-        ScrollView {
-            DetailColumnsLayout(columns: columns, spacing: spacing, sideWidth: sideWidth, equalHeights: equalHeights) {
-                content(columns)
+        ScrollViewReader { proxy in
+            ScrollView {
+                DetailColumnsLayout(columns: columns, spacing: spacing, sideWidth: sideWidth, equalHeights: equalHeights) {
+                    content(columns)
+                }
+                .padding(DetailColumns.margin)
             }
-            .padding(DetailColumns.margin)
+            .onGeometryChange(for: DetailColumns.self) { DetailColumns(width: $0.size.width) } action: { columns = $0 }
+            .task(id: scrollTarget) {
+                guard let target = scrollTarget else { return }
+                try? await Task.sleep(for: .milliseconds(80))
+                guard !Task.isCancelled else { return }
+                withAnimation(reduceMotion ? nil : .easeInOut(duration: 0.25)) { proxy.scrollTo(target.id, anchor: .top) }
+                didScroll(target)
+            }
         }
-        .onGeometryChange(for: DetailColumns.self) { DetailColumns(width: $0.size.width) } action: { columns = $0 }
     }
 }
 

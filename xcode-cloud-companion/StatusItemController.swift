@@ -10,7 +10,7 @@ final class StatusItemController: NSObject, NSMenuDelegate {
     private let now: () -> Date
     private let defaults: UserDefaults
     private var clock: Task<Void, Never>?
-    /// Wakes the bar when the time left next changes; exists only while a build runs.
+    /// Wakes the bar when the time left or the ring next changes; exists only while a build runs.
     private var timeLeftTask: Task<Void, Never>?
     private var settingsWatch: Task<Void, Never>?
 
@@ -119,6 +119,8 @@ final class StatusItemController: NSObject, NSMenuDelegate {
         var current = state
         if let session = accounts.selected {
             current.palette = session.paletteStore.refreshed(for: current.snapshot, summary: current.summary, defaults: defaults)
+            let running = RunningBuildLine.lines(in: current.snapshot, now: current.now).prefix(RunningBuildLine.limit)
+            current.appArtwork = AppIconCache(directory: session.paths.appIcons).cachedArtwork(of: running.map(\.productID), in: current.snapshot)
         }
         return current
     }
@@ -154,24 +156,26 @@ final class StatusItemController: NSObject, NSMenuDelegate {
     private func refreshButton() {
         guard let button = statusItem.button else { return }
         let current = state
-        let timeLeft = timeLeft(at: current.now)
+        let running = runningBuilds(at: current.now)
+        let timeLeft = BuildETAFeature.isOn(defaults) ? running : nil
         button.title = StatusMenuBuilder.buttonTitle(
             for: current.summary, isFirstSync: current.isFirstSync,
             timeLeft: timeLeft.flatMap { BuildETAFormat.barText(runningCount: $0.runningCount, display: $0.display) }
         )
         let badge = currentBadge()
         let measuring = current.isFirstSync || current.measurement?.isMeasuring == true
-        button.image = MenuBarIcon.image(badge: badge, measuring: measuring)
+        // The ring says that a build runs, with the time left shown or not: the setting only commands the text.
+        let ring = leadingRing(at: current.now)
+        button.image = ring.map(MenuBarIcon.image(ring:)) ?? MenuBarIcon.image(badge: badge, measuring: measuring)
         let label = MenuBarBadge.accessibilityLabel(for: badge)
         button.setAccessibilityLabel(timeLeft?.display.map { [label, BuildETAFormat.spoken($0)].formatted(.list(type: .and, width: .narrow)) } ?? label)
-        scheduleTimeLeftRefresh(timeLeft)
+        scheduleRefresh(whileRunning: running, textNeeded: timeLeft != nil, ring: ring)
     }
 
-    /// The builds running on every active account and when the nearest ends; nil when the setting is off.
-    private func timeLeft(at date: Date) -> RunningBuildsETA? {
-        guard BuildETAFeature.isOn(defaults) else { return nil }
+    /// The builds running on every active account and when the nearest ends.
+    private func runningBuilds(at date: Date) -> RunningBuildsETA {
         #if DEBUG
-        // Shows the text without a running build: XCC_ETA=<minutes> (with XCC_BADGE=running for the dot).
+        // Shows the text without a running build: XCC_ETA=<minutes> (with XCC_BADGE=running for the ring).
         if let minutes = ProcessInfo.processInfo.environment["XCC_ETA"].flatMap(Double.init), minutes > 0 {
             return RunningBuildsETA(runningCount: 1, remaining: minutes * 60)
         }
@@ -179,12 +183,25 @@ final class StatusItemController: NSObject, NSMenuDelegate {
         return RunningBuildsETA(snapshots: accounts.activeSessions.map(\.buildStore.snapshot), now: date)
     }
 
-    /// The text changes once a minute at most: a task sleeps until it does, and only while a build runs.
-    private func scheduleTimeLeftRefresh(_ timeLeft: RunningBuildsETA?) {
+    /// The ring of the build that ends first, on any active account.
+    private func leadingRing(at date: Date) -> BuildRing? {
+        #if DEBUG
+        // XCC_BADGE=running draws a build that is not there; XCC_ETA=<minutes> says when it ends (4 by default).
+        if ProcessInfo.processInfo.environment["XCC_BADGE"] == "running" {
+            return MenuBarRing.sample(minutes: ProcessInfo.processInfo.environment["XCC_ETA"].flatMap(Double.init) ?? 4, now: date)
+        }
+        #endif
+        return MenuBarRing.leader(in: accounts.activeSessions.map(\.buildStore.snapshot), now: date)
+    }
+
+    /// The bar changes once a minute at most: a task sleeps until the text or the ring next looks different, and only while a
+    /// build runs.
+    private func scheduleRefresh(whileRunning running: RunningBuildsETA, textNeeded: Bool, ring: BuildRing?) {
         timeLeftTask?.cancel()
         timeLeftTask = nil
-        guard let timeLeft, timeLeft.runningCount > 0 else { return }
-        let delay = min(60, max(1, timeLeft.nextChange.map { $0.timeIntervalSince(now()) } ?? 60))
+        guard running.runningCount > 0 || ring != nil else { return }
+        let moments = [textNeeded ? running.nextChange : nil, ring?.nextChange].compactMap(\.self)
+        let delay = min(60, max(1, moments.map { $0.timeIntervalSince(now()) }.min() ?? 60))
         timeLeftTask = Task { [weak self] in
             try? await Task.sleep(for: .seconds(delay))
             guard !Task.isCancelled else { return }

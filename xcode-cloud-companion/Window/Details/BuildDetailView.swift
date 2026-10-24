@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// The right column: a big number, the state in capsules, the actions frieze, the facts, the commit and the tabs.
+/// The right column: a big number, the state in capsules, the actions frieze, the facts, the commit and the detail card.
 struct BuildDetailView: View {
     let run: CIBuildRun
     let buildStore: BuildStore
@@ -25,7 +25,8 @@ struct BuildDetailView: View {
     /// What gives the build to TestFlight groups; without it the card does not exist.
     var distribution: TestFlightDistributionAccess?
 
-    @Binding var tab: BuildTab
+    /// Which parts of the detail card are open, and the one another screen asked to see.
+    var parts = BuildPartsState()
     /// Bumped by “Compare with #n” beside the commit: the group below starts its comparison.
     @State private var compareRequest = 0
     /// The build whose TestFlight builds have been asked for, answered or not.
@@ -61,7 +62,10 @@ struct BuildDetailView: View {
     }
 
     private func content(now: Date, _ model: BuildDetailModel) -> some View {
-        DetailScroll { columns in
+        DetailScroll(
+            scrollTarget: parts.request.flatMap { $0.runID == run.id ? DetailScrollTarget(id: $0.part, serial: $0.serial) : nil },
+            didScroll: { parts.finish($0) }
+        ) { columns in
             if let appleStatus, let event = appleStatus.event(covering: run, at: now) {
                 AppleStatusBanner(
                     banner: AppleStatusFormat.banner(for: event, stoppedAt: run.finishedDate, now: now),
@@ -119,7 +123,7 @@ struct BuildDetailView: View {
                     .cumulusGroup()
                     .detailPlacement(.side)
             }
-            tabs(model)
+            detailCard(model)
                 .accessibilitySortPriority(columns == .two ? 1 : 0)
         }
         .toolbar {
@@ -444,64 +448,89 @@ struct BuildDetailView: View {
         }
     }
 
-    private func tabs(_ model: BuildDetailModel) -> some View {
-        VStack(alignment: .leading, spacing: 12) {
-            ViewThatFits(in: .horizontal) {
-                HStack(spacing: 6) {
-                    pill(.actions, String(localized: "Actions"), count: model.actions.count)
-                    pill(.tests, String(localized: "Tests"), count: model.testFailureCount, countsFailures: true)
-                    pill(.problems, String(localized: "Issues"), count: model.issueCount)
-                    pill(.artifacts, String(localized: "Artifacts"), count: nil)
-                }
-                VStack(alignment: .leading, spacing: 6) {
-                    HStack(spacing: 6) {
-                        pill(.actions, String(localized: "Actions"), count: model.actions.count)
-                        pill(.tests, String(localized: "Tests"), count: model.testFailureCount, countsFailures: true)
-                    }
-                    HStack(spacing: 6) {
-                        pill(.problems, String(localized: "Issues"), count: model.issueCount)
-                        pill(.artifacts, String(localized: "Artifacts"), count: nil)
-                    }
-                }
-            }
-            .accessibilityElement(children: .contain)
-            .accessibilityLabel(Text("Details"))
+    /// The build's problems, tests, actions and artifacts one under another, the cause first.
+    private func detailCard(_ model: BuildDetailModel) -> some View {
+        let actions = buildStore.snapshot.actionsByRunID[run.id] ?? []
+        let extras = extrasStore.extras(for: run.id)
+        let category = insights?.insight(for: run.id)?.category ?? BuildSheetOrder.Facts.category(of: run, actions: actions, extras: extras)
+        return BuildPartsCard(
+            run: run,
+            facts: BuildSheetOrder.Facts(run: run, actions: actions, workflow: buildStore.snapshot.workflow(id: run.workflowID), category: category, extras: extras),
+            state: parts,
+            counter: { counter(of: $0, model: model) },
+            load: { await load($0) }
+        ) { part in
+            partContent(part, model)
+        }
+        .id(run.id)
+    }
 
-            let actions = buildStore.snapshot.actionsByRunID[run.id] ?? []
-            let extras = extrasStore.extras(for: run.id)
-            switch tab {
-            case .actions: actionsTab(model)
-            case .tests:
-                TestsTabView(
-                    results: extras?.testsByAction ?? [:], actions: actions, state: extrasStore.state(.tests, runID: run.id),
-                    insight: openInsight, history: historyAccess, retry: { Task { await extrasStore.loadTests(for: run, actions: actions) } }
-                )
-                .task(id: run) { await extrasStore.loadTests(for: run, actions: actions) }
-            case .problems:
-                IssuesTabView(
-                    issues: extras?.issuesByAction ?? [:], actions: actions, state: extrasStore.state(.issues, runID: run.id),
-                    retry: { Task { await extrasStore.loadIssues(for: run, actions: actions) } }
-                )
-                .task(id: run) { await extrasStore.loadIssues(for: run, actions: actions) }
-            case .artifacts:
-                ArtifactsTabView(
-                    artifacts: extras?.artifactsByAction ?? [:], actions: actions, state: extrasStore.state(.artifacts, runID: run.id), saver: artifactSaver,
-                    retry: { Task { await extrasStore.loadArtifacts(for: run, actions: actions) } }
-                )
-                .task(id: run) { await extrasStore.loadArtifacts(for: run, actions: actions) }
-            }
+    private func counter(of part: BuildPart, model: BuildDetailModel) -> BuildPartCounter {
+        let actions = buildStore.snapshot.actionsByRunID[run.id] ?? []
+        let extras = extrasStore.extras(for: run.id)
+        let isRunning = model.status == .running
+        switch part {
+        case .tests:
+            return .tests(
+                isRunning: isRunning, counts: run.issueCounts,
+                results: extras?.testsComplete == true ? actions.flatMap { extras?.testsByAction[$0.id] ?? [] } : nil
+            )
+        case .problems:
+            return .problems(isRunning: isRunning, isFailedBuild: model.status == .failed || model.status == .errored, counts: run.issueCounts)
+        case .actions:
+            return .actions(
+                count: model.actions.count, launched: model.actions.filter { $0.duration != nil }.count,
+                finished: actions.filter { $0.executionProgress == .complete }.count, isRunning: isRunning, clock: model.clockDuration
+            )
+        case .artifacts:
+            return .artifacts(isRunning: isRunning, artifacts: extras?.artifactsComplete == true ? actions.flatMap { extras?.artifactsByAction[$0.id] ?? [] } : nil)
+        }
+    }
+
+    /// Reads what an open part shows; a closed one never gets here.
+    private func load(_ part: BuildPart) async {
+        let actions = buildStore.snapshot.actionsByRunID[run.id] ?? []
+        switch part {
+        case .tests: await extrasStore.loadTests(for: run, actions: actions)
+        case .problems: await extrasStore.loadIssues(for: run, actions: actions)
+        case .artifacts: await extrasStore.loadArtifacts(for: run, actions: actions)
+        case .actions: break
+        }
+    }
+
+    @ViewBuilder
+    private func partContent(_ part: BuildPart, _ model: BuildDetailModel) -> some View {
+        let actions = buildStore.snapshot.actionsByRunID[run.id] ?? []
+        let extras = extrasStore.extras(for: run.id)
+        switch part {
+        case .actions: actionsPart(model)
+        case .tests:
+            TestsPartView(
+                results: extras?.testsByAction ?? [:], actions: actions, state: extrasStore.state(.tests, runID: run.id),
+                insight: openInsight, history: historyAccess, retry: { Task { await extrasStore.loadTests(for: run, actions: actions) } }
+            )
+        case .problems:
+            IssuesPartView(
+                issues: extras?.issuesByAction ?? [:], actions: actions, state: extrasStore.state(.issues, runID: run.id),
+                retry: { Task { await extrasStore.loadIssues(for: run, actions: actions) } }
+            )
+        case .artifacts:
+            ArtifactsPartView(
+                artifacts: extras?.artifactsByAction ?? [:], actions: actions, state: extrasStore.state(.artifacts, runID: run.id), saver: artifactSaver,
+                retry: { Task { await extrasStore.loadArtifacts(for: run, actions: actions) } }
+            )
         }
     }
 
     private var historyAccess: TestHistoryAccess? {
         guard let testHistory, let workflowID = run.workflowID else { return nil }
         return TestHistoryAccess(workflowID: workflowID, tests: testHistory, openBuild: { id in
-            tab = .tests
+            parts.show(.tests, ofRun: id)
             openBuild(id)
         })
     }
 
-    /// What the Tests tab may use: the groups of this build, only while the feature is open.
+    /// What the Tests part may use: the groups of this build, only while the feature is open.
     private var openInsight: FailureInsightRecord? {
         guard BuildFailurePrompt.isOffered(for: run),
               FailureInsightFeature.mode(model: .current, settingOn: isInsightSettingOn, proAllows: access.allows(.failureInsight)) == .open
@@ -561,7 +590,7 @@ struct BuildDetailView: View {
         }
     }
 
-    private func actionsTab(_ model: BuildDetailModel) -> some View {
+    private func actionsPart(_ model: BuildDetailModel) -> some View {
         VStack(spacing: 0) {
             ForEach(model.actions) { action in
                 HStack(spacing: 10) {
@@ -575,6 +604,8 @@ struct BuildDetailView: View {
                     logsControl(for: action.id, model: model)
                     if let duration = action.duration {
                         Text(duration).font(.system(.caption, design: .monospaced)).foregroundStyle(.secondary)
+                    } else if model.status != .running {
+                        Text("not launched").font(.caption).foregroundStyle(.secondary)
                     }
                 }
                 .padding(.vertical, 8)
@@ -589,32 +620,5 @@ struct BuildDetailView: View {
                 Text("No action recorded yet.").foregroundStyle(.secondary).frame(maxWidth: .infinity, alignment: .leading)
             }
         }
-        .cumulusGroup()
-    }
-
-    /// One tab, as a glass pill with its counter; the one on screen is filled.
-    @ViewBuilder
-    private func pill(_ value: BuildTab, _ title: String, count: Int?, countsFailures: Bool = false) -> some View {
-        let isSelected = tab == value
-        let shown = count.flatMap { $0 > 0 ? $0 : nil }
-        let label = HStack(spacing: 6) {
-            Text(title).lineLimit(1).fixedSize()
-            if let shown {
-                Text(shown, format: .number)
-                    .font(.caption2.weight(.bold).monospacedDigit())
-                    .padding(.horizontal, 6)
-                    .padding(.vertical, 1)
-                    .foregroundStyle(countsFailures && !isSelected ? AnyShapeStyle(BuildStatus.failed.textTint) : AnyShapeStyle(.tint))
-                    .background(
-                        countsFailures && !isSelected ? AnyShapeStyle(BuildStatus.failed.tint.opacity(0.16)) : AnyShapeStyle(.tint.opacity(0.16)),
-                        in: .capsule
-                    )
-            }
-        }
-        let spoken = shown.map { countsFailures ? String(localized: "\($0) failed") : $0.formatted() } ?? ""
-        Button { tab = value } label: { label }
-            .buttonStyle(PillButtonStyle(isSelected: isSelected))
-            .accessibilityValue(Text(spoken))
-            .accessibilityAddTraits(isSelected ? .isSelected : [])
     }
 }

@@ -17,11 +17,6 @@ nonisolated struct WorkflowDay: Hashable, Sendable {
     let day: Date
 }
 
-/// The tabs of a build sheet.
-nonisolated enum BuildTab: Hashable, Sendable {
-    case actions, tests, problems, artifacts
-}
-
 /// Where the main window is looking; the menu and the URL scheme drive it as well as the clicks.
 @Observable
 final class NavigationModel {
@@ -48,16 +43,16 @@ final class NavigationModel {
             if oldValue != daySlice { selectedBuildID = nil }
         }
     }
-    /// The tab the build sheet shows; it stays as the user left it from one build to the next.
-    var buildTab = BuildTab.actions
+    /// Which parts of the build sheets are open, and the part another screen asked to see.
+    let buildParts = BuildPartsState()
 
     /// Every build is in "All builds", whatever app or workflow was picked before.
-    func showBuild(_ id: String, tab: BuildTab? = nil) {
+    func showBuild(_ id: String, part: BuildPart? = nil) {
         sidebarSelection = .allBuilds
         daySlice = nil
         selectedBuildID = id
-        if let tab {
-            buildTab = tab
+        if let part {
+            buildParts.show(part, ofRun: id)
         }
     }
 

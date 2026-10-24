@@ -258,6 +258,20 @@ struct AppIconCacheTests {
     }
 
     @MainActor
+    @Test func theMenuReadsOnlyWhatIsAlreadyOnTheDisk() async {
+        let counter = DownloadCounter()
+        let snapshot = BuildSnapshot(products: [elan, framework], appIcons: ["app-1": icon])
+
+        #expect(cache(counter).cachedArtwork(of: ["p1", "p2"], in: snapshot).isEmpty)
+        _ = await cache(counter).imageData(appID: "app-1", icon: icon)
+        let artwork = cache(counter).cachedArtwork(of: ["p1", "p2"], in: snapshot)
+
+        #expect(Set(artwork.keys) == ["p1"])
+        #expect(artwork["p1"]?.isMacIcon == false)
+        #expect(counter.urls.withLock { $0.count } == 1)
+    }
+
+    @MainActor
     @Test func theStoreShowsWhatLoadedAndLeavesTheInitialOtherwise() async {
         let counter = DownloadCounter()
         let store = AppIconStore(cache: cache(counter))

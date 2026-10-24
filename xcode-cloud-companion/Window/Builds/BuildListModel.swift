@@ -26,12 +26,12 @@ nonisolated struct BuildRowData: Identifiable, Equatable, Sendable {
 
     var numberText: String { number.map { "#\($0)" } ?? "#?" }
 
-    /// The first line of the commit's message: what the card is named after, when there is one.
+    /// The first line of the commit's message: what the row is named after, when there is one.
     var commitTitle: String? {
         commitMessage?.split(whereSeparator: \.isNewline).first.map { $0.trimmingCharacters(in: .whitespaces) }.flatMap(\.nilIfBlank)
     }
 
-    /// The workflow and the branch: what follows the state on the card's second line. The app is its icon.
+    /// The workflow and the branch: what follows the number on the row's second line. The app is the initial in its ring.
     var facts: String {
         UsageFormat.dotted([workflowName, reference].compactMap(\.self))
     }
@@ -59,12 +59,26 @@ nonisolated struct BuildRowData: Identifiable, Equatable, Sendable {
             guard let elapsed else { return status.label }
             return UsageFormat.dotted([status.label, UsageFormat.minutes(elapsed / 60)])
         case .failed where failedTests > 0:
-            return UsageFormat.dotted([status.label, String(localized: "\(failedTests) tests", comment: "Number of failed tests of a build, in the build list")])
+            return UsageFormat.dotted([status.label, Self.failedTestsText(failedTests)])
         case .succeeded where shipsToTestFlight:
             return UsageFormat.dotted([status.label, "TestFlight"])
         default:
             return status.label
         }
+    }
+
+    static func failedTestsText(_ count: Int) -> String {
+        String(localized: "\(count) tests", comment: "Number of failed tests of a build, in the build list")
+    }
+
+    /// The state in words on the row's second line: nothing for a success or when the title already says how it went,
+    /// the number of failed tests for a failure.
+    var rowStatusWord: String? {
+        guard commitTitle != nil else { return nil }
+        if status == .running, startedDate == nil, finishedDate == nil {
+            return String(localized: "Queued", comment: "In a line of the bubble of a day of the Overview: the build waits in the queue. Very short.")
+        }
+        return status.rowWord(failedTests: failedTests)
     }
 
     /// Where a running build's counter starts: it goes on every second until a sync says the build ended.
@@ -129,6 +143,13 @@ nonisolated enum BuildListScope: Hashable, Sendable {
         case .workflow(let id): self = .workflow(id)
         }
     }
+
+    /// Whether builds of several apps can meet in the list: only then does a ring name its app. A reference, a workflow and
+    /// an app are each one app's.
+    var mixesApps: Bool {
+        if case .allBuilds = self { return true }
+        return false
+    }
 }
 
 /// The middle column: the builds of the sidebar's selection, filtered, searched and grouped by day.
@@ -140,13 +161,22 @@ nonisolated struct BuildListModel: Equatable, Sendable {
     /// The list is a workflow's, and Apple says that workflow is paused.
     var isPausedWorkflow = false
 
-    var rows: [BuildRowData] { groups.flatMap(\.rows) }
-    var count: Int { groups.reduce(0) { $0 + $1.rows.count } }
+    /// The builds the block at the head of the list shows, in its order; they are not in `groups`.
+    var runningRows: [BuildRowData] = []
+    /// Running builds the block has no ring for: they stay in `groups`.
+    var moreRunning = 0
+
+    var runningIDs: [String] { runningRows.map(\.id) }
+    /// The rows in the order they are on screen, the block's first.
+    var rows: [BuildRowData] { runningRows + groups.flatMap(\.rows) }
+    var count: Int { runningRows.count + groups.reduce(0) { $0 + $1.rows.count } }
 
     /// `olderRuns` are builds read past the cache's window on request: listed like the others, never counted elsewhere.
+    /// `splitsRunning` takes the three builds that end first out of the groups, for the block that heads the list (only
+    /// under the filters “All” and “Running”).
     init(
         snapshot: BuildSnapshot, olderRuns: [CIBuildRun] = [], scope: BuildListScope, filter: BuildFilter = .all, query: String = "",
-        now: Date, calendar: Calendar = .current, locale: Locale = .autoupdatingCurrent
+        splitsRunning: Bool = false, now: Date, calendar: Calendar = .current, locale: Locale = .autoupdatingCurrent
     ) {
         let products = Dictionary(snapshot.products.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
         let workflows = Dictionary(snapshot.workflows.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
@@ -196,9 +226,20 @@ nonisolated struct BuildListModel: Equatable, Sendable {
             }
             .filter { Self.passes($0, filter) && $0.matches(query) }
 
+        var listed = rows
+        if splitsRunning, filter == .all || filter == .running {
+            let shown = Set(rows.map(\.id))
+            let entries = RunningBuildsETA.entries(in: snapshot, now: now).filter { shown.contains($0.run.id) }
+            let byID = Dictionary(rows.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
+            runningRows = entries.prefix(BuildRingMetrics.mostConcentric).compactMap { byID[$0.run.id] }
+            moreRunning = filter == .all ? max(0, entries.count - runningRows.count) : 0
+            let taken = Set(runningRows.map(\.id))
+            listed = rows.filter { !taken.contains($0.id) }
+        }
+
         var order: [BuildDayGroup.Key] = []
         var byKey: [BuildDayGroup.Key: [BuildRowData]] = [:]
-        for row in rows {
+        for row in listed {
             let key = Self.key(for: row.createdDate, now: now, calendar: calendar)
             if byKey[key] == nil { order.append(key) }
             byKey[key, default: []].append(row)
@@ -245,6 +286,17 @@ nonisolated struct BuildListModel: Equatable, Sendable {
             calendar.date(from: DateComponents(year: year, month: month)).map {
                 $0.formatted(.dateTime.month(.wide).year().locale(locale))
             } ?? ""
+        }
+    }
+}
+
+nonisolated extension BuildStatus {
+    /// The word a row keeps beside its ring; a success has none.
+    func rowWord(failedTests: Int) -> String? {
+        switch self {
+        case .succeeded: nil
+        case .failed where failedTests > 0: BuildRowData.failedTestsText(failedTests)
+        default: label
         }
     }
 }

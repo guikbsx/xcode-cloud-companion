@@ -1,7 +1,7 @@
 import AppKit
 
 /// The menu bar image, in one piece: the Cumulus symbol alone, or the same cloud with its badge (`logo.badge`),
-/// the badge in the state's colour. No view is laid over the button.
+/// the badge in the state's colour; the ring of the build that ends first while one runs. No view is laid over the button.
 enum MenuBarIcon {
     /// Measuring dims the cloud, without any animation.
     static let measuringOpacity: CGFloat = 0.6
@@ -17,6 +17,19 @@ enum MenuBarIcon {
             // Palette colours follow the symbol's levels: the badge is primary, the cloud secondary.
             let configuration = NSImage.SymbolConfiguration(paletteColors: [badge.color, cloud])
             badgedSymbol.withSymbolConfiguration(configuration)?.draw(in: rect)
+            return true
+        }
+        image.accessibilityDescription = String(localized: "Cumulus")
+        return image
+    }
+
+    /// While a build runs, its ring takes the place of the cloud: drawn on demand, so that the arcs of the finished actions take
+    /// the label colour of the menu bar they are drawn in. Not a template, and no animation: it is redrawn when the bar redraws.
+    static func image(ring: BuildRing) -> NSImage {
+        let size = NSSize(width: MenuBarRing.canvas, height: MenuBarRing.canvas)
+        let image = NSImage(size: size, flipped: false) { _ in
+            guard let context = NSGraphicsContext.current?.cgContext else { return false }
+            MenuBarRingPainter.draw(ring, in: context, canvas: MenuBarRing.canvas, size: MenuBarRing.size, colors: .current())
             return true
         }
         image.accessibilityDescription = String(localized: "Cumulus")

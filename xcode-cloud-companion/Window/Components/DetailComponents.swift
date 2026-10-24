@@ -27,27 +27,6 @@ struct CapsuleTag: View {
     }
 }
 
-/// A tab drawn as a pill: the one on screen is filled with the text's colour, the others are quiet capsules.
-struct PillButtonStyle: ButtonStyle {
-    let isSelected: Bool
-
-    func makeBody(configuration: Configuration) -> some View {
-        // Plain colours: the semantic `.background` style as ink left the labels of pills that were not selected blank once
-        // another tab had been chosen (XCO-178).
-        let ink = isSelected ? Color(nsColor: .windowBackgroundColor) : Color.primary
-        return configuration.label
-            .font(.callout.weight(isSelected ? .semibold : .regular))
-            .padding(.horizontal, 12)
-            .padding(.vertical, 5)
-            .foregroundStyle(ink)
-            // The counter of a pill follows the pill's own ink.
-            .tint(ink)
-            .background(isSelected ? AnyShapeStyle(Color.primary) : AnyShapeStyle(Color.primary.opacity(0.07)), in: .capsule)
-            .opacity(configuration.isPressed ? 0.7 : 1)
-            .contentShape(.capsule)
-    }
-}
-
 /// A fact with its small-caps key, as in the build and workflow sheets.
 struct InfoItem: View {
     let key: String

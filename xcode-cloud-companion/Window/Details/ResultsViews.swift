@@ -18,7 +18,7 @@ enum SourceActions {
     }
 }
 
-/// Progress, or the reason a load stopped, above the results of a tab.
+/// Progress, or the reason a load stopped, above the results of a part of the build sheet.
 struct LoadStatusView: View {
     let state: ExtrasLoadState
     let retry: () -> Void
@@ -83,7 +83,8 @@ private struct SourceLine: View {
     }
 }
 
-struct TestsTabView: View {
+/// The Tests part of a build's detail card. A failed build opens on its failed tests, two at first; the passed ones are one tap away.
+struct TestsPartView: View {
     let results: [String: [CITestResult]]
     let actions: [CIBuildAction]
     let state: ExtrasLoadState
@@ -97,6 +98,9 @@ struct TestsTabView: View {
         case suggested, byClass
     }
 
+    /// Failed tests shown before “n other failed tests”.
+    static let failurePreviewCount = 2
+
     @State private var actionID: String?
     @State private var status = TestStatusFilter.all
     @State private var destination: String?
@@ -106,9 +110,10 @@ struct TestsTabView: View {
     @State private var closedSections: Set<String> = []
     @State private var openedSections: Set<String> = []
     @State private var fullSections: Set<String> = []
+    @State private var showsPassed = false
+    @State private var showsEveryFailure = false
 
     var body: some View {
-        let model = TestsTabModel(results: results, actions: actions, actionID: actionID, status: status, destination: destination)
         let suggested = SuggestedTestSections(record: insight, failed: actions.flatMap { results[$0.id] ?? [] }.filter(\.status.isFailure), actions: actions)
         let isSkeleton = SkeletonRules.testsTab(isPending: state.isPending, hasResults: results.values.contains { !$0.isEmpty }, actions: actions)
         VStack(alignment: .leading, spacing: 12) {
@@ -127,21 +132,115 @@ struct TestsTabView: View {
             } else if let suggested, arrangement == .suggested {
                 suggestedView(suggested)
             } else if !results.isEmpty || state == .loaded {
-                filters(model)
-                if model.groups.isEmpty {
-                    Text(state == .loaded && results.values.allSatisfy(\.isEmpty) ? "This build has no test results." : "No test matches these filters.")
-                        .foregroundStyle(.secondary)
+                if suggested != nil || showsPassed {
+                    fullList
                 } else {
-                    LazyVStack(alignment: .leading, spacing: 0) {
-                        ForEach(model.groups) { group in
-                            groupView(group)
-                            Divider()
-                        }
-                    }
-                    .cumulusGroup()
+                    failuresList
                 }
             }
         }
+    }
+
+    /// Every test, filtered, by class.
+    @ViewBuilder
+    private var fullList: some View {
+        let model = TestsTabModel(results: results, actions: actions, actionID: actionID, status: status, destination: destination)
+        filters(model)
+        if model.groups.isEmpty {
+            Text(state == .loaded && results.values.allSatisfy(\.isEmpty) ? "This build has no test results." : "No test matches these filters.")
+                .foregroundStyle(.secondary)
+        } else {
+            LazyVStack(alignment: .leading, spacing: 0) {
+                ForEach(model.groups) { group in
+                    groupView(group)
+                    if group.id != model.groups.last?.id { Divider() }
+                }
+            }
+        }
+        if showsPassed, suggested == nil {
+            Button("Show Failed Tests Only") { showsPassed = false }
+                .buttonStyle(.link)
+                .font(.callout)
+        }
+    }
+
+    private var suggested: SuggestedTestSections? {
+        SuggestedTestSections(record: insight, failed: actions.flatMap { results[$0.id] ?? [] }.filter(\.status.isFailure), actions: actions)
+    }
+
+    /// The failed tests, two of them in full, and the way to the rest.
+    @ViewBuilder
+    private var failuresList: some View {
+        let failed = TestsTabModel(results: results, actions: actions, status: .failed)
+        let passed = results.values.joined().filter { $0.status == .success }.count
+        let shown = showsEveryFailure ? failed.failed : min(failed.failed, Self.failurePreviewCount)
+        if failed.failed == 0, passed == 0 {
+            Text("This build has no test results.").foregroundStyle(.secondary)
+        } else {
+            VStack(alignment: .leading, spacing: 10) {
+                if failed.failed == 0 {
+                    Text("No test failed.").foregroundStyle(.secondary)
+                }
+                failureGroups(failed.groups, limit: shown)
+                if shown < failed.failed {
+                    Button("\(failed.failed - shown) other failed tests") { showsEveryFailure = true }
+                        .buttonStyle(.link)
+                        .font(.callout)
+                }
+                if passed > 0 {
+                    Button("Show the \(passed) passed tests") { showsPassed = true }
+                        .buttonStyle(.link)
+                        .font(.callout)
+                }
+            }
+        }
+    }
+
+    @ViewBuilder
+    private func failureGroups(_ groups: [TestGroup], limit: Int) -> some View {
+        ForEach(Self.limited(groups, to: limit), id: \.group.id) { entry in
+            VStack(alignment: .leading, spacing: 4) {
+                VStack(alignment: .leading, spacing: 1) {
+                    Text(entry.group.className).font(.callout.weight(.semibold))
+                    if let context = Self.context(of: entry.group) {
+                        Text(context).font(.caption).foregroundStyle(.secondary)
+                    }
+                }
+                ForEach(entry.rows) { row in
+                    failureRow(row)
+                }
+            }
+        }
+    }
+
+    private static func limited(_ groups: [TestGroup], to limit: Int) -> [(group: TestGroup, rows: [TestRow])] {
+        var left = limit
+        var shown: [(group: TestGroup, rows: [TestRow])] = []
+        for group in groups {
+            let rows = Array(group.rows.prefix(left))
+            left -= rows.count
+            if !rows.isEmpty { shown.append((group, rows)) }
+        }
+        return shown
+    }
+
+    /// “Test – iOS · iPhone 17, iOS 26”: where the class ran.
+    private static func context(of group: TestGroup) -> String? {
+        let action = group.rows.first?.identity?.actionName.nilIfBlank
+        let device = group.rows.first?.devices.first.map { "\($0.deviceName), \($0.osVersion)" }
+        let parts = [action, device].compactMap(\.self)
+        return parts.isEmpty ? nil : UsageFormat.dotted(parts)
+    }
+
+    private func failureRow(_ row: TestRow) -> some View {
+        VStack(alignment: .leading, spacing: 3) {
+            rowLabel(row)
+            if let message = row.message {
+                Text(message).font(.caption).foregroundStyle(.secondary).lineLimit(3).textSelection(.enabled).padding(.leading, 26)
+            }
+            SourceLine(location: row.location, path: row.path, message: row.message, line: row.line).padding(.leading, 26)
+        }
+        .padding(.vertical, 3)
     }
 
     /// The filter bar and four rows, in grey, until the first results are in.
@@ -158,7 +257,6 @@ struct TestsTabView: View {
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
-            .cumulusGroup()
         }
         .skeleton(true)
     }
@@ -179,10 +277,9 @@ struct TestsTabView: View {
             LazyVStack(alignment: .leading, spacing: 0) {
                 ForEach(suggested.sections) { section in
                     sectionView(section, isFirst: section.id == suggested.sections.first?.id)
-                    Divider()
+                    if section.id != suggested.sections.last?.id { Divider() }
                 }
             }
-            .cumulusGroup()
         }
     }
 
@@ -333,7 +430,8 @@ struct TestsTabView: View {
     }
 }
 
-struct IssuesTabView: View {
+/// The Issues part: errors, test failures, warnings and analyzer findings, by action.
+struct IssuesPartView: View {
     let issues: [String: [CIIssue]]
     let actions: [CIBuildAction]
     let state: ExtrasLoadState
@@ -345,32 +443,35 @@ struct IssuesTabView: View {
             LoadStatusView(state: state, retry: retry)
             if model.groups.isEmpty {
                 if SkeletonRules.issuesTab(isPending: state.isPending, hasRows: false, actions: actions) {
-                    groupCard(IssueGroup.placeholder).skeleton(true)
+                    groupView(IssueGroup.placeholder, showsName: false).skeleton(true)
                 } else if state == .loaded {
                     Text("No issue recorded for this build.").foregroundStyle(.secondary)
                 }
             } else {
                 ForEach(model.groups) { group in
-                    groupCard(group)
+                    groupView(group, showsName: model.groups.count > 1)
                 }
             }
         }
     }
 
-    private func groupCard(_ group: IssueGroup) -> some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text(group.actionName)
-                .font(.caption2.weight(.semibold))
-                .textCase(.uppercase)
-                .tracking(0.5)
-                .foregroundStyle(.secondary)
+    private func groupView(_ group: IssueGroup, showsName: Bool) -> some View {
+        VStack(alignment: .leading, spacing: 0) {
+            if showsName {
+                Text(group.actionName)
+                    .font(.caption2.weight(.semibold))
+                    .textCase(.uppercase)
+                    .tracking(0.5)
+                    .foregroundStyle(.secondary)
+                    .padding(.bottom, 4)
+            }
             ForEach(group.rows) { row in
-                VStack(alignment: .leading, spacing: 4) {
+                VStack(alignment: .leading, spacing: 3) {
                     HStack(alignment: .firstTextBaseline, spacing: 8) {
                         Image(systemName: row.type.systemImage)
                             .foregroundStyle(row.type.severity <= 1 ? BuildStatus.failed.tint : BuildStatus.errored.tint)
                             .accessibilityLabel(row.type.label)
-                        Text(row.message).textSelection(.enabled)
+                        Text(row.message).font(.callout).textSelection(.enabled)
                     }
                     HStack(spacing: 10) {
                         if let category = row.category {
@@ -380,15 +481,18 @@ struct IssuesTabView: View {
                     }
                     .padding(.leading, 24)
                 }
+                .padding(.vertical, 6)
+                .frame(maxWidth: .infinity, alignment: .leading)
                 .accessibilityElement(children: .contain)
+                if row.id != group.rows.last?.id { Divider() }
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .cumulusGroup()
     }
 }
 
-struct ArtifactsTabView: View {
+/// The Artifacts part: the files each finished action produced.
+struct ArtifactsPartView: View {
     let artifacts: [String: [CIArtifact]]
     let actions: [CIBuildAction]
     let state: ExtrasLoadState
@@ -401,31 +505,34 @@ struct ArtifactsTabView: View {
             LoadStatusView(state: state, retry: retry)
             if groups.isEmpty {
                 if SkeletonRules.artifactsTab(isPending: state.isPending, hasRows: false, actions: actions) {
-                    groupCard(title: "Archive", files: CIArtifact.placeholders).skeleton(true)
+                    groupView(title: "Archive", files: CIArtifact.placeholders, showsName: false).skeleton(true)
                 } else if state == .loaded {
                     Text("This build produced no downloadable file.").foregroundStyle(.secondary)
                 }
             } else {
                 ForEach(groups, id: \.0.id) { action, files in
-                    groupCard(title: action.name ?? "?", files: files)
+                    groupView(title: action.name ?? "?", files: files, showsName: groups.count > 1)
                 }
             }
         }
     }
 
-    private func groupCard(title: String, files: [CIArtifact]) -> some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text(title)
-                .font(.caption2.weight(.semibold))
-                .textCase(.uppercase)
-                .tracking(0.5)
-                .foregroundStyle(.secondary)
+    private func groupView(title: String, files: [CIArtifact], showsName: Bool) -> some View {
+        VStack(alignment: .leading, spacing: 0) {
+            if showsName {
+                Text(title)
+                    .font(.caption2.weight(.semibold))
+                    .textCase(.uppercase)
+                    .tracking(0.5)
+                    .foregroundStyle(.secondary)
+                    .padding(.bottom, 4)
+            }
             ForEach(files) { file in
-                row(file)
+                row(file).padding(.vertical, 6)
+                if file.id != files.last?.id { Divider() }
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .cumulusGroup()
     }
 
     private func row(_ file: CIArtifact) -> some View {

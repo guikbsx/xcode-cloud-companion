@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// The middle column: builds grouped by day along a rail of state dots, one glass card each.
+/// The middle column: builds grouped by day, one flat row each, led by the ring of its actions.
 struct BuildListView: View {
     let buildStore: BuildStore
     @Bindable var navigation: NavigationModel
@@ -10,14 +10,16 @@ struct BuildListView: View {
     var backTitle: LocalizedStringKey = "Branches and pull requests"
     /// Builds past the cache's window, read on request at the foot of the list.
     var older: OlderBuildsStore?
-    /// The apps' icons and colours: a card names its app by its icon.
-    var icons: AppIconStore?
+    /// The apps' colours and icons: where apps mix (all builds), a row names its app by the icon in its ring.
     var palette = AppPalette()
-    /// Copies a failed build as text for an AI assistant; nil leaves it out of the card's menu.
+    var icons: AppIconStore?
+    /// Copies a failed build as text for an AI assistant; nil leaves it out of the row's menu.
     var failureCopier: BuildFailureCopier?
     @State private var filter = BuildFilter.all
     @Environment(ProAccess.self) private var access: ProAccess?
     @State private var query = ""
+
+    private static let blockID = "running-block"
 
     var body: some View {
         TickingView(interval: 60) { now in
@@ -26,11 +28,21 @@ struct BuildListView: View {
         .searchable(text: $query, prompt: Text("Number, commit or name"))
     }
 
-    private func card(_ row: BuildRowData, now: Date, artwork: [String: AppArtwork]) -> BuildCard {
-        BuildCard(
-            row: row, now: now, swatch: palette.swatch(for: row.productKey ?? row.productName), artwork: artwork[row.productID],
-            isSelected: row.id == navigation.selectedBuildID
-        )
+    @ViewBuilder
+    private func rowView(_ row: BuildRowData, isFirst: Bool, isLast: Bool, runs: [String: CIBuildRun], artwork: [String: AppArtwork], now: Date) -> some View {
+        if let run = runs[row.id] {
+            BuildRowRing(run: run, snapshot: buildStore.snapshot, now: now) { ring in
+                BuildRow(
+                    row: row, ring: ring, now: now, swatch: palette.swatch(for: row.productKey ?? row.productName),
+                    showsApp: scope.mixesApps, artwork: artwork[row.productID]
+                )
+            }
+            .contextMenu { failureMenu(for: row) }
+            .listRowHover(isSelected: row.id == navigation.selectedBuildID)
+            .listRowSeparator(isFirst ? .hidden : .automatic, edges: .top)
+            .listRowSeparator(isLast ? .hidden : .automatic, edges: .bottom)
+            .tag(row.id)
+        }
     }
 
     @ViewBuilder
@@ -46,42 +58,52 @@ struct BuildListView: View {
     }
 
     private func content(now: Date) -> some View {
-        let model = BuildListModel(snapshot: buildStore.snapshot, olderRuns: older?.runs ?? [], scope: scope, filter: filter, query: query, now: now)
-        let artwork = icons?.artwork(in: buildStore.snapshot, by: \.id) ?? [:]
+        let model = BuildListModel(snapshot: buildStore.snapshot, olderRuns: older?.runs ?? [], scope: scope, filter: filter, query: query, splitsRunning: true, now: now)
+        let runs = Dictionary(buildStore.snapshot.runs.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
+            .merging((older?.runs ?? []).map { ($0.id, $0) }, uniquingKeysWith: { cached, _ in cached })
+        let artwork = scope.mixesApps ? icons?.artwork(in: buildStore.snapshot, by: \.id) ?? [:] : [:]
         return ScrollViewReader { proxy in
-            ScrollView {
+            List(selection: $navigation.selectedBuildID) {
+                if !model.runningRows.isEmpty {
+                    RunningBlockView(
+                        ids: model.runningIDs, more: model.moreRunning, snapshot: buildStore.snapshot, palette: palette, artwork: artwork,
+                        selectedID: navigation.selectedBuildID, select: { navigation.selectedBuildID = $0 },
+                        showMore: { filter = .running }
+                    )
+                    .id(Self.blockID)
+                    .selectionDisabled()
+                    .listRowSeparator(.hidden)
+                    .listRowInsets(EdgeInsets(top: 4, leading: 12, bottom: 8, trailing: 12))
+                }
                 if let reason = model.emptyReason {
                     emptyState(reason)
+                        .frame(maxWidth: .infinity)
+                        .selectionDisabled()
+                        .listRowSeparator(.hidden)
                 } else {
-                    LazyVStack(spacing: 0) {
-                        ForEach(model.groups) { group in
-                            DayHeader(title: group.title)
-                            ForEach(Array(group.rows.enumerated()), id: \.element.id) { index, row in
-                                TimelineRow(status: row.status, isFirst: index == 0, isLast: index == group.rows.count - 1) {
-                                    Button {
-                                        navigation.selectedBuildID = row.id
-                                    } label: {
-                                        card(row, now: now, artwork: artwork)
-                                    }
-                                    .buttonStyle(.plain)
-                                    .contextMenu { failureMenu(for: row) }
-                                }
-                                .id(row.id)
+                    ForEach(model.groups) { group in
+                        Section {
+                            ForEach(group.rows) { row in
+                                rowView(row, isFirst: row.id == group.rows.first?.id, isLast: row.id == group.rows.last?.id, runs: runs, artwork: artwork, now: now)
                             }
+                        } header: {
+                            DayHeader(title: group.title)
                         }
+                        .listSectionSeparator(.hidden, edges: .top)
                     }
-                    .padding(.bottom, 12)
                 }
                 if let older, let productIDs = olderProductIDs, !productIDs.isEmpty {
                     olderFooter(older, productIDs: productIDs)
+                        .selectionDisabled()
+                        .listRowSeparator(.hidden)
                 }
             }
-            .focusable()
-            .focusEffectDisabled()
-            .onKeyPress(.downArrow) { step(1, in: model.rows) }
-            .onKeyPress(.upArrow) { step(-1, in: model.rows) }
+            .listStyle(.inset)
             .onChange(of: navigation.selectedBuildID) { _, id in
-                if let id { withAnimation { proxy.scrollTo(id) } }
+                guard let id else { return }
+                withAnimation {
+                    if model.runningIDs.contains(id) { proxy.scrollTo(Self.blockID, anchor: .top) } else { proxy.scrollTo(id) }
+                }
             }
             .safeAreaInset(edge: .top) {
                 VStack(spacing: 0) {
@@ -169,14 +191,6 @@ struct BuildListView: View {
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 12)
-    }
-
-    private func step(_ offset: Int, in rows: [BuildRowData]) -> KeyPress.Result {
-        guard !rows.isEmpty else { return .ignored }
-        let current = rows.firstIndex { $0.id == navigation.selectedBuildID }
-        let next = current.map { min(max($0 + offset, 0), rows.count - 1) } ?? 0
-        navigation.selectedBuildID = rows[next].id
-        return .handled
     }
 
     @ViewBuilder

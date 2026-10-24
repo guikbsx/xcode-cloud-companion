@@ -1,15 +1,16 @@
 import SwiftUI
 
 /// The middle column under “Branches and pull requests”: each reference with its newest build, laid out like the
-/// build list, by day along the same rail of state dots.
+/// build list, by day, with the ring of its last build.
 struct ReferencesListView: View {
     let buildStore: BuildStore
     let store: ReferencesStore
     let open: (AppReference) -> Void
-    var icons: AppIconStore?
     var palette = AppPalette()
+    var icons: AppIconStore?
     @State private var filter = ReferenceFilter.all
     @State private var query = ""
+    @State private var highlighted: AppReference?
 
     var body: some View {
         TickingView(interval: 60) { now in
@@ -22,40 +23,58 @@ struct ReferencesListView: View {
     private func content(now: Date) -> some View {
         let model = ReferencesModel(snapshot: buildStore.snapshot, openPullRequests: store.openPullRequests, filter: filter, query: query, now: now)
         let artwork = icons?.artwork(in: buildStore.snapshot, by: \.id) ?? [:]
-        return ScrollView {
+        let rows = Dictionary(model.rows.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
+        return List(selection: $highlighted) {
             if model.hasNothing {
                 ContentUnavailableView(
                     "No branch or pull request yet", systemImage: "arrow.triangle.branch",
                     description: Text("Branches, tags and pull requests appear here once Xcode Cloud has built one in the last 30 days.")
                 )
+                .frame(maxWidth: .infinity)
+                .selectionDisabled()
+                .listRowSeparator(.hidden)
             } else if model.rows.isEmpty {
                 ContentUnavailableView(
                     "No matching reference", systemImage: "line.3.horizontal.decrease.circle",
                     description: Text("Change the filter or the search to see more.")
                 )
+                .frame(maxWidth: .infinity)
+                .selectionDisabled()
+                .listRowSeparator(.hidden)
             } else {
-                LazyVStack(spacing: 0) {
-                    ForEach(model.groups) { group in
-                        DayHeader(title: group.title)
-                        ForEach(Array(group.rows.enumerated()), id: \.element.id) { index, row in
-                            TimelineRow(status: row.status, isFirst: index == 0, isLast: index == group.rows.count - 1) {
-                                Button {
-                                    open(row.reference)
-                                } label: {
-                                    BuildCard(reference: row, now: now, swatch: palette.swatch(for: row.productKey ?? row.productName), artwork: artwork[row.lastRun.productID])
-                                }
-                                .buttonStyle(.plain)
-                                .contextMenu {
-                                    if let url = row.webURL {
-                                        Button("Open the pull request") { NSWorkspace.shared.open(url) }
-                                    }
+                ForEach(model.groups) { group in
+                    Section {
+                        ForEach(group.rows) { row in
+                            Button {
+                                open(row.reference)
+                            } label: {
+                                BuildRowRing(run: row.lastRun, snapshot: buildStore.snapshot, now: now) { ring in
+                                    BuildRow(
+                                        reference: row, ring: ring, now: now, swatch: palette.swatch(for: row.productKey ?? row.productName),
+                                        artwork: artwork[row.lastRun.productID]
+                                    )
                                 }
                             }
+                            .buttonStyle(.plain)
+                            .listRowHover(isSelected: row.reference == highlighted)
+                            .listRowSeparator(row.id == group.rows.first?.id ? .hidden : .automatic, edges: .top)
+                            .listRowSeparator(row.id == group.rows.last?.id ? .hidden : .automatic, edges: .bottom)
+                            .tag(row.reference)
                         }
+                    } header: {
+                        DayHeader(title: group.title)
                     }
+                    .listSectionSeparator(.hidden, edges: .top)
                 }
-                .padding(.bottom, 12)
             }
+        }
+        .listStyle(.inset)
+        .contextMenu(forSelectionType: AppReference.self) { ids in
+            if let url = ids.first.flatMap({ rows[$0] })?.webURL {
+                Button("Open the pull request") { NSWorkspace.shared.open(url) }
+            }
+        } primaryAction: { ids in
+            if let id = ids.first { open(id) }
         }
         .safeAreaInset(edge: .top) {
             VStack(spacing: 0) {
@@ -83,14 +102,15 @@ struct ReferencesListView: View {
     }
 }
 
-extension BuildCard {
-    /// A reference, on the build list's card: its name for a title, then its last build's state, workflow and number.
-    init(reference row: ReferenceRow, now: Date, swatch: AppSwatch, artwork: AppArtwork?) {
+extension BuildRow {
+    /// A reference, on the build list's row: its name for a title, then its last build's number, workflow and branches.
+    init(reference row: ReferenceRow, ring: BuildRing, now: Date, swatch: AppSwatch, artwork: AppArtwork? = nil) {
         self.init(
-            appName: row.productName, swatch: swatch, artwork: artwork,
+            appName: row.productName, swatch: swatch, ring: ring,
             title: row.title, titleSymbol: row.key.isPullRequest ? "arrow.triangle.pull" : "arrow.triangle.branch",
-            status: row.status, statusText: row.status.label, facts: row.facts,
-            age: row.runningSince == nil ? row.age(now: now) : nil, runningSince: row.runningSince,
+            statusText: row.status.rowWord(failedTests: row.lastRun.issueCounts?.testFailures ?? 0), statusTint: row.status.textTint,
+            facts: row.facts, age: row.runningSince == nil ? row.age(now: now) : nil, showsApp: true, artwork: artwork,
+            runningSince: row.runningSince,
             spokenLabel: "\(row.title), \(row.status.label)", spokenValue: row.spokenDetail
         )
     }
@@ -110,9 +130,14 @@ extension BuildCard {
     ]
     let product = CIProduct(id: "a", name: "Cumulus", productType: "APP", appID: "1", appName: nil, bundleID: nil)
     let model = ReferencesModel(snapshot: BuildSnapshot(products: [product], runs: runs, workflows: []), openPullRequests: nil)
-    return VStack(spacing: 8) {
-        ForEach(model.rows) { BuildCard(reference: $0, now: Date(), swatch: .blue, artwork: nil) }
+    let snapshot = BuildSnapshot(products: [product], runs: runs, workflows: [])
+    return VStack(spacing: 0) {
+        ForEach(model.rows) { row in
+            BuildRowRing(run: row.lastRun, snapshot: snapshot, now: Date()) { ring in
+                BuildRow(reference: row, ring: ring, now: Date(), swatch: .blue)
+            }
+        }
     }
-    .padding(16)
+    .padding(8)
     .frame(width: 372)
 }

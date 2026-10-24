@@ -282,15 +282,18 @@ struct WorkflowTestsModelTests {
         #expect(model.report?.eligibleBuilds == 1)
     }
 
-    @Test func aBuildCanBeOpenedStraightOnItsTestsTab() {
+    @Test func aBuildCanBeOpenedStraightOnItsTestsPart() {
         let navigation = NavigationModel()
         navigation.showBuild("run-1")
-        #expect(navigation.buildTab == .actions)
+        #expect(navigation.buildParts.request == nil)
 
-        navigation.showBuild("run-5", tab: .tests)
+        navigation.showBuild("run-5", part: .tests)
 
         #expect(navigation.selectedBuildID == "run-5")
-        #expect(navigation.buildTab == .tests)
+        #expect(navigation.buildParts.request?.runID == "run-5")
+        #expect(navigation.buildParts.request?.part == .tests)
+        #expect(navigation.buildParts.isExpanded(.tests, runID: "run-5", byDefault: false), "the part is opened for that build")
+        #expect(!navigation.buildParts.isExpanded(.tests, runID: "run-1", byDefault: false), "the other builds keep their own choice")
     }
 
     @Test func withoutProNothingIsReadFromTheDiskNorFromApple() async {
