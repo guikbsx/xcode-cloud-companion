@@ -536,7 +536,7 @@
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.developer-tools";
 				INFOPLIST_KEY_LSUIElement = YES;
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/../Frameworks";
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 1.1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.guik.xcode-cloud-companion";
 				PRODUCT_MODULE_NAME = XcodeCloudCompanion;
 				PRODUCT_NAME = Cumulus;
@@ -571,7 +571,7 @@
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.developer-tools";
 				INFOPLIST_KEY_LSUIElement = YES;
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/../Frameworks";
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 1.1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.guik.xcode-cloud-companion";
 				PRODUCT_MODULE_NAME = XcodeCloudCompanion;
 				PRODUCT_NAME = Cumulus;
@@ -595,7 +595,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 4HYT2U85R2;
 				GENERATE_INFOPLIST_FILE = YES;
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 1.1.0;
 				OTHER_SWIFT_FLAGS = "$(inherited) -Xcc -iframework -Xcc $(PLATFORM_DIR)/Developer/Library/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.guik.xcode-cloud-companion.tests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -617,7 +617,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 4HYT2U85R2;
 				GENERATE_INFOPLIST_FILE = YES;
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 1.1.0;
 				OTHER_SWIFT_FLAGS = "$(inherited) -Xcc -iframework -Xcc $(PLATFORM_DIR)/Developer/Library/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.guik.xcode-cloud-companion.tests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -642,7 +642,7 @@
 				ENABLE_APP_SANDBOX = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = cumulus;
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 1.1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.guik.xcode-cloud-companion.cli";
 				PRODUCT_MODULE_NAME = CumulusCLI;
 				PRODUCT_NAME = cumulus;
@@ -668,7 +668,7 @@
 				ENABLE_APP_SANDBOX = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = cumulus;
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 1.1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.guik.xcode-cloud-companion.cli";
 				PRODUCT_MODULE_NAME = CumulusCLI;
 				PRODUCT_NAME = cumulus;
@@ -699,7 +699,7 @@
 					"@executable_path/../Frameworks",
 					"@executable_path/../../../../Frameworks",
 				);
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 1.1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.guik.xcode-cloud-companion.widgets";
 				PRODUCT_NAME = CumulusWidgets;
 				REGISTER_APP_GROUPS = YES;
@@ -730,7 +730,7 @@
 					"@executable_path/../Frameworks",
 					"@executable_path/../../../../Frameworks",
 				);
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 1.1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.guik.xcode-cloud-companion.widgets";
 				PRODUCT_NAME = CumulusWidgets;
 				REGISTER_APP_GROUPS = YES;
