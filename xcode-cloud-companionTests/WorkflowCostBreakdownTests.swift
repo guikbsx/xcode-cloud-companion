@@ -84,6 +84,45 @@ struct WorkflowCostBreakdownTests {
         #expect(breakdown.isEstimated)
     }
 
+    @Test func aWorkflowBilledByItsTestWallClockIsSplitThatWay() throws {
+        var ledger = ledger([billedTen])
+        // Ten builds of September: billed 0.8 × each device's whole test time, whatever the machine model says.
+        ledger.calibration.learn((1...10).map { number in
+            CalibrationSample(
+                product: "AppOne", workflow: "CI", buildNumber: 100 + number, created: date(1).addingTimeInterval(-Double(20 - number) * 86_400),
+                billedMinutes: Int((Double(40 + number * 3) * 0.8).rounded()),
+                minutes: ["machine": 28, "actionWallClock": 16, "deviceWallClock": Double(40 + number * 3)]
+            )
+        }, now: now)
+        let summary = UsageCalculator.summary(snapshot: snapshot, ledger: ledger, plan: plan, now: now, calendar: calendar)
+        let overview = try #require(summary.byWorkflow.first { $0.workflow == "CI" })
+
+        let breakdown = breakdown(snapshot, ledger)
+
+        #expect(breakdown.formula == .deviceWallClock)
+        #expect(close(breakdown.totalMinutes, overview.totalMinutes))
+        #expect(close(breakdown.items.reduce(0) { $0 + $1.minutes }, breakdown.totalMinutes))
+        #expect(breakdown.minutes(.preparation) == 0 && breakdown.minutes(.reruns) == 0, "no part of the bill goes to preparation any more")
+        // #10: 30 billed minutes over 4 of build and 12 per device.
+        #expect(close(breakdown.minutes(.tests(destination: "iPhone 17 Pro")), 12 * 30 / 28))
+        #expect(close(breakdown.minutes(.tests(destination: "iPad Pro 13")), 12 * 30 / 28))
+    }
+
+    @Test func eachFormulaSplitsAnActionIntoWhatItCounts() {
+        let model = MachineModel(snapshot: snapshot)
+        let test = action("t10", run: 10, .test, minutes: 12)
+        let devices = EstimateFormula.deviceWallClock.cost(of: test, in: snapshot, model: model, now: now)
+        #expect(devices.devices.map(\.tests) == [12 * 60, 12 * 60] && devices.total == 24 * 60)
+        let actions = EstimateFormula.actionWallClock.cost(of: test, in: snapshot, model: model, now: now)
+        #expect(actions.total == 12 * 60 && actions.devices.map(\.tests) == [6 * 60, 6 * 60], "the action's duration, shared by test time")
+        #expect(EstimateFormula.machine.cost(of: test, in: snapshot, model: model, now: now) == model.cost(of: test, now: now))
+        for formula in EstimateFormula.allCases {
+            let run = run(10)
+            let summed = (snapshot.actionsByRunID[run.id] ?? []).reduce(0) { $0 + formula.cost(of: $1, in: snapshot, model: model, now: now).total }
+            #expect(close(formula.minutes(of: run, in: snapshot, model: model, now: now), summed / 60))
+        }
+    }
+
     @Test func eachItemGetsItsShareOfEachBuild() {
         let breakdown = breakdown(snapshot, ledger([billedTen]))
         // #10: 30 billed minutes over 28 modelled ones; #12: 10 modelled minutes at the same ratio.

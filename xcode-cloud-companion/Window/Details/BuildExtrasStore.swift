@@ -13,6 +13,23 @@ nonisolated struct BuildExtras: Codable, Sendable, Equatable {
     var issuesComplete = false
     var testsComplete = false
     var artifactsComplete = false
+    /// The page limit the tests were read with; nil for the first versions, which stopped at 15 pages.
+    var testPageLimit: Int?
+    /// Test actions whose list stopped at the limit: Apple has more cases than were read.
+    var testsCut: Set<String>?
+
+    /// Tests read under the old limit and stopped by it are dropped, so the sheet reads them again, whole (XCO-198).
+    func droppingTestsCutAtLegacyLimit() -> BuildExtras {
+        guard testPageLimit == nil else { return self }
+        let cut = testsByAction.filter { $0.value.count == CITestDeviceRun.legacyCaseLimit }.keys
+        guard !cut.isEmpty else { return self }
+        var extras = self
+        for actionID in cut {
+            extras.testsByAction[actionID] = nil
+        }
+        extras.testsComplete = false
+        return extras
+    }
 }
 
 /// One file per finished build in the app group container: a build that is `COMPLETE` never changes, so it is asked for once.
@@ -28,7 +45,7 @@ nonisolated struct BuildExtrasCache: Sendable {
               let extras = try? JSONDecoder().decode(BuildExtras.self, from: data),
               extras.schemaVersion == BuildExtras.currentVersion
         else { return nil }
-        return extras
+        return extras.droppingTestsCutAtLegacyLimit()
     }
 
     @concurrent func save(_ extras: BuildExtras, runID: String) async {
@@ -124,8 +141,16 @@ final class BuildExtrasStore {
     func loadTests(for run: CIBuildRun, actions: [CIBuildAction]) async {
         let wanted = actions.filter { $0.actionType == .test && $0.executionProgress == .complete }
         await load(.tests, run: run, actions: wanted) { (client, action) async throws(AppStoreConnectError) in
-            let results = try await client.testResults(buildActionID: action.id)
-            self.update(run.id) { $0.testsByAction[action.id] = results }
+            let list = try await client.testResultList(buildActionID: action.id)
+            self.update(run.id) { extras in
+                extras.testsByAction[action.id] = list.results
+                extras.testPageLimit = AppStoreConnectClient.testResultPageLimit
+                if list.isComplete {
+                    extras.testsCut?.remove(action.id)
+                } else {
+                    extras.testsCut = (extras.testsCut ?? []).union([action.id])
+                }
+            }
         } isDone: { extras, action in
             extras.testsByAction[action.id] != nil
         } markComplete: {

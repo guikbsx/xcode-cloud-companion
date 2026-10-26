@@ -88,6 +88,8 @@ struct TestsPartView: View {
     let results: [String: [CITestResult]]
     let actions: [CIBuildAction]
     let state: ExtrasLoadState
+    /// Test actions whose list stopped at the page limit.
+    var cutActionIDs: Set<String> = []
     /// What the model suggested for this build; nil when the feature is not open for it.
     var insight: FailureInsightRecord?
     /// Where a test's history is read; nil leaves the button out.
@@ -118,6 +120,11 @@ struct TestsPartView: View {
         let isSkeleton = SkeletonRules.testsTab(isPending: state.isPending, hasResults: results.values.contains { !$0.isEmpty }, actions: actions)
         VStack(alignment: .leading, spacing: 12) {
             LoadStatusView(state: state, retry: retry)
+            if !cutActionIDs.isDisjoint(with: actions.map(\.id)) {
+                Label("Only the first \(AppStoreConnectClient.testResultPageLimit * 200) tests were read: Apple lists more for this build.", systemImage: "info.circle")
+                    .font(.callout)
+                    .foregroundStyle(.secondary)
+            }
             if suggested != nil {
                 Picker("Arrangement", selection: $arrangement) {
                     Text("Suggested Groups").tag(Arrangement.suggested)

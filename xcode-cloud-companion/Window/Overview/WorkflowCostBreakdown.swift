@@ -43,6 +43,8 @@ nonisolated struct WorkflowCostBreakdown: Equatable, Sendable {
     var destinationCount = 0
     /// Test actions given up on: their time is in `testsNotSplit`, and the split by destination is incomplete.
     var unsplitTestActions = 0
+    /// How the workflow's builds are estimated, and so split (XCO-199, XCO-200).
+    var formula = EstimateFormula.machine
 
     var totalMinutes: Double { billedMinutes + estimatedMinutes }
     var isEstimated: Bool { estimatedMinutes > 0 }
@@ -80,6 +82,7 @@ nonisolated struct WorkflowCostBreakdown: Equatable, Sendable {
         let productNames = Dictionary(snapshot.products.map { ($0.id, $0.name) }, uniquingKeysWith: { first, _ in first })
         let ratios = WorkflowRatios(snapshot: snapshot, ledger: ledger, productNames: productNames, now: now)
         let model = MachineModel(snapshot: snapshot)
+        formula = ratios.choice(product: product, workflow: workflow == String(localized: "Other workflows") ? nil : workflow).formula
         let standIn = String(localized: "Other workflows")
         func isThisWorkflow(_ name: String?) -> Bool { (name ?? standIn) == workflow }
         func isInCycle(_ date: Date) -> Bool { cycle.contains(date) && date <= now }
@@ -95,8 +98,9 @@ nonisolated struct WorkflowCostBreakdown: Equatable, Sendable {
         /// Shares `minutes` out between the kinds in proportion to what the model says each action cost.
         func add(_ minutes: Double, of run: CIBuildRun?) {
             var parts: [Kind: Double] = [:]
+            let formula = run.map { ratios.choice(product: product, workflow: $0.workflowName).formula } ?? .machine
             for action in run.map({ snapshot.actionsByRunID[$0.id] ?? [] }) ?? [] {
-                let cost = model.cost(of: action, now: now)
+                let cost = formula.cost(of: action, in: snapshot, model: model, now: now)
                 for device in cost.devices {
                     parts[.tests(destination: device.name), default: 0] += device.tests
                     parts[.reruns, default: 0] += device.rerun

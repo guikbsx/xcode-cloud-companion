@@ -94,6 +94,26 @@
       },
       "comment" : "Under the rings of the running builds: the others, listed below. “and 2 more running”"
     },
+    "Apple’s latest bills for this workflow follow how long its actions run: each action is counted for its whole duration." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Les dernières factures d’Apple pour ce workflow suivent la durée de ses actions : chaque action compte pour toute sa durée."
+          }
+        }
+      }
+    },
+    "Apple’s latest bills for this workflow follow how long its test action runs, on each device: each destination is counted for that whole time, with no separate preparation." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Les dernières factures d’Apple pour ce workflow suivent la durée de son action de test, sur chaque appareil : chaque destination compte pour toute cette durée, sans préparation à part."
+          }
+        }
+      }
+    },
     "ends ~%@" : {
       "comment" : "When a running build should end, in a few words: “ends ~2:49 PM”. It goes under a ring and in a legend.",
       "localizations" : {
@@ -123,6 +143,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "En file depuis %@"
+          }
+        }
+      }
+    },
+    "Only the first %lld tests were read: Apple lists more for this build." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Seuls les %lld premiers tests ont été lus : Apple en liste davantage pour ce build."
           }
         }
       }

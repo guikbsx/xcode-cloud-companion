@@ -11,18 +11,27 @@ nonisolated enum EstimateFormula: String, Codable, CaseIterable, Sendable {
     case deviceWallClock
 
     func minutes(of run: CIBuildRun, in snapshot: BuildSnapshot, model: MachineModel, now: Date) -> Double {
-        let actions = snapshot.actionsByRunID[run.id] ?? []
+        (snapshot.actionsByRunID[run.id] ?? []).reduce(0) { $0 + cost(of: $1, in: snapshot, model: model, now: now).total } / 60
+    }
+
+    /// What one action costs under this formula, split the way « Why a workflow costs » shows it (XCO-200).
+    func cost(of action: CIBuildAction, in snapshot: BuildSnapshot, model: MachineModel, now: Date) -> ActionCost {
+        let wallClock = UsageEstimator.duration(from: action.startedDate, to: action.finishedDate, now: now)
+        let devices = action.actionType == .test ? snapshot.testDevicesByActionID[action.id] ?? [] : []
         switch self {
         case .machine:
-            return model.seconds(of: run, now: now) / 60
+            return model.cost(of: action, now: now)
         case .actionWallClock:
-            return actions.reduce(0) { $0 + UsageEstimator.duration(from: $1.startedDate, to: $1.finishedDate, now: now) } / 60
+            guard !devices.isEmpty else { return ActionCost(compute: wallClock) }
+            // The action's duration, shared between its destinations by their own test time.
+            let tests = devices.reduce(0) { $0 + $1.totalSeconds }
+            return ActionCost(devices: devices.map { device in
+                let share = tests > 0 ? device.totalSeconds / tests : 1 / Double(devices.count)
+                return ActionCost.Device(name: device.deviceName, tests: wallClock * share, rerun: 0, preparation: 0)
+            })
         case .deviceWallClock:
-            return actions.reduce(0) { total, action in
-                let devices = action.actionType == .test ? snapshot.testDevicesByActionID[action.id]?.count ?? 0 : 0
-                guard devices > 0 else { return total + model.seconds(of: action, now: now) }
-                return total + UsageEstimator.duration(from: action.startedDate, to: action.finishedDate, now: now) * Double(devices)
-            } / 60
+            guard !devices.isEmpty else { return model.cost(of: action, now: now) }
+            return ActionCost(devices: devices.map { ActionCost.Device(name: $0.deviceName, tests: wallClock, rerun: 0, preparation: 0) })
         }
     }
 }

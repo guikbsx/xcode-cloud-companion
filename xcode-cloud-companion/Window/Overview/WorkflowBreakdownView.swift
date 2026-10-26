@@ -10,6 +10,12 @@ struct WorkflowBreakdownView: View {
                 .font(.caption)
                 .foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
+            if let formulaNote {
+                Text(formulaNote)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
             if breakdown.unsplitTestActions > 0 {
                 Label(
                     "Test actions without per-device results from Apple: \(breakdown.unsplitTestActions). Their time is counted whole, so the split by destination is incomplete.",
@@ -44,6 +50,18 @@ struct WorkflowBreakdownView: View {
         }
         .padding(12)
         .background(Color.primary.opacity(0.04), in: .rect(cornerRadius: 8))
+    }
+
+    /// Says which way Apple's latest bills for the workflow point, when it is not the usual one.
+    private var formulaNote: String? {
+        switch breakdown.formula {
+        case .machine:
+            nil
+        case .deviceWallClock:
+            String(localized: "Apple’s latest bills for this workflow follow how long its test action runs, on each device: each destination is counted for that whole time, with no separate preparation.")
+        case .actionWallClock:
+            String(localized: "Apple’s latest bills for this workflow follow how long its actions run: each action is counted for its whole duration.")
+        }
     }
 
     /// Says what the total is (Apple's or an estimate) and that the split is the app's own.

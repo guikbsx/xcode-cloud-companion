@@ -97,14 +97,19 @@ actor AppStoreConnectClient {
         return pages.flatMap { $0.issues(buildActionID: buildActionID) }
     }
 
-    /// Every test case of an action with its message and per-device results.
-    func testResults(buildActionID: String, maxPages: Int = 15) async throws(AppStoreConnectError) -> [CITestResult] {
+    /// Every test case of an action with its message and per-device results, up to `maxPages` × 200.
+    func testResults(buildActionID: String, maxPages: Int = testResultPageLimit) async throws(AppStoreConnectError) -> [CITestResult] {
+        try await testResultList(buildActionID: buildActionID, maxPages: maxPages).results
+    }
+
+    /// The same, saying whether that was all: past the limit, Apple has more cases than were read (XCO-198).
+    func testResultList(buildActionID: String, maxPages: Int = testResultPageLimit) async throws(AppStoreConnectError) -> (results: [CITestResult], isComplete: Bool) {
         let pages = try await collectPages(
             from: AppStoreConnectEndpoint.testResultDetails(buildActionID: buildActionID),
             of: CITestResultDetailAttributes.self,
             maxPages: maxPages
         )
-        return pages.flatMap { $0.testResults(buildActionID: buildActionID) }
+        return (pages.flatMap { $0.testResults(buildActionID: buildActionID) }, pages.last?.links?.next == nil)
     }
 
     func artifacts(buildActionID: String, maxPages: Int = 2) async throws(AppStoreConnectError) -> [CIArtifact] {

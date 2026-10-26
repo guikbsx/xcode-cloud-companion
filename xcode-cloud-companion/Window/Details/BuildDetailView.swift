@@ -473,7 +473,8 @@ struct BuildDetailView: View {
         case .tests:
             return .tests(
                 isRunning: isRunning, counts: run.issueCounts,
-                results: extras?.testsComplete == true ? actions.flatMap { extras?.testsByAction[$0.id] ?? [] } : nil
+                // A list cut by the page limit would undercount: Apple's own failure count says it instead.
+                results: extras?.testsComplete == true && (extras?.testsCut ?? []).isEmpty ? actions.flatMap { extras?.testsByAction[$0.id] ?? [] } : nil
             )
         case .problems:
             return .problems(isRunning: isRunning, isFailedBuild: model.status == .failed || model.status == .errored, counts: run.issueCounts)
@@ -507,7 +508,7 @@ struct BuildDetailView: View {
         case .tests:
             TestsPartView(
                 results: extras?.testsByAction ?? [:], actions: actions, state: extrasStore.state(.tests, runID: run.id),
-                insight: openInsight, history: historyAccess, retry: { Task { await extrasStore.loadTests(for: run, actions: actions) } }
+                cutActionIDs: extras?.testsCut ?? [], insight: openInsight, history: historyAccess, retry: { Task { await extrasStore.loadTests(for: run, actions: actions) } }
             )
         case .problems:
             IssuesPartView(
