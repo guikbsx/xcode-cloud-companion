@@ -52,7 +52,9 @@ nonisolated struct BuildSnapshot: Codable, Sendable, Equatable {
         products = try container.decodeIfPresent([CIProduct].self, forKey: .products) ?? []
         runs = try container.decodeIfPresent([CIBuildRun].self, forKey: .runs) ?? []
         actionsByRunID = try container.decodeIfPresent([String: [CIBuildAction]].self, forKey: .actionsByRunID) ?? [:]
-        testDevicesByActionID = try container.decodeIfPresent([String: [CITestDeviceRun]].self, forKey: .testDevicesByActionID) ?? [:]
+        // Results cut by the old page limit are dropped: the next syncs read them again, whole.
+        testDevicesByActionID = (try container.decodeIfPresent([String: [CITestDeviceRun]].self, forKey: .testDevicesByActionID) ?? [:])
+            .filter { !CITestDeviceRun.wereCutAtLegacyLimit($0.value) }
         testResultAttempts = try container.decodeIfPresent([String: Int].self, forKey: .testResultAttempts) ?? [:]
         workflows = try container.decodeIfPresent([CIWorkflow].self, forKey: .workflows) ?? []
         appIcons = try container.decodeIfPresent([String: CIAppIcon].self, forKey: .appIcons) ?? [:]

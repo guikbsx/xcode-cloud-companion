@@ -54,6 +54,8 @@ final class UsageStore {
     private let now: () -> Date
     private var watcher: DirectoryWatcher?
     private var isScanning = false
+    /// The account's builds: an import teaches the estimate as soon as its billed builds meet their measured actions.
+    @ObservationIgnored var snapshot: () -> BuildSnapshot? = { nil }
 
     init(
         ledgerStore: UsageLedgerStore = UsageLedgerStore(),
@@ -120,9 +122,25 @@ final class UsageStore {
     /// Adds an export already read: with several accounts, it is read once and handed to the account its apps belong to.
     func record(_ export: UsageExport, from file: UsageExportFile) async {
         ledger.merge(export, fileName: file.url.lastPathComponent, modifiedAt: file.modifiedAt, importedAt: now())
+        if let snapshot = snapshot() {
+            ledger.calibration.learn(Self.samples(from: snapshot, ledger: ledger, now: now()), now: now())
+        }
         try? await ledgerStore.save(ledger)
         lastImportFailed = false
         lastImportMessage = String(localized: "Imported \(export.builds.count) builds from \(file.url.lastPathComponent).")
+    }
+
+    /// After a sync: the builds billed by an earlier import that are now measured join what the estimate learned (XCO-199).
+    func learn(from snapshot: BuildSnapshot) async {
+        var learned = ledger.calibration
+        guard learned.learn(Self.samples(from: snapshot, ledger: ledger, now: now()), now: now()) else { return }
+        ledger.calibration = learned
+        try? await ledgerStore.save(ledger)
+    }
+
+    private static func samples(from snapshot: BuildSnapshot, ledger: UsageLedger, now: Date) -> [CalibrationSample] {
+        let productNames = Dictionary(snapshot.products.map { ($0.id, $0.name) }, uniquingKeysWith: { first, _ in first })
+        return UsageCalibration.samples(from: snapshot, ledger: ledger, productNames: productNames, model: MachineModel(snapshot: snapshot), now: now)
     }
 
     func report(_ error: UsageImportError, for file: UsageExportFile) {

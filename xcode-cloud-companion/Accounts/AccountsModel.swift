@@ -249,6 +249,7 @@ final class AccountsModel {
         session.buildStore.onSync = { [weak self, weak session] previous, current in
             guard let self, let session else { return }
             Task { await session.readIconColors(in: current) }
+            Task { await session.usageStore.learn(from: current) }
             Task { await session.testFlight.sync(snapshot: current) }
             onSync?(session, previous, current)
         }

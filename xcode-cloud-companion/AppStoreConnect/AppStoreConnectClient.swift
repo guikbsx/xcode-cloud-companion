@@ -151,8 +151,11 @@ actor AppStoreConnectClient {
         lastRateLimit
     }
 
-    /// One entry per simulated device, sorted by name; `maxPages` × 200 test cases at most.
-    func testDeviceRuns(buildActionID: String, maxPages: Int = 15) async throws(AppStoreConnectError) -> [CITestDeviceRun] {
+    /// Enough for 12 000 test cases: past 3 000, the slow cases at the end were left out and the estimate fell short (XCO-197).
+    static let testResultPageLimit = 60
+
+    /// One entry per simulated device, sorted by name; `maxPages` × 200 test cases at most, `isComplete` says whether that was all.
+    func testDeviceRuns(buildActionID: String, maxPages: Int = testResultPageLimit) async throws(AppStoreConnectError) -> [CITestDeviceRun] {
         let pages = try await collectPages(
             from: AppStoreConnectEndpoint.testResults(buildActionID: buildActionID),
             of: CITestResultAttributes.self,
@@ -162,7 +165,12 @@ actor AppStoreConnectClient {
         for page in pages {
             page.accumulateDeviceRuns(into: &runs)
         }
-        return runs.keys.sorted().compactMap { runs[$0] }
+        let isComplete = pages.last?.links?.next == nil
+        return runs.keys.sorted().compactMap { runs[$0] }.map { run in
+            var run = run
+            run.isComplete = isComplete
+            return run
+        }
     }
 
     // MARK: - Paging

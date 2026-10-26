@@ -88,6 +88,7 @@ final class AccountSession: Identifiable {
                 model: modelStatus(), settingOn: FailureInsightFeature.isSettingOn(defaults), proAllows: self?.pro?.allows(.failureInsight) ?? true
             ) == .open
         }
+        usageStore.snapshot = { [weak buildStore] in buildStore?.snapshot }
         testFlight.allowed = { [weak self] in self?.pro?.allows(.testFlightTracking) ?? true }
         groups.allowed = { [weak self] in self?.pro?.allows(.testFlightDistribution) ?? true }
         testFlightDistributor.allowed = { [weak self] in self?.pro?.allows(.testFlightDistribution) ?? true }

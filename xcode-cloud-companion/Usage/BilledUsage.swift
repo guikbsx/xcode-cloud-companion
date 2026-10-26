@@ -149,6 +149,8 @@ nonisolated struct UsageLedger: Codable, Sendable, Equatable {
     var lastCoverage: DateInterval?
     /// File name → modification date, so a file already read is not imported twice.
     var importedFiles: [String: Date] = [:]
+    /// Builds both billed and measured: kept past `retention` and past the build cache, the estimate learns from them.
+    var calibration = UsageCalibration()
 
     func hasImported(fileName: String, modifiedAt: Date) -> Bool {
         importedFiles[fileName] == modifiedAt
@@ -169,5 +171,17 @@ nonisolated struct UsageLedger: Codable, Sendable, Equatable {
 
     func billedBuild(product: String, buildNumber: Int) -> BilledBuild? {
         builds["\(product)#\(buildNumber)"]
+    }
+}
+
+nonisolated extension UsageLedger {
+    // A ledger written before a field existed still loads.
+    init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        builds = try container.decodeIfPresent([String: BilledBuild].self, forKey: .builds) ?? [:]
+        lastImport = try container.decodeIfPresent(Date.self, forKey: .lastImport)
+        lastCoverage = try container.decodeIfPresent(DateInterval.self, forKey: .lastCoverage)
+        importedFiles = try container.decodeIfPresent([String: Date].self, forKey: .importedFiles) ?? [:]
+        calibration = try container.decodeIfPresent(UsageCalibration.self, forKey: .calibration) ?? UsageCalibration()
     }
 }

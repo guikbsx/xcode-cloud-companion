@@ -141,6 +141,35 @@ struct UsageSummaryTests {
         #expect(ratios.ratio(product: "AppOne", workflow: "Unknown") == 2.5)
     }
 
+    @Test func aWorkflowFollowsItsLatestBilledBuildsNotItsWholeHistory() {
+        // Ten minutes of actions each; the first three cost 10, the last five 22, 20, 30, 20, 21 (a change of regime).
+        let minutes = [10, 10, 10, 22, 20, 30, 20, 21]
+        let runs = minutes.indices.map { run($0 + 1, created: date(10, 1 + $0, 10)) }
+        var ledger = UsageLedger()
+        ledger.merge(
+            UsageExport(builds: minutes.enumerated().map { billed($0.offset + 1, at: date(10, 1 + $0.offset, 10), minutes: $0.element) }, coverage: DateInterval(start: date(10, 1), end: date(10, 9))),
+            fileName: "u.csv", modifiedAt: now, importedAt: now
+        )
+        let snapshot = givenUp(BuildSnapshot(
+            runs: runs,
+            actionsByRunID: Dictionary(uniqueKeysWithValues: runs.map { ($0.id, actions($0.id, start: $0.createdDate ?? now, minutes: 10)) })
+        ))
+
+        let ratios = WorkflowRatios(snapshot: snapshot, ledger: ledger, productNames: ["p1": "AppOne"], now: now)
+
+        #expect(ratios.ratio(product: "AppOne", workflow: "WF") == 2.1, "the median of the last five, not 1.79 over all eight")
+        #expect(abs(ratios.ratio(product: "AppOne", workflow: "Unknown") - 143.0 / 80) < 0.001, "the fallback still covers everything")
+    }
+
+    @Test func aBilledBuildStillWaitingForItsTestResultsTeachesNoRatio() {
+        var snapshot = snapshot
+        snapshot.testResultAttempts["run-11-a"] = nil
+
+        let ratios = WorkflowRatios(snapshot: snapshot, ledger: ledger, productNames: ["p1": "AppOne"], now: now)
+
+        #expect(ratios.ratio(product: "AppOne", workflow: "WF") == 2, "only #10 counts while #11 is measured")
+    }
+
     @Test func aBuildBeforeTheResetBelongsToThePreviousCycle() {
         var snapshot = snapshot
         snapshot.runs.append(run(9, created: date(10, 7, 14, 30)))

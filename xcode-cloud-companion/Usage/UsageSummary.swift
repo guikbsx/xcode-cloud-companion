@@ -187,9 +187,8 @@ nonisolated enum UsageCalculator {
             guard ledger.billedBuild(product: product, buildNumber: number) == nil else { continue }
             // A build whose test results are still on their way has no honest estimate yet: it waits for them.
             guard !(snapshot.actionsByRunID[run.id] ?? []).contains(where: snapshot.needsTestResults) else { continue }
-            let actionMinutes = actionMinutes(of: run, in: snapshot, now: now)
             entries.append(UsageEntry(
-                product: product, date: created, estimatedMinutes: actionMinutes * ratios.ratio(product: product, workflow: run.workflowName),
+                product: product, date: created, estimatedMinutes: ratios.estimatedMinutes(of: run, product: product, now: now),
                 workflow: run.workflowName, buildNumber: number
             ))
             estimatedRunIDs.insert(run.id)
@@ -297,7 +296,7 @@ nonisolated enum UsageCalculator {
         else { return nil }
         return BuildCost(
             product: product, buildNumber: number, workflow: run.workflowName,
-            minutes: actionMinutes(of: run, in: snapshot, now: now) * ratios.ratio(product: product, workflow: run.workflowName), isEstimated: true
+            minutes: ratios.estimatedMinutes(of: run, product: product, now: now), isEstimated: true
         )
     }
 
@@ -307,35 +306,90 @@ nonisolated enum UsageCalculator {
     }
 }
 
-/// Billed minutes per minute of action time, learned from builds present in both the exports and the API.
+/// How each workflow's unbilled builds are estimated, learned from its builds Apple already billed.
+///
+/// A workflow follows its latest billed builds: a new Xcode, more tests or another way of billing change what Apple charges,
+/// and a ratio over its whole history lagged behind (XCO-197). Of the `EstimateFormula`s, it takes the one that best foretold
+/// its last five billed builds, each predicted from the five before it, then the median billed/formula ratio of the last five
+/// (XCO-199: mean error per build 7.4 min with the old ratio, 4.3 with this).
 nonisolated struct WorkflowRatios: Sendable {
-    private static let minimumActionMinutes = 1.0
+    static let recentBuilds = 5
+    /// Below a minute, Apple's whole-minute rounding is all a ratio would say.
+    private static let minimumMinutes = 1.0
 
-    private var byWorkflow: [String: Double] = [:]
+    struct Choice: Sendable, Equatable {
+        var formula: EstimateFormula
+        var ratio: Double
+    }
+
+    private let snapshot: BuildSnapshot
+    private let model: MachineModel
+    private var byWorkflow: [String: Choice] = [:]
     private var global: Double?
 
+    /// What the ledger learned before, and the builds of the snapshot it has not learned yet.
     init(snapshot: BuildSnapshot, ledger: UsageLedger, productNames: [String: String], now: Date) {
-        var sums: [String: (billed: Double, actions: Double)] = [:]
-        var total = (billed: 0.0, actions: 0.0)
-        for run in snapshot.runs where run.executionProgress == .complete {
-            let product = productNames[run.productID] ?? run.productID
-            guard let number = run.number, let billed = ledger.billedBuild(product: product, buildNumber: number) else { continue }
-            let actions = UsageCalculator.actionMinutes(of: run, in: snapshot, now: now)
-            let key = Self.key(product: product, workflow: run.workflowName)
-            sums[key, default: (0, 0)].billed += Double(billed.minutes)
-            sums[key, default: (0, 0)].actions += actions
-            total.billed += Double(billed.minutes)
-            total.actions += actions
+        self.snapshot = snapshot
+        model = MachineModel(snapshot: snapshot)
+        var samples = ledger.calibration.samples
+        for sample in UsageCalibration.samples(from: snapshot, ledger: ledger, productNames: productNames, model: model, now: now) where samples[sample.key] == nil {
+            samples[sample.key] = sample
         }
-        byWorkflow = sums.compactMapValues { $0.actions >= Self.minimumActionMinutes ? $0.billed / $0.actions : nil }
-        global = total.actions >= Self.minimumActionMinutes ? total.billed / total.actions : nil
+        byWorkflow = Dictionary(grouping: samples.values, by: \.workflowKey).compactMapValues { workflow in
+            Self.choice(for: workflow.sorted { $0.created < $1.created })
+        }
+        let machine = samples.values.compactMap { $0.minutes(.machine) }.reduce(0, +)
+        global = machine >= Self.minimumMinutes ? Double(samples.values.reduce(0) { $0 + $1.billedMinutes }) / machine : nil
     }
 
+    /// The formula and ratio of a workflow, from its samples oldest first; nil when no sample says anything.
+    static func choice(for samples: [CalibrationSample]) -> Choice? {
+        var best: (error: Double, formula: EstimateFormula)?
+        for formula in EstimateFormula.allCases {
+            let errors = samples.indices.suffix(recentBuilds).compactMap { index -> Double? in
+                guard let ratio = ratio(formula, of: samples[..<index]), let minutes = samples[index].minutes(formula) else { return nil }
+                return abs(minutes * ratio - Double(samples[index].billedMinutes))
+            }
+            guard !errors.isEmpty else { continue }
+            let error = errors.reduce(0, +) / Double(errors.count)
+            // `machine` comes first: another formula has to do strictly better to be taken.
+            if best.map({ error < $0.error }) ?? true { best = (error, formula) }
+        }
+        let formula = best?.formula ?? .machine
+        return ratio(formula, of: samples[...]).map { Choice(formula: formula, ratio: $0) }
+    }
+
+    /// The median billed/formula ratio of the latest samples.
+    private static func ratio(_ formula: EstimateFormula, of samples: ArraySlice<CalibrationSample>) -> Double? {
+        let ratios = samples.reversed().lazy.compactMap { sample -> Double? in
+            guard let minutes = sample.minutes(formula), minutes >= minimumMinutes else { return nil }
+            return Double(sample.billedMinutes) / minutes
+        }.prefix(recentBuilds)
+        return ratios.isEmpty ? nil : median(Array(ratios))
+    }
+
+    private static func median(_ values: [Double]) -> Double {
+        let sorted = values.sorted()
+        let middle = sorted.count / 2
+        return sorted.count.isMultiple(of: 2) ? (sorted[middle - 1] + sorted[middle]) / 2 : sorted[middle]
+    }
+
+    func choice(product: String, workflow: String?) -> Choice {
+        byWorkflow[Self.key(product: product, workflow: workflow)] ?? Choice(formula: .machine, ratio: global ?? 1)
+    }
+
+    /// The ratio of a workflow's formula, or the global one for a workflow never billed.
     func ratio(product: String, workflow: String?) -> Double {
-        byWorkflow[Self.key(product: product, workflow: workflow)] ?? global ?? 1
+        choice(product: product, workflow: workflow).ratio
     }
 
-    private static func key(product: String, workflow: String?) -> String {
+    /// What a finished build of the snapshot is expected to cost.
+    func estimatedMinutes(of run: CIBuildRun, product: String, now: Date) -> Double {
+        let choice = choice(product: product, workflow: run.workflowName)
+        return choice.formula.minutes(of: run, in: snapshot, model: model, now: now) * choice.ratio
+    }
+
+    static func key(product: String, workflow: String?) -> String {
         "\(product)|\(workflow ?? "")"
     }
 }

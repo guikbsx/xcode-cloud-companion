@@ -19,6 +19,50 @@ struct TestDeviceRunsTests {
         #expect(await transport.requests.first?.queryValue("fields[ciTestResults]") == "status,destinationTestResults")
     }
 
+    @Test func resultsSayWhetherEveryPageWasRead() async throws {
+        let last = try Fixture.data("ciTestResults")
+        var page = try #require(try JSONSerialization.jsonObject(with: last) as? [String: Any])
+        page["links"] = [
+            "self": "https://api.appstoreconnect.apple.com/v1/ciBuildActions/action-test/testResults",
+            "next": "https://api.appstoreconnect.apple.com/v1/ciBuildActions/action-test/testResults?cursor=abc",
+        ]
+        let more = try JSONSerialization.data(withJSONObject: page)
+
+        let whole = try await AppStoreConnectClient(credentials: .sample(), transport: MockTransport { request in
+            MockTransport.Reply(body: request.url?.query()?.contains("cursor") == true ? last : more)
+        }).testDeviceRuns(buildActionID: "action-test")
+        #expect(whole.allSatisfy { $0.isComplete == true })
+        #expect(whole.last?.testCount == 4, "two pages read")
+
+        let transport = MockTransport { _ in MockTransport.Reply(body: more) }
+        let cut = try await AppStoreConnectClient(credentials: .sample(), transport: transport).testDeviceRuns(buildActionID: "action-test")
+        #expect(cut.allSatisfy { $0.isComplete == false })
+        #expect(await transport.requests.count == AppStoreConnectClient.testResultPageLimit)
+        #expect(AppStoreConnectClient.testResultPageLimit * 200 == 12_000)
+    }
+
+    @Test func resultsCutByTheOldLimitAreReadAgainButNeverTwice() throws {
+        func devices(_ count: Int, complete: Bool?) -> [CITestDeviceRun] {
+            [
+                CITestDeviceRun(deviceName: "iPhone 16", osVersion: "27.2", testCount: count, totalSeconds: 55, isComplete: complete),
+                CITestDeviceRun(deviceName: "iPhone SE", osVersion: "27.2", testCount: count, totalSeconds: 54, isComplete: complete),
+            ]
+        }
+        let cached = BuildSnapshot(testDevicesByActionID: [
+            "cut": devices(3000, complete: nil),
+            "small": devices(2006, complete: nil),
+            "readAgain": devices(3000, complete: true),
+            "tooMany": devices(12_000, complete: false),
+        ])
+
+        let loaded = try JSONDecoder().decode(BuildSnapshot.self, from: JSONEncoder().encode(cached))
+
+        #expect(loaded.testDevicesByActionID["cut"] == nil)
+        #expect(Set(loaded.testDevicesByActionID.keys) == ["small", "readAgain", "tooMany"])
+        let action = CIBuildAction(id: "cut", buildRunID: "r", name: "Test", actionType: .test, startedDate: nil, finishedDate: nil, executionProgress: .complete, completionStatus: .succeeded, isRequiredToPass: true)
+        #expect(loaded.needsTestResults(action))
+    }
+
     @Test func workflowsCarryTheirTestDestinationCounts() async throws {
         let transport = MockTransport { _ in MockTransport.Reply(body: (try? Fixture.data("ciWorkflows")) ?? Data()) }
         let client = AppStoreConnectClient(credentials: .sample(), transport: transport)

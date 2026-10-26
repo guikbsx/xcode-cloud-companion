@@ -137,7 +137,7 @@ nonisolated struct WorkflowCostBreakdown: Equatable, Sendable {
                   isThisWorkflow(run.workflowName), isInCycle(created), ledger.billedBuild(product: product, buildNumber: number) == nil,
                   !(snapshot.actionsByRunID[run.id] ?? []).contains(where: snapshot.needsTestResults)
             else { continue }
-            let minutes = UsageCalculator.actionMinutes(of: run, in: snapshot, now: now) * ratios.ratio(product: product, workflow: run.workflowName)
+            let minutes = ratios.estimatedMinutes(of: run, product: product, now: now)
             estimatedMinutes += minutes
             estimatedBuildCount += 1
             buildCount += 1

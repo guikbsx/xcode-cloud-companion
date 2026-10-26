@@ -88,6 +88,16 @@ nonisolated struct CITestDeviceRun: Codable, Sendable, Equatable {
     var testCount = 0
     var failedCount = 0
     var totalSeconds: Double = 0
+    /// False when the action had more test cases than the client reads. Nil for results cached before this was recorded.
+    var isComplete: Bool? = nil
+
+    /// The page limit of the first versions: 15 pages of 200 test cases.
+    static let legacyCaseLimit = 3000
+
+    /// Results read under the old limit and stopped by it: the cases past it, often the slow ones, were never counted (XCO-197).
+    static func wereCutAtLegacyLimit(_ devices: [CITestDeviceRun]) -> Bool {
+        devices.contains { $0.isComplete == nil && $0.testCount == legacyCaseLimit }
+    }
 }
 
 nonisolated struct CIWorkflow: Codable, Sendable, Equatable, Identifiable {

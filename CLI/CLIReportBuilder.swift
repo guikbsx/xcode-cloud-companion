@@ -360,14 +360,12 @@ nonisolated struct MinutesEstimator: Sendable {
     private let data: CLIData
     private let productNames: [String: String]
     private let now: Date
-    private let model: MachineModel
     private let ratios: WorkflowRatios
 
     init(data: CLIData, productNames: [String: String], now: Date) {
         self.data = data
         self.productNames = productNames
         self.now = now
-        model = MachineModel(snapshot: data.snapshot)
         ratios = WorkflowRatios(snapshot: data.snapshot, ledger: data.ledger, productNames: productNames, now: now)
     }
 
@@ -378,6 +376,6 @@ nonisolated struct MinutesEstimator: Sendable {
         }
         // Test results still on their way: no honest estimate yet, as in the app.
         guard !(data.snapshot.actionsByRunID[run.id] ?? []).contains(where: data.snapshot.needsTestResults) else { return (nil, nil) }
-        return (nil, model.seconds(of: run, now: now) / 60 * ratios.ratio(product: product, workflow: run.workflowName))
+        return (nil, ratios.estimatedMinutes(of: run, product: product, now: now))
     }
 }
