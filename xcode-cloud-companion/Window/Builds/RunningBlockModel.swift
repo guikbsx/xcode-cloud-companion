@@ -20,6 +20,10 @@ nonisolated struct RunningBlockModel: Equatable, Sendable {
         let detail: String
         /// The legend's lines under the title: the action by name and when it ends; a queued build has only its wait.
         let legendLines: [String]
+        /// “Release · main”: the card's second line; nil without a workflow or a reference.
+        let facts: String?
+        /// The card's last line, in one: the action and when it ends, or the action and when the build started, or the wait.
+        let summary: String
         let isQueued: Bool
         let ring: BuildRing
         let centerText: String
@@ -61,28 +65,33 @@ nonisolated struct RunningBlockModel: Equatable, Sendable {
         let legendLines: [String]
         let centerText: String
         var centerDetail: String?
+        let summary: String
         if isQueued {
             detail = Words.queued(since: run.createdDate, now: now, locale: locale)
             legendLines = [detail]
             centerText = Words.queuedShort(locale: locale)
+            summary = detail
         } else if let display, let ends {
             detail = UsageFormat.dotted([line.actionName ?? line.action, ends], locale: locale)
             legendLines = [line.actionName ?? line.action, ends]
             centerText = BuildETAFormat.approximate(display, locale: locale)
             centerDetail = ends
+            summary = detail
         } else {
             detail = line.action
             legendLines = [line.actionName ?? line.action]
             let started = run.startedDate ?? run.createdDate
             centerText = started.map { BuildRowData.clock(max(0, now.timeIntervalSince($0))) } ?? line.action
             centerDetail = started.map { Words.since($0, locale: locale) }
+            summary = UsageFormat.dotted([line.action, centerDetail].compactMap(\.self), locale: locale)
         }
+        let facts = [line.workflow, line.reference].compactMap(\.self).filter { !$0.isEmpty }
         let spoken = [line.title, line.workflow, line.reference, isQueued ? Words.queued(since: run.createdDate, now: now, locale: locale) : line.action, line.spokenEnd]
             .compactMap(\.self).filter { !$0.isEmpty }.joined(separator: ", ")
         return Item(
             id: run.id, productID: run.productID, paletteKey: product?.name ?? name, appName: name, initial: String(name.prefix(1)).uppercased(),
             title: line.title, workflow: line.workflow, reference: line.reference, action: line.action, detail: detail, legendLines: legendLines,
-            isQueued: isQueued, ring: BuildRing(run: run, in: snapshot, now: now, locale: locale), centerText: centerText,
+            facts: facts.isEmpty ? nil : UsageFormat.dotted(facts, locale: locale), summary: summary, isQueued: isQueued, ring: BuildRing(run: run, in: snapshot, now: now, locale: locale), centerText: centerText,
             centerDetail: centerDetail, spoken: spoken
         )
     }

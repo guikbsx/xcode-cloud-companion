@@ -1,7 +1,8 @@
 import SwiftUI
 
-/// What runs, large, at the head of the build list: one ring for a single build, nested rings with a legend for two or three
-/// (the ones that end first), laid flat as the first row of the list: no surface, no border. Redrawn every ten seconds and at every sync, never per frame.
+/// What runs, at the head of the build list, as a card under a heading of its own: one ring with three lines for a single
+/// build, nested rings with a legend for two or three (the ones that end first). The card's fill takes the app's colour, or
+/// none when the builds are of several apps; it is flat, without glow. Redrawn every ten seconds and at every sync, never per frame.
 struct RunningBlockView: View {
     let ids: [String]
     let more: Int
@@ -14,16 +15,20 @@ struct RunningBlockView: View {
     /// Shows only the running builds; nil leaves the line “and 2 more running” out.
     var showMore: (() -> Void)?
 
-    static let singleSize: CGFloat = 96
-    static let nestedSize: CGFloat = 120
-    static let nestedLineWidth: CGFloat = 10
+    static let singleSize: CGFloat = 64
+    static let nestedSize: CGFloat = 96
+    static let nestedLineWidth: CGFloat = 8
     /// Below this width the legend goes under the rings.
-    static let sideBySideWidth: CGFloat = 310
+    static let sideBySideWidth: CGFloat = 300
+    static let padding: CGFloat = 14
+    /// From the card's edge to its heading, so that the heading lines up with the day headings of the list.
+    static let headingInset: CGFloat = 7
 
     @State private var width: CGFloat = 340
+    @State private var isHovering = false
     @Environment(\.colorScheme) private var colorScheme
 
-    private var selectedInk: Color {
+    private var accent: Color {
         colorScheme == .dark ? CumulusStyle.accent.mix(with: .white, by: 0.2) : CumulusStyle.accent
     }
 
@@ -31,52 +36,73 @@ struct RunningBlockView: View {
         TickingView(interval: BuildRing.shortestRedraw) { now in
             let model = RunningBlockModel(ids: ids, more: more, snapshot: snapshot, now: now)
             if !model.items.isEmpty {
-                surface(model)
+                VStack(alignment: .leading, spacing: 6) {
+                    DayHeader(title: model.items.count == 1 ? String(localized: "Running") : model.spokenCount())
+                        .padding(.leading, Self.headingInset)
+                    card(model)
+                }
+                .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { width = $0 }
+                .accessibilityElement(children: .contain)
+                .accessibilityLabel(Text(model.spokenCount()))
+                .accessibilitySortPriority(1)
             }
         }
     }
 
-    private func surface(_ model: RunningBlockModel) -> some View {
-        Group {
-            if model.items.count == 1, let item = model.items.first {
-                single(item)
+    // MARK: The card
+
+    private func card(_ model: RunningBlockModel) -> some View {
+        let single = model.items.count == 1 ? model.items.first : nil
+        let selected = single.map { $0.id == selectedID } ?? false
+        let tint = Self.tint(of: model, palette: palette)
+        let fillOpacity = (tint == nil ? 0.05 : colorScheme == .dark ? 0.11 : 0.1) + (single != nil && isHovering && !selected ? 0.04 : 0)
+        return Group {
+            if let single {
+                self.single(single, selected: selected)
             } else {
                 nested(model)
             }
         }
+        .padding(Self.padding)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { width = $0 }
-        .accessibilityElement(children: .contain)
-        .accessibilityLabel(Text(model.spokenCount()))
-        .accessibilitySortPriority(1)
+        .background((tint ?? Color.primary).opacity(fillOpacity), in: .rect(cornerRadius: CumulusStyle.groupRadius))
+        .overlay(
+            RoundedRectangle(cornerRadius: CumulusStyle.groupRadius)
+                .strokeBorder(selected ? AnyShapeStyle(accent) : tint.map { AnyShapeStyle($0.opacity(0.3)) } ?? AnyShapeStyle(.quaternary), lineWidth: selected ? 1.5 : 1)
+        )
+        .onHover { isHovering = $0 }
+    }
+
+    /// The colour of the card: the app's when all the builds are of one app, none when they mix.
+    static func tint(of model: RunningBlockModel, palette: AppPalette) -> Color? {
+        guard !model.mixesApps, let key = model.items.first?.paletteKey else { return nil }
+        return Color(nsColor: palette.swatch(for: key).nsColor)
     }
 
     // MARK: One build
 
-    private func single(_ item: RunningBlockModel.Item) -> some View {
-        let selected = item.id == selectedID
-        return Button {
+    private func single(_ item: RunningBlockModel.Item, selected: Bool) -> some View {
+        Button {
             select(item.id)
         } label: {
-            HStack(spacing: 16) {
-                BuildRingView(
-                    ring: item.ring, size: Self.singleSize, center: .text(item.centerText, detail: item.centerDetail), isSelected: selected
-                )
-                .accessibilityHidden(true)
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(UsageFormat.dotted([item.title, item.workflow].compactMap(\.self)))
-                        .font(.system(size: 16, weight: .bold))
-                        .lineLimit(3)
-                    Text(item.action)
-                        .font(.system(size: 12))
-                        .foregroundStyle(.secondary)
-                        .lineLimit(2)
-                    if let reference = item.reference {
-                        Text(reference)
-                            .font(.system(size: 11, design: .monospaced))
+            HStack(spacing: 14) {
+                BuildRingView(ring: item.ring, size: Self.singleSize, center: .text(item.centerText))
+                    .accessibilityHidden(true)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(item.title)
+                        .font(.system(size: 13, weight: .semibold))
+                        .foregroundStyle(selected ? AnyShapeStyle(accent) : AnyShapeStyle(.primary))
+                        .lineLimit(1)
+                    if let facts = item.facts {
+                        Text(facts)
+                            .font(.caption)
                             .foregroundStyle(.secondary)
                             .lineLimit(1)
                     }
+                    Text(item.summary)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .lineLimit(2)
                 }
                 Spacer(minLength: 0)
             }
@@ -93,13 +119,12 @@ struct RunningBlockView: View {
     private func nested(_ model: RunningBlockModel) -> some View {
         let stacked = width < Self.sideBySideWidth
         let layout = stacked ? AnyLayout(VStackLayout(alignment: .leading, spacing: 10)) : AnyLayout(HStackLayout(spacing: 14))
-        let count = model.centerCount()
         return layout {
             ConcentricBuildRingsView(
                 items: model.items.map { item in
                     ConcentricBuildRingsView.Item(ring: item.ring, paleTint: Color(nsColor: palette.swatch(for: item.paletteKey).nsColor))
                 },
-                size: Self.nestedSize, lineWidth: Self.nestedLineWidth, center: .text(count.text, detail: count.detail)
+                size: Self.nestedSize, lineWidth: Self.nestedLineWidth, center: .text(model.centerCount().text)
             )
             .contentShape(.circle)
             .gesture(
@@ -142,7 +167,7 @@ struct RunningBlockView: View {
                 VStack(alignment: .leading, spacing: 0) {
                     Text(item.title)
                         .font(.system(size: 13, weight: .semibold))
-                        .foregroundStyle(selected ? AnyShapeStyle(selectedInk) : AnyShapeStyle(.primary))
+                        .foregroundStyle(selected ? AnyShapeStyle(accent) : AnyShapeStyle(.primary))
                         .lineLimit(1)
                     ForEach(item.legendLines, id: \.self) { line in
                         Text(line)
@@ -157,24 +182,29 @@ struct RunningBlockView: View {
             .padding(.vertical, 5)
             .contentShape(.rect)
         }
-        .buttonStyle(LegendRowStyle())
+        .buttonStyle(LegendRowStyle(isSelected: selected, accent: accent))
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(Text(item.spoken))
         .accessibilityAddTraits(selected ? .isSelected : [])
     }
 }
 
-/// A legend line takes a light system fill under the pointer; the chosen build's line is told by its accent title, with
-/// nothing drawn around it (see `legendRow`).
+/// A legend line takes a light system fill under the pointer; the chosen build's line keeps a light fill of the accent
+/// under its accent title, flat.
 private struct LegendRowStyle: ButtonStyle {
+    let isSelected: Bool
+    let accent: Color
     @State private var isHovering = false
 
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
-            .background(
-                Color.primary.opacity(configuration.isPressed ? 0.12 : isHovering ? 0.06 : 0), in: .rect(cornerRadius: 8)
-            )
+            .background(fill(pressed: configuration.isPressed), in: .rect(cornerRadius: 8))
             .onHover { isHovering = $0 }
+    }
+
+    private func fill(pressed: Bool) -> Color {
+        if isSelected { return accent.opacity(pressed ? 0.2 : 0.12) }
+        return Color.primary.opacity(pressed ? 0.12 : isHovering ? 0.06 : 0)
     }
 }
 

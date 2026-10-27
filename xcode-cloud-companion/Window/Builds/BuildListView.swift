@@ -73,7 +73,7 @@ struct BuildListView: View {
                     .id(Self.blockID)
                     .selectionDisabled()
                     .listRowSeparator(.hidden)
-                    .listRowInsets(EdgeInsets(top: 4, leading: 12, bottom: 8, trailing: 12))
+                    .listRowInsets(EdgeInsets(top: 6, leading: -6, bottom: 2, trailing: -6))
                 }
                 if let reason = model.emptyReason {
                     emptyState(reason)
