@@ -80,6 +80,8 @@ struct CycleCard: View {
                 Text(usedText).font(.caption.weight(.semibold)).lineLimit(2)
                 Text(resetText).font(.caption).foregroundStyle(.secondary).lineLimit(2)
             }
+            // A list row is measured before it is laid out: without this, the lines wrap to the height of a first pass and the text shifts when the row settles.
+            .fixedSize(horizontal: false, vertical: true)
             Spacer(minLength: 0)
         }
         .padding(.horizontal, 12)
