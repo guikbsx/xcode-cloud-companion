@@ -1,10 +1,26 @@
-# Cumulus
+<p align="center">
+  <img src=".github/readme/icon.png" width="128" height="128" alt="The Cumulus app icon: a white cloud on a blue square">
+</p>
+
+<h1 align="center">Cumulus</h1>
+
+<p align="center">
+  Your Xcode Cloud builds and minutes, in the Mac menu bar.<br>
+  <a href="https://apps.apple.com/app/id6821029129">Mac App Store</a> · <a href="https://cumulus.guik.io">Website</a>
+</p>
 
 Cumulus is a macOS menu bar app that watches Xcode Cloud for you: how much of your compute plan is gone, which builds are running, and why the last one failed.
 
 It is free, has no server and no third-party dependency, and talks to nobody but Apple.
 
-Website: [cumulus.guik.io](https://cumulus.guik.io)
+![A failed build in Cumulus: the action timeline, the failed tests, the log excerpt and what broke since the last successful build](.github/readme/02_failure.jpg)
+
+<table>
+  <tr>
+    <td><img src=".github/readme/01_menu-bar.jpg" alt="The Cumulus menu: the running build with its ring and estimated end, the latest builds and the cycle gauge"></td>
+    <td><img src=".github/readme/04_app.jpg" alt="The page of an app: its share of the cycle, its workflows, the last 30 builds, branches and pull requests"></td>
+  </tr>
+</table>
 
 ## What it does
 
