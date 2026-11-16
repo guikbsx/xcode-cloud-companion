@@ -22,6 +22,18 @@ It is free, has no server and no third-party dependency, and talks to nobody but
   </tr>
 </table>
 
+## Install
+
+With [Homebrew](https://brew.sh):
+
+```bash
+brew install --cask guikbsx/tap/cumulus
+```
+
+This also puts the `cumulus` command on your `PATH`. `brew upgrade` brings the next versions.
+
+You can also get Cumulus from the [Mac App Store](https://apps.apple.com/app/id6821029129), or download the archive of the [latest release](https://github.com/guikbsx/xcode-cloud-companion/releases/latest). Both builds are the same app: the one from GitHub is signed with Developer ID and notarized by Apple. Install only one of them.
+
 ## What it does
 
 **In the menu bar**

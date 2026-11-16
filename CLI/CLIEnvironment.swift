@@ -41,8 +41,19 @@ nonisolated struct CLIEnvironment: Sendable {
     /// Asks the person at the terminal a yes-or-no question; false when nobody answers.
     var confirm: @Sendable (String) -> Bool = { _ in false }
 
+    /// Run through a symbolic link (Homebrew, Settings › Agents), the command no longer finds the Info.plist embedded in
+    /// its binary: the app that ships it has the same version.
+    static func versionInfo(main: [String: Any]?, executable: URL?) -> [String: Any] {
+        if let main, main["CFBundleShortVersionString"] != nil { return main }
+        guard let executable else { return main ?? [:] }
+        let app = executable.resolvingSymlinksInPath()
+            .deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent()
+        guard app.pathExtension == "app", let bundle = Bundle(url: app) else { return main ?? [:] }
+        return bundle.infoDictionary ?? main ?? [:]
+    }
+
     static var live: CLIEnvironment {
-        let info = Bundle.main.infoDictionary ?? [:]
+        let info = versionInfo(main: Bundle.main.infoDictionary, executable: Bundle.main.executableURL)
         return CLIEnvironment(
             version: info["CFBundleShortVersionString"] as? String ?? "0",
             build: info["CFBundleVersion"] as? String ?? "0",
