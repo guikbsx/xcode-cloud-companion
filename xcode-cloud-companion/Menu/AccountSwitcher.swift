@@ -7,20 +7,14 @@ struct AccountChoice: Identifiable, Equatable {
     var name: String
     /// What the account's builds are doing, so a failure in the account that is not shown is still seen.
     var badge: MenuBarBadge?
-    /// Not followed for want of Cumulus Pro: picking it leads to the purchase sheet.
-    var isPaused = false
 }
 
 extension AccountChoice {
-    /// The accounts of the switcher; none while there is one account only. A paused account says nothing of its
-    /// builds: they are not followed.
+    /// The accounts of the switcher; none while there is one account only.
     static func all(of accounts: AccountsModel) -> [AccountChoice] {
         guard accounts.hasSeveral else { return [] }
         return accounts.sessions.map { session in
-            let isPaused = accounts.isPaused(session)
-            return AccountChoice(
-                id: session.id, name: session.name, badge: isPaused ? nil : MenuBarBadge.status(for: session.buildStore.snapshot), isPaused: isPaused
-            )
+            AccountChoice(id: session.id, name: session.name, badge: MenuBarBadge.status(for: session.buildStore.snapshot))
         }
     }
 }
@@ -61,10 +55,7 @@ struct AccountSwitcherView: View {
                 let isSelected = account.id == selectedID
                 HStack(spacing: 5) {
                     // The menu under the row already says how the selected account's builds go.
-                    if account.isPaused {
-                        Image(systemName: "lock.fill")
-                            .font(.system(size: 9, weight: .semibold))
-                    } else if let badge = account.badge, !isSelected {
+                    if let badge = account.badge, !isSelected {
                         Circle()
                             .fill(Color(nsColor: badge.color))
                             .frame(width: 6, height: 6)
@@ -77,7 +68,7 @@ struct AccountSwitcherView: View {
                 .padding(.horizontal, 8)
                 .frame(maxWidth: .infinity)
                 .frame(height: AccountSwitcherLayout.height)
-                .foregroundStyle(isSelected ? Color.white : account.isPaused ? Color.secondary : Color.primary)
+                .foregroundStyle(isSelected ? Color.white : Color.primary)
                 .background(isSelected ? Color.accentColor : Color.primary.opacity(0.06), in: RoundedRectangle(cornerRadius: 7))
             }
         }
@@ -157,9 +148,7 @@ final class AccountSwitcherControl: NSView {
             let (account, frame) = pair
             let isSelected = account.id == selectedID
             // The menu under the row already says how the selected account's builds go.
-            let status = account.isPaused
-                ? String(localized: "paused, needs Cumulus Pro", comment: "VoiceOver, after the name of an account that is not followed without Cumulus Pro.")
-                : isSelected ? nil : account.badge?.status.label
+            let status = isSelected ? nil : account.badge?.status.label
             let select = select
             return AccountSwitcherElement(
                 label: status.map { "\(account.name), \($0)" } ?? account.name,

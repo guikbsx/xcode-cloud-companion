@@ -291,16 +291,6 @@ struct BuildFailureCardOfferTests {
         #expect(!BuildFailurePrompt.isOffered(for: run(status: .failed, progress: .running)))
     }
 
-    @Test func copyingForAnAIIsFreeWithoutCumulusPro() {
-        let free = ProAccess(store: ProStore(source: StubProSource(), forced: .free), purchase: { _ in })
-
-        #expect(free.store.entitlement == .free)
-        #expect(!free.allows(.regressions))
-        #expect(BuildFailurePrompt.isOffered(for: run()))
-        let names = ProFeature.allCases.map { String(describing: $0).lowercased() }
-        #expect(names.allSatisfy { !$0.contains("prompt") && !$0.contains("copy") && !$0.hasSuffix("ai") })
-    }
-
     private func store(snapshot: BuildSnapshot, extras: [String: BuildExtras]) async throws -> (BuildFailureCopier, BuildExtrasStore) {
         let directory = FileManager.default.temporaryDirectory.appending(path: "failure-\(UUID().uuidString)")
         let cache = BuildCacheStore(fileURL: directory.appending(path: "BuildCache.json"))

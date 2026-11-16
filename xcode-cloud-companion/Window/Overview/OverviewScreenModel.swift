@@ -159,13 +159,12 @@ nonisolated struct OverviewScreenModel: Sendable {
 
     /// - Parameters:
     ///   - isReading: the first sync or the first measure of the account is still going on.
-    ///   - pro: the Cumulus Pro functions that are open; the facts that come from one are left out without it.
     ///   - failureInsights: the sentence of “In brief”, by build, already known and only while that function is open.
     ///   - failureCategories: the category of failed builds, by build, on the same terms.
     init(
         snapshot: BuildSnapshot, sidebar: SidebarContent, summary: UsageSummary?, ledger: UsageLedger = UsageLedger(), accountName: String,
         isReading: Bool, now: Date, calendar: Calendar = .current, locale: Locale = .autoupdatingCurrent,
-        pro: Set<ProFeature> = Set(ProFeature.allCases), failureInsights: [String: String] = [:],
+        failureInsights: [String: String] = [:],
         failureCategories: [String: FailureCategory] = [:], appleStatus: AppleStatusKnowledge? = nil,
         testFlight: [String: TestFlightReading] = [:], flakyTests: [OverviewFlakyTests.Entry] = []
     ) {
@@ -176,7 +175,7 @@ nonisolated struct OverviewScreenModel: Sendable {
         )
         hasEstimatedCycle = summary.map { $0.estimatedMinutes > 0 } ?? false
         detail = OverviewDetailSource(
-            snapshot: snapshot, now: now, calendar: calendar, categories: failureCategories, insights: failureInsights, pro: pro
+            snapshot: snapshot, now: now, calendar: calendar, categories: failureCategories, insights: failureInsights
         )
 
         if isReading {
@@ -206,7 +205,6 @@ nonisolated struct OverviewScreenModel: Sendable {
         facts.ledger = ledger
         facts.calendar = calendar
         facts.locale = locale
-        facts.pro = pro
         facts.failureInsights = failureInsights
         facts.appleStatus = appleStatus
         facts.testFlight = testFlight

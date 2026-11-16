@@ -35,6 +35,6 @@
   "included": [
     { "type": "ciXcodeVersions", "id": "xcode-27", "attributes": { "name": "Xcode 27.0", "version": "27.0" } },
     { "type": "ciMacOsVersions", "id": "macos-27", "attributes": { "name": "macOS Tahoe", "version": "27.0" } },
-    { "type": "scmRepositories", "id": "repo-1", "attributes": { "ownerName": "guikbsx", "repositoryName": "realmotivation" } }
+    { "type": "scmRepositories", "id": "repo-1", "attributes": { "ownerName": "example", "repositoryName": "realmotivation" } }
   ]
 }

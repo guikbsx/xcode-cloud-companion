@@ -82,10 +82,6 @@ nonisolated struct MCPServer: Sendable {
         } catch {
             return Self.failure(id: id, code: ErrorCode.invalidParams, message: error.message)
         }
-        // Every tool comes with Cumulus Pro. The server still starts and lists its tools: the refusal is an answer.
-        if let refusal = ProGate.refusal(in: environment.directory, overMCP: true) {
-            return Self.refusal(id: id, refusal)
-        }
         let runner = CLIQueryRunner(environment: environment, account: account)
         do throws(CLIFailure) {
             let response = switch call {

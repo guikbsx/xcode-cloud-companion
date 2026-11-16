@@ -1,8 +1,8 @@
 import Foundation
 import Observation
 
-/// Sends the alerts an account chose to its webhook. It decides whether a message may go (the event is chosen, Cumulus
-/// Pro is open, the account is followed, an address is saved), never waits for the answer in the sync or in a banner,
+/// Sends the alerts an account chose to its webhook. It decides whether a message may go (the event is chosen, the account
+/// still exists, an address is saved), never waits for the answer in the sync or in a banner,
 /// and tries once more, thirty seconds later, a message that failed for want of a network or a server.
 @Observable
 final class WebhookService {
@@ -18,33 +18,27 @@ final class WebhookService {
 
     @ObservationIgnored private let accounts: AccountsModel
     @ObservationIgnored private let sender: any WebhookSending
-    /// Cumulus Pro; nil leaves the function open.
-    @ObservationIgnored private let pro: ProStore?
     @ObservationIgnored private let now: () -> Date
     @ObservationIgnored private let retryDelay: Duration
     @ObservationIgnored private let sleep: @Sendable (Duration) async -> Void
     @ObservationIgnored private var sending: [UUID: Task<Void, Never>] = [:]
 
     init(
-        accounts: AccountsModel, sender: any WebhookSending, pro: ProStore? = nil, retryDelay: Duration = WebhookService.retryDelay,
+        accounts: AccountsModel, sender: any WebhookSending, retryDelay: Duration = WebhookService.retryDelay,
         sleep: @escaping @Sendable (Duration) async -> Void = { try? await Task.sleep(for: $0) }, now: @escaping () -> Date = { Date() }
     ) {
         self.accounts = accounts
         self.sender = sender
-        self.pro = pro
         self.retryDelay = retryDelay
         self.sleep = sleep
         self.now = now
     }
 
-    /// Whether Cumulus Pro lets webhooks go.
-    var isOpen: Bool { pro?.allows(.webhookAlerts) ?? true }
-
     func delivery(for accountID: String) -> Delivery? {
         deliveries[accountID]
     }
 
-    /// What the account sends, or nil when nothing may go: no Pro, an account that is paused or gone, or no address.
+    /// What the account sends, or nil when nothing may go: an account that is gone, or no address.
     func choices(for accountID: String) async -> WebhookChoices? {
         guard let model = await sendableModel(accountID) else { return nil }
         return model.choices
@@ -82,7 +76,7 @@ final class WebhookService {
     // MARK: - Private
 
     private func sendableModel(_ accountID: String) async -> WebhookSettingsModel? {
-        guard isOpen, let session = accounts.activeSessions.first(where: { $0.id == accountID }) else { return nil }
+        guard let session = accounts.sessions.first(where: { $0.id == accountID }) else { return nil }
         await session.webhook.load()
         return session.webhook.hasAddress ? session.webhook : nil
     }
@@ -92,7 +86,7 @@ final class WebhookService {
         var result = await sender.send(message.json(for: address.kind), to: address.url)
         if result.isRetryable {
             await sleep(retryDelay)
-            // What was true when the message was made may not be any more: Pro lapsed, the account went, the address changed.
+            // What was true when the message was made may not be any more: the account went, the address changed.
             guard let model = await sendableModel(accountID), let address = await model.address() else { return }
             result = await sender.send(message.json(for: address.kind), to: address.url)
         }

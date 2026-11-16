@@ -11,8 +11,6 @@ final class NotificationCoordinator {
     private let preferences: NotificationPreferences
     private let defaults: UserDefaults
     private let now: () -> Date
-    /// Cumulus Pro; nil leaves every alert open.
-    private let pro: ProStore?
     private let failureWait: Duration
     /// Where the alerts also go; nil sends nothing.
     private let webhook: WebhookService?
@@ -30,7 +28,6 @@ final class NotificationCoordinator {
         center: any NotificationPosting = SystemNotificationCenter(),
         preferences: NotificationPreferences,
         defaults: UserDefaults = .standard,
-        pro: ProStore? = nil,
         failureWait: Duration = FailureBannerFormat.waitLimit,
         webhook: WebhookService? = nil,
         now: @escaping () -> Date = { Date() }
@@ -38,7 +35,6 @@ final class NotificationCoordinator {
         self.center = center
         self.preferences = preferences
         self.defaults = defaults
-        self.pro = pro
         self.failureWait = failureWait
         self.webhook = webhook
         self.now = now
@@ -59,11 +55,10 @@ final class NotificationCoordinator {
         var reported = stuckRunIDs(of: account.id).intersection(active)
         defer { rememberStuck(reported, accountID: account.id) }
 
-        // Without Pro the slowdowns are neither looked for nor remembered as said. With it, the first sync of an account
-        // only records the ones already there, so they never come as news.
-        let slowdowns = allows(.slowdownAlert) ? SlowdownAlertPlanner.evaluate(snapshot: current, reported: slowdownState(of: account.id)) : nil
+        // The first sync of an account only records the slowdowns already there, so they never come as news.
+        let slowdowns = SlowdownAlertPlanner.evaluate(snapshot: current, reported: slowdownState(of: account.id))
         defer {
-            if let slowdowns { rememberSlowdowns(slowdowns.reported, accountID: account.id) }
+            rememberSlowdowns(slowdowns.reported, accountID: account.id)
         }
 
         guard accountsWithBaseline.contains(account.id) else {
@@ -88,8 +83,7 @@ final class NotificationCoordinator {
                 event: hook.flatMap { Self.webhookEvent(of: banner.status, in: $0) }, context: Self.context(of: banner.run, in: current)
             ))
         }
-        // Without Pro a stuck build is neither looked for nor remembered as said.
-        let stuck = allows(.stuckBuildAlert) ? BuildNotificationPlanner.stuck(in: current, rules: stuckRules, alreadyReported: reported, now: date) : []
+        let stuck = BuildNotificationPlanner.stuck(in: current, rules: stuckRules, alreadyReported: reported, now: date)
         reported.formUnion(stuck.map(\.runID))
         for build in stuck {
             items.append(Outgoing(
@@ -97,8 +91,8 @@ final class NotificationCoordinator {
                 context: current.runs.first { $0.id == build.runID }.map { Self.context(of: $0, in: current) } ?? WebhookContext()
             ))
         }
-        if rules.slowdown, let fresh = slowdowns?.fresh {
-            items += fresh.filter { !rules.mutedProductIDs.contains($0.productID) }.map { Outgoing(notification: $0.notification, isBanner: true) }
+        if rules.slowdown {
+            items += slowdowns.fresh.filter { !rules.mutedProductIDs.contains($0.productID) }.map { Outgoing(notification: $0.notification, isBanner: true) }
         }
         if let summary {
             items += usageAlerts(for: summary, accountID: account.id).map { Outgoing(notification: $0, isBanner: true) }
@@ -129,11 +123,10 @@ final class NotificationCoordinator {
         await deliver(items.filter(\.isBanner).map(\.notification))
     }
 
-    /// One read of an app's TestFlight builds. Without Cumulus Pro nothing is looked for nor remembered. The first read of an
+    /// One read of an app's TestFlight builds. The first read of an
     /// app in a session says where things stand; what was said is kept for each account, so a banner speaks once, restarts included.
     /// The settings and a muted app silence the banner, not the memory: turned back on, an old build does not come as news.
     func testFlightDidRead(account: NotificationAccount = NotificationAccount(), app: TestFlightApp, builds: [TestFlightBuild]) async {
-        guard allows(.testFlightTracking) else { return }
         let rules = preferences.builds
         var states = testFlightState(of: account.id)
         let alerts = TestFlightAlertPlanner.evaluate(
@@ -233,12 +226,7 @@ final class NotificationCoordinator {
         let key = AccountDefaults.key(AccountDefaults.usageAlertState, accountID: accountID)
         let stored = defaults.data(forKey: key).flatMap { try? JSONDecoder().decode(UsageAlertState.self, from: $0) }
         var state = stored ?? UsageAlertState()
-        var rules = preferences.usage
-        if !allows(.earlyUsageAlerts) {
-            // The alert at 90 % is free; the one at 75 % and the one on the pace come with Pro.
-            rules.threshold75 = false
-            rules.pace = false
-        }
+        let rules = preferences.usage
         let notifications = UsageAlertPlanner.alerts(for: summary, rules: rules, state: &state, accountID: accountID)
         if state != stored, let data = try? JSONEncoder().encode(state) {
             defaults.set(data, forKey: key)
@@ -256,10 +244,6 @@ final class NotificationCoordinator {
             defaults.set(data, forKey: key)
         }
         return notifications
-    }
-
-    private func allows(_ feature: ProFeature) -> Bool {
-        pro?.allows(feature) ?? true
     }
 
     private func stuckRunIDs(of accountID: String) -> Set<String> {

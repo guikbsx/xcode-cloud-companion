@@ -16,7 +16,6 @@ struct BuildListView: View {
     /// Copies a failed build as text for an AI assistant; nil leaves it out of the row's menu.
     var failureCopier: BuildFailureCopier?
     @State private var filter = BuildFilter.all
-    @Environment(ProAccess.self) private var access: ProAccess?
     @State private var query = ""
 
     private static let blockID = "running-block"
@@ -169,12 +168,6 @@ struct BuildListView: View {
                 Text("No older builds.").font(.caption).foregroundStyle(.secondary)
             } else if isLoading {
                 ProgressView().controlSize(.small)
-            } else if !access.allows(.olderBuilds) {
-                Button("Load Older Builds", systemImage: "lock") {
-                    access?.showPurchase(for: .olderBuilds)
-                }
-                .controlSize(.small)
-                .help("Builds older than 35 days come with Cumulus Pro")
             } else {
                 Button("Load Older Builds") {
                     Task {

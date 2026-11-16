@@ -6,8 +6,6 @@ struct MainWindowRoot: View {
     let navigation: NavigationModel
     let pins: PinnedWorkflows
     let openSettings: () -> Void
-    /// Cumulus Pro for this window; nil leaves every function open.
-    var pro: ProAccess?
     /// What Apple says of Xcode Cloud; nil (tests, previews) shows no notice.
     var appleStatus: AppleStatusStore?
 
@@ -15,8 +13,7 @@ struct MainWindowRoot: View {
         Group {
             if let session = accounts.selected {
                 MainWindowView(
-                    // A paused account shows nothing of itself here, not even the progress of a measure it left unfinished.
-                    session: session, others: accounts.activeSessions.filter { $0.id != session.id }, navigation: navigation, pins: pins,
+                    session: session, others: accounts.sessions.filter { $0.id != session.id }, navigation: navigation, pins: pins,
                     openSettings: openSettings, importUsageExport: { await accounts.importUsageExport(at: $0) }
                 )
                 // Sheets, tasks and what was typed belong to the account they were opened for.
@@ -25,18 +22,13 @@ struct MainWindowRoot: View {
                 NotSetUpView(openSettings: openSettings)
             }
         }
-        .environment(pro)
         .environment(appleStatus)
         .toolbar {
             if accounts.hasSeveral {
                 ToolbarItem(placement: .navigation) {
                     Picker("Account", selection: Binding(get: { accounts.selectedID }, set: { if let id = $0 { accounts.select(id) } })) {
                         ForEach(accounts.sessions) { session in
-                            if accounts.isPaused(session) {
-                                Label(session.name, systemImage: "lock").tag(Optional(session.id))
-                            } else {
-                                Text(session.name).tag(Optional(session.id))
-                            }
+                            Text(session.name).tag(Optional(session.id))
                         }
                     }
                     .pickerStyle(.menu)
@@ -65,7 +57,6 @@ struct MainWindowView: View {
     @State private var workflowEndedID: String?
     @State private var columnVisibility = NavigationSplitViewVisibility.all
     @State private var colorPanel = AppColorPanel()
-    @Environment(ProAccess.self) private var access: ProAccess?
 
     private var buildStore: BuildStore { session.buildStore }
     private var usageStore: UsageStore { session.usageStore }
@@ -221,7 +212,7 @@ struct MainWindowView: View {
             },
             budgetHelp: buildStore.rateLimit.map { String(localized: "\($0.remaining) of \($0.limit) requests left this hour") },
             artwork: icons.artwork(in: buildStore.snapshot, by: \.id),
-            togglePause: canLaunch ? { workflow in withPro(.pauseWorkflow) { askToTogglePause(workflowID: workflow.id) } } : nil,
+            togglePause: canLaunch ? { workflow in askToTogglePause(workflowID: workflow.id) } : nil,
             chooseColor: { [session] product, choice in session.chooseColor(choice, forApp: product.paletteKey) },
             pickOtherColor: { [session, colorPanel] product in
                 colorPanel.open(with: product.swatch.nsColor) { session.chooseColor(.custom($0), forApp: product.paletteKey) }
@@ -282,16 +273,14 @@ struct MainWindowView: View {
                     navigation.selectedBuildID = id
                 },
                 trends: WorkflowTrends(runs: buildStore.snapshot.runs.filter { $0.workflowID == id }),
-                slowdown: access.allows(.workflowTrends)
-                    ? WorkflowSlowdownModel.make(workflowID: id, snapshot: buildStore.snapshot, ledger: usageStore.ledger, summary: usageSummary, now: Date())
-                    : nil,
+                slowdown: WorkflowSlowdownModel.make(workflowID: id, snapshot: buildStore.snapshot, ledger: usageStore.ledger, summary: usageSummary, now: Date()),
                 openBuild: { navigation.selectedBuildID = $0 },
-                togglePause: canLaunch ? { withPro(.pauseWorkflow) { askToTogglePause(workflowID: id) } } : nil,
+                togglePause: canLaunch ? { askToTogglePause(workflowID: id) } : nil,
                 xcodeWarning: XcodeVersionCheck.warning(
                     version: workflow.xcodeVersion ?? buildStore.snapshot.workflow(id: id)?.xcodeVersion, name: workflow.xcodeVersionName,
                     among: buildStore.snapshot.xcodeVersions
                 ),
-                editWorkflow: canLaunch && workflow.isLockedForEditing != true ? { withPro(.editWorkflow) { editTarget = WorkflowEditTarget(workflow: workflow) } } : nil,
+                editWorkflow: canLaunch && workflow.isLockedForEditing != true ? { editTarget = WorkflowEditTarget(workflow: workflow) } : nil,
                 workflowURL: AppStoreConnectLinks.workflow(appID: product?.appID, workflowID: id, teamID: settings.issuerID.isEmpty ? nil : settings.issuerID)
             )
                 .environment(\.sourceOpening, workflow.productID.map { sourceOpening(forProduct: $0) })
@@ -299,13 +288,6 @@ struct MainWindowView: View {
                     await loadWorkflow(id)
                     workflowEndedID = id
                 }
-        } else if case .product(let id) = navigation.sidebarSelection, !access.allows(.appOverview),
-                  let product = buildStore.snapshot.products.first(where: { $0.id == id }) {
-            // Without Pro the app's sheet reads nothing: neither its workflows nor its TestFlight build.
-            AppOverviewLockedPage(
-                appName: product.displayName, swatch: palette.swatch(for: product.name),
-                artwork: icons.artwork(in: buildStore.snapshot, by: \.id)[id]
-            )
         } else if case .product(let id) = navigation.sidebarSelection, let model = appOverview(productID: id) {
             AppOverviewView(
                 model: model, swatch: palette.swatch(for: model.productKey), artwork: icons.artwork(in: buildStore.snapshot, by: \.id)[id], now: Date(),
@@ -363,15 +345,6 @@ struct MainWindowView: View {
         guard extrasStore.extras(for: run.id)?.betaBuilds == nil else { return }
         if let budget = buildStore.rateLimit, budget.remaining <= SyncSchedule.criticalRemaining { return }
         await extrasStore.loadBetaBuilds(for: run)
-    }
-
-    /// Does `action` with Cumulus Pro; without it, shows the way to buy it instead.
-    private func withPro(_ feature: ProFeature, _ action: () -> Void) {
-        if access.allows(feature) {
-            action()
-        } else {
-            access?.showPurchase(for: feature)
-        }
     }
 
     private var canLaunch: Bool {

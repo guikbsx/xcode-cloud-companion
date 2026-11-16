@@ -300,7 +300,7 @@ struct TestHistoryModelTests {
         var count = 0
     }
 
-    private func model(_ loads: Loads, allowed: @escaping @MainActor () -> Bool) -> WorkflowTestsModel {
+    private func model(_ loads: Loads) -> WorkflowTestsModel {
         WorkflowTestsModel(
             reader: TestHealthReader(cache: cache),
             snapshot: { snapshot },
@@ -308,8 +308,7 @@ struct TestHistoryModelTests {
                 loads.count += 1
                 return nil
             },
-            budget: { loads.count += 1000; return RateLimit(limit: 3_600, remaining: 3_000) },
-            allowed: allowed
+            budget: { loads.count += 1000; return RateLimit(limit: 3_600, remaining: 3_000) }
         )
     }
 
@@ -318,20 +317,9 @@ struct TestHistoryModelTests {
         await cache.save(extras(5, [result(5, status: .failure)]), runID: "run-5")
         let loads = Loads()
 
-        let history = await model(loads, allowed: { true }).history(of: identity, workflowID: "w1")
+        let history = await model(loads).history(of: identity, workflowID: "w1")
 
-        #expect(history?.entries.map(\.outcome) == [.failed])
-        #expect(loads.count == 0)
-    }
-
-    @Test func withoutProNothingIsReadFromTheDisk() async {
-        defer { Task { [cache] in await cache.deleteAll() } }
-        await cache.save(extras(5, [result(5, status: .failure)]), runID: "run-5")
-        let loads = Loads()
-
-        let history = await model(loads, allowed: { false }).history(of: identity, workflowID: "w1")
-
-        #expect(history == nil)
+        #expect(history.entries.map(\.outcome) == [.failed])
         #expect(loads.count == 0)
     }
 }
@@ -401,10 +389,5 @@ struct TestHistoryTextTests {
     @Test func theSkeletonLastsWhileTheDiskIsBeingRead() {
         #expect(SkeletonRules.testHistory(hasRead: false))
         #expect(!SkeletonRules.testHistory(hasRead: true))
-    }
-
-    @Test func theTestHealthBenefitStillSpeaksForTheHistory() {
-        #expect(ProBenefit.diagnostics.features.contains(.testHealth))
-        #expect(ProFeatureText.sentence(.testHealth).contains("thirty"))
     }
 }

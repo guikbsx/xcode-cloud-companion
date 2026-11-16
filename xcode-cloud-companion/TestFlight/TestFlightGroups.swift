@@ -61,7 +61,7 @@ extension AppStoreConnectClient {
 
 /// The groups of the apps that hand builds to TestFlight, read for the card that gives a build to them. Each app is read
 /// once a session, and its testers counted once a session, group by group: the file in the account's folder only lets the
-/// card draw at once. Cumulus Pro: without it nothing is read. A key that Apple says cannot read them is not asked again.
+/// card draw at once. A key that Apple says cannot read them is not asked again.
 @Observable
 final class TestFlightGroupsStore {
     private(set) var readings: [String: BetaGroupsReading] = [:]
@@ -70,8 +70,6 @@ final class TestFlightGroupsStore {
     /// The apps whose first read ended this session, with groups or without: what the skeleton waits for.
     private(set) var attempted: Set<String> = []
     private(set) var isForbidden = false
-    /// Cumulus Pro: false reads nothing.
-    @ObservationIgnored var allowed: @MainActor () -> Bool = { true }
 
     private let cache: BetaGroupsCache
     private let client: () async -> AppStoreConnectClient?
@@ -113,7 +111,6 @@ final class TestFlightGroupsStore {
 
     /// Reads the groups of an app once this session, then the tester count of each; nothing when the key's budget is nearly spent.
     func load(appID: String) async {
-        guard allowed() else { return }
         await loadCache()
         guard !loaded.contains(appID), !reading.contains(appID), !isForbidden else {
             attempted.insert(appID)

@@ -16,10 +16,6 @@ struct AgentsSettingsView: View {
     static let clientKey = "settings.agents.client"
 
     let model: AgentsSettingsModel
-    /// Cumulus Pro; nil leaves the pane as it is with Pro.
-    var pro: ProStore?
-    /// Opens the purchase sheet over the Settings window.
-    var openPurchase: () -> Void = {}
     @State private var picking: Picking?
     @State private var copiedClient: AgentClient?
     @State private var extensionError: String?
@@ -29,13 +25,11 @@ struct AgentsSettingsView: View {
 
     var body: some View {
         SettingsColumns(single: {
-            proNotice
             intro
             clientPicker
             steps(for: client)
             abilities
         }) {
-            proNotice
             intro
             abilities
         } trailing: {
@@ -95,34 +89,6 @@ struct AgentsSettingsView: View {
             }
             .pickerStyle(.segmented)
             .labelsHidden()
-        }
-    }
-
-    /// Without Pro, what is installed stays installed and can still be set up: it is the answers that wait for Pro.
-    @ViewBuilder
-    private var proNotice: some View {
-        if let pro, !pro.allows(.commandLine) {
-            Section {
-                HStack(alignment: .top, spacing: 10) {
-                    Label {
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text("Agents come with Cumulus Pro")
-                                .font(.headline)
-                            Text("Without it, only `cumulus status` answers; the other commands and every MCP tool say that Cumulus Pro is required. What is installed here stays in place.")
-                                .font(.callout)
-                                .foregroundStyle(.secondary)
-                                .fixedSize(horizontal: false, vertical: true)
-                        }
-                    } icon: {
-                        Image(systemName: "lock.fill")
-                            .foregroundStyle(Color.accentColor)
-                    }
-                    Spacer(minLength: 8)
-                    Button("Discover Pro", action: openPurchase)
-                        .buttonStyle(.borderedProminent)
-                        .fixedSize()
-                }
-            }
         }
     }
 

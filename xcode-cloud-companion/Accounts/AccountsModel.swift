@@ -42,14 +42,6 @@ final class AccountsModel {
     private let registryStore: AccountRegistryStore
     private let migration: AccountMigration?
     private let makeSession: (Account) -> AccountSession
-    /// Cumulus Pro, handed to every account; set before the accounts start. Nil leaves every function open.
-    @ObservationIgnored var pro: ProStore? {
-        didSet { watchPro() }
-    }
-    /// Called when a paused account is asked for: the way to Cumulus Pro.
-    @ObservationIgnored var onPausedSelection: (() -> Void)?
-    /// The accounts whose sync is held back for want of Cumulus Pro.
-    @ObservationIgnored private var heldIDs: Set<String> = []
     @ObservationIgnored private lazy var importer = UsageImporter(
         sessions: { [weak self] in self?.sessions ?? [] },
         selected: { [weak self] in self?.selected },
@@ -81,68 +73,7 @@ final class AccountsModel {
     }
 
     private func newSession(_ account: Account) -> AccountSession {
-        let session = makeSession(account)
-        session.pro = pro
-        return session
-    }
-
-    // MARK: - Cumulus Pro
-
-    /// Without Cumulus Pro only the first account is followed. The others are paused: they stay listed, with their key,
-    /// their cache and their settings, and neither sync nor ask Apple anything until Pro is back.
-    func isPaused(_ session: AccountSession) -> Bool {
-        guard let pro, pro.hasResolved, !pro.allows(.multipleAccounts) else { return false }
-        return session.id != sessions.first?.id
-    }
-
-    var activeSessions: [AccountSession] {
-        sessions.filter { !isPaused($0) }
-    }
-
-    /// A first account is free; one more comes with Cumulus Pro.
-    var canAddAccount: Bool {
-        sessions.isEmpty || (pro?.allows(.multipleAccounts) ?? true)
-    }
-
-    /// Until Cumulus Pro is known, the accounts after the first wait: none of them asks Apple anything on the strength
-    /// of a guess. What is selected is left alone meanwhile, so a Pro user finds the account they left.
-    private func mayFollow(_ session: AccountSession) -> Bool {
-        guard let pro, session.id != sessions.first?.id else { return true }
-        return pro.hasResolved && pro.allows(.multipleAccounts)
-    }
-
-    private func watchPro() {
-        guard let pro else { return }
-        withObservationTracking {
-            _ = pro.isPro
-            _ = pro.hasResolved
-        } onChange: { [weak self] in
-            Task { @MainActor in
-                self?.applyProState()
-                self?.watchPro()
-            }
-        }
-    }
-
-    /// Holds back the accounts Cumulus Pro no longer covers and lets go of those it covers again; a paused account
-    /// cannot stay on screen.
-    func applyProState() {
-        if let selected, isPaused(selected), let first = sessions.first {
-            show(first.id)
-        }
-        guard isRunning else { return }
-        for session in sessions {
-            let follows = mayFollow(session)
-            if !follows, !heldIDs.contains(session.id) {
-                heldIDs.insert(session.id)
-                session.buildStore.stop()
-            } else if follows, heldIDs.contains(session.id) {
-                heldIDs.remove(session.id)
-                session.buildStore.start()
-            }
-        }
-        heldIDs.formIntersection(sessions.map(\.id))
-        applyWindowState()
+        makeSession(account)
     }
 
     var selected: AccountSession? {
@@ -191,7 +122,7 @@ final class AccountsModel {
         for session in sessions {
             run(session)
         }
-        applyProState()
+        applyWindowState()
         for session in sessions {
             await session.buildStore.loadCacheIfNeeded()
             await session.usageStore.start()
@@ -260,11 +191,7 @@ final class AccountsModel {
     }
 
     private func run(_ session: AccountSession) {
-        if mayFollow(session) {
-            session.buildStore.start()
-        } else {
-            heldIDs.insert(session.id)
-        }
+        session.buildStore.start()
         session.settings.mirrorPlan()
         // The Issuer ID is the team in App Store Connect's addresses: the menu's links need it before Settings ever opens.
         Task { await session.settings.load() }
@@ -282,9 +209,7 @@ final class AccountsModel {
     func resume() {
         guard isRunning else { return }
         for session in sessions {
-            if mayFollow(session) {
-                session.buildStore.start()
-            }
+            session.buildStore.start()
             Task {
                 await session.settings.load()
                 await session.usageStore.start()
@@ -295,7 +220,7 @@ final class AccountsModel {
 
     func refreshAll() {
         Task { await importer.scan() }
-        for session in sessions where mayFollow(session) {
+        for session in sessions {
             Task { await session.buildStore.refreshNow() }
         }
     }
@@ -308,11 +233,7 @@ final class AccountsModel {
     // MARK: - What is on screen
 
     func select(_ id: String) {
-        guard id != selectedID, let session = session(id: id) else { return }
-        guard !isPaused(session) else {
-            onPausedSelection?()
-            return
-        }
+        guard id != selectedID, session(id: id) != nil else { return }
         show(id)
     }
 
@@ -348,7 +269,7 @@ final class AccountsModel {
     }
 
     func screenLockDidChange(isLocked: Bool) {
-        for session in sessions where mayFollow(session) {
+        for session in sessions {
             session.buildStore.screenLockDidChange(isLocked: isLocked)
         }
     }
@@ -357,7 +278,7 @@ final class AccountsModel {
     private func applyWindowState() {
         guard isRunning else { return }
         for session in sessions {
-            let isShown = windowIsOpen && session.id == selectedID && mayFollow(session)
+            let isShown = windowIsOpen && session.id == selectedID
             if isShown, !session.buildStore.windowIsOpen {
                 session.buildStore.windowDidOpen()
             } else if !isShown, session.buildStore.windowIsOpen {
@@ -419,8 +340,7 @@ final class AccountsModel {
         } else {
             saveRegistry()
         }
-        // Without Pro, the account that is now the first is followed again.
-        applyProState()
+        applyWindowState()
         return true
     }
 

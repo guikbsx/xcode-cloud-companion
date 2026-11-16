@@ -8,7 +8,7 @@ struct BuildFailureCopier {
     let buildStore: BuildStore
     let extrasStore: BuildExtrasStore
     var logOpener: LogOpener?
-    /// The log excerpt, for Cumulus Pro: added to the text only when the log is already unpacked.
+    /// The log excerpt: added to the text only when the log is already unpacked.
     var excerpts: LogExcerptStore?
 
     /// What is known now, with no request.

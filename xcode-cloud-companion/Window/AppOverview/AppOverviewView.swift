@@ -17,7 +17,6 @@ struct AppOverviewView: View {
     var openWorkflow: (String) -> Void = { _ in }
     var openBuild: (String) -> Void = { _ in }
     var openReference: (AppReference) -> Void = { _ in }
-    @Environment(ProAccess.self) private var access: ProAccess?
 
     var body: some View {
         // Halves, not a main column and a side one: the table of workflows needs the whole width to stay a table.
@@ -59,9 +58,7 @@ struct AppOverviewView: View {
     @ViewBuilder
     private var testFlightSection: some View {
         if model.shipsToTestFlight {
-            if !access.allows(.testFlightTracking) {
-                ProLockedCard(feature: .testFlightTracking)
-            } else if let testFlightCard {
+            if let testFlightCard {
                 TestFlightCard(content: testFlightCard, appName: model.displayName, swatch: swatch)
             }
         }

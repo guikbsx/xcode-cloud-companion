@@ -180,7 +180,7 @@ final class StatusItemController: NSObject, NSMenuDelegate {
             return RunningBuildsETA(runningCount: 1, remaining: minutes * 60)
         }
         #endif
-        return RunningBuildsETA(snapshots: accounts.activeSessions.map(\.buildStore.snapshot), now: date)
+        return RunningBuildsETA(snapshots: accounts.sessions.map(\.buildStore.snapshot), now: date)
     }
 
     /// The ring of the build that ends first, on any active account.
@@ -191,7 +191,7 @@ final class StatusItemController: NSObject, NSMenuDelegate {
             return MenuBarRing.sample(minutes: ProcessInfo.processInfo.environment["XCC_ETA"].flatMap(Double.init) ?? 4, now: date)
         }
         #endif
-        return MenuBarRing.leader(in: accounts.activeSessions.map(\.buildStore.snapshot), now: date)
+        return MenuBarRing.leader(in: accounts.sessions.map(\.buildStore.snapshot), now: date)
     }
 
     /// The bar changes once a minute at most: a task sleeps until the text or the ring next looks different, and only while a
@@ -222,6 +222,6 @@ final class StatusItemController: NSObject, NSMenuDelegate {
         }
         #endif
         // The dot speaks for every account: a build of an account that is not on screen still shows.
-        return MenuBarBadge.status(for: accounts.activeSessions.map(\.buildStore.snapshot))
+        return MenuBarBadge.status(for: accounts.sessions.map(\.buildStore.snapshot))
     }
 }

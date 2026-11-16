@@ -349,11 +349,6 @@ struct DistributionCardModelTests {
         #expect(!SkeletonRules.testFlightGroups(hasGroups: false, hasAttempted: true), "a read that ended with nothing leaves the place as it was")
     }
 
-    @Test func distributingIsAProFunctionOfTheWorkflowsBenefitWithAWordOfItsOwn() {
-        #expect(ProBenefit.workflows.features.contains(.testFlightDistribution))
-        #expect(ProBenefit.ordered(for: .testFlightDistribution).first == .workflows)
-        #expect(!ProFeatureText.title(.testFlightDistribution).isEmpty && ProFeatureText.sentence(.testFlightDistribution).hasSuffix("."))
-    }
 }
 
 // MARK: - Sending
@@ -369,7 +364,7 @@ struct TestFlightDistributorTests {
     /// `replies` answers a write by its method and path; a write nobody planned answers 204.
     private func distributor(
         log: Log, replies: @escaping @Sendable (URLRequest) -> MockTransport.Reply? = { _ in nil },
-        reread: @escaping @Sendable (Int) -> TestFlightBuild? = { _ in nil }, allowed: Bool = true, writable: Bool = true
+        reread: @escaping @Sendable (Int) -> TestFlightBuild? = { _ in nil }, writable: Bool = true
     ) -> TestFlightDistributor {
         let transport = MockTransport { request in
             if request.httpMethod == "GET" || request.httpMethod == nil {
@@ -389,7 +384,7 @@ struct TestFlightDistributorTests {
                 }
                 return reread(count)
             },
-            allowed: { allowed }, isKeyWritable: { writable }
+            isKeyWritable: { writable }
         )
     }
 
@@ -477,18 +472,6 @@ struct TestFlightDistributorTests {
 
         #expect(shape(log.writes.withLock { $0 }) == ["POST /v1/builds/b-412/relationships/betaGroups"])
         #expect(log.rereads.withLock { $0 } == 1, "one read at the end, none to decide on a review")
-    }
-
-    @Test func withoutProNothingIsSentOrRead() async throws {
-        let log = Log()
-        let service = distributor(log: log, allowed: false)
-
-        let outcome = await service.distribute(try request())
-        let notes = await service.notes(for: "b-412")
-
-        #expect(outcome == .failed(message: ProFeatureText.required, completed: []))
-        #expect(notes == nil)
-        #expect(log.writes.withLock { $0.isEmpty } && log.notesRead.withLock { $0 } == 0 && log.rereads.withLock { $0 } == 0)
     }
 
     @Test func aKeyThatIsReadOnlySendsNothing() async throws {
@@ -638,12 +621,11 @@ struct TestFlightGroupsStoreTests {
         }
     }
 
-    private func store(_ transport: MockTransport, allowed: Bool = true, budget: RateLimit? = nil, clock: TestClock = TestClock(now)) -> TestFlightGroupsStore {
+    private func store(_ transport: MockTransport, budget: RateLimit? = nil, clock: TestClock = TestClock(now)) -> TestFlightGroupsStore {
         let client = AppStoreConnectClient(credentials: .sample(), transport: transport)
         let store = TestFlightGroupsStore(
             cache: BetaGroupsCache(fileURL: directory.appending(path: "TestFlightGroups.json")), client: { client }, budget: { budget }, now: { clock.now }
         )
-        store.allowed = { allowed }
         return store
     }
 
@@ -689,13 +671,8 @@ struct TestFlightGroupsStoreTests {
         #expect(next.groups(for: "app-1")?.count == 4, "an offline read keeps what the file said")
     }
 
-    @Test func withoutProOrWithTheBudgetNearlySpentNothingIsAsked() async throws {
+    @Test func withTheBudgetNearlySpentNothingIsAsked() async throws {
         defer { try? FileManager.default.removeItem(at: directory) }
-        let free = transport()
-        let freeStore = store(free, allowed: false)
-        await freeStore.load(appID: "app-1")
-        #expect(await free.requests.isEmpty && freeStore.groups(for: "app-1") == nil)
-
         let spent = transport()
         let spentStore = store(spent, budget: RateLimit(limit: 3600, remaining: SyncSchedule.criticalRemaining))
         await spentStore.load(appID: "app-1")
@@ -748,12 +725,11 @@ struct TestFlightGroupsStoreTests {
 struct TestFlightRereadTests {
     private let directory = FileManager.default.temporaryDirectory.appending(path: "cumulus-reread-\(UUID().uuidString)")
 
-    private func store(_ transport: MockTransport, allowed: Bool = true) -> TestFlightStore {
+    private func store(_ transport: MockTransport) -> TestFlightStore {
         let client = AppStoreConnectClient(credentials: .sample(), transport: transport)
         let store = TestFlightStore(
             cache: TestFlightCache(fileURL: directory.appending(path: "TestFlight.json")), client: { client }, budget: { nil }, now: { now }
         )
-        store.allowed = { allowed }
         return store
     }
 
@@ -788,7 +764,7 @@ struct TestFlightRereadTests {
         #expect(kept?.readings["p1"]?.builds.first?.groups.map(\.id) == ["g-qa"], "the file follows")
     }
 
-    @Test func aBuildNoReadingKnowsAndAFreeAccountAreNotAsked() async throws {
+    @Test func aBuildNoReadingKnowsIsNotAsked() async throws {
         defer { try? FileManager.default.removeItem(at: directory) }
         let transport = MockTransport { _ in MockTransport.Reply(status: 500) }
         let open = store(transport)
@@ -796,11 +772,5 @@ struct TestFlightRereadTests {
         #expect(await open.reread(buildID: "unknown") == nil)
         #expect(await open.reread(buildID: "b-412") == nil, "a failed read gives nothing")
         #expect(open.lookup(buildID: "b-412")?.build.internalState == .testing, "and changes nothing")
-
-        let free = store(transport, allowed: false)
-        _ = try await seeded(free)
-        let before = await transport.requests.count
-        #expect(await free.reread(buildID: "b-412") == nil)
-        #expect(await transport.requests.count == before)
     }
 }

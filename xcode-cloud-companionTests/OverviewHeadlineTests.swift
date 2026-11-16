@@ -38,7 +38,6 @@ struct OverviewHeadlineTests {
         var testFlight: [String: TestFlightReading] = [:]
         var flaky: [OverviewFlakyTests.Entry] = []
         var insights: [String: String] = [:]
-        var pro: Set<ProFeature> = Set(ProFeature.allCases)
     }
 
     private func product(_ world: inout World, _ id: String, _ name: String) {
@@ -90,7 +89,6 @@ struct OverviewHeadlineTests {
         var facts = OverviewHeadline.Facts(snapshot: snapshot, mosaic: mosaic, summary: world.summary, now: moment)
         facts.calendar = calendar
         facts.locale = locale ?? english
-        facts.pro = world.pro
         facts.failureInsights = world.insights
         facts.appleStatus = world.apple
         facts.testFlight = world.testFlight
@@ -225,7 +223,7 @@ struct OverviewHeadlineTests {
         #expect(title.actions.map(\.action) == [.openBuild(runID: "wnightly-205"), .copyForAI(runID: "wnightly-205")])
     }
 
-    @Test func theSentenceOfInBriefJoinsTheLeadOnlyWhenCachedAndOpenedByPro() {
+    @Test func theSentenceOfInBriefJoinsTheLeadOnlyWhenCached() {
         var world = World()
         baseline(&world)
         broken(&world)
@@ -233,9 +231,6 @@ struct OverviewHeadlineTests {
 
         #expect(headline(world).title.lead == "Nightly has failed since #203, three times in a row. Four RouteSolver tests fail since iOS 27.")
 
-        world.pro.remove(.failureInsight)
-        #expect(headline(world).title.lead == "Nightly has failed since #203, three times in a row.")
-        world.pro.insert(.failureInsight)
         world.insights = [:]
         #expect(headline(world).title.lead == "Nightly has failed since #203, three times in a row.")
     }
@@ -620,49 +615,6 @@ struct OverviewHeadlineTests {
         world.flaky = [OverviewFlakyTests.Entry(workflowID: "wbase", tests: ["A/a"]), OverviewFlakyTests.Entry(workflowID: "wpr", tests: ["B/b", "C/c"])]
 
         #expect(headline(world).notes.first?.sentence == "Pollen · PR checks has 2 flaky tests.")
-    }
-
-    // MARK: - Pro
-
-    @Test func aFactFromAProFunctionDoesNotExistWithoutPro() {
-        var world = World()
-        baseline(&world)
-        stuck(&world)
-        slowdown(&world)
-        world.workflows[0].xcodeVersion = "26.4"
-        world.flaky = [OverviewFlakyTests.Entry(workflowID: "wbase", tests: ["A/a"])]
-        var waiting = TestFlightFixture.build(id: "tf-1", member: [], external: .waitingForReview, now: now)
-        waiting.review = .waiting
-        waiting.reviewSubmittedDate = now.addingTimeInterval(-3 * 86_400)
-        world.testFlight = ["pbase": TestFlightReading(appID: "app-pbase", builds: [waiting], readAt: now)]
-
-        #expect(headline(world).title.situation == .stuckBuild)
-        #expect(Set(headline(world).notes.map(\.kind)) == [.slowdown, .testFlight, .flakyTests])
-
-        world.pro = []
-        let free = headline(world)
-        #expect(free.title.situation == .buildRunning, "neither stuck nor slowed down without Pro")
-        #expect(free.notes.isEmpty)
-    }
-
-    @Test func eachProFunctionOpensOnlyItsOwnFact() {
-        func kinds(without feature: ProFeature) -> Set<OverviewHeadline.Note.Kind> {
-            var world = World()
-            baseline(&world)
-            slowdown(&world)
-            world.flaky = [OverviewFlakyTests.Entry(workflowID: "wbase", tests: ["A/a"])]
-            var waiting = TestFlightFixture.build(id: "tf-1", member: [], external: .waitingForReview, now: now)
-            waiting.review = .waiting
-            waiting.reviewSubmittedDate = now.addingTimeInterval(-3 * 86_400)
-            world.testFlight = ["pbase": TestFlightReading(appID: "app-pbase", builds: [waiting], readAt: now)]
-            world.pro.remove(feature)
-            let result = headline(world)
-            return Set(result.notes.map(\.kind)).union(result.title.situation == .slowdown ? [.slowdown] : [])
-        }
-
-        #expect(kinds(without: .workflowTrends) == [.testFlight, .flakyTests])
-        #expect(kinds(without: .testFlightTracking) == [.slowdown, .flakyTests])
-        #expect(kinds(without: .testHealth) == [.slowdown, .testFlight])
     }
 
     // MARK: - Words

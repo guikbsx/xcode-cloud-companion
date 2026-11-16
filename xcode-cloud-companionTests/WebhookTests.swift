@@ -322,8 +322,8 @@ struct WebhookServiceTests {
     private let accounts = TestAccounts()
     private let sleeps = SleepLog()
 
-    private func service(_ sender: RecordingSender, pro: ProStore? = nil) -> WebhookService {
-        WebhookService(accounts: accounts.model, sender: sender, pro: pro, sleep: { [sleeps] in sleeps.record($0) }, now: { now })
+    private func service(_ sender: RecordingSender) -> WebhookService {
+        WebhookService(accounts: accounts.model, sender: sender, sleep: { [sleeps] in sleeps.record($0) }, now: { now })
     }
 
     private func account(address: String? = slackAddress) async throws -> AccountSession {
@@ -418,44 +418,6 @@ struct WebhookServiceTests {
         webhook.send([message()], accountID: session.id)
         await webhook.settle()
 
-        #expect(await sender.sent.count == 1)
-    }
-
-    @Test func withoutProNothingGoesAndTheSettingsAreKept() async throws {
-        let session = try await account()
-        session.webhook.choices.succeeded = true
-        let sender = RecordingSender()
-        let free = ProStore(source: StubProSource(), forced: .free)
-        let webhook = service(sender, pro: free)
-
-        webhook.send([message()], accountID: session.id)
-        await webhook.settle()
-        await webhook.sendTest(accountID: session.id)
-
-        #expect(await sender.sent.isEmpty)
-        #expect(await webhook.choices(for: session.id) == nil)
-        #expect(session.webhook.hasAddress && session.webhook.choices.succeeded, "address and choices wait for Pro")
-
-        let pro = ProStore(source: StubProSource(), forced: .lifetime(since: now))
-        #expect(await service(sender, pro: pro).choices(for: session.id) != nil)
-    }
-
-    @Test func aPausedAccountSendsNothing() async throws {
-        let first = try await accounts.add("First")
-        let second = try await accounts.add("Second")
-        await first.webhook.commit(slackAddress)
-        await second.webhook.commit(slackAddress)
-        accounts.model.pro = ProStore(source: StubProSource(), forced: .free)
-        let sender = RecordingSender()
-        let webhook = service(sender, pro: nil)
-
-        webhook.send([message()], accountID: second.id)
-        await webhook.settle()
-        #expect(await sender.sent.isEmpty)
-        #expect(await webhook.choices(for: second.id) == nil)
-
-        webhook.send([message()], accountID: first.id)
-        await webhook.settle()
         #expect(await sender.sent.count == 1)
     }
 

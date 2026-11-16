@@ -90,8 +90,6 @@ nonisolated struct CLIAppLink: Sendable {
             return CLIFailure(code: .refused, message: "Apple refused to start the build.\(detail)", suggestions: ["The workflow may be paused, or none of its manual start conditions covers this source."])
         case IPCLaunchReason.uncertain?:
             return CLIFailure(code: .internal, message: "Apple did not confirm the launch.\(detail)", suggestions: ["Run 'cumulus refresh --wait', then 'cumulus builds --limit 1' before trying again: a build may have started."])
-        case IPCLaunchReason.proRequired?:
-            return CLIFailure(code: .proRequired, message: "Cumulus Pro is required to start a build from an agent.", suggestions: ["Ask the user to open Cumulus › Settings › Cumulus Pro."])
         case IPCLaunchReason.unknown?:
             return CLIFailure(code: .internal, message: "Whether a build started is not known.\(detail)", suggestions: ["Do not launch again yet: run 'cumulus refresh --wait', then 'cumulus builds --limit 1' to see whether it started."])
         default:
@@ -150,11 +148,6 @@ nonisolated struct CLIAppLink: Sendable {
             return CLIFailure(code: .noCache, message: "Cumulus has no App Store Connect API key for this account.", suggestions: ["Open the Cumulus app and add your key in Settings."])
         case IPCTestFlightReason.unknownAccount?:
             return CLIFailure(code: .notFound, message: "Cumulus no longer has this account.", suggestions: ["Run 'cumulus accounts' to list the accounts."])
-        case IPCTestFlightReason.paused?:
-            return CLIFailure(
-                code: .proRequired, message: "This account is paused: without Cumulus Pro, Cumulus follows its first account only.",
-                suggestions: ["Ask the user to open Cumulus › Settings › Cumulus Pro to follow several accounts."]
-            )
         case IPCTestFlightReason.notAllowed?:
             return CLIFailure(
                 code: .notAllowed, message: "The key may not \(action) TestFlight builds.\(detail)",
@@ -195,11 +188,6 @@ nonisolated struct CLIAppLink: Sendable {
             return CLIFailure(
                 code: .internal, message: "Apple did not confirm the change.\(detail)",
                 suggestions: ["Do not try again yet: run 'cumulus testflight <build>' to see the groups and the state as Apple has them."]
-            )
-        case IPCTestFlightReason.proRequired?:
-            return CLIFailure(
-                code: .proRequired, message: "Cumulus Pro is required to change TestFlight builds from an agent.",
-                suggestions: ["Ask the user to open Cumulus › Settings › Cumulus Pro."]
             )
         default:
             return CLIFailure(code: .internal, message: "The change could not be made.\(detail)")

@@ -6,7 +6,6 @@ nonisolated enum SettingsDestination: Hashable, Sendable {
     case general
     case notifications
     case agents
-    case pro
     case account(String)
     case newAccount
 }
@@ -17,7 +16,7 @@ nonisolated enum SettingsDestination: Hashable, Sendable {
 final class SettingsNavigationModel {
     /// Remembered by name, under the key the tabs used: what a version with tabs stored is still understood.
     enum Pane: String, CaseIterable, Sendable {
-        case general, accounts, notifications, agents, pro
+        case general, accounts, notifications, agents
     }
 
     static let storedKey = "settings.selectedTabName"
@@ -41,7 +40,6 @@ final class SettingsNavigationModel {
         case .general: .general
         case .notifications: .notifications
         case .agents: .agents
-        case .pro: .pro
         case .accounts:
             switch accountsTab.selection {
             case .account(let id)?: .account(id)
@@ -56,7 +54,6 @@ final class SettingsNavigationModel {
         case .general?: pane = .general
         case .notifications?: pane = .notifications
         case .agents?: pane = .agents
-        case .pro?: pane = .pro
         case .account(let id)?:
             accountsTab.selection = .account(id)
             pane = .accounts

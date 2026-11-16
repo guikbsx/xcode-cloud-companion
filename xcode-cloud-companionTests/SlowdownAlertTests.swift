@@ -83,15 +83,13 @@ struct SlowdownAlertCoordinatorTests {
         defaults.removePersistentDomain(forName: suiteName)
     }
 
-    private func coordinator(_ center: MockNotificationCenter, pro: ProStore? = nil) -> NotificationCoordinator {
-        NotificationCoordinator(center: center, preferences: NotificationPreferences(defaults: defaults), defaults: defaults, pro: pro, now: { moment })
+    private func coordinator(_ center: MockNotificationCenter) -> NotificationCoordinator {
+        NotificationCoordinator(center: center, preferences: NotificationPreferences(defaults: defaults), defaults: defaults, now: { moment })
     }
-
-    private var lifetime: ProStore { ProStore(source: StubProSource(), forced: .lifetime(since: start)) }
 
     @Test func theBannerComesOnceAndNeverOnTheFirstSyncOfAnAccount() async {
         let center = MockNotificationCenter(status: .allowed)
-        let coordinator = coordinator(center, pro: lifetime)
+        let coordinator = coordinator(center)
         let quiet = snapshot(builds(29, slowFrom: 25))
         let slow = snapshot(builds(30, slowFrom: 25))
 
@@ -112,12 +110,12 @@ struct SlowdownAlertCoordinatorTests {
         let center = MockNotificationCenter(status: .allowed)
         let quiet = snapshot(builds(29, slowFrom: 25))
         let slow = snapshot(builds(30, slowFrom: 25))
-        let first = coordinator(center, pro: lifetime)
+        let first = coordinator(center)
         await first.buildsDidSync(previous: quiet, current: quiet)
         await first.buildsDidSync(previous: quiet, current: slow)
         #expect(await center.posted.count == 1)
 
-        let restarted = coordinator(center, pro: lifetime)
+        let restarted = coordinator(center)
         await restarted.buildsDidSync(previous: slow, current: slow)
         await restarted.buildsDidSync(previous: slow, current: slow)
 
@@ -126,25 +124,10 @@ struct SlowdownAlertCoordinatorTests {
         #expect(defaults.data(forKey: key).flatMap { try? JSONDecoder().decode([String: String].self, from: $0) } == ["w": "w-25"])
     }
 
-    @Test func withoutProNothingIsSentOrRemembered() async {
-        let center = MockNotificationCenter(status: .allowed)
-        let free = ProStore(source: StubProSource(), forced: .free)
-        let coordinator = coordinator(center, pro: free)
-        let quiet = snapshot(builds(29, slowFrom: 25))
-        let slow = snapshot(builds(30, slowFrom: 25))
-
-        await coordinator.buildsDidSync(previous: quiet, current: quiet)
-        await coordinator.buildsDidSync(previous: quiet, current: slow)
-
-        #expect(await center.posted.isEmpty)
-        let key = AccountDefaults.key(AccountDefaults.reportedSlowdowns, accountID: AccountRegistry.firstAccountID)
-        #expect(defaults.data(forKey: key) == nil)
-    }
-
     @Test func theSettingAndAMutedAppSilenceTheBannerButNotTheMemory() async {
         let center = MockNotificationCenter(status: .allowed)
         let preferences = NotificationPreferences(defaults: defaults)
-        let coordinator = NotificationCoordinator(center: center, preferences: preferences, defaults: defaults, pro: lifetime, now: { moment })
+        let coordinator = NotificationCoordinator(center: center, preferences: preferences, defaults: defaults, now: { moment })
         let quiet = snapshot(builds(29, slowFrom: 25))
         let slow = snapshot(builds(30, slowFrom: 25))
         #expect(preferences.builds.slowdown, "on by default")
@@ -158,7 +141,7 @@ struct SlowdownAlertCoordinatorTests {
 
         let muted = MockNotificationCenter(status: .allowed)
         preferences.builds.mutedProductIDs = ["p1"]
-        let silent = NotificationCoordinator(center: muted, preferences: preferences, defaults: defaults, pro: lifetime, now: { moment })
+        let silent = NotificationCoordinator(center: muted, preferences: preferences, defaults: defaults, now: { moment })
         let second = NotificationAccount(id: "other", name: nil)
         await silent.buildsDidSync(account: second, previous: quiet, current: quiet)
         await silent.buildsDidSync(account: second, previous: quiet, current: slow)

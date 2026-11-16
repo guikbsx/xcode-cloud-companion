@@ -23,7 +23,7 @@ struct OverviewInteractionTests {
     }
 
     /// Two workflows of one app, by name; the first ran a slow stretch of builds, so `WorkflowSlowdown` finds a step.
-    private func fixture(pro: Set<ProFeature> = Set(ProFeature.allCases)) -> Fixture {
+    private func fixture() -> Fixture {
         var runs: [CIBuildRun] = []
         var number = 0
         for offset in 0..<20 {
@@ -50,7 +50,7 @@ struct OverviewInteractionTests {
         let mosaic = OverviewMosaic(snapshot: snapshot, sidebar: sidebar, now: now, calendar: calendar)
         let group = mosaic.groups[0]
         return Fixture(
-            source: OverviewDetailSource(snapshot: snapshot, now: now, calendar: calendar, pro: pro), rows: group.rows, group: group
+            source: OverviewDetailSource(snapshot: snapshot, now: now, calendar: calendar), rows: group.rows, group: group
         )
     }
 
@@ -63,25 +63,14 @@ struct OverviewInteractionTests {
     }
 
     private func drawer(_ fixture: Fixture, row: Int = 0) -> OverviewFigureInteraction.Drawer? {
-        fixture.source.durationSeries(row: fixture.rows[row]).map { OverviewFigureInteraction.Drawer(rowID: fixture.rows[row].id, series: $0) }
+        OverviewFigureInteraction.Drawer(rowID: fixture.rows[row].id, series: fixture.source.durationSeries(row: fixture.rows[row]))
     }
 
     // MARK: Source
 
-    @Test func theDrawerIsCumulusProsAndTheBubbleIsNot() {
-        let free = fixture(pro: [])
-        #expect(!free.source.allowsDrawer)
-        #expect(free.source.durationSeries(row: free.rows[0]) == nil)
-        #expect(bubble(free) != nil)
-
-        let pro = fixture(pro: [.workflowTrends])
-        #expect(pro.source.allowsDrawer)
-        #expect(pro.source.durationSeries(row: pro.rows[0]) != nil)
-    }
-
     @Test func theSourceAnswersWithoutAnythingButTheSnapshot() throws {
         let fixture = fixture()
-        let series = try #require(fixture.source.durationSeries(row: fixture.rows[0]))
+        let series = fixture.source.durationSeries(row: fixture.rows[0])
         #expect(series.points.count == OverviewMosaic.defaultDays)
         #expect(series.step != nil)
         let detail = try #require(fixture.source.dayDetail(row: fixture.rows[0], appName: "Sextant", day: date(10, 23)))
@@ -126,13 +115,6 @@ struct OverviewInteractionTests {
         #expect(interaction.drawer?.rowID == fixture.rows[1].id)
 
         interaction.toggleDrawer(fixture.rows[1].id) { drawer(fixture, row: 1) }
-        #expect(interaction.drawer == nil)
-    }
-
-    @Test func withoutProTheDrawerCannotOpen() {
-        let fixture = fixture(pro: [])
-        let interaction = OverviewFigureInteraction()
-        interaction.toggleDrawer(fixture.rows[0].id) { drawer(fixture) }
         #expect(interaction.drawer == nil)
     }
 

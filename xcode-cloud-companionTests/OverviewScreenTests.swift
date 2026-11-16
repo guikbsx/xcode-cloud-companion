@@ -215,17 +215,6 @@ struct OverviewScreenTests {
         #expect(screen.notes.isEmpty)
     }
 
-    @Test func theFreeScreenKeepsTheMosaicAndDropsWhatComesFromPro() {
-        let snapshot = broken
-        let screen = OverviewScreenModel(
-            snapshot: snapshot, sidebar: sidebar(snapshot), summary: nil, accountName: "A", isReading: false, now: now, calendar: calendar, locale: english,
-            pro: [], failureInsights: ["w-205": "Four tests fail."]
-        )
-
-        #expect(screen.title.situation == .broken)
-        #expect(screen.title.lead?.contains("Four tests fail.") == false, "the sentence of “In brief” needs Pro")
-    }
-
     @Test func theSkeletonRuleCoversTheFirstSyncAndTheMeasure() {
         #expect(SkeletonRules.overviewMosaic(isMeasuring: true, isFirstSync: false))
         #expect(SkeletonRules.overviewMosaic(isMeasuring: false, isFirstSync: true))

@@ -105,9 +105,6 @@ struct TestHistoryContent: View {
     let openBuild: (String) -> Void
     /// Opens a file of the local clone in Xcode; nil when this window has none for the app.
     var opening: SourceOpening?
-    /// Cumulus Pro opens a file of the local clone.
-    var xcodeIsOpen = true
-    var showPurchase: () -> Void = {}
     @State private var failure: String?
 
     static let width: CGFloat = 548
@@ -269,12 +266,7 @@ struct TestHistoryContent: View {
             if SourceActions.existsLocally(path) {
                 Button("Open in Xcode") { SourceActions.openInXcode(path) }
             } else if let opening, SourceOpener.xcodeURL != nil, RepositoryFileLocator.relativePath(of: path) != nil {
-                if xcodeIsOpen {
-                    Button("Open in Xcode") { failure = opening.open(path, file?.lineNumber) }
-                } else {
-                    Button("Open in Xcode", systemImage: "lock", action: showPurchase)
-                        .help("Opening a file from your local clone comes with Cumulus Pro")
-                }
+                Button("Open in Xcode") { failure = opening.open(path, file?.lineNumber) }
             }
         }
     }
@@ -297,28 +289,19 @@ struct TestHistoryPopover: View {
     let access: TestHistoryAccess
     let dismiss: () -> Void
     @Environment(\.sourceOpening) private var opening
-    @Environment(ProAccess.self) private var pro: ProAccess?
     @State private var history: TestHistory?
     @State private var hasRead = false
 
     var body: some View {
         Group {
-            if hasRead, history == nil {
-                Text(ProFeatureText.required).padding(16)
-            } else {
-                TestHistoryContent(
-                    identity: identity, history: history, isReading: SkeletonRules.testHistory(hasRead: hasRead),
-                    openBuild: { id in
-                        dismiss()
-                        access.openBuild(id)
-                    },
-                    opening: opening, xcodeIsOpen: pro.allows(.openInXcode),
-                    showPurchase: {
-                        dismiss()
-                        pro?.showPurchase(for: .openInXcode)
-                    }
-                )
-            }
+            TestHistoryContent(
+                identity: identity, history: history, isReading: SkeletonRules.testHistory(hasRead: hasRead),
+                openBuild: { id in
+                    dismiss()
+                    access.openBuild(id)
+                },
+                opening: opening
+            )
         }
         .task(id: identity) {
             history = await access.tests.history(of: identity, workflowID: access.workflowID)
@@ -336,23 +319,17 @@ extension View {
     }
 }
 
-/// The small button on a test's row: the history of the test, or the way to Cumulus Pro without it.
+/// The small button on a test's row: the history of the test.
 struct TestHistoryButton: View {
     let identity: TestHistory.Identity
     let access: TestHistoryAccess
-    @Environment(ProAccess.self) private var pro: ProAccess?
     @State private var isPresented = false
 
     var body: some View {
-        let isOpen = pro.allows(.testHealth)
         Button {
-            if isOpen {
-                isPresented = true
-            } else {
-                pro?.showPurchase(for: .testHealth)
-            }
+            isPresented = true
         } label: {
-            Image(systemName: isOpen ? "chart.bar.xaxis" : "lock")
+            Image(systemName: "chart.bar.xaxis")
                 .font(.caption)
                 .foregroundStyle(.secondary)
                 .frame(width: 22, height: 22)
@@ -360,7 +337,7 @@ struct TestHistoryButton: View {
         }
         .buttonStyle(.borderless)
         .accessibilityLabel(Text("History"))
-        .help(isOpen ? Text("Show how this test went over the last builds") : Text("The history of a test comes with Cumulus Pro"))
+        .help("Show how this test went over the last builds")
         .testHistoryPopover(isPresented: $isPresented, identity: identity, access: access)
     }
 }

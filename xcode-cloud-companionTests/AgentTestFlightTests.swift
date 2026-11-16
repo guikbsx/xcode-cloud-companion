@@ -31,12 +31,6 @@ struct TestFlightCommandParsingTests {
         #expect(CLIHelp.topic("testflight")?.contains("--group <name>") == true)
     }
 
-    @Test func everyFormNeedsProButTheHelp() throws {
-        #expect(try CLIParser.parse(["testflight", "Alpha#43"]).command.needsPro)
-        #expect(try CLIParser.parse(["testflight", "give", "Alpha#43", "--group", "QA"]).command.needsPro)
-        #expect(try CLIParser.parse(["testflight", "expire", "Alpha#43"]).command.needsPro)
-    }
-
     @Test(arguments: [
         ["testflight"],
         ["testflight", "give"],
@@ -326,7 +320,6 @@ struct TestFlightWriteCommandTests {
 
         #expect(failure(IPCTestFlightReason.notAllowed).code == .notAllowed && CLIErrorCode.notAllowed.exitCode == 7)
         #expect(failure(IPCTestFlightReason.capReached).code == .rateLimited && failure(IPCTestFlightReason.rateLimited).code.exitCode == 8)
-        #expect(failure(IPCTestFlightReason.proRequired).code.exitCode == 9 && failure(IPCTestFlightReason.paused).code == .proRequired)
         #expect(failure(IPCTestFlightReason.refused, message: "Refused No.").code == .refused)
         #expect(failure(IPCTestFlightReason.refused, message: "Refused No.").message.hasSuffix("Refused No."))
         #expect(failure(IPCTestFlightReason.unknownBuild).code.exitCode == 5)
@@ -433,7 +426,7 @@ struct AgentTestFlightServiceTests {
     /// An account whose key Apple "accepts" through a transport that records every write and answers `reply` to the others.
     private func harness(
         build: TestFlightBuild? = TestFlightFixture.build(now: Date(timeIntervalSince1970: 1_795_125_600)), keyAccess: KeyAccess = .canLaunch,
-        pro: ProStore? = nil, reply: @escaping @Sendable (URLRequest) -> MockTransport.Reply? = { _ in nil }
+        reply: @escaping @Sendable (URLRequest) -> MockTransport.Reply? = { _ in nil }
     ) async throws -> Harness {
         let recorder = Recorder()
         let accounts = TestAccounts()
@@ -445,7 +438,6 @@ struct AgentTestFlightServiceTests {
             }
             return request.httpMethod == "GET" ? MockTransport.Reply(status: 404) : MockTransport.Reply(status: 204)
         }
-        accounts.model.pro = pro
         let credentials = StoredCredentials(issuerID: "issuer", keyID: "KEY", privateKeyPEM: P256.Signing.PrivateKey().pemRepresentation)
         let session = try await accounts.model.add(name: "Personal", credentials: credentials, keyAccess: keyAccess)
         if let build {
@@ -538,20 +530,14 @@ struct AgentTestFlightServiceTests {
         }
     }
 
-    @Test func aReadOnlyKeyWithoutProOrWithoutAnAccountSendsNothing() async throws {
+    @Test func aReadOnlyKeyOrAnUnknownAccountSendsNothing() async throws {
         let readOnly = try await harness(keyAccess: .readOnly)
         let blocked = await give(["g-beta"], on: readOnly)
         #expect(blocked.reason == IPCTestFlightReason.notAllowed && blocked.message?.contains("read-only") == true)
         #expect(await expire(on: readOnly).reason == IPCTestFlightReason.notAllowed)
         #expect(readOnly.recorder.writes.withLock { $0.isEmpty })
 
-        let free = try await harness(pro: ProStore(source: StubProSource(), forced: .free))
-        #expect(await give(["g-beta"], on: free).reason == IPCTestFlightReason.proRequired)
-        #expect(await expire(on: free).reason == IPCTestFlightReason.proRequired)
-        #expect(await free.service.load(buildRunID: "run-a43").loaded == false)
-        #expect(free.recorder.writes.withLock { $0.isEmpty })
-
-        let open = try await harness(pro: ProStore(source: StubProSource(), forced: .lifetime(since: moment)))
+        let open = try await harness()
         #expect(await give(["g-beta"], on: open).written == true)
 
         let missing = await open.service.give(IPCTestFlightGiveRequest(testFlightBuildID: "tf-412", addGroupIDs: ["g-beta"], accountID: "gone"))

@@ -151,7 +151,7 @@ struct TestFlightExpirationServiceTests {
 
     private func distributor(
         log: Log, replies: @escaping @Sendable (URLRequest) -> MockTransport.Reply? = { _ in nil },
-        reread: @escaping @Sendable (String) -> TestFlightBuild? = { _ in nil }, allowed: Bool = true, writable: Bool = true
+        reread: @escaping @Sendable (String) -> TestFlightBuild? = { _ in nil }, writable: Bool = true
     ) -> TestFlightDistributor {
         let transport = MockTransport { request in
             log.writes.withLock { $0.append(request) }
@@ -164,7 +164,7 @@ struct TestFlightExpirationServiceTests {
                 log.rereads.withLock { $0.append(id) }
                 return reread(id)
             },
-            allowed: { allowed }, isKeyWritable: { writable }
+            isKeyWritable: { writable }
         )
     }
 
@@ -255,9 +255,7 @@ struct TestFlightExpirationServiceTests {
         #expect(outcome.message?.contains("Check it in App Store Connect before trying again") == true)
     }
 
-    @Test func withoutProAWritableKeyOrAWellFormedIdentifierNothingIsSentOrRead() async {
-        let free = Log()
-        #expect(await distributor(log: free, allowed: false).expire(buildID: "b-412") == .failed(message: ProFeatureText.required))
+    @Test func aReadOnlyKeyOrAMalformedIdentifierSendsNothing() async {
         let readOnly = Log()
         #expect(await distributor(log: readOnly, writable: false).expire(buildID: "b-412") == .notAllowed(message: DistributionOutcome.readOnlyMessage))
         let malformed = Log()
@@ -266,7 +264,7 @@ struct TestFlightExpirationServiceTests {
             Issue.record("expected a failure, got \(outcome)")
             return
         }
-        for log in [free, readOnly, malformed] {
+        for log in [readOnly, malformed] {
             #expect(log.writes.withLock { $0.isEmpty } && log.rereads.withLock { $0.isEmpty })
         }
     }

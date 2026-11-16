@@ -7,16 +7,12 @@ struct WebhookSettingsSection: View {
     let service: WebhookService
     /// With several accounts each section is titled with its account's name.
     let showsName: Bool
-    let isPaused: Bool
-    /// Cumulus Pro lets webhooks go.
-    let isOpen: Bool
     @State private var isEntering = false
     @State private var draft = ""
     @State private var confirmsRemoval = false
     @State private var isSending = false
 
     private var model: WebhookSettingsModel { session.webhook }
-    private var isLocked: Bool { isPaused || !isOpen }
     private var showsSavedAddress: Bool { (model.hasAddress || !model.hasLoaded) && !isEntering }
 
     var body: some View {
@@ -44,7 +40,6 @@ struct WebhookSettingsSection: View {
         } footer: {
             footer
         }
-        .disabled(isLocked)
         .task { await model.load() }
         .confirmationDialog("Remove the webhook address?", isPresented: $confirmsRemoval) {
             Button("Remove", role: .destructive) {
@@ -153,17 +148,10 @@ struct WebhookSettingsSection: View {
 
     @ViewBuilder
     private var footer: some View {
-        VStack(alignment: .leading, spacing: 4) {
-            Text("Cumulus sends from this Mac: nothing leaves if it is off or if Cumulus is closed.")
-            if isPaused {
-                Text("This account is paused: nothing is sent for it until Cumulus Pro is back.")
-            } else if !isOpen {
-                Text("Sending alerts elsewhere comes with Cumulus Pro. Your address and choices are kept.")
-            }
-        }
-        .font(.caption)
-        .foregroundStyle(.secondary)
-        .frame(maxWidth: .infinity, alignment: .leading)
+        Text("Cumulus sends from this Mac: nothing leaves if it is off or if Cumulus is closed.")
+            .font(.caption)
+            .foregroundStyle(.secondary)
+            .frame(maxWidth: .infinity, alignment: .leading)
     }
 
     private var format: some View {

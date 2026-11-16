@@ -64,11 +64,6 @@ nonisolated enum SkeletonRules {
         !hasLoaded
     }
 
-    /// The state of Cumulus Pro and its actions, until StoreKit has been read once.
-    static func proSettings(hasResolved: Bool) -> Bool {
-        !hasResolved
-    }
-
     /// The history of a test: the popover opened, the reading of the disk has not ended.
     static func testHistory(hasRead: Bool) -> Bool {
         !hasRead

@@ -2,8 +2,8 @@ import Foundation
 import Observation
 
 /// The TestFlight builds of the account's apps: asked for after a sync that succeeded, when the pace of `TestFlightCadence`
-/// allows it, and kept in the account's folder with the times Cumulus saw a build change. Cumulus Pro: without it nothing
-/// is asked. A key that Apple says cannot read TestFlight is not asked again until the app is restarted.
+/// allows it, and kept in the account's folder with the times Cumulus saw a build change.
+/// A key that Apple says cannot read TestFlight is not asked again until the app is restarted.
 @Observable
 final class TestFlightStore {
     private(set) var readings: [String: TestFlightReading] = [:]
@@ -13,8 +13,6 @@ final class TestFlightStore {
     private(set) var isForbidden = false
     /// Called with each read, once it is kept: the banners come from it.
     @ObservationIgnored var onRead: ((_ app: TestFlightApp, _ builds: [TestFlightBuild]) -> Void)?
-    /// Cumulus Pro, and an active account: false reads nothing.
-    @ObservationIgnored var allowed: @MainActor () -> Bool = { true }
 
     private let cache: TestFlightCache
     private let client: () async -> AppStoreConnectClient?
@@ -63,10 +61,10 @@ final class TestFlightStore {
     }
 
     /// Reads one build again, whatever the pace: what a distribution did. It replaces the build in its app's reading, or joins
-    /// it, and dates what changed like any other read. Nothing is asked without Cumulus Pro, for a key that cannot read
+    /// it, and dates what changed like any other read. Nothing is asked for a key that cannot read
     /// TestFlight, or for a build no reading knows. Returns the build as Apple has it; nil when it could not be read.
     func reread(buildID: String) async -> TestFlightBuild? {
-        guard allowed(), !isForbidden, let productID = readings.first(where: { $0.value.build(id: buildID) != nil })?.key,
+        guard !isForbidden, let productID = readings.first(where: { $0.value.build(id: buildID) != nil })?.key,
               let known = readings[productID], let client = await client()
         else { return nil }
         reading.insert(productID)
@@ -91,7 +89,6 @@ final class TestFlightStore {
 
     /// Asks for the apps whose turn it is. Called after each sync that succeeded; one request per app that is due.
     func sync(snapshot: BuildSnapshot) async {
-        guard allowed() else { return }
         await loadCache()
         guard !isForbidden, !isSyncing else { return }
         isSyncing = true

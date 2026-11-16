@@ -29,9 +29,7 @@ final class AccountSession: Identifiable {
     /// Where the apps' repositories are cloned on this Mac, to open a build's files in Xcode.
     let localRepositories: LocalRepositories
     /// Made when the window first shows the account.
-    @ObservationIgnored private(set) lazy var windowStores = AccountWindowStores(buildStore: buildStore, extrasStore: extrasStore, paths: paths, pro: pro)
-    /// Cumulus Pro, given before the window first shows the account; nil leaves every function open.
-    @ObservationIgnored var pro: ProStore?
+    @ObservationIgnored private(set) lazy var windowStores = AccountWindowStores(buildStore: buildStore, extrasStore: extrasStore, paths: paths)
     private let defaults: UserDefaults
     /// Where the icons are read from to find the apps' colours; without one, no icon is read.
     private let iconCache: AppIconCache?
@@ -83,15 +81,10 @@ final class AccountSession: Identifiable {
         settings.onCredentialsChange = { [buildStore] in
             Task { await buildStore.credentialsDidChange() }
         }
-        insights.isOpen = { [weak self, defaults] in
-            FailureInsightFeature.mode(
-                model: modelStatus(), settingOn: FailureInsightFeature.isSettingOn(defaults), proAllows: self?.pro?.allows(.failureInsight) ?? true
-            ) == .open
+        insights.isOpen = { [defaults] in
+            FailureInsightFeature.mode(model: modelStatus(), settingOn: FailureInsightFeature.isSettingOn(defaults)) == .open
         }
         usageStore.snapshot = { [weak buildStore] in buildStore?.snapshot }
-        testFlight.allowed = { [weak self] in self?.pro?.allows(.testFlightTracking) ?? true }
-        groups.allowed = { [weak self] in self?.pro?.allows(.testFlightDistribution) ?? true }
-        testFlightDistributor.allowed = { [weak self] in self?.pro?.allows(.testFlightDistribution) ?? true }
         testFlightDistributor.isKeyWritable = { [weak settings] in settings?.keyAccess == .canLaunch }
         settings.onReset = { [paths, usageStore, testFlight] in
             await insights.reset()

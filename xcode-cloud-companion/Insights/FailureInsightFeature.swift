@@ -1,7 +1,7 @@
 import Foundation
 import FoundationModels
 
-/// Whether the failure summary exists at all: the model must be there, the user must want it, and Cumulus Pro must open it.
+/// Whether the failure summary exists at all: the model must be there, and the user must want it.
 /// Views and stores ask here and nowhere else.
 nonisolated enum FailureInsightFeature {
     static let settingKey = "failureInsight.enabled"
@@ -35,14 +35,11 @@ nonisolated enum FailureInsightFeature {
     enum Mode: Equatable, Sendable {
         /// Nothing is shown, anywhere.
         case hidden
-        /// The feature exists but Cumulus Pro does not open it: its card is replaced by the lock card.
-        case locked
         case open
     }
 
-    static func mode(model: ModelStatus, settingOn: Bool, proAllows: Bool) -> Mode {
-        guard model == .available, settingOn else { return .hidden }
-        return proAllows ? .open : .locked
+    static func mode(model: ModelStatus, settingOn: Bool) -> Mode {
+        model == .available && settingOn ? .open : .hidden
     }
 
     static func isSettingOn(_ defaults: UserDefaults = .standard) -> Bool {

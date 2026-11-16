@@ -277,15 +277,6 @@ struct MCPServerTests {
         await socket.stop()
     }
 
-    @Test func withoutProTheTestFlightToolsAreRefusedAsResults() async throws {
-        let server = try await server(try await CLIFixture.environment(pro: false))
-
-        for (name, arguments) in [("get_testflight", #"{"reference":"Alpha#43"}"#), ("give_testflight_build", #"{"reference":"Alpha#43","groups":["QA"]}"#), ("expire_testflight_build", #"{"reference":"Alpha#43"}"#)] {
-            let result = try await call(name, arguments, on: server)
-            #expect(result["isError"] == true && result["content"]?.compactString.contains("PRO_REQUIRED") == true, "\(name)")
-        }
-    }
-
     @Test func whatAToolCannotAnswerIsAResultTheModelReads() async throws {
         let server = try await server()
         let missing = try await call("get_build", #"{"reference":"Alpha#999","fetchDetails":false}"#, on: server)

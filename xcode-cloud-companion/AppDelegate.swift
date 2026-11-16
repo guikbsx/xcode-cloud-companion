@@ -8,24 +8,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private static let isUnderTest = ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil
     private let accounts = AccountsModel(migration: isUnderTest ? nil : AccountMigration(legacySupport: .applicationSupportDirectory))
     private let loginItemModel = LoginItemModel()
-    private let pro: ProStore = {
-        #if DEBUG
-        // XCC_PRO=0|1|trial|lifetime|expired pins Cumulus Pro, to look at the locks and the screens without buying.
-        if let forced = ProStore.forcedEntitlement(named: ProcessInfo.processInfo.environment["XCC_PRO"], now: Date()) {
-            return ProStore(forced: forced)
-        }
-        #endif
-        return ProStore()
-    }()
     private let notificationPreferences = NotificationPreferences()
     /// Nil under tests: nothing is written for the widgets then.
     private var widgetFeed: WidgetFeedWriter?
-    private lazy var proPurchase = ProPurchasePresenter(store: pro)
     /// Sends nothing under tests: the sender there never reaches a network.
     private lazy var webhook = WebhookService(
-        accounts: accounts, sender: Self.isUnderTest ? UnreachableWebhookSender() : URLSessionWebhookSender(), pro: pro
+        accounts: accounts, sender: Self.isUnderTest ? UnreachableWebhookSender() : URLSessionWebhookSender()
     )
-    private lazy var notifications = NotificationCoordinator(preferences: notificationPreferences, pro: pro, webhook: webhook)
+    private lazy var notifications = NotificationCoordinator(preferences: notificationPreferences, webhook: webhook)
     /// Reads nothing under tests; a Debug build can pin its state with `XCC_APPLE_STATUS=incident|resolved`.
     private lazy var appleStatus: AppleStatusStore = {
         var pinned: [AppleStatusEvent]?
@@ -37,7 +27,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             notify: { [notifications] in await notifications.deliver($0) },
             requestAuthorization: { [notifications] in await notifications.requestAuthorization() },
             erroredBuilds: { [accounts] interval in
-                AppleStatusSchedule.erroredBuilds(in: accounts.activeSessions.map(\.buildStore.snapshot), during: interval)
+                AppleStatusSchedule.erroredBuilds(in: accounts.sessions.map(\.buildStore.snapshot), during: interval)
             },
             pinned: pinned
         )
@@ -47,7 +37,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var notificationResponder: NotificationResponder?
     private lazy var settingsWindowController = SettingsWindowController(
         accounts: accounts, loginItem: loginItemModel, notificationPreferences: notificationPreferences, notifications: notifications,
-        pro: pro, purchase: proPurchase, webhook: webhook
+        webhook: webhook
     )
     private let navigation = NavigationModel()
     private lazy var mainWindowController = MainWindowController(
@@ -55,7 +45,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         navigation: navigation,
         activation: ActivationPolicyCoordinator(app: NSApp),
         openSettings: { [weak self] in self?.openSettings() },
-        pro: pro, purchase: proPurchase, appleStatus: appleStatus
+        appleStatus: appleStatus
     )
     private var statusItemController: StatusItemController?
     private var ipcServer: IPCSocketServer?
@@ -77,13 +67,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         // The main menu is only seen while the main window is open, but its key equivalents drive ⌘, and copy/paste in text fields at any time.
         NSApp.mainMenu = MainMenu.make(target: self, MainMenu.Actions(
             openSettings: #selector(openSettings),
-            openPro: #selector(openCumulusPro),
             openMainWindow: #selector(openMainWindow),
             refresh: #selector(refresh),
             openHelp: #selector(openHelp)
         ))
-        accounts.pro = pro
-        accounts.onPausedSelection = { [weak self] in self?.presentCumulusPro(for: .multipleAccounts) }
         statusItemController = StatusItemController(accounts: accounts, actions: menuActions(), appleStatus: appleStatus)
         accounts.onSelectionChange = { [weak self, navigation] in
             navigation.accountDidChange()
@@ -92,9 +79,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
         guard !Self.isUnderTest else { return }
         widgetFeed = WidgetFeedWriter()
-        // The `cumulus` command cannot ask StoreKit: the app tells it, at launch and whenever the answer changes.
-        pro.onRead = { entitlement in ProStatusStore().record(isActive: entitlement.isActive, now: Date()) }
-        pro.start()
+        LegacyProFile.remove()
         startNotifications()
         startTestFlightBanners()
         let workspaceCenter = NSWorkspace.shared.notificationCenter
@@ -126,7 +111,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                 }
             }
         }
-        // XCC_SETTINGS=general|notifications|agents|pro|accounts opens Settings on that pane, to look at it without a click.
+        // XCC_SETTINGS=general|notifications|agents|accounts opens Settings on that pane, to look at it without a click.
         if let pane = ProcessInfo.processInfo.environment["XCC_SETTINGS"].flatMap(SettingsNavigationModel.Pane.init(rawValue:)) {
             settingsWindowController.show(pane: pane)
         }
@@ -147,8 +132,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         let service = AppIPCService(
             sync: { id in
                 guard let id else { return accounts.selected?.buildStore }
-                // A paused account is not synced on anyone's request.
-                return accounts.session(id: id).flatMap { accounts.isPaused($0) ? nil : $0.buildStore }
+                return accounts.session(id: id)?.buildStore
             },
             openBuild: { [weak self] id in
                 self?.openBuild(id)
@@ -264,26 +248,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         mainWindowController.show()
     }
 
-    /// The purchase sheet hangs on the main window: it opens the window first.
-    @objc func openCumulusPro() {
-        presentCumulusPro(for: nil)
-    }
-
-    /// `feature` is the locked function one came from: its benefit is read first.
-    private func presentCumulusPro(for feature: ProFeature?) {
-        mainWindowController.show()
-        NSApp.activate()
-        guard let window = mainWindowController.window else { return }
-        proPurchase.present(over: window, origin: feature)
-    }
-
-    /// A first account is free; without Cumulus Pro, one more leads to the purchase sheet before any key is asked for.
     private func addAccount() {
-        if accounts.canAddAccount {
-            settingsWindowController.show(addingAccount: true)
-        } else {
-            presentCumulusPro(for: .multipleAccounts)
-        }
+        settingsWindowController.show(addingAccount: true)
     }
 
     @objc private func refresh() {

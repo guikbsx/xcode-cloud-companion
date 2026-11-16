@@ -223,25 +223,9 @@ struct UsageAlertCoordinatorTests {
         #expect(CumulusURL.destination(of: try #require(URL(string: "cumulus://overview/extra"))) == nil)
     }
 
-    @Test func withoutProOnlyTheAlertAtNinetyPercentIsSent() async {
+    @Test func theEarlyAlertsAreSentToo() async {
         let center = MockNotificationCenter(status: .allowed)
-        let free = ProStore(source: StubProSource(), forced: .free)
-        let coordinator = NotificationCoordinator(center: center, preferences: NotificationPreferences(defaults: defaults), defaults: defaults, pro: free, now: { now })
-        await coordinator.buildsDidSync(previous: snapshot, current: snapshot, summary: nil)
-
-        await coordinator.buildsDidSync(previous: snapshot, current: snapshot, summary: summary(used: 1_130))
-        #expect(await center.posted.isEmpty, "the alert at 75 % comes with Pro")
-
-        // 1,400 of 1,500 minutes on day 25 of 30: past 90 %, and at a pace that will not last.
-        await coordinator.buildsDidSync(previous: snapshot, current: snapshot, summary: summary(used: 1_400))
-        await coordinator.buildsDidSync(previous: snapshot, current: snapshot, summary: summary(used: 1_400))
-        #expect(await center.posted.map(\.id) == ["usage-threshold90-default"])
-    }
-
-    @Test func withProTheEarlyAlertsAreSentToo() async {
-        let center = MockNotificationCenter(status: .allowed)
-        let pro = ProStore(source: StubProSource(), forced: .lifetime(since: now))
-        let coordinator = NotificationCoordinator(center: center, preferences: NotificationPreferences(defaults: defaults), defaults: defaults, pro: pro, now: { now })
+        let coordinator = NotificationCoordinator(center: center, preferences: NotificationPreferences(defaults: defaults), defaults: defaults, now: { now })
         await coordinator.buildsDidSync(previous: snapshot, current: snapshot, summary: nil)
 
         await coordinator.buildsDidSync(previous: snapshot, current: snapshot, summary: summary(used: 1_130))

@@ -200,7 +200,7 @@ struct OverviewFigureView: View {
                         app: group.name, row: row, layout: layout, days: visibleDays, calendar: calendar, locale: locale, now: now,
                         seriesColor: seriesColor, focusedColumn: isFocused && cursor?.row == position ? cursor?.column : nil,
                         lit: lit, bubble: popoverBinding(for: row, group: group), drawsBubbleInline: !state.presentsPopover, openBubble: state.bubble.flatMap { $0.spot.rowID == row.id ? $0 : nil }, drawerIsOpen: drawerRowID == row.id,
-                        drawerIsAvailable: details?.allowsDrawer == true, swatch: group.swatch, artwork: artwork[group.productID],
+                        drawerIsAvailable: details != nil, swatch: group.swatch, artwork: artwork[group.productID],
                         openWorkflow: openWorkflow,
                         select: { column in
                             cursor = Cursor(row: position, column: column)
@@ -251,7 +251,7 @@ struct OverviewFigureView: View {
     }
 
     private func drawer(for row: OverviewMosaic.Row) -> OverviewFigureInteraction.Drawer? {
-        details?.durationSeries(row: row).map { OverviewFigureInteraction.Drawer(rowID: row.id, series: $0) }
+        details.map { OverviewFigureInteraction.Drawer(rowID: row.id, series: $0.durationSeries(row: row)) }
     }
 
     private func popoverBinding(for row: OverviewMosaic.Row, group: OverviewMosaic.Group) -> Binding<OverviewFigureInteraction.Bubble?> {
@@ -378,7 +378,7 @@ struct OverviewFigureView: View {
             }
             return .handled
         default:
-            guard press.characters == "d", press.modifiers.isEmpty, press.phase == .down, rows.indices.contains(spot.row), details?.allowsDrawer == true else { return .ignored }
+            guard press.characters == "d", press.modifiers.isEmpty, press.phase == .down, rows.indices.contains(spot.row), details != nil else { return .ignored }
             let row = rows[spot.row]
             state.toggleDrawer(row.id) { drawer(for: row) }
             return .handled
@@ -454,7 +454,7 @@ private struct OverviewMosaicRow: View {
         }
     }
 
-    /// The name opens the workflow; with Cumulus Pro, resting on it (or the small chevron, which the keyboard reaches) opens the
+    /// The name opens the workflow; resting on it (or the small chevron, which the keyboard reaches) opens the
     /// drawer of its durations under the row.
     private var nameCell: some View {
         HStack(spacing: 0) {

@@ -80,13 +80,6 @@ struct SkeletonTests {
         #expect(!SkeletonRules.sidebarCycle(hasPlan: true, isMeasuring: false))
     }
 
-    @Test func theProPaneWaitsForTheFirstReadingOfTheTransactions() {
-        #expect(SkeletonRules.proSettings(hasResolved: false))
-        #expect(!SkeletonRules.proSettings(hasResolved: true))
-        #expect(ProStore().hasResolved == false)
-        #expect(ProStore(forced: .free).hasResolved)
-    }
-
     @Test func aWorkflowSheetWaitsForItsOwnRequestOnlyWithNothingCached() {
         #expect(SkeletonRules.workflowSheet(isCached: false, loadEnded: false))
         #expect(!SkeletonRules.workflowSheet(isCached: true, loadEnded: false))
@@ -111,7 +104,6 @@ struct SkeletonTests {
         #expect(WorkflowDetailModel.placeholderInfo.count == 4 && WorkflowDetailModel.placeholderConditions.count == 3)
         #expect(TestHealthReport.placeholder.analyzedBuilds > 0 && !TestHealthReport.placeholder.flaky.isEmpty)
         #expect(CycleCard.Content.placeholder.fractionUsed > 0)
-        #expect(ProOffer.placeholders.map(\.product) == [.yearly, .lifetime])
     }
 
     @Test func theSampleRowsOfOneSkeletonAreDistinctRows() {

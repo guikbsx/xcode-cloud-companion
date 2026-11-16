@@ -45,7 +45,6 @@ On standard error, with a non-zero exit code:
 | 7 | `NOT_ALLOWED` | `run`, `testflight give`, `testflight expire`: the key is read-only in the app, or Apple answered 403 | Ask the user to set the key to “Read + Build” in Cumulus › Settings › Accounts (TestFlight also needs an Admin or App Manager key); do not retry |
 | 8 | `RATE_LIMITED` | `run`: three launches by agents already this hour; `testflight give` and `expire`: ten changes already this hour; or Apple's hourly limit | Ask the user to make the change from the app, or wait |
 | 1 | `REFUSED` | `run`, `testflight give`, `testflight expire`: Apple refused, or the TestFlight build is in a state that does not allow it (still processing, expired); the words are in `message` | Report them; do not retry |
-| 9 | `PRO_REQUIRED` | Cumulus Pro is not active: every command but `status` is refused, and every MCP tool | Tell the user that this needs Cumulus Pro (Cumulus › Settings › Cumulus Pro); do not retry. `cumulus status` still answers, for the first account only: with `--account` naming another one, it is refused too (that account is paused in the app). If `message` says the app has not said yet, ask them to open Cumulus |
 
 Through MCP, the same `error` object comes back as the text of a result with `isError: true`.
 
@@ -136,7 +135,7 @@ Errors on standard error: `NOT_ALLOWED` (exit 7: the key is read-only in the app
 
 `--group` and `--remove` repeat, one name each; a group is named once in the whole command. `--notes` needs `--locale` and at least one `--group`; `--notify` and `--no-notify` need one too.
 
-Errors on standard error: `NOT_ALLOWED` (exit 7), `RATE_LIMITED` (exit 8: ten changes an hour per account, give and expire together), `REFUSED` (exit 1), `NOT_FOUND` or `AMBIGUOUS` (exit 5: no such build, no TestFlight build for it, or a group name unknown or shared by two groups; `suggestions` lists the groups that exist), `USAGE` (exit 2: a group that receives every build by itself, or arguments that do not go together), `INTERNAL` (exit 1: Apple did not confirm the change). **Never retry after any of these**: run `cumulus testflight <build> --json` and read what Apple has. Without Cumulus Pro: `PRO_REQUIRED`, exit 9.
+Errors on standard error: `NOT_ALLOWED` (exit 7), `RATE_LIMITED` (exit 8: ten changes an hour per account, give and expire together), `REFUSED` (exit 1), `NOT_FOUND` or `AMBIGUOUS` (exit 5: no such build, no TestFlight build for it, or a group name unknown or shared by two groups; `suggestions` lists the groups that exist), `USAGE` (exit 2: a group that receives every build by itself, or arguments that do not go together), `INTERNAL` (exit 1: Apple did not confirm the change). **Never retry after any of these**: run `cumulus testflight <build> --json` and read what Apple has.
 
 ## MCP tools
 

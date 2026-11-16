@@ -1,17 +1,15 @@
 import SwiftUI
 
-/// What stands where the “In Brief” card would be, whatever the state of the feature: the card when it is open, the lock
-/// card when only Cumulus Pro is missing, and nothing at all when Apple Intelligence or the setting says no.
+/// What stands where the “In Brief” card would be, whatever the state of the feature: the card when it is open, and nothing
+/// at all when Apple Intelligence or the setting says no.
 struct FailureInsightSection: View {
     let run: CIBuildRun
     let store: FailureInsightStore
     @AppStorage(FailureInsightFeature.settingKey) private var isSettingOn = true
-    @Environment(ProAccess.self) private var access: ProAccess?
 
     var body: some View {
-        switch FailureInsightFeature.mode(model: .current, settingOn: isSettingOn, proAllows: access.allows(.failureInsight)) {
+        switch FailureInsightFeature.mode(model: .current, settingOn: isSettingOn) {
         case .hidden: EmptyView()
-        case .locked: ProLockedCard(feature: .failureInsight)
         case .open: FailureInsightCard(run: run, store: store)
         }
     }

@@ -5,8 +5,8 @@ import Foundation
 /// Apple for nothing and generates nothing.
 ///
 /// The headline is the highest of these that applies:
-/// 1. a workflow is broken; 2. the plan runs out before the cycle ends; 3. a build is stuck (Pro);
-/// 4. a workflow slowed down (Pro); 5. an Apple incident covers a build that stopped; 6. a build is running;
+/// 1. a workflow is broken; 2. the plan runs out before the cycle ends; 3. a build is stuck;
+/// 4. a workflow slowed down; 5. an Apple incident covers a build that stopped; 6. a build is running;
 /// 7. everything passes; 8. nothing has been read yet.
 nonisolated struct OverviewHeadline: Equatable, Sendable {
     /// How many small notes the screen shows.
@@ -91,7 +91,7 @@ nonisolated struct OverviewHeadline: Equatable, Sendable {
     let title: Title
     let notes: [Note]
 
-    /// What the app already knows. A fact that comes from a Cumulus Pro function is only used when `pro` holds it.
+    /// What the app already knows.
     struct Facts: Sendable {
         var snapshot: BuildSnapshot
         var mosaic: OverviewMosaic
@@ -101,8 +101,7 @@ nonisolated struct OverviewHeadline: Equatable, Sendable {
         var now: Date
         var calendar = Calendar.current
         var locale = Locale.autoupdatingCurrent
-        var pro: Set<ProFeature> = Set(ProFeature.allCases)
-        /// The sentence of “In brief” already in the cache, by build; only read while it is open (Pro, the model, the setting).
+        /// The sentence of “In brief” already in the cache, by build; only read while it is open (the model, the setting).
         var failureInsights: [String: String] = [:]
         var appleStatus: AppleStatusKnowledge?
         /// The last reading of each app’s TestFlight builds, by Xcode Cloud product.
@@ -175,8 +174,8 @@ nonisolated struct OverviewHeadline: Equatable, Sendable {
             rows = facts.mosaic.groups.flatMap { group in group.rows.map { Row(appName: group.name, row: $0) } }
             broken = Self.brokenWorkflows(rows)
             planFact = Self.plan(facts)
-            stuckBuilds = facts.pro.contains(.stuckBuildAlert) ? Self.stuck(facts) : []
-            slowdowns = facts.pro.contains(.workflowTrends) ? OverviewSlowdownFact.all(facts: facts, rows: rows.map { ($0.appName, $0.row) }) : []
+            stuckBuilds = Self.stuck(facts)
+            slowdowns = OverviewSlowdownFact.all(facts: facts, rows: rows.map { ($0.appName, $0.row) })
             apple = Self.apple(facts)
         }
 
@@ -443,7 +442,6 @@ nonisolated struct OverviewHeadline: Equatable, Sendable {
         }
 
         private func testFlightNotes() -> [Note] {
-            guard facts.pro.contains(.testFlightTracking) else { return [] }
             let order = Dictionary(facts.mosaic.groups.enumerated().map { ($0.element.productID, $0.offset) }, uniquingKeysWith: { first, _ in first })
             let readings = facts.testFlight.sorted { lhs, rhs in
                 (order[lhs.key] ?? Int.max, lhs.key) < (order[rhs.key] ?? Int.max, rhs.key)
@@ -480,7 +478,6 @@ nonisolated struct OverviewHeadline: Equatable, Sendable {
         }
 
         private func flakyNotes() -> [Note] {
-            guard facts.pro.contains(.testHealth) else { return [] }
             let order = Dictionary(rows.enumerated().map { ($0.element.row.workflowID, $0.offset) }, uniquingKeysWith: { first, _ in first })
             let best = facts.flakyTests
                 .filter { order[$0.workflowID] != nil && !$0.tests.isEmpty }
@@ -520,10 +517,9 @@ nonisolated struct OverviewHeadline: Equatable, Sendable {
 
         // MARK: Shared
 
-        /// The sentence of “In brief” for a build that is already in the cache, when Pro opens it.
+        /// The sentence of “In brief” for a build that is already in the cache.
         private func insight(for series: OverviewMosaic.FailureSeries) -> String? {
-            guard facts.pro.contains(.failureInsight) else { return nil }
-            return facts.failureInsights[series.lastRunID]?.nilIfBlank
+            facts.failureInsights[series.lastRunID]?.nilIfBlank
         }
 
         private func buildName(_ run: CIBuildRun, app: String) -> String {

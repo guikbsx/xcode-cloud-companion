@@ -292,23 +292,4 @@ struct WorkflowPauseTests {
         await store.synchronize()
         #expect(store.snapshot.workflow(id: "wf-1")?.isEnabled == true)
     }
-
-    @Test func withoutProNothingIsSent() async {
-        let log = Log()
-        let transport = MockTransport { request in
-            log.patches.withLock { $0.append(request) }
-            return MockTransport.Reply(body: answer(isEnabled: false))
-        }
-        let client = AppStoreConnectClient(credentials: .sample(), transport: transport)
-        let pauser = WorkflowPauser(client: { client }, applied: { _, _ in }, allowed: { false })
-
-        let outcome = await pauser.setEnabled(false, workflow: workflow())
-
-        guard case .failed(let message) = outcome else {
-            Issue.record("a locked pause must fail, got \(outcome)")
-            return
-        }
-        #expect(message == ProFeatureText.required)
-        #expect(log.patches.withLock { $0.isEmpty })
-    }
 }

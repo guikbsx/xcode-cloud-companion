@@ -345,11 +345,6 @@ struct CLICommandTests {
 
         let status = await CumulusCLI.run(arguments: ["status", "--json"], environment: environment)
         #expect(status.exitCode == 3 && status.stderr.contains("NO_CACHE"))
-        // The app never said whether Cumulus Pro is active: everything else waits for it to be opened.
-        for arguments in [["accounts"], ["apps", "--account", "Work"], ["open", "Alpha#1"]] {
-            let result = await CumulusCLI.run(arguments: arguments + ["--json"], environment: environment)
-            #expect(result.exitCode == 9 && result.stderr.contains("PRO_REQUIRED") && result.stderr.contains("Open the Cumulus app"), "\(arguments)")
-        }
     }
 
     // MARK: - The command itself

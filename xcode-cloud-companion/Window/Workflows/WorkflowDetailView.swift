@@ -19,7 +19,6 @@ struct WorkflowDetailView: View {
     /// Opens the sheet that changes the workflow; nil shows the way to App Store Connect instead.
     var editWorkflow: (() -> Void)?
     var workflowURL: URL?
-    @Environment(ProAccess.self) private var access: ProAccess?
 
     var body: some View {
         DetailScroll { columns in
@@ -80,24 +79,12 @@ struct WorkflowDetailView: View {
                 .detailPlacement(configuration)
             }
             if let tests {
-                Group {
-                    if access.allows(.testHealth) {
-                        WorkflowTestsSection(workflowID: model.id, model: tests, openBuild: openBuildTests)
-                    } else {
-                        ProLockedCard(feature: .testHealth)
-                    }
-                }
-                .accessibilitySortPriority(isSplit ? 1 : 0)
+                WorkflowTestsSection(workflowID: model.id, model: tests, openBuild: openBuildTests)
+                    .accessibilitySortPriority(isSplit ? 1 : 0)
             }
             if let trends {
-                Group {
-                    if access.allows(.workflowTrends) {
-                        WorkflowTrendsSection(trends: trends, slowdown: slowdown, openBuild: openBuild)
-                    } else {
-                        ProLockedCard(feature: .workflowTrends)
-                    }
-                }
-                .accessibilitySortPriority(isSplit ? 1 : 0)
+                WorkflowTrendsSection(trends: trends, slowdown: slowdown, openBuild: openBuild)
+                    .accessibilitySortPriority(isSplit ? 1 : 0)
             }
         }
         .navigationTitle(model.title)

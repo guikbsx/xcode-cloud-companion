@@ -40,22 +40,18 @@ final class WorkflowEditor {
     private let budget: () async -> RateLimit?
     /// Hands Apple's answer to whatever shows workflows.
     private let applied: @MainActor (CIWorkflow) async -> Void
-    /// Cumulus Pro: false sends nothing and reads nothing.
-    private let allowed: @MainActor () -> Bool
 
     init(
         client: @escaping () async -> AppStoreConnectClient?, budget: @escaping () async -> RateLimit?,
-        applied: @escaping @MainActor (CIWorkflow) async -> Void, allowed: @escaping @MainActor () -> Bool = { true }
+        applied: @escaping @MainActor (CIWorkflow) async -> Void
     ) {
         self.client = client
         self.budget = budget
         self.applied = applied
-        self.allowed = allowed
     }
 
     /// The Xcode versions, once per session, and the macOS versions of the one the workflow uses; nothing when the key's budget is nearly spent.
     func loadVersions(currentXcodeVersionID: String?) async {
-        guard allowed() else { return }
         if xcodeVersions == nil {
             guard let client = await client() else { return }
             if let left = await budget(), left.remaining <= SyncSchedule.criticalRemaining { return }
@@ -72,7 +68,7 @@ final class WorkflowEditor {
     }
 
     func loadMacOSVersions(xcodeVersionID: String) async {
-        guard allowed(), macOSVersionsByXcode[xcodeVersionID] == nil, let client = await client() else { return }
+        guard macOSVersionsByXcode[xcodeVersionID] == nil, let client = await client() else { return }
         if let fetched = try? await client.macOSVersions(xcodeVersionID: xcodeVersionID) {
             macOSVersionsByXcode[xcodeVersionID] = fetched
         }
@@ -86,7 +82,6 @@ final class WorkflowEditor {
     }
 
     func save(_ request: WorkflowUpdateRequest, workflow: CIWorkflow) async -> WorkflowEditOutcome {
-        guard allowed() else { return .failed(message: ProFeatureText.required) }
         // A second click while the first is in flight must not send a second request.
         guard !isSending else { return .failed(message: String(localized: "A change is already in progress.")) }
         guard workflow.isLockedForEditing != true else { return .failed(message: Self.lockedMessage) }

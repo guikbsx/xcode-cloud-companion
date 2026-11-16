@@ -20,7 +20,7 @@ struct BuildDetailView: View {
     var logExcerpts: LogExcerptStore?
     /// Reads the history of a test of this build's workflow; nil leaves the button out.
     var testHistory: WorkflowTestsModel?
-    /// The latest TestFlight builds of the account's apps: with Cumulus Pro, the build's road to the testers is drawn from it.
+    /// The latest TestFlight builds of the account's apps: the build's road to the testers is drawn from it.
     var testFlight: TestFlightStore?
     /// What gives the build to TestFlight groups; without it the card does not exist.
     var distribution: TestFlightDistributionAccess?
@@ -31,7 +31,6 @@ struct BuildDetailView: View {
     @State private var compareRequest = 0
     /// The build whose TestFlight builds have been asked for, answered or not.
     @State private var betaEndedRunID: String?
-    @Environment(ProAccess.self) private var access: ProAccess?
     @Environment(AppleStatusStore.self) private var appleStatus: AppleStatusStore?
     @AppStorage(FailureInsightFeature.settingKey) private var isInsightSettingOn = true
 
@@ -361,7 +360,7 @@ struct BuildDetailView: View {
         if let url = commit.webURL {
             Link("View commit", destination: url)
         }
-        if let reference = comparison, access.allows(.regressions) {
+        if let reference = comparison {
             Button("Compare with \(reference.number.map { "#\($0)" } ?? "#?")") { compareRequest += 1 }
                 .buttonStyle(.link)
                 .help("Loads the tests and issues of both builds, one action at a time.")
@@ -371,7 +370,7 @@ struct BuildDetailView: View {
     /// “From the commit to the testers”, for a build that was handed to TestFlight and that the store has read.
     @ViewBuilder
     private func testFlightTimelineGroup(now: Date) -> some View {
-        if access.allows(.testFlightTracking), run.completionStatus == .succeeded, let testFlight,
+        if run.completionStatus == .succeeded, let testFlight,
            let known = extrasStore.extras(for: run.id)?.betaBuilds?.lazy.compactMap({ testFlight.lookup(buildID: $0.id) }).first {
             let archive = (buildStore.snapshot.actionsByRunID[run.id] ?? []).first { $0.actionType == .archive && $0.completionStatus == .succeeded }
             TestFlightTimelineCard(
@@ -392,15 +391,15 @@ struct BuildDetailView: View {
         return (known.build, appID)
     }
 
-    /// Whether the card of groups stands in place of the plain TestFlight card: Cumulus Pro, a build the store has read, and
-    /// groups to show or still on their way.
+    /// Whether the card of groups stands in place of the plain TestFlight card: a build the store has read, and groups to show
+    /// or still on their way.
     private var showsDistribution: Bool {
-        guard access.allows(.testFlightDistribution), let distribution, let distributable else { return false }
+        guard let distribution, let distributable else { return false }
         let groups = distribution.groups
         return !(groups.groups(for: distributable.appID) ?? []).isEmpty || !groups.hasAttempted(distributable.appID)
     }
 
-    /// Giving the build to groups: the card, or the way to Pro where it would be.
+    /// Giving the build to groups: the card.
     @ViewBuilder
     private func testFlightDistributionGroup(now: Date) -> some View {
         if showsDistribution, let distribution, let distributable {
@@ -410,10 +409,6 @@ struct BuildDetailView: View {
                 teamID: teamID, now: now
             )
             .id(run.id)
-        } else if !access.allows(.testFlightDistribution), run.completionStatus == .succeeded,
-                  buildStore.snapshot.workflow(id: run.workflowID)?.shipsToTestFlight == true,
-                  !(extrasStore.extras(for: run.id)?.betaBuilds ?? []).isEmpty {
-            ProLockedCard(feature: .testFlightDistribution)
         }
     }
 
@@ -534,7 +529,7 @@ struct BuildDetailView: View {
     /// What the Tests part may use: the groups of this build, only while the feature is open.
     private var openInsight: FailureInsightRecord? {
         guard BuildFailurePrompt.isOffered(for: run),
-              FailureInsightFeature.mode(model: .current, settingOn: isInsightSettingOn, proAllows: access.allows(.failureInsight)) == .open
+              FailureInsightFeature.mode(model: .current, settingOn: isInsightSettingOn) == .open
         else { return nil }
         return insights?.insight(for: run.id)
     }

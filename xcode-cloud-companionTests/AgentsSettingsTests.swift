@@ -264,10 +264,9 @@ struct AgentSkillBundleTests {
                 #expect(contract.contains("`\(argument)`"), "argument \(argument) of \(tool.name) is missing from the contract")
             }
         }
-        for code in ["NOT_FOUND", "AMBIGUOUS", "NO_CACHE", "USAGE", "INTERNAL", "APP_UNREACHABLE", "TIMEOUT", "PRO_REQUIRED"] {
+        for code in ["NOT_FOUND", "AMBIGUOUS", "NO_CACHE", "USAGE", "INTERNAL", "APP_UNREACHABLE", "TIMEOUT"] {
             #expect(CLIErrorCode(rawValue: code) != nil && contract.contains("`\(code)`"))
         }
-        #expect(skill.contains("`PRO_REQUIRED`") && skill.contains("exits 9") && contract.contains("| 9 | `PRO_REQUIRED`"))
         #expect(skill.contains("`--account <name>`") && skill.contains("`meta.account`"))
         for key in ["lastSuccessfulSync", "appRunning", "isEstimate", "account", "selected", "detailsAvailable", "omittedWarnings", "estimatedMinutes", "billedMinutes"] {
             #expect(contract.contains("`\(key)`"))

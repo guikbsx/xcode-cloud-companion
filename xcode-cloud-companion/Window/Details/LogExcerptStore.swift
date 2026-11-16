@@ -12,7 +12,7 @@ nonisolated enum LogExcerptTarget {
 
 /// What the “Log Excerpt” card knows, by action. Opening a build asks Apple for nothing: the excerpt is read from a log that
 /// is already unpacked on this Mac. Only the card's button downloads, with the rules of `LogOpener` (a fresh signed address,
-/// no token, the cache's cap) and not while the hour's requests are nearly spent. Cumulus Pro: without it nothing is read.
+/// no token, the cache's cap) and not while the hour's requests are nearly spent.
 @Observable
 final class LogExcerptStore {
     enum Outcome: Equatable {
@@ -36,17 +36,14 @@ final class LogExcerptStore {
     private(set) var working: Set<String> = []
     private let logOpener: LogOpener
     private let budget: () async -> RateLimit?
-    /// Cumulus Pro: false reads nothing and downloads nothing.
-    private let allowed: @MainActor () -> Bool
     private let search: @Sendable (URL, [LogLocationHint]) async -> LogExcerptOutcome
 
     init(
-        logOpener: LogOpener, budget: @escaping () async -> RateLimit?, allowed: @escaping @MainActor () -> Bool = { true },
+        logOpener: LogOpener, budget: @escaping () async -> RateLimit?,
         search: @escaping @Sendable (URL, [LogLocationHint]) async -> LogExcerptOutcome = { await LogExcerptSearch.search(in: $0, hints: $1) }
     ) {
         self.logOpener = logOpener
         self.budget = budget
-        self.allowed = allowed
         self.search = search
     }
 
@@ -60,7 +57,7 @@ final class LogExcerptStore {
 
     /// Reads the excerpt when the action's log is already unpacked; otherwise says it is not. Never a request.
     func load(_ action: CIBuildAction, hints: [LogLocationHint]) async {
-        guard allowed(), outcomes[action.id]?.isRead != true, !working.contains(action.id) else { return }
+        guard outcomes[action.id]?.isRead != true, !working.contains(action.id) else { return }
         guard let folder = await logOpener.unpackedFolder(of: action.id) else {
             if outcomes[action.id] == nil { outcomes[action.id] = .notOnThisMac }
             return
@@ -74,7 +71,7 @@ final class LogExcerptStore {
     func fetchAndLoad(
         _ action: CIBuildAction, run: CIBuildRun, title: String, knownArtifacts: [CIArtifact]?, signals: LogArchiveChoice.Signals, hints: [LogLocationHint]
     ) async {
-        guard allowed(), !working.contains(action.id) else { return }
+        guard !working.contains(action.id) else { return }
         if let left = await budget(), left.remaining <= SyncSchedule.criticalRemaining {
             outcomes[action.id] = .failed(String(localized: "Apple’s hourly request limit is nearly spent: the log waits for the next hour."))
             return
@@ -92,9 +89,9 @@ final class LogExcerptStore {
         outcomes[action.id] = await read(folder, hints: hints)
     }
 
-    /// The excerpt to attach to the text for an AI: only when the log is already here, and for Pro. Never a request.
+    /// The excerpt to attach to the text for an AI: only when the log is already here. Never a request.
     func excerptForPrompt(actions: [CIBuildAction], extras: BuildExtras?) async -> (actionName: String, excerpt: LogExcerpt)? {
-        guard allowed(), let action = LogExcerptTarget.action(in: actions) else { return nil }
+        guard let action = LogExcerptTarget.action(in: actions) else { return nil }
         if outcomes[action.id]?.isRead != true {
             await load(action, hints: LogLocationHint.hints(issues: extras?.issuesByAction[action.id] ?? [], tests: extras?.testsByAction[action.id] ?? []))
         }

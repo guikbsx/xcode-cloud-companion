@@ -1,7 +1,7 @@
 import SwiftUI
 
-/// What stands where the “Log Excerpt” card would be: the card with Cumulus Pro, the lock card without it, and nothing for
-/// an action known to have left no log.
+/// What stands where the “Log Excerpt” card would be: the card, and nothing for an action
+/// known to have left no log.
 struct LogExcerptSection: View {
     let run: CIBuildRun
     let action: CIBuildAction
@@ -10,15 +10,10 @@ struct LogExcerptSection: View {
     let store: LogExcerptStore
     let logOpener: LogOpener
     let extras: BuildExtras?
-    @Environment(ProAccess.self) private var access: ProAccess?
 
     var body: some View {
         if logOpener.offersLogs(for: action, knownArtifacts: extras?.artifactsByAction[action.id]) {
-            if access.allows(.logExcerpt) {
-                LogExcerptCard(run: run, action: action, actionName: actionName, title: title, store: store, logOpener: logOpener, extras: extras)
-            } else {
-                ProLockedCard(feature: .logExcerpt)
-            }
+            LogExcerptCard(run: run, action: action, actionName: actionName, title: title, store: store, logOpener: logOpener, extras: extras)
         }
     }
 }

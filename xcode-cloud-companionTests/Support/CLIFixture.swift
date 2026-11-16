@@ -183,16 +183,12 @@ enum CLIFixture {
     /// Writes the account to a new temporary folder and returns an environment that reads it.
     static func environment(
         snapshot: BuildSnapshot? = CLIFixture.snapshot, plan: UsagePlan? = CLIFixture.plan, withDetails: Bool = true,
-        isTerminal: Bool = false, width: Int = 100, pro: Bool? = true
+        isTerminal: Bool = false, width: Int = 100
     ) async throws -> CLIEnvironment {
         let root = FileManager.default.temporaryDirectory.appending(path: "cumulus-cli-\(UUID().uuidString)")
         let directory = CLIAccountScope.directory(of: account, in: root)
         try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
         await AccountRegistryStore(fileURL: root.appending(path: "Accounts.json")).save(AccountRegistry(first: account.name))
-        // What the app says of Cumulus Pro; nil leaves no file, as before the app ever ran.
-        if let pro {
-            ProStatusStore(directory: root).save(ProStatus(isActive: pro, writtenAt: now))
-        }
         if let snapshot {
             try await BuildCacheStore(fileURL: directory.appending(path: "BuildCache.json")).save(snapshot)
             try await UsageLedgerStore(fileURL: directory.appending(path: "UsageLedger.json")).save(ledger)

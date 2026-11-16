@@ -365,8 +365,8 @@ struct LogOpenerTests {
         return try TestZip.write([.init(name: "Acme Build 3 Logs for Archive/xcodebuild-archive.log", data: Data(log.utf8), deflated: true)])
     }
 
-    private func store(_ opener: LogOpener, remaining: Int? = nil, allowed: Bool = true) -> LogExcerptStore {
-        LogExcerptStore(logOpener: opener, budget: { remaining.map { RateLimit(limit: 3600, remaining: $0) } }, allowed: { allowed })
+    private func store(_ opener: LogOpener, remaining: Int? = nil) -> LogExcerptStore {
+        LogExcerptStore(logOpener: opener, budget: { remaining.map { RateLimit(limit: 3600, remaining: $0) } })
     }
 
     @Test func fetchBringsTheLogsWithoutOpeningTheFinder() async throws {
@@ -431,20 +431,6 @@ struct LogOpenerTests {
 
         guard case .found(let excerpt)? = store.outcome(for: "action-1") else { Issue.record("no excerpt"); return }
         #expect(excerpt.totalLines == 3)
-        #expect(await transport.requests.isEmpty)
-    }
-
-    @Test func withoutProNothingIsReadOrDownloaded() async throws {
-        defer { Task { [cache] in await cache.deleteAll() } }
-        _ = try await cache.unpack(try buildLogArchive(), actionID: "action-1", name: "Acme #3 – Archive")
-        let (opener, transport) = opener(FakeFetcher([.file(try buildLogArchive())]))
-        let store = store(opener, allowed: false)
-
-        await store.load(action(), hints: [])
-        await store.fetchAndLoad(action(), run: run(), title: "Logs", knownArtifacts: nil, signals: .init(), hints: [])
-
-        #expect(store.outcome(for: "action-1") == nil)
-        #expect(await store.excerptForPrompt(actions: [action()], extras: nil) == nil)
         #expect(await transport.requests.isEmpty)
     }
 

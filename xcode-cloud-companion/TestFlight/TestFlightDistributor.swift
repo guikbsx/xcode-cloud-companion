@@ -11,24 +11,20 @@ final class TestFlightDistributor {
     private let client: () async -> AppStoreConnectClient?
     /// Reads the build again and keeps it where the app keeps its TestFlight builds; nil when it could not be read.
     private let reread: @MainActor (String) async -> TestFlightBuild?
-    /// Cumulus Pro: false sends nothing and reads nothing.
-    @ObservationIgnored var allowed: @MainActor () -> Bool
     /// The account's “Key access”: a key set to read only sends nothing.
     @ObservationIgnored var isKeyWritable: @MainActor () -> Bool
 
     init(
-        client: @escaping () async -> AppStoreConnectClient?, reread: @escaping @MainActor (String) async -> TestFlightBuild?,
-        allowed: @escaping @MainActor () -> Bool = { true }, isKeyWritable: @escaping @MainActor () -> Bool = { true }
+        client: @escaping () async -> AppStoreConnectClient?, reread: @escaping @MainActor (String) async -> TestFlightBuild?, isKeyWritable: @escaping @MainActor () -> Bool = { true }
     ) {
         self.client = client
         self.reread = reread
-        self.allowed = allowed
         self.isKeyWritable = isKeyWritable
     }
 
     /// The test notes Apple holds for a build, one per language; nil when they could not be read.
     func notes(for buildID: String) async -> [BetaBuildNote]? {
-        guard allowed(), let client = await client() else { return nil }
+        guard let client = await client() else { return nil }
         return try? await client.betaBuildNotes(buildID: buildID)
     }
 
@@ -42,7 +38,6 @@ final class TestFlightDistributor {
     }
 
     func distribute(_ request: DistributionRequest) async -> DistributionOutcome {
-        guard allowed() else { return .failed(message: ProFeatureText.required, completed: []) }
         guard isKeyWritable() else { return .notAllowed(message: DistributionOutcome.readOnlyMessage, completed: []) }
         // A second tap while the first is in flight must not send a second request.
         guard !isSending else { return .failed(message: String(localized: "A distribution is already in progress."), completed: []) }
@@ -88,7 +83,6 @@ final class TestFlightDistributor {
     /// Makes a build unavailable for testing, for good. One `PATCH`, never repeated: an answer that does not say whether it
     /// went through is followed by a read of the build, and a build that reads as expired is an expired build.
     func expire(buildID: String) async -> ExpirationOutcome {
-        guard allowed() else { return .failed(message: ProFeatureText.required) }
         guard isKeyWritable() else { return .notAllowed(message: DistributionOutcome.readOnlyMessage) }
         guard !isSending else { return .failed(message: String(localized: "A distribution is already in progress.")) }
         let request = BuildExpirationRequest(buildID: buildID)

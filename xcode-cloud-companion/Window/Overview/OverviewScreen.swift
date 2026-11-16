@@ -24,7 +24,6 @@ struct OverviewScreen<Detail: View>: View {
     var actions = OverviewScreenActions()
     @ViewBuilder var detail: () -> Detail
 
-    @Environment(ProAccess.self) private var access: ProAccess?
     @Environment(AppleStatusStore.self) private var appleStatus: AppleStatusStore?
     @State private var flakyTests: [OverviewFlakyTests.Entry] = []
 
@@ -37,11 +36,7 @@ struct OverviewScreen<Detail: View>: View {
             OverviewScreenBody(model: model, artwork: artwork, actions: actions, now: now, detail: detail)
         }
         .navigationTitle("Overview")
-        .task(id: ReadKey(sync: snapshot.lastSuccessfulSync, runs: snapshot.runs.count, isOpen: access.allows(.testHealth))) {
-            guard access.allows(.testHealth) else {
-                flakyTests = []
-                return
-            }
+        .task(id: ReadKey(sync: snapshot.lastSuccessfulSync, runs: snapshot.runs.count)) {
             let workflowIDs = Array(Set(snapshot.runs.compactMap(\.workflowID))).sorted()
             flakyTests = await OverviewFlakyTests.read(workflowIDs: workflowIDs, in: snapshot, cache: BuildExtrasCache(directory: session.paths.buildDetails))
         }
@@ -53,7 +48,6 @@ struct OverviewScreen<Detail: View>: View {
     private struct ReadKey: Hashable {
         let sync: Date?
         let runs: Int
-        let isOpen: Bool
     }
 
     private func makeModel(snapshot: BuildSnapshot, now: Date) -> OverviewScreenModel {
@@ -74,7 +68,7 @@ struct OverviewScreen<Detail: View>: View {
         return OverviewScreenModel(
             snapshot: snapshot, sidebar: SidebarContent(snapshot: snapshot, pinnedIDs: [], palette: palette), summary: summary,
             ledger: session.usageStore.ledger, accountName: session.name, isReading: isReading, now: now,
-            pro: Set(ProFeature.allCases.filter { access.allows($0) }), failureInsights: insights, failureCategories: categories, appleStatus: appleStatus?.knowledge,
+            failureInsights: insights, failureCategories: categories, appleStatus: appleStatus?.knowledge,
             testFlight: testFlight, flakyTests: flakyTests
         )
     }

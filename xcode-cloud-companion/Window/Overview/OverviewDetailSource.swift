@@ -10,10 +10,6 @@ nonisolated struct OverviewDetailSource: Sendable {
     var categories: [String: FailureCategory] = [:]
     /// The sentences of “In brief” already known, by build; empty while that function is closed.
     var insights: [String: String] = [:]
-    var pro: Set<ProFeature> = []
-
-    /// The drawer is Cumulus Pro's (`ProFeature.workflowTrends`): without it the name of a workflow only opens its sheet.
-    var allowsDrawer: Bool { pro.contains(.workflowTrends) }
 
     func dayDetail(row: OverviewMosaic.Row, appName: String, day: Date) -> OverviewDayDetail? {
         OverviewDayDetail(
@@ -21,9 +17,7 @@ nonisolated struct OverviewDetailSource: Sendable {
         )
     }
 
-    /// Nil without Pro.
-    func durationSeries(row: OverviewMosaic.Row) -> OverviewDurationSeries? {
-        guard allowsDrawer else { return nil }
-        return OverviewDurationSeries(row: row, snapshot: snapshot, now: now, calendar: calendar)
+    func durationSeries(row: OverviewMosaic.Row) -> OverviewDurationSeries {
+        OverviewDurationSeries(row: row, snapshot: snapshot, now: now, calendar: calendar)
     }
 }

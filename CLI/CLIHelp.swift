@@ -143,7 +143,6 @@ nonisolated enum CLIHelp {
             "",
             "Everything is read from the cache the Cumulus app keeps: nothing is asked from Apple.",
             "Run 'cumulus help <command>' for a command's options.",
-            "Every command but 'status' needs Cumulus Pro (Cumulus › Settings › Cumulus Pro); without it they exit 9, PRO_REQUIRED.",
             "Install this command and its agent skill from Cumulus › Settings › Agents.",
         ]
         return lines.joined(separator: "\n") + "\n"

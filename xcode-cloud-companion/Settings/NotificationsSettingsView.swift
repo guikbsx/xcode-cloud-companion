@@ -6,21 +6,6 @@ struct NotificationsSettingsView: View {
     let coordinator: NotificationCoordinator
     let webhook: WebhookService
     let accounts: AccountsModel
-    /// Cumulus Pro; nil leaves every alert open.
-    var pro: ProStore?
-
-    private var hasStuckAlert: Bool { pro?.allows(.stuckBuildAlert) ?? true }
-    private var hasEarlyAlerts: Bool { pro?.allows(.earlyUsageAlerts) ?? true }
-    private var hasSlowdownAlert: Bool { pro?.allows(.slowdownAlert) ?? true }
-    private var hasTestFlightTracking: Bool { pro?.allows(.testFlightTracking) ?? true }
-
-    /// Why a setting is greyed: it is kept as it was, and waits for Pro.
-    private var proNote: some View {
-        Text("This alert comes with Cumulus Pro. Your setting is kept.")
-            .font(.caption)
-            .foregroundStyle(.secondary)
-            .frame(maxWidth: .infinity, alignment: .leading)
-    }
 
     var body: some View {
         SettingsColumns {
@@ -56,12 +41,7 @@ struct NotificationsSettingsView: View {
                 .disabled(!preferences.builds.stuck)
             } header: {
                 Text("When a build seems stuck")
-            } footer: {
-                if !hasStuckAlert {
-                    proNote
-                }
             }
-            .disabled(!hasStuckAlert)
             Section {
                 Toggle(isOn: $preferences.builds.slowdown) {
                     VStack(alignment: .leading, spacing: 2) {
@@ -73,12 +53,7 @@ struct NotificationsSettingsView: View {
                 }
             } header: {
                 Text("When a workflow slows down")
-            } footer: {
-                if !hasSlowdownAlert {
-                    proNote
-                }
             }
-            .disabled(!hasSlowdownAlert)
             Section {
                 Toggle(isOn: $preferences.builds.testFlightAvailable) {
                     VStack(alignment: .leading, spacing: 2) {
@@ -99,17 +74,11 @@ struct NotificationsSettingsView: View {
             } header: {
                 Text("TestFlight")
             } footer: {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("Cumulus asks App Store Connect about an app’s latest builds at most every 15 minutes while one is processing or waiting for its beta review, and once a day otherwise.")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                    if !hasTestFlightTracking {
-                        proNote
-                    }
-                }
-                .frame(maxWidth: .infinity, alignment: .leading)
+                Text("Cumulus asks App Store Connect about an app’s latest builds at most every 15 minutes while one is processing or waiting for its beta review, and once a day otherwise.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .frame(maxWidth: .infinity, alignment: .leading)
             }
-            .disabled(!hasTestFlightTracking)
         } trailing: {
             Section("When an agent acts") {
                 Toggle(isOn: $preferences.builds.agentLaunches) {
@@ -131,7 +100,6 @@ struct NotificationsSettingsView: View {
             }
             Section {
                 Toggle("\(UsageFormat.percent(0.75)) of the plan used", isOn: $preferences.usage.threshold75)
-                    .disabled(!hasEarlyAlerts)
                 Toggle("\(UsageFormat.percent(0.9)) of the plan used", isOn: $preferences.usage.threshold90)
                 Toggle(isOn: $preferences.usage.pace) {
                     VStack(alignment: .leading, spacing: 2) {
@@ -141,25 +109,17 @@ struct NotificationsSettingsView: View {
                             .foregroundStyle(.secondary)
                     }
                 }
-                .disabled(!hasEarlyAlerts)
             } header: {
                 Text("When the plan runs low")
             } footer: {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("Each alert is sent once per cycle. The figure is an estimate until a recent usage export is imported, and the alert says so.")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                    if !hasEarlyAlerts {
-                        Text("The alert at \(UsageFormat.percent(0.75)) and the one on the pace come with Cumulus Pro. The alert at \(UsageFormat.percent(0.9)) is free.")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                    }
-                }
-                .frame(maxWidth: .infinity, alignment: .leading)
+                Text("Each alert is sent once per cycle. The figure is an estimate until a recent usage export is imported, and the alert says so.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .frame(maxWidth: .infinity, alignment: .leading)
             }
             ForEach(accounts.sessions) { session in
                 WebhookSettingsSection(
-                    session: session, service: webhook, showsName: accounts.hasSeveral, isPaused: accounts.isPaused(session), isOpen: webhook.isOpen
+                    session: session, service: webhook, showsName: accounts.hasSeveral
                 )
             }
             if accounts.sessions.isEmpty {

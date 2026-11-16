@@ -125,8 +125,6 @@ nonisolated enum IPCLaunchReason {
     static let uncertain = "uncertain"
     /// Apple did not confirm and the build list could not be read: a build may have started.
     static let unknown = "unknown"
-    /// The app itself says Cumulus Pro is not active, whatever the shared file claims.
-    static let proRequired = "proRequired"
 }
 
 /// What `testFlightGive` asks: one TestFlight build, the groups to give it to and to take it from, by Apple's identifiers.
@@ -202,8 +200,6 @@ nonisolated struct IPCTestFlightExpireRequest: Equatable, Sendable {
 nonisolated enum IPCTestFlightReason {
     static let noCredentials = "noCredentials"
     static let unknownAccount = "unknownAccount"
-    /// Without Cumulus Pro the account is paused, and the app does not ask Apple anything for it.
-    static let paused = "paused"
     /// The key is declared read-only in the app, or Apple answered 403.
     static let notAllowed = "notAllowed"
     /// The app's own cap: so many TestFlight writes by agents in the last hour.
@@ -224,8 +220,6 @@ nonisolated enum IPCTestFlightReason {
     static let failed = "failed"
     /// Apple did not confirm and the build read back does not settle it.
     static let uncertain = "uncertain"
-    /// The app itself says Cumulus Pro is not active, whatever the shared file claims.
-    static let proRequired = "proRequired"
 }
 
 nonisolated struct IPCFailure: Codable, Equatable, Sendable {

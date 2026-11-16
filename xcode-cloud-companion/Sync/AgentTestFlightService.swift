@@ -12,7 +12,7 @@ nonisolated enum AgentTestFlightGate {
 }
 
 /// Gives a TestFlight build to groups, takes it from others, or expires it, when the command or an MCP tool asks over the
-/// socket: the window's own `TestFlightDistributor`, behind Cumulus Pro, the key's access and the cap. No request is repeated;
+/// socket: the window's own `TestFlightDistributor`, behind the key's access and the cap. No request is repeated;
 /// a 403 puts the key in read-only mode as it does in the window. The command reads the shared files; this is where it
 /// writes, and where what the files may lack gets read.
 @MainActor
@@ -39,8 +39,7 @@ final class AgentTestFlightService {
     /// Reads, for the command, what the shared folder lacks to talk about a build's TestFlight build: the list of its TestFlight
     /// builds and the groups of its app. Only reads, and only for an account Cumulus follows.
     func load(buildRunID: String) async -> IPCResult {
-        guard isProOpen else { return IPCResult(loaded: false) }
-        guard let session = await accounts.owner(ofBuild: buildRunID), !accounts.isPaused(session) else { return IPCResult(loaded: false) }
+        guard let session = await accounts.owner(ofBuild: buildRunID) else { return IPCResult(loaded: false) }
         await session.buildStore.loadCacheIfNeeded()
         guard let run = session.buildStore.snapshot.runs.first(where: { $0.id == buildRunID }), run.executionProgress == .complete else {
             return IPCResult(loaded: false)
@@ -139,24 +138,17 @@ final class AgentTestFlightService {
 
     // MARK: - Checks
 
-    private var isProOpen: Bool {
-        (accounts.pro?.allows(.commandLine) ?? true) && (accounts.pro?.allows(.testFlightDistribution) ?? true)
-    }
-
     private func refusal(_ reason: String, message: String? = nil, names: [String]? = nil) -> Refusal {
         Refusal(result: IPCResult(reason: reason, message: message, written: false, names: names))
     }
 
-    /// The account, once Cumulus Pro, the account itself, its key and its access allow a write. Asked of the app's own stores: the
-    /// shared file the command reads can be edited by hand.
+    /// The account, once the account itself, its key and its access allow a write.
     private func authorizedSession(accountID: String?) async throws(Refusal) -> AccountSession {
-        guard isProOpen else { throw refusal(IPCTestFlightReason.proRequired) }
         await accounts.whenReady()
         let found = accountID.map { accounts.session(id: $0) } ?? accounts.selected
         guard let session = found else {
             throw refusal(accountID == nil ? IPCTestFlightReason.noCredentials : IPCTestFlightReason.unknownAccount)
         }
-        guard !accounts.isPaused(session) else { throw refusal(IPCTestFlightReason.paused) }
         await session.settings.load()
         await session.buildStore.loadCacheIfNeeded()
         guard session.settings.hasStoredKey else { throw refusal(IPCTestFlightReason.noCredentials) }

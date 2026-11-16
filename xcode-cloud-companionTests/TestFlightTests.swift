@@ -450,7 +450,6 @@ struct TestFlightAlertPlannerTests {
 @MainActor
 struct TestFlightCoordinatorTests {
     private let defaults: UserDefaults
-    private let lifetime = ProStore(source: StubProSource(), forced: .lifetime(since: now))
 
     init() {
         let suiteName = "TestFlightCoordinatorTests-\(UUID().uuidString)"
@@ -458,9 +457,9 @@ struct TestFlightCoordinatorTests {
         defaults.removePersistentDomain(forName: suiteName)
     }
 
-    private func makeCoordinator(_ center: MockNotificationCenter, pro: ProStore? = nil, preferences: NotificationPreferences? = nil) -> NotificationCoordinator {
+    private func makeCoordinator(_ center: MockNotificationCenter, preferences: NotificationPreferences? = nil) -> NotificationCoordinator {
         NotificationCoordinator(
-            center: center, preferences: preferences ?? NotificationPreferences(defaults: defaults), defaults: defaults, pro: pro ?? lifetime, now: { now }
+            center: center, preferences: preferences ?? NotificationPreferences(defaults: defaults), defaults: defaults, now: { now }
         )
     }
 
@@ -503,17 +502,6 @@ struct TestFlightCoordinatorTests {
         await restarted.testFlightDidRead(account: work, app: app, builds: reached)
         let posted = await center.posted
         #expect(posted.count == 2 && posted.last?.subtitle == "Work", "its own memory, and its name on the banner")
-    }
-
-    @Test func withoutProNothingIsSentOrRemembered() async {
-        let center = MockNotificationCenter(status: .allowed)
-        let coordinator = makeCoordinator(center, pro: ProStore(source: StubProSource(), forced: .free))
-
-        await coordinator.testFlightDidRead(app: app, builds: waiting)
-        await coordinator.testFlightDidRead(app: app, builds: reached)
-
-        #expect(await center.posted.isEmpty)
-        #expect(defaults.data(forKey: AccountDefaults.key(AccountDefaults.testFlightAlertState, accountID: AccountRegistry.firstAccountID)) == nil)
     }
 
     @Test func theSettingsAndAMutedAppSilenceTheBannerNotTheMemory() async {
@@ -588,14 +576,13 @@ struct TestFlightStoreTests {
     }
 
     private func store(
-        transport: MockTransport, budget: RateLimit? = nil, allowed: Bool = true, directory: URL? = nil
+        transport: MockTransport, budget: RateLimit? = nil, directory: URL? = nil
     ) -> TestFlightStore {
         let client = AppStoreConnectClient(credentials: .sample(), transport: transport)
         let store = TestFlightStore(
             cache: TestFlightCache(fileURL: (directory ?? self.directory).appending(path: "TestFlight.json")), client: { client }, budget: { budget },
             now: { [clock] in clock.now }
         )
-        store.allowed = { allowed }
         return store
     }
 
@@ -659,15 +646,6 @@ struct TestFlightStoreTests {
         await store.sync(snapshot: snapshot)
 
         #expect(heard == ["Brioche:app-1:3"])
-    }
-
-    @Test func withoutProNothingIsAskedAndNothingIsRead() async {
-        let transport = answering()
-        let store = store(transport: transport, allowed: false)
-
-        await store.sync(snapshot: snapshot)
-
-        #expect(await transport.requests.isEmpty && store.reading(for: "p1") == nil)
     }
 
     @Test func nothingIsAskedWhenTheHourIsNearlySpent() async {

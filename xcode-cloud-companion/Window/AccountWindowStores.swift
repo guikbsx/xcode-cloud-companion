@@ -15,16 +15,14 @@ final class AccountWindowStores {
     let editor: WorkflowEditor
     let older: OlderBuildsStore
 
-    /// `pro` is Cumulus Pro; without one (tests) every store is open.
-    init(buildStore: BuildStore, extrasStore: BuildExtrasStore, paths: AccountPaths, pro: ProStore? = nil) {
-        let allows: @MainActor (ProFeature) -> Bool = { [pro] in pro?.allows($0) ?? true }
+    init(buildStore: BuildStore, extrasStore: BuildExtrasStore, paths: AccountPaths) {
         let client: () async -> AppStoreConnectClient? = { [buildStore] in await buildStore.detailClient() }
         let budget: () async -> RateLimit? = { [buildStore] in
             await buildStore.updateRateLimit()
             return buildStore.rateLimit
         }
         references = ReferencesStore(client: client, budget: budget)
-        older = OlderBuildsStore(client: client, budget: budget, allowed: { allows(.olderBuilds) })
+        older = OlderBuildsStore(client: client, budget: budget)
         let workflowStore = WorkflowDetailStore(cache: WorkflowDetailsCache(directory: paths.workflowDetails), client: client)
         self.workflowStore = workflowStore
         artifactSaver = ArtifactSaver(client: client)
@@ -32,7 +30,7 @@ final class AccountWindowStores {
         icons = AppIconStore(cache: AppIconCache(directory: paths.appIcons))
         let logOpener = LogOpener(client: client, cache: LogCache(directory: paths.logs))
         self.logOpener = logOpener
-        logExcerpts = LogExcerptStore(logOpener: logOpener, budget: budget, allowed: { allows(.logExcerpt) })
+        logExcerpts = LogExcerptStore(logOpener: logOpener, budget: budget)
         workflowTests = WorkflowTestsModel(
             reader: TestHealthReader(cache: BuildExtrasCache(directory: paths.buildDetails)),
             snapshot: { [buildStore] in buildStore.snapshot },
@@ -44,16 +42,14 @@ final class AccountWindowStores {
             budget: { [buildStore] in
                 await buildStore.updateRateLimit()
                 return buildStore.rateLimit
-            },
-            allowed: { allows(.testHealth) }
+            }
         )
         pauser = WorkflowPauser(
             client: client,
             applied: { [workflowStore, buildStore] workflowID, isEnabled in
                 await workflowStore.setEnabled(isEnabled, workflowID: workflowID)
                 await buildStore.setWorkflowEnabled(isEnabled, workflowID: workflowID)
-            },
-            allowed: { allows(.pauseWorkflow) }
+            }
         )
         editor = WorkflowEditor(
             client: client,
@@ -64,8 +60,7 @@ final class AccountWindowStores {
             applied: { [workflowStore, buildStore] workflow in
                 await workflowStore.apply(workflow)
                 await buildStore.applyWorkflow(workflow)
-            },
-            allowed: { allows(.editWorkflow) }
+            }
         )
     }
 }

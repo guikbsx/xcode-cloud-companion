@@ -13,14 +13,10 @@ struct RegressionGroup: View {
 
     @State private var isLoading = false
     @State private var budgetIsShort = false
-    @Environment(ProAccess.self) private var access: ProAccess?
 
     var body: some View {
         let status = BuildStatus(run: run)
-        if run.executionProgress == .complete, status == .failed || status == .errored, !access.allows(.regressions) {
-            // Without Pro nothing is read, from the disk or from Apple: the card stands where the comparison would be.
-            ProLockedCard(feature: .regressions)
-        } else if run.executionProgress == .complete, status == .failed || status == .errored {
+        if run.executionProgress == .complete, status == .failed || status == .errored {
             let reference = RegressionReport.reference(for: run, in: buildStore.snapshot)
             VStack(alignment: .leading, spacing: 10) {
                 Text("Since the last successful build")

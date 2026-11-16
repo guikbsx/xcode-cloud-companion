@@ -63,9 +63,6 @@
             ReferencedContainer = "container:xcode-cloud-companion.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
-      <StoreKitConfigurationFileReference
-         identifier = "../../xcode-cloud-companionTests/Cumulus.storekit">
-      </StoreKitConfigurationFileReference>
    </LaunchAction>
    <ProfileAction
       buildConfiguration = "Release"

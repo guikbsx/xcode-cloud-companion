@@ -21,7 +21,7 @@ struct WorkflowDetailTests {
         #expect(model.isEnabled == true && model.isLocked == false)
         #expect(model.info.map(\.title) == ["Clean build", "Project", "Repository", "Xcode", "macOS", "Last modified"])
         #expect(model.info[0].value == "No")
-        #expect(model.info[2].value == "guikbsx/realmotivation")
+        #expect(model.info[2].value == "example/realmotivation")
         #expect(model.startConditions.map(\.title) == ["Branch changes", "Schedule", "Files and folders", "Auto-cancel", "Manual start"])
         #expect(model.startConditions[0].value == "develop, release/")
         #expect(model.startConditions[1].value == "Every week")

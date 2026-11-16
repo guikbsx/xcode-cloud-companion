@@ -17,7 +17,7 @@
         "sourceCommit": {
           "commitSha": "d4c3b2a1e5f60718293a4b5c6d7e8f9012345678",
           "message": "Corrige la synchronisation des semaines passées",
-          "author": { "displayName": "Guillaume Bisiaux", "avatarUrl": "https://example.com/a.png" },
+          "author": { "displayName": "Jane Appleseed", "avatarUrl": "https://example.com/a.png" },
           "webUrl": "https://github.com/example/app/commit/d4c3b2a1"
         }
       },

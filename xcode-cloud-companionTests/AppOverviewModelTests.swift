@@ -43,7 +43,7 @@ struct AppOverviewModelTests {
         var beta = CIWorkflow(id: "w2", name: "Beta testing", testDestinationCounts: [])
         beta.productID = "p1"
         beta.xcodeVersion = "27.1"
-        beta.repositoryName = "guikbsx/realmotivation"
+        beta.repositoryName = "example/realmotivation"
         beta.startConditions = CIStartConditions(schedule: CISchedule(frequency: .weekly, weekdays: [2], hour: 6, timeZoneID: "Europe/Paris"))
 
         var paused = CIWorkflow(id: "w3", name: "Internal archive", testDestinationCounts: [])
@@ -114,7 +114,7 @@ struct AppOverviewModelTests {
 
         #expect(model.displayName == "Crossfit Hyrox Tracker")
         #expect(model.productKey == "realmotivation")
-        #expect(model.repository == "guikbsx/realmotivation", "the first workflow that names its repository")
+        #expect(model.repository == "example/realmotivation", "the first workflow that names its repository")
     }
 
     @Test func anAppTheSnapshotDoesNotKnowHasNoOverview() {

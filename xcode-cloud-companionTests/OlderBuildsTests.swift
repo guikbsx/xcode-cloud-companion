@@ -64,18 +64,11 @@ struct OlderBuildsTests {
         #expect(workflow.rows.map(\.id) == ["r3", "r2", "r1"])
     }
 
-    @Test func withoutProNothingIsAskedOfAppleAndWithItThePageIsRead() async throws {
-        final class Lock { var isOpen = false }
-        let lock = Lock()
+    @Test func thePageIsRead() async throws {
         let transport = MockTransport { _ in MockTransport.Reply(body: (try? Fixture.data("ciBuildRuns-page2")) ?? Data()) }
         let client = AppStoreConnectClient(credentials: .sample(), transport: transport)
-        let store = OlderBuildsStore(client: { client }, budget: { nil }, allowed: { lock.isOpen })
+        let store = OlderBuildsStore(client: { client }, budget: { nil })
 
-        await store.loadOlder(productID: "product-1", known: [])
-        #expect(await transport.requests.isEmpty)
-        #expect(store.runs(forProductID: "product-1").isEmpty && store.lastError == nil)
-
-        lock.isOpen = true
         await store.loadOlder(productID: "product-1", known: [])
         #expect(await transport.requests.count == 1)
         #expect(!store.runs(forProductID: "product-1").isEmpty)

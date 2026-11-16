@@ -2,8 +2,6 @@ import Foundation
 
 /// The curve of a workflow's drawer in the Overview: the median time of its successful builds, day by day, on the
 /// columns of the mosaic, and the level change `WorkflowSlowdown` found, if any. Worked out from the snapshot alone.
-///
-/// Whether the drawer is open is Cumulus Pro's call (`ProFeature.workflowTrends`): this type does not ask.
 nonisolated struct OverviewDurationSeries: Equatable, Sendable {
     struct Point: Equatable, Sendable {
         /// The start of the day.

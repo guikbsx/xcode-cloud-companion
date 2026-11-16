@@ -16,13 +16,11 @@ final class MainWindowController: NSObject, NSWindowDelegate {
     /// The name the window's frame is saved under; nil neither restores nor saves it.
     private let frameName: String?
     private(set) var window: NSWindow?
-    private let purchase: ProPurchasePresenter?
-    private var access: ProAccess?
     private let appleStatus: AppleStatusStore?
 
     init(
         accounts: AccountsModel, navigation: NavigationModel, activation: ActivationPolicyCoordinator, openSettings: @escaping () -> Void,
-        pro: ProStore? = nil, purchase: ProPurchasePresenter? = nil, appleStatus: AppleStatusStore? = nil,
+        appleStatus: AppleStatusStore? = nil,
         frameName: String? = MainWindowController.frameName
     ) {
         self.accounts = accounts
@@ -30,16 +28,8 @@ final class MainWindowController: NSObject, NSWindowDelegate {
         self.activation = activation
         self.openSettings = openSettings
         self.frameName = frameName
-        self.purchase = purchase
         self.appleStatus = appleStatus
         super.init()
-        // Without a store (tests), the window treats every function as open.
-        access = pro.map { store in
-            ProAccess(store: store) { [weak self] feature in
-                guard let self, let window = self.window else { return }
-                self.purchase?.present(over: window, origin: feature)
-            }
-        }
     }
 
     func show() {
@@ -57,7 +47,7 @@ final class MainWindowController: NSObject, NSWindowDelegate {
     }
 
     private func makeWindow() -> NSWindow {
-        let hosting = NSHostingController(rootView: MainWindowRoot(accounts: accounts, navigation: navigation, pins: pins, openSettings: openSettings, pro: access, appleStatus: appleStatus))
+        let hosting = NSHostingController(rootView: MainWindowRoot(accounts: accounts, navigation: navigation, pins: pins, openSettings: openSettings, appleStatus: appleStatus))
         // The size is the window's own. Left to itself, the hosting controller resizes the window to the least its
         // content can be, 591 × 190 points, and that tiny frame is then the one saved (seen on 12/10/2026).
         hosting.sizingOptions = []

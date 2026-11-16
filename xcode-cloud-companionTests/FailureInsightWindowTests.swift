@@ -230,10 +230,8 @@ struct FailureInsightAccessTests {
     @Test func theDecisionTable() {
         for model in [FailureInsightFeature.ModelStatus.available, .deviceNotEligible, .notEnabled, .notReady] {
             for setting in [true, false] {
-                for pro in [true, false] {
-                    let expected: FailureInsightFeature.Mode = model != .available || !setting ? .hidden : pro ? .open : .locked
-                    #expect(FailureInsightFeature.mode(model: model, settingOn: setting, proAllows: pro) == expected)
-                }
+                let expected: FailureInsightFeature.Mode = model != .available || !setting ? .hidden : .open
+                #expect(FailureInsightFeature.mode(model: model, settingOn: setting) == expected)
             }
         }
     }
@@ -260,34 +258,14 @@ struct FailureInsightAccessTests {
         #expect(FailureInsightFeature.ModelStatus(.unavailable(.modelNotReady)) == .notReady)
     }
 
-    @Test func anAccountOpensTheFeatureOnlyWithTheModelTheSettingAndCumulusPro() {
+    @Test func anAccountOpensTheFeatureOnlyWithTheModelAndTheSetting() {
         let session = session(.available)
         let store = session.failureInsights
 
         #expect(store.isOpen())
-        session.pro = ProStore(source: StubProSource(), forced: .free)
-        #expect(!store.isOpen())
-        session.pro = ProStore(source: StubProSource(), forced: .lifetime(since: day))
-        #expect(store.isOpen())
         accounts.defaults.set(false, forKey: FailureInsightFeature.settingKey)
         #expect(!store.isOpen())
         #expect(!self.session(.notEnabled).failureInsights.isOpen())
-    }
-
-    @Test func nothingIsGeneratedForAFreeAccount() async throws {
-        let session = session(.available)
-        session.pro = ProStore(source: StubProSource(), forced: .free)
-        let paths = accounts.paths("work")
-        try await BuildCacheStore(fileURL: paths.buildCache).save(snapshot)
-        await session.buildStore.loadCacheIfNeeded()
-        await BuildExtrasCache(directory: paths.buildDetails).save(
-            BuildExtras(testsByAction: ["test": tests(2)], issuesComplete: true, testsComplete: true), runID: "run-412"
-        )
-
-        await session.failureInsights.load(run())
-
-        #expect(session.failureInsights.insight(for: "run-412") == nil)
-        #expect(!FileManager.default.fileExists(atPath: paths.failureInsights.path))
     }
 
     @Test func erasingAnAccountErasesItsInsights() async throws {

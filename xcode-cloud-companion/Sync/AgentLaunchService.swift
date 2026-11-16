@@ -31,8 +31,6 @@ final class AgentLaunchService {
     }
 
     func launch(_ request: IPCLaunchRequest) async -> IPCResult {
-        // Asked of the app's own store: the shared file the command reads can be edited by hand.
-        guard accounts.pro?.allows(.commandLine) ?? true else { return refusal(IPCLaunchReason.proRequired) }
         await accounts.whenReady()
         guard let session = request.accountID.map({ accounts.session(id: $0) }) ?? accounts.selected else {
             return refusal(request.accountID == nil ? IPCLaunchReason.noCredentials : IPCLaunchReason.unknownAccount)

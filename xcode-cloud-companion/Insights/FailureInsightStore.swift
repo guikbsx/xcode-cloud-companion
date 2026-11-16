@@ -15,7 +15,7 @@ final class FailureInsightStore {
     private(set) var records: [String: FailureInsightRecord] = [:]
     private(set) var loadingRunIDs: Set<String> = []
 
-    /// Whether the feature is open for this account right now: the model, the setting and Cumulus Pro.
+    /// Whether the feature is open for this account right now: the model and the setting.
     @ObservationIgnored var isOpen: () -> Bool = { true }
 
     private let buildStore: BuildStore
