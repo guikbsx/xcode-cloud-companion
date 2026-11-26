@@ -81,10 +81,15 @@ final class UsageStore {
 
     /// Forgets every billed minute, but remembers the exports already seen so the folder watcher does not bring them back.
     func reset() async {
-        ledger = UsageLedger(importedFiles: ledger.importedFiles)
-        lastImportMessage = nil
-        lastImportFailed = false
-        try? await ledgerStore.save(ledger)
+        let reset = UsageLedger(importedFiles: ledger.importedFiles)
+        do {
+            try await ledgerStore.save(reset)
+            ledger = reset
+            lastImportMessage = nil
+            lastImportFailed = false
+        } catch {
+            reportSaveFailure()
+        }
     }
 
     func stop() {
@@ -120,14 +125,28 @@ final class UsageStore {
     }
 
     /// Adds an export already read: with several accounts, it is read once and handed to the account its apps belong to.
-    func record(_ export: UsageExport, from file: UsageExportFile) async {
-        ledger.merge(export, fileName: file.url.lastPathComponent, modifiedAt: file.modifiedAt, importedAt: now())
+    @discardableResult
+    func record(_ export: UsageExport, from file: UsageExportFile) async -> Bool {
+        var updated = ledger
+        updated.merge(export, fileName: file.url.lastPathComponent, modifiedAt: file.modifiedAt, importedAt: now())
         if let snapshot = snapshot() {
-            ledger.calibration.learn(Self.samples(from: snapshot, ledger: ledger, now: now()), now: now())
+            updated.calibration.learn(Self.samples(from: snapshot, ledger: updated, now: now()), now: now())
         }
-        try? await ledgerStore.save(ledger)
+        do {
+            try await ledgerStore.save(updated)
+        } catch {
+            reportSaveFailure()
+            return false
+        }
+        ledger = updated
         lastImportFailed = false
         lastImportMessage = String(localized: "Imported \(export.builds.count) builds from \(file.url.lastPathComponent).")
+        return true
+    }
+
+    private func reportSaveFailure() {
+        lastImportFailed = true
+        lastImportMessage = String(localized: "Could not save billed minutes. Please try again.")
     }
 
     /// After a sync: the builds billed by an earlier import that are now measured join what the estimate learned (XCO-199).
@@ -151,6 +170,11 @@ final class UsageStore {
     /// Says where an export went when it was not into this account.
     func note(_ message: String) {
         lastImportFailed = false
+        lastImportMessage = message
+    }
+
+    func noteFailure(_ message: String?) {
+        lastImportFailed = true
         lastImportMessage = message
     }
 }

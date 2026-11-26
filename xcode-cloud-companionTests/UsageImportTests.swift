@@ -145,4 +145,29 @@ struct UsageStoreTests {
         #expect(store.lastImportMessage?.contains("usage_2026-10-01_2026-10-02.csv") == true)
         #expect(store.ledger.builds.isEmpty)
     }
+
+    @Test func failedSavesKeepTheLedgerAndAllowRetry() async throws {
+        let folder = try makeDirectory()
+        let export = folder.appending(path: "usage_2026-09-09_2026-10-09.csv")
+        try Fixture.csv("usage_2026-09-09_2026-10-09").write(to: export)
+        let ledgerFile = folder.appending(path: "ledger.json")
+        let store = UsageStore(ledgerStore: UsageLedgerStore(fileURL: ledgerFile))
+        try FileManager.default.createDirectory(at: ledgerFile, withIntermediateDirectories: false)
+
+        await store.importFile(at: export)
+        #expect(store.lastImportFailed)
+        #expect(store.lastImportMessage != nil)
+        #expect(store.ledger.builds.isEmpty)
+
+        try FileManager.default.removeItem(at: ledgerFile)
+        await store.importFile(at: export)
+        #expect(!store.lastImportFailed)
+        #expect(store.ledger.builds.count == 6)
+
+        try FileManager.default.removeItem(at: ledgerFile)
+        try FileManager.default.createDirectory(at: ledgerFile, withIntermediateDirectories: false)
+        await store.reset()
+        #expect(store.lastImportFailed)
+        #expect(store.ledger.builds.count == 6)
+    }
 }

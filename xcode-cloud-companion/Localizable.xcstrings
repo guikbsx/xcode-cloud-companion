@@ -4706,6 +4706,16 @@
         }
       }
     },
+    "Could not save billed minutes. Please try again." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Impossible d’enregistrer les minutes facturées. Veuillez réessayer."
+          }
+        }
+      }
+    },
     "Compute hours" : {
       "comment" : "Label in the diagram of App Store Connect's Xcode Cloud usage page",
       "localizations" : {
