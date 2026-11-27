@@ -170,4 +170,25 @@ struct UsageStoreTests {
         #expect(store.lastImportFailed)
         #expect(store.ledger.builds.count == 6)
     }
+
+    @Test func twoImportsAtOnceKeepBoth() async throws {
+        let folder = try makeDirectory()
+        let ledgerFile = folder.appending(path: "ledger.json")
+        let store = UsageStore(ledgerStore: UsageLedgerStore(fileURL: ledgerFile))
+        let month = try UsageExportParser.parse(Fixture.csv("usage_2026-09-09_2026-10-09"), fileName: "usage_2026-09-09_2026-10-09.csv")
+        let day = try UsageExportParser.parse(
+            Data("Build Number,Product,Started At,Usage (Minutes),Workflow\n390,AppOne,2026-10-10T08:00:00Z,12,W\n".utf8),
+            fileName: "usage_2026-10-10_2026-10-10.csv"
+        )
+
+        let first = Task { await store.record(month, from: UsageExportFile(url: folder.appending(path: "usage_2026-09-09_2026-10-09.csv"), modifiedAt: .now)) }
+        let second = Task { await store.record(day, from: UsageExportFile(url: folder.appending(path: "usage_2026-10-10_2026-10-10.csv"), modifiedAt: .now)) }
+        #expect(await first.value)
+        #expect(await second.value)
+
+        #expect(store.ledger.builds.count == 7)
+        let reloaded = UsageStore(ledgerStore: UsageLedgerStore(fileURL: ledgerFile))
+        await reloaded.start()
+        #expect(reloaded.ledger == store.ledger)
+    }
 }
