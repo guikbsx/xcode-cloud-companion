@@ -774,6 +774,17 @@
         }
       }
     },
+    "%@ lists the apps of “%@”, but its billed minutes could not be saved there. Try again." : {
+      "comment" : "A usage export belongs to another account than the one on screen, and that account could not save it. First the file name, then the account name.",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ liste les apps de « %2$@ », mais ses minutes facturées n’ont pas pu y être enregistrées. Réessayez."
+          }
+        }
+      }
+    },
     "%@ lists the apps of “%@”: its %lld builds were imported there." : {
       "comment" : "A usage export was imported into another account than the one on screen. First the file name, then the account name.",
       "localizations" : {
@@ -4931,6 +4942,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Coût par workflow"
+          }
+        }
+      }
+    },
+    "Could not save the billed minutes. Try again." : {
+      "comment" : "An export was read, but the billed minutes could not be written to disk: nothing was imported.",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Impossible d’enregistrer les minutes facturées. Réessayez."
           }
         }
       }

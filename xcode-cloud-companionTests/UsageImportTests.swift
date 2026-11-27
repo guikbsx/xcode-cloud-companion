@@ -145,4 +145,50 @@ struct UsageStoreTests {
         #expect(store.lastImportMessage?.contains("usage_2026-10-01_2026-10-02.csv") == true)
         #expect(store.ledger.builds.isEmpty)
     }
+
+    @Test func failedSavesKeepTheLedgerAndAllowRetry() async throws {
+        let folder = try makeDirectory()
+        let export = folder.appending(path: "usage_2026-09-09_2026-10-09.csv")
+        try Fixture.csv("usage_2026-09-09_2026-10-09").write(to: export)
+        let ledgerFile = folder.appending(path: "ledger.json")
+        let store = UsageStore(ledgerStore: UsageLedgerStore(fileURL: ledgerFile))
+        try FileManager.default.createDirectory(at: ledgerFile, withIntermediateDirectories: false)
+
+        await store.importFile(at: export)
+        #expect(store.lastImportFailed)
+        #expect(store.lastImportMessage != nil)
+        #expect(store.ledger.builds.isEmpty)
+
+        try FileManager.default.removeItem(at: ledgerFile)
+        await store.importFile(at: export)
+        #expect(!store.lastImportFailed)
+        #expect(store.ledger.builds.count == 6)
+
+        try FileManager.default.removeItem(at: ledgerFile)
+        try FileManager.default.createDirectory(at: ledgerFile, withIntermediateDirectories: false)
+        await store.reset()
+        #expect(store.lastImportFailed)
+        #expect(store.ledger.builds.count == 6)
+    }
+
+    @Test func twoImportsAtOnceKeepBoth() async throws {
+        let folder = try makeDirectory()
+        let ledgerFile = folder.appending(path: "ledger.json")
+        let store = UsageStore(ledgerStore: UsageLedgerStore(fileURL: ledgerFile))
+        let month = try UsageExportParser.parse(Fixture.csv("usage_2026-09-09_2026-10-09"), fileName: "usage_2026-09-09_2026-10-09.csv")
+        let day = try UsageExportParser.parse(
+            Data("Build Number,Product,Started At,Usage (Minutes),Workflow\n390,AppOne,2026-10-10T08:00:00Z,12,W\n".utf8),
+            fileName: "usage_2026-10-10_2026-10-10.csv"
+        )
+
+        let first = Task { await store.record(month, from: UsageExportFile(url: folder.appending(path: "usage_2026-09-09_2026-10-09.csv"), modifiedAt: .now)) }
+        let second = Task { await store.record(day, from: UsageExportFile(url: folder.appending(path: "usage_2026-10-10_2026-10-10.csv"), modifiedAt: .now)) }
+        #expect(await first.value)
+        #expect(await second.value)
+
+        #expect(store.ledger.builds.count == 7)
+        let reloaded = UsageStore(ledgerStore: UsageLedgerStore(fileURL: ledgerFile))
+        await reloaded.start()
+        #expect(reloaded.ledger == store.ledger)
+    }
 }

@@ -54,6 +54,7 @@ final class UsageStore {
     private let now: () -> Date
     private var watcher: DirectoryWatcher?
     private var isScanning = false
+    private var lastWrite: Task<Bool, Never>?
     /// The account's builds: an import teaches the estimate as soon as its billed builds meet their measured actions.
     @ObservationIgnored var snapshot: () -> BuildSnapshot? = { nil }
 
@@ -81,10 +82,12 @@ final class UsageStore {
 
     /// Forgets every billed minute, but remembers the exports already seen so the folder watcher does not bring them back.
     func reset() async {
-        ledger = UsageLedger(importedFiles: ledger.importedFiles)
+        guard await commit({ $0 = UsageLedger(importedFiles: $0.importedFiles) }) else {
+            reportSaveFailure()
+            return
+        }
         lastImportMessage = nil
         lastImportFailed = false
-        try? await ledgerStore.save(ledger)
     }
 
     func stop() {
@@ -120,22 +123,61 @@ final class UsageStore {
     }
 
     /// Adds an export already read: with several accounts, it is read once and handed to the account its apps belong to.
-    func record(_ export: UsageExport, from file: UsageExportFile) async {
-        ledger.merge(export, fileName: file.url.lastPathComponent, modifiedAt: file.modifiedAt, importedAt: now())
-        if let snapshot = snapshot() {
-            ledger.calibration.learn(Self.samples(from: snapshot, ledger: ledger, now: now()), now: now())
+    @discardableResult
+    func record(_ export: UsageExport, from file: UsageExportFile) async -> Bool {
+        let snapshot = snapshot()
+        let now = now()
+        let saved = await commit { ledger in
+            ledger.merge(export, fileName: file.url.lastPathComponent, modifiedAt: file.modifiedAt, importedAt: now)
+            if let snapshot {
+                ledger.calibration.learn(Self.samples(from: snapshot, ledger: ledger, now: now), now: now)
+            }
         }
-        try? await ledgerStore.save(ledger)
+        guard saved else {
+            reportSaveFailure()
+            return false
+        }
         lastImportFailed = false
         lastImportMessage = String(localized: "Imported \(export.builds.count) builds from \(file.url.lastPathComponent).")
+        return true
+    }
+
+    private func reportSaveFailure() {
+        lastImportFailed = true
+        lastImportMessage = String(
+            localized: "Could not save the billed minutes. Try again.",
+            comment: "An export was read, but the billed minutes could not be written to disk: nothing was imported."
+        )
     }
 
     /// After a sync: the builds billed by an earlier import that are now measured join what the estimate learned (XCO-199).
     func learn(from snapshot: BuildSnapshot) async {
-        var learned = ledger.calibration
-        guard learned.learn(Self.samples(from: snapshot, ledger: ledger, now: now()), now: now()) else { return }
-        ledger.calibration = learned
-        try? await ledgerStore.save(ledger)
+        let now = now()
+        await commit { ledger in
+            ledger.calibration.learn(Self.samples(from: snapshot, ledger: ledger, now: now), now: now)
+        }
+    }
+
+    /// Ledger writes run one after the other, each on the ledger the previous one left: two imports, or an import and a
+    /// sync, never start from the same copy and erase each other. The ledger on screen changes only once it is saved.
+    @discardableResult
+    private func commit(_ change: @escaping @MainActor (inout UsageLedger) -> Void) async -> Bool {
+        let previous = lastWrite
+        let write = Task { () -> Bool in
+            _ = await previous?.value
+            var updated = ledger
+            change(&updated)
+            guard updated != ledger else { return true }
+            do {
+                try await ledgerStore.save(updated)
+            } catch {
+                return false
+            }
+            ledger = updated
+            return true
+        }
+        lastWrite = write
+        return await write.value
     }
 
     private static func samples(from snapshot: BuildSnapshot, ledger: UsageLedger, now: Date) -> [CalibrationSample] {
@@ -151,6 +193,11 @@ final class UsageStore {
     /// Says where an export went when it was not into this account.
     func note(_ message: String) {
         lastImportFailed = false
+        lastImportMessage = message
+    }
+
+    func noteFailure(_ message: String) {
+        lastImportFailed = true
         lastImportMessage = message
     }
 }

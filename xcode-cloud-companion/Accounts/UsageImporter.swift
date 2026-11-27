@@ -127,7 +127,13 @@ final class UsageImporter {
             await shown?.usageStore.record(export, from: file)
             return
         }
-        await owner.usageStore.record(export, from: file)
+        guard await owner.usageStore.record(export, from: file) else {
+            shown?.usageStore.noteFailure(String(
+                localized: "\(url.lastPathComponent) lists the apps of “\(owner.name)”, but its billed minutes could not be saved there. Try again.",
+                comment: "A usage export belongs to another account than the one on screen, and that account could not save it. First the file name, then the account name."
+            ))
+            return
+        }
         shown?.usageStore.note(String(
             localized: "\(url.lastPathComponent) lists the apps of “\(owner.name)”: its \(export.builds.count) builds were imported there.",
             comment: "A usage export was imported into another account than the one on screen. First the file name, then the account name."
